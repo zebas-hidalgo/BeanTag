@@ -27,7 +27,7 @@ export default function BrewHistory() {
         </div>
       ) : (
         history.map(item => (
-          <div key={item.id} className="candy-card" style={{ borderLeft: '6px solid #000000', cursor: 'default' }}>
+          <div key={item.id} className="candy-card" style={{ borderLeft: '6px solid var(--color-crimson)', cursor: 'default' }}>
             <div className="card-header-flex">
               <div>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', margin: '0 0 2px 0', textTransform: 'uppercase' }}>{item.method}</h3>
@@ -41,7 +41,7 @@ export default function BrewHistory() {
               <p style={{ margin: '2px 0' }}><strong>Molienda:</strong> {item.grind || 'N/A'} | <strong>Ratio:</strong> {item.ratio || 'N/A'}</p>
               {item.notes && <p style={{ margin: '2px 0', fontStyle: 'italic' }}><strong>Cata:</strong> {item.notes}</p>}
               <p style={{ margin: '4px 0 0 0', fontSize: '12px', fontWeight: 'bold' }}>
-                Puntuación: {'★'.repeat(item.rating || 5)}{'☆'.repeat(5 - (item.rating || 5))} ({item.rating || 5}/5)
+                Puntuación: <span style={{ color: 'var(--color-crimson)' }}>{'★'.repeat(item.rating || 5)}{'☆'.repeat(5 - (item.rating || 5))}</span> ({item.rating || 5}/5)
               </p>
             </div>
           </div>
