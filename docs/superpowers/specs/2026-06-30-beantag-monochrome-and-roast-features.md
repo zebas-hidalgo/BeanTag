@@ -19,6 +19,23 @@ BeanTag adoptará una estética utilitaria minimalista inspirada en la tipograf�
 
 ---
 
+## 2. Auditoría UX y Seguridad de Contención
+
+Para garantizar que ningún elemento flote suelto o desborde el marco del teléfono (especialmente en pantallas anchas o de tabletas donde la app se renderiza centrada a `480px`):
+
+### A. Contención Absoluta de Componentes Fijos
+*   **Tabbar Inferior (`.nb-tabbar`):** Cambiará de `position: fixed` a `position: absolute; bottom: 0; left: 0; width: 100%;`. Esto fuerza a la barra a mantenerse rígida dentro de los límites físicos del `.app-container` (columna de `480px`), eliminando cualquier desfase horizontal.
+*   **Toast de Deshacer (`.undo-toast`):** Cambiará a `position: absolute; bottom: 80px; left: 16px; width: calc(100% - 32px);`. Se deslizará de manera limpia dentro de la columna central de la aplicación, sin desbordarse al viewport del navegador.
+
+### B. Molienda J-Max Fluida (Evitar Desbordamiento en Pantallas Chicas)
+*   Para evitar que tres selectores numéricos en línea desborden en teléfonos de baja resolución (como iPhone SE con `320px` de ancho de pantalla), los steppers se configuran con flexbox fluido:
+    *   `.mono-stepper { display: flex; width: 100%; }`
+    *   `.stepper-btn { flex: 1; min-width: 24px; }`
+    *   Los botones y valores se encogerán proporcionalmente de forma dinámica, asegurando que siempre queden contenidos dentro de la tarjeta de extracción sin sangrar hacia los lados.
+
+---
+
+
 ## 2. Cambios en Base de Datos (SQLite)
 
 Se alterará la tabla `batches` para soportar las nuevas variables de información física del grano de café:
