@@ -1,10 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
 
 :root {
-  --color-bg: #FFFFFF;
-  --color-navy: #000000;
-  --color-text-muted: #4A5568;
-  --color-border: #000000;
+  --bg-canvas: #FFF5F5;
+  --bg-card: #FFFFFF;
+  --border-color: #000000;
+  --color-crimson: #E53E3E;
+  --color-text: #1A0505;
+  --color-text-muted: #555555;
   
   --font-heading: 'Comfortaa', cursive;
   --font-body: 'Inter', sans-serif;
@@ -17,8 +19,8 @@
 body {
   margin: 0;
   font-family: var(--font-body);
-  background-color: #F7FAFC;
-  color: var(--color-navy);
+  background-color: var(--bg-canvas);
+  color: var(--color-text);
   -webkit-font-smoothing: antialiased;
   touch-action: manipulation;
 }
@@ -26,56 +28,55 @@ body {
 .app-container {
   max-width: 480px;
   margin: 0 auto;
-  background-color: var(--color-bg);
+  background-color: var(--bg-canvas);
   min-height: 100dvh;
-  position: relative; /* Clave para contención absoluta */
+  position: relative;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   overflow-x: hidden;
-  border-left: 2px solid var(--color-border);
-  border-right: 2px solid var(--color-border);
+  border-left: 2px solid var(--border-color);
+  border-right: 2px solid var(--border-color);
 }
 
-/* Monochrome Box (Cards) */
+/* Neo-Brutalist Bento Card */
 .candy-card {
-  background-color: #FFFFFF;
-  border: 2px solid var(--color-border);
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-color);
   border-radius: 12px;
   padding: 16px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   position: relative;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  box-shadow: 4px 4px 0px var(--border-color);
+  transition: transform 100ms, box-shadow 100ms, background-color 100ms;
   box-sizing: border-box;
 }
 
 .candy-card:active {
-  transform: scale(0.98);
-  background-color: #F8FAFC;
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--border-color);
+  background-color: #FAF5FF;
 }
 
 /* Alerta de Stock Bajo (Borde Punteado) */
 .candy-card.low-stock {
   border-style: dashed;
-  border-color: #E53E3E; /* Rojo de advertencia sutil */
-}
-
-.bg-rose, .bg-peach, .bg-lime, .bg-lavender {
-  background-color: #FFFFFF; /* Forzar blanco en monocromo */
+  border-color: var(--color-crimson);
 }
 
 /* Header */
 .app-header {
-  background-color: #FFFFFF;
-  border-bottom: 2px solid var(--color-border);
-  padding: 16px 20px;
+  background-color: var(--bg-card);
+  border-bottom: 2px solid var(--border-color);
+  padding: 14px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   position: sticky;
   top: 0;
   z-index: 10;
+  box-sizing: border-box;
 }
 
 .app-header h1 {
@@ -83,55 +84,57 @@ body {
   font-size: 18px;
   margin: 0;
   text-transform: uppercase;
-  color: var(--color-navy);
+  color: var(--border-color);
 }
 
-/* Buttons */
+/* Bento Buttons */
 .btn-candy {
-  background-color: #FFFFFF;
-  border: 2px solid var(--color-border);
-  border-radius: 0px; /* Esquinas rectas suizas */
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
   padding: 10px 16px;
-  min-height: 44px; /* Touch Target Minimum (44pt) */
+  min-height: 44px; /* Touch Target Minimum */
   font-family: var(--font-heading);
   font-weight: bold;
   font-size: 12px;
   cursor: pointer;
-  transition: all var(--transition-fast);
-  color: var(--color-navy);
+  transition: transform 100ms, box-shadow 100ms, background-color 100ms;
+  color: var(--border-color);
   text-transform: uppercase;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  box-shadow: 2px 2px 0px var(--border-color);
 }
 
 .btn-candy:hover {
-  background-color: #F8FAFC;
+  background-color: #FAF5FF;
 }
 
 .btn-candy:active {
-  transform: scale(0.96);
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border-color);
   background-color: #EDF2F7;
 }
 
 .btn-candy.primary {
-  background-color: #000000;
+  background-color: var(--color-crimson);
   color: #FFFFFF;
 }
 
 .btn-candy.primary:hover {
-  background-color: #1A202C;
+  background-color: #C53030;
 }
 
 .btn-candy.primary:active {
-  background-color: #2D3748;
+  background-color: #9B2C2C;
 }
 
 .btn-candy.accent {
-  background-color: #FFFFFF;
-  color: #E53E3E;
-  border-color: #E53E3E;
+  background-color: var(--bg-card);
+  color: var(--color-crimson);
+  border-color: var(--color-crimson);
 }
 
 .btn-candy.accent:hover {
@@ -139,28 +142,32 @@ body {
 }
 
 .app-bar-btn {
-  border: 2px solid var(--color-border);
-  background-color: #FFFFFF;
+  border: 2px solid var(--border-color);
+  background-color: var(--bg-card);
   padding: 6px 16px;
-  min-height: 44px; /* Touch Target Minimum (44pt) */
+  min-height: 44px; /* Touch Target Minimum */
   font-family: var(--font-heading);
   font-weight: bold;
   font-size: 11px;
   cursor: pointer;
   text-transform: uppercase;
-  color: var(--color-navy);
+  color: var(--border-color);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  transition: all var(--transition-fast);
+  transition: transform 100ms, box-shadow 100ms, background-color 100ms;
+  box-shadow: 2px 2px 0px var(--border-color);
+  border-radius: 8px;
 }
 
 .app-bar-btn:hover {
-  background-color: #F8FAFC;
+  background-color: #FAF5FF;
 }
 
 .app-bar-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border-color);
   background-color: #EDF2F7;
 }
 
@@ -177,25 +184,25 @@ body {
   text-transform: uppercase;
   margin-bottom: 6px;
   font-weight: bold;
-  color: var(--color-navy);
+  color: var(--border-color);
 }
 
 .candy-input {
   width: 100%;
-  background-color: #FFFFFF;
-  border: 2px solid var(--color-border);
-  border-radius: 0px;
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
   padding: 10px 14px;
   font-family: var(--font-body);
   font-size: 13px;
   box-sizing: border-box;
-  color: var(--color-navy);
-  transition: all 0.2s;
+  color: var(--color-text);
+  transition: background-color 0.2s;
 }
 
 .candy-input:focus {
   outline: none;
-  background-color: #F8FAFC;
+  background-color: #FAF5FF;
 }
 
 /* Steppers Fluid J-Max */
@@ -221,38 +228,39 @@ body {
 
 .mono-stepper {
   display: flex;
-  border: 2px solid var(--color-border);
-  background-color: #FFFFFF;
+  border: 2px solid var(--border-color);
+  background-color: var(--bg-card);
   width: 100%;
   align-items: center;
   box-sizing: border-box;
+  border-radius: 6px;
 }
 
 .stepper-btn {
   flex: 1;
   height: 32px;
-  background: #FFFFFF;
+  background: var(--bg-card);
   border: none;
   font-weight: bold;
   cursor: pointer;
   font-size: 16px;
-  color: var(--color-navy);
+  color: var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.1s;
+  transition: background-color 0.1s;
 }
 
 .stepper-btn:first-child {
-  border-right: 2px solid var(--color-border);
+  border-right: 2px solid var(--border-color);
 }
 
 .stepper-btn:last-child {
-  border-left: 2px solid var(--color-border);
+  border-left: 2px solid var(--border-color);
 }
 
 .stepper-btn:active {
-  background-color: #F8FAFC;
+  background-color: #EDF2F7;
 }
 
 .stepper-value {
@@ -264,18 +272,18 @@ body {
   font-family: var(--font-mono);
   font-weight: bold;
   font-size: 13px;
-  color: var(--color-navy);
+  color: var(--color-text);
 }
 
-/* Absolute Bottom Navigation Tab Bar (Restricted within container) */
+/* Tab Bar */
 .nb-tabbar {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
   height: 64px;
-  background-color: #FFFFFF;
-  border-top: 2px solid var(--color-border);
+  background-color: var(--bg-card);
+  border-top: 2px solid var(--border-color);
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -291,8 +299,8 @@ body {
   font-size: 9px;
   font-family: var(--font-heading);
   font-weight: bold;
-  color: var(--color-navy);
-  opacity: 0.45;
+  color: var(--border-color);
+  opacity: 0.5;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -300,21 +308,24 @@ body {
   cursor: pointer;
   text-transform: uppercase;
   padding: 8px 0;
-  transition: all var(--transition-fast);
+  transition: opacity var(--transition-fast), color var(--transition-fast);
 }
 
 .tab-item.active {
   opacity: 1;
-  border-bottom: 2px solid var(--color-navy);
-  padding-bottom: 6px;
+  color: var(--color-crimson);
 }
 
 .tab-item svg {
   width: 18px;
   height: 18px;
-  stroke: var(--color-navy);
+  stroke: var(--border-color);
   stroke-width: 2px;
   fill: none;
+}
+
+.tab-item.active svg {
+  stroke: var(--color-crimson);
 }
 
 /* Absolute Toast Undo */
@@ -323,9 +334,9 @@ body {
   bottom: 76px;
   left: 16px;
   width: calc(100% - 32px);
-  background-color: #000000;
+  background-color: var(--color-text);
   color: #FFFFFF;
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--border-color);
   padding: 12px 18px;
   display: flex;
   justify-content: space-between;
@@ -338,6 +349,8 @@ body {
   font-weight: 700;
   box-sizing: border-box;
   font-size: 12px;
+  border-radius: 12px;
+  box-shadow: 4px 4px 0px var(--border-color);
 }
 
 .undo-toast.show {
@@ -347,53 +360,24 @@ body {
 }
 
 .undo-btn {
-  background-color: #FFFFFF;
-  color: #000000;
-  border: 2px solid var(--color-border);
+  background-color: var(--bg-card);
+  color: var(--border-color);
+  border: 2px solid var(--border-color);
   padding: 4px 10px;
   font-family: var(--font-heading);
   font-weight: bold;
   font-size: 10px;
   cursor: pointer;
   text-transform: uppercase;
+  border-radius: 6px;
+  box-shadow: 1px 1px 0px var(--border-color);
 }
 
 .undo-btn:active {
-  background-color: #F8FAFC;
+  background-color: #EDF2F7;
 }
 
-/* Grid of fields */
-.details-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  border: 2px solid var(--color-border);
-  padding: 12px;
-  margin-bottom: 16px;
-}
-
-.grid-cell {
-  border-bottom: 1px solid #E2E8F0;
-  padding: 6px 0;
-}
-
-.grid-cell:nth-last-child(-n+2) {
-  border-bottom: none;
-}
-
-.grid-lbl {
-  font-size: 8px;
-  text-transform: uppercase;
-  font-weight: 700;
-  color: var(--color-text-muted);
-}
-
-.grid-val {
-  font-size: 12px;
-  font-weight: 900;
-}
-
-/* Badges & Tags */
+/* Bento Badges & Tags */
 .mono-badge-row {
   display: flex;
   flex-wrap: wrap;
@@ -402,75 +386,42 @@ body {
 }
 
 .mono-lbl-tag {
-  background: #000000;
+  background: var(--color-crimson);
   color: #FFFFFF;
-  padding: 3px 8px;
+  padding: 4px 10px;
   font-size: 9px;
   font-weight: 900;
   text-transform: uppercase;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-color);
+  display: inline-block;
 }
 
 .mono-lbl-tag.outline {
-  background: #FFFFFF;
-  color: #000000;
-  border: 1px solid #000000;
-}
-
-.instr-box {
-  border: 2px solid var(--color-border);
-  background-color: #FEF3C7;
-  padding: 12px;
-  font-size: 11px;
-  margin-top: 14px;
-  color: #000000;
-}
-
-.nb-action-wrap {
-  margin: 18px 0;
-  position: relative;
-  box-sizing: border-box;
-}
-
-/* Filter Toolbar */
-.filter-toolbar {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 14px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-
-.filter-btn {
-  background: #FFFFFF;
-  border: 2px solid var(--color-border);
-  color: var(--color-navy);
-  font-size: 9px;
-  font-weight: 900;
-  padding: 5px 10px;
-  cursor: pointer;
-  text-transform: uppercase;
-}
-
-.filter-btn.active {
-  background: #000000;
-  color: #FFFFFF;
+  background: var(--bg-card);
+  color: var(--border-color);
+  border: 1.5px solid var(--border-color);
 }
 
 /* Banner de Referencia de Receta */
 .recipe-target-banner {
-  background-color: #F8FAFC;
-  border: 2px solid var(--color-border);
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-color);
   padding: 14px;
   margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 4px 4px 0px var(--border-color);
 }
 
 /* Cronómetro de Extracción */
 .timer-container {
-  border: 2px solid var(--color-border);
-  background-color: #FFFFFF;
+  border: 2px solid var(--border-color);
+  background-color: var(--bg-card);
   padding: 16px;
   text-align: center;
   margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 4px 4px 0px var(--border-color);
 }
 
 .timer-display {
@@ -478,7 +429,7 @@ body {
   font-size: 36px;
   font-weight: 900;
   margin: 10px 0;
-  color: var(--color-navy);
+  color: var(--border-color);
 }
 
 .timer-controls {
@@ -496,5 +447,21 @@ body {
 }
 
 .grain-details-compact strong {
-  color: var(--color-navy);
+  color: var(--border-color);
+}
+
+.instr-box {
+  border: 2px solid var(--border-color);
+  background-color: #FEF3C7;
+  padding: 12px;
+  font-size: 11px;
+  margin-top: 14px;
+  color: #000000;
+  border-radius: 8px;
+}
+
+.nb-action-wrap {
+  margin: 18px 0;
+  position: relative;
+  box-sizing: border-box;
 }
