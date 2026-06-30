@@ -32,6 +32,7 @@ export default function BrewHistory() {
               </span>
             </div>
             <div style={{ fontSize: '12px', marginTop: '8px' }}>
+              {/* Molienda displays natively (e.g. "J-Max: 1.5.0") or defaults to "N/A" */}
               <p style={{ margin: '2px 0' }}><strong>Ratio:</strong> {item.ratio || 'N/A'} | <strong>Molienda:</strong> {item.grind || 'N/A'}</p>
               {item.notes && <p style={{ margin: '2px 0', fontStyle: 'italic' }}><strong>Cata:</strong> {item.notes}</p>}
               <p style={{ margin: '4px 0 0 0', color: '#EAB308', fontSize: '14px' }}>
