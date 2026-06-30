@@ -248,7 +248,7 @@ main {
 
 .stepper-btn {
   flex: 1;
-  height: 32px;
+  height: 38px;
   background: var(--bg-card);
   border: none;
   font-weight: bold;
@@ -275,7 +275,8 @@ main {
 
 .stepper-value {
   width: 32px;
-  height: 32px;
+  height: 38px;
+  line-height: 38px;
   text-align: center;
   border: none;
   background: transparent;

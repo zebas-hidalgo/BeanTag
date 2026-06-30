@@ -73,7 +73,7 @@ export default function BatchCreator({ onBatchCreated, onBack }) {
             </div>
             <div className="form-group" style={{ flex: 1 }}>
               <label>Nivel de Tueste</label>
-              <select className="candy-input" style={{ height: '40px' }} value={roastLevel} onChange={(e) => setRoastLevel(e.target.value)}>
+              <select className="candy-input" style={{ height: '38px', padding: '8px 14px' }} value={roastLevel} onChange={(e) => setRoastLevel(e.target.value)}>
                 <option value="Claro">Claro (Light)</option>
                 <option value="Medio">Medio (Medium)</option>
                 <option value="Oscuro">Oscuro (Dark)</option>
