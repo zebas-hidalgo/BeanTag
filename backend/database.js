@@ -3,10 +3,12 @@ const { open } = require('sqlite');
 const path = require('path');
 
 async function getDb() {
-  return open({
+  const db = await open({
     filename: path.join(__dirname, 'database.sqlite'),
     driver: sqlite3.Database
   });
+  await db.run('PRAGMA foreign_keys = ON;');
+  return db;
 }
 
 async function initDb() {
@@ -40,7 +42,7 @@ async function initDb() {
       grind TEXT,
       temperature TEXT,
       brew_time TEXT,
-      rating INTEGER,
+      rating INTEGER CHECK(rating BETWEEN 1 AND 5),
       notes TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE CASCADE
