@@ -240,7 +240,7 @@ body {
   background-color: var(--color-card);
   border-top: 4px solid var(--color-navy);
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
   z-index: 50;
   padding-bottom: 6px;
@@ -248,6 +248,8 @@ body {
 }
 
 .tab-item {
+  flex: 1;
+  text-align: center;
   background: none;
   border: none;
   font-size: 10px;
@@ -260,8 +262,7 @@ body {
   gap: 4px;
   cursor: pointer;
   text-transform: uppercase;
-  padding: 6px 12px;
-  border-radius: 12px;
+  padding: 6px 0;
 }
 
 .tab-item.active {
