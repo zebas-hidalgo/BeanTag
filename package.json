@@ -1,0 +1,14 @@
+{
+  "name": "beantag-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install-all": "npm install && npm install --prefix backend && npm install --prefix frontend",
+    "build-frontend": "npm run build --prefix frontend",
+    "start": "node backend/server.js",
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"node backend/server.js\""
+  },
+  "dependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
