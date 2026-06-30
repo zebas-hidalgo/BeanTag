@@ -201,11 +201,11 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
         
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #E2E8F0', fontSize: '11px' }}>
           <div>
-            <span style={{ color: 'var(--color-text-muted)' }}>📅 Tueste:</span> <br />
+            <span style={{ color: 'var(--color-text-muted)' }}>Tueste:</span> <br />
             <strong>{batch.roast_date ? new Date(batch.roast_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Sin fecha'}</strong>
           </div>
           <div>
-            <span style={{ color: 'var(--color-text-muted)' }}>❄️ Congelado:</span> <br />
+            <span style={{ color: 'var(--color-text-muted)' }}>Congelado:</span> <br />
             <strong>{batch.freeze_date ? new Date(batch.freeze_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Sin fecha'}</strong>
           </div>
           <div style={{ gridColumn: 'span 2', marginTop: '4px', display: 'flex', gap: '12px', color: 'var(--color-text-muted)' }}>
@@ -219,7 +219,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
       {lastRecipe && (
         <div className="recipe-target-banner">
           <div style={{ fontSize: '9px', fontWeight: '900', color: '#E53E3E', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.5px' }}>
-            ⚙️ Última Configuración Exitosa (Referencia)
+            Última Configuración Exitosa (Referencia)
           </div>
           <div style={{ fontSize: '13px', fontWeight: '900' }}>
             {lastRecipe.method} | {lastRecipe.grind} | {lastRecipe.ratio}
@@ -238,7 +238,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
       {/* Cronómetro Brew Timer */}
       <div className="timer-container">
         <div style={{ fontSize: '9px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          ⏱️ Cronómetro de Extracción
+          Cronómetro de Extracción
         </div>
         <div className="timer-display">{timerFormatted}</div>
         <div className="timer-controls">
@@ -257,7 +257,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
       </div>
 
       {/* Formulario de Bitácora */}
-      <h2 style={{ fontFamily: 'var(--font-heading)', marginTop: '24px', textTransform: 'uppercase', fontSize: '15px' }}>📝 Registrar Preparación</h2>
+      <h2 style={{ fontFamily: 'var(--font-heading)', marginTop: '24px', textTransform: 'uppercase', fontSize: '15px' }}>Registrar Preparación</h2>
       <div className="candy-card" style={{ cursor: 'default' }}>
         <form onSubmit={handleRecipeSubmit}>
           <div className="form-group">

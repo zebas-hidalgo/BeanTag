@@ -92,6 +92,7 @@ body {
   border: 2px solid var(--color-border);
   border-radius: 0px; /* Esquinas rectas suizas */
   padding: 10px 16px;
+  min-height: 44px; /* Touch Target Minimum (44pt) */
   font-family: var(--font-heading);
   font-weight: bold;
   font-size: 12px;
@@ -105,14 +106,22 @@ body {
   box-sizing: border-box;
 }
 
+.btn-candy:hover {
+  background-color: #F8FAFC;
+}
+
 .btn-candy:active {
   transform: scale(0.96);
-  background-color: #F8FAFC;
+  background-color: #EDF2F7;
 }
 
 .btn-candy.primary {
   background-color: #000000;
   color: #FFFFFF;
+}
+
+.btn-candy.primary:hover {
+  background-color: #1A202C;
 }
 
 .btn-candy.primary:active {
@@ -125,20 +134,34 @@ body {
   border-color: #E53E3E;
 }
 
+.btn-candy.accent:hover {
+  background-color: #FFF5F5;
+}
+
 .app-bar-btn {
   border: 2px solid var(--color-border);
   background-color: #FFFFFF;
-  padding: 6px 12px;
+  padding: 6px 16px;
+  min-height: 44px; /* Touch Target Minimum (44pt) */
   font-family: var(--font-heading);
   font-weight: bold;
   font-size: 11px;
   cursor: pointer;
   text-transform: uppercase;
   color: var(--color-navy);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: all var(--transition-fast);
+}
+
+.app-bar-btn:hover {
+  background-color: #F8FAFC;
 }
 
 .app-bar-btn:active {
-  background-color: #F8FAFC;
+  background-color: #EDF2F7;
 }
 
 /* Inputs */

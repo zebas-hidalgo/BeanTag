@@ -83,11 +83,11 @@ export default function BatchCreator({ onBatchCreated, onBack }) {
 
           <div style={{ display: 'flex', gap: '8px' }}>
             <div className="form-group" style={{ flex: 1 }}>
-              <label>📅 Fecha de Tueste</label>
+              <label>Fecha de Tueste</label>
               <input className="candy-input" value={roastDate} onChange={(e) => setRoastDate(e.target.value)} type="date" />
             </div>
             <div className="form-group" style={{ flex: 1 }}>
-              <label>❄️ Fecha de Congelado</label>
+              <label>Fecha de Congelado</label>
               <input className="candy-input" value={freezeDate} onChange={(e) => setFreezeDate(e.target.value)} type="date" />
             </div>
           </div>

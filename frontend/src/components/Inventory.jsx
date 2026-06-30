@@ -16,7 +16,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
       {/* Search bar */}
       <input 
         className="candy-input" 
-        placeholder="🔍 Buscar café o productor..." 
+        placeholder="Buscar café o productor..." 
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         style={{ marginBottom: '16px' }}
