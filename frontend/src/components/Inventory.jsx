@@ -12,7 +12,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
   });
 
   return (
-    <div style={{ padding: '16px 16px 90px 16px' }}>
+    <div style={{ padding: '14px 14px 90px 14px' }}>
       {/* Search bar */}
       <input 
         className="candy-input" 

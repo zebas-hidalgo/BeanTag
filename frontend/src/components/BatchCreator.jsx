@@ -12,7 +12,6 @@ export default function BatchCreator({ onBatchCreated, onBack, showToast }) {
   const [doseWeight, setDoseWeight] = useState('20.0g');
   const [generatedUrl, setGeneratedUrl] = useState('');
   
-  // Nuevos Estados de Metadatos
   const [origin, setOrigin] = useState('');
   const [roastLevel, setRoastLevel] = useState('Medio');
   const [roastDate, setRoastDate] = useState('');
@@ -43,22 +42,21 @@ export default function BatchCreator({ onBatchCreated, onBack, showToast }) {
     });
   };
 
-  // R1: Copy URL with toast instead of alert
   const copyUrl = () => {
     navigator.clipboard.writeText(generatedUrl);
     showToast('Enlace copiado al portapapeles.', { type: 'success', duration: 2000 });
   };
 
   return (
-    <div style={{ padding: '16px 16px 90px 16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+    <div style={{ padding: '14px 14px 90px 14px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
         <button className="btn-candy" onClick={onBack}>✕ Cancelar</button>
       </div>
 
-      <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 16px 0' }}>Registrar Lote</h2>
+      <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 14px 0', fontSize: '16px' }}>Registrar Lote</h2>
       
       <form onSubmit={handleSubmit}>
-        {/* R6: Sección 1 — Identidad del Café */}
+        {/* Sección 1 — Identidad del Café */}
         <div className="candy-card" style={{ cursor: 'default' }}>
           <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 12px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
             Identidad del Café
@@ -73,56 +71,56 @@ export default function BatchCreator({ onBatchCreated, onBack, showToast }) {
             <input className="candy-input" value={producer} onChange={(e) => setProducer(e.target.value)} type="text" required placeholder="Ej. Nestor Lasso / El Diviso" />
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Origen / País</label>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Origen</label>
               <input className="candy-input" value={origin} onChange={(e) => setOrigin(e.target.value)} type="text" placeholder="Ej. Colombia" />
             </div>
-            <div className="form-group" style={{ flex: 1 }}>
+            <div className="form-group">
               <label>Varietal</label>
               <input className="candy-input" value={variety} onChange={(e) => setVariety(e.target.value)} type="text" placeholder="Ej. Bourbon" />
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <div className="form-group" style={{ flex: 1 }}>
+          <div className="form-row">
+            <div className="form-group">
               <label>Altitud</label>
               <input className="candy-input" value={altitude} onChange={(e) => setAltitude(e.target.value)} type="text" placeholder="Ej. 1800 msnm" />
             </div>
-            <div className="form-group" style={{ flex: 1 }}>
+            <div className="form-group">
               <label>Proceso</label>
               <input className="candy-input" value={process} onChange={(e) => setProcess(e.target.value)} type="text" placeholder="Ej. Anaeróbico" />
             </div>
           </div>
         </div>
 
-        {/* R6: Sección 2 — Perfil de Tueste */}
+        {/* Sección 2 — Perfil de Tueste */}
         <div className="candy-card" style={{ cursor: 'default' }}>
           <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 12px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
             Perfil de Tueste
           </h4>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <div className="form-group" style={{ flex: 1 }}>
+          <div className="form-row">
+            <div className="form-group">
               <label>Tostador</label>
               <input className="candy-input" value={roaster} onChange={(e) => setRoaster(e.target.value)} type="text" placeholder="Ej. Coffee Circular" />
             </div>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Nivel de Tueste</label>
-              <select className="candy-input" style={{ height: '38px', padding: '8px 14px' }} value={roastLevel} onChange={(e) => setRoastLevel(e.target.value)}>
-                <option value="Claro">Claro (Light)</option>
-                <option value="Medio">Medio (Medium)</option>
-                <option value="Oscuro">Oscuro (Dark)</option>
+            <div className="form-group">
+              <label>Tueste</label>
+              <select className="candy-input" value={roastLevel} onChange={(e) => setRoastLevel(e.target.value)}>
+                <option value="Claro">Claro</option>
+                <option value="Medio">Medio</option>
+                <option value="Oscuro">Oscuro</option>
               </select>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Fecha de Tueste</label>
+          <div className="form-row">
+            <div className="form-group">
+              <label>F. Tueste</label>
               <input className="candy-input" value={roastDate} onChange={(e) => setRoastDate(e.target.value)} type="date" />
             </div>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Fecha de Congelado</label>
+            <div className="form-group">
+              <label>F. Congelado</label>
               <input className="candy-input" value={freezeDate} onChange={(e) => setFreezeDate(e.target.value)} type="date" />
             </div>
           </div>
@@ -133,13 +131,13 @@ export default function BatchCreator({ onBatchCreated, onBack, showToast }) {
           </div>
         </div>
 
-        {/* R6: Sección 3 — Dosificación */}
+        {/* Sección 3 — Dosificación */}
         <div className="candy-card" style={{ cursor: 'default' }}>
           <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 12px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
             Dosificación
           </h4>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <div className="form-group" style={{ flex: 1 }}>
+          <div className="form-row">
+            <div className="form-group">
               <label>Cantidad de Tubos</label>
               <div className="mono-stepper">
                 <button type="button" className="stepper-btn" onClick={() => setTotalDoses(d => Math.max(1, d - 1))}>-</button>
@@ -147,7 +145,7 @@ export default function BatchCreator({ onBatchCreated, onBack, showToast }) {
                 <button type="button" className="stepper-btn" onClick={() => setTotalDoses(d => d + 1)}>+</button>
               </div>
             </div>
-            <div className="form-group" style={{ flex: 1 }}>
+            <div className="form-group">
               <label>Gramos por Tubo</label>
               <input className="candy-input" value={doseWeight} onChange={(e) => setDoseWeight(e.target.value)} type="text" />
             </div>
@@ -158,13 +156,13 @@ export default function BatchCreator({ onBatchCreated, onBack, showToast }) {
       </form>
 
       {generatedUrl && (
-        <div className="instr-box" style={{ marginTop: '16px' }}>
+        <div className="instr-box" style={{ marginTop: '14px' }}>
           <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', marginTop: 0 }}>Enlace Único de Lote NFC</h3>
           <p style={{ fontSize: '11px', marginTop: 0 }}>Escribe este enlace en tus tags NFC usando la app "NFC Tools":</p>
           
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <input className="candy-input" value={generatedUrl} readOnly style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', flex: 1 }} />
-            <button type="button" className="btn-candy primary" style={{ margin: 0 }} onClick={copyUrl}>Copiar</button>
+            <input className="candy-input" value={generatedUrl} readOnly style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', flex: 1, minWidth: 0 }} />
+            <button type="button" className="btn-candy primary" style={{ margin: 0, flexShrink: 0 }} onClick={copyUrl}>Copiar</button>
           </div>
         </div>
       )}

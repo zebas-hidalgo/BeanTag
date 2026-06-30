@@ -139,7 +139,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
 
   // R3: Skeleton loading state
   if (!batch) return (
-    <div style={{ padding: '16px 16px 90px 16px' }}>
+    <div style={{ padding: '14px 14px 90px 14px' }}>
       {[1, 2, 3].map(i => (
         <div key={i} className="candy-card skeleton-card" style={{ cursor: 'default', height: i === 1 ? '80px' : '120px' }}>
           <div className="skeleton-line" style={{ width: '60%', height: '14px' }} />
@@ -203,7 +203,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   );
 
   return (
-    <div style={{ padding: '16px 16px 90px 16px' }}>
+    <div style={{ padding: '14px 14px 90px 14px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <button className="btn-candy" onClick={onBack}>← Volver</button>
         {isLowStock && <span className="mono-lbl-tag" style={{ background: '#E53E3E' }}>¡ÚLTIMOS TUBOS!</span>}
@@ -302,7 +302,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
             </select>
           </div>
           
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="form-row">
             <div className="form-group" style={{ flex: 1 }}>
               <label>Ratio de Extracción</label>
               <div className="mono-stepper" style={{ width: '100%' }}>
@@ -346,7 +346,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+          <div className="form-row" style={{ alignItems: 'flex-end' }}>
             <div className="form-group" style={{ flex: 1 }}>
               <label>Tiempo de Extracción</label>
               <input className="candy-input" value={brewTime} onChange={(e) => setBrewTime(e.target.value)} type="text" />

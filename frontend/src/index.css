@@ -54,13 +54,14 @@ main {
   background-color: var(--bg-card);
   border: 2px solid var(--border-color);
   border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 14px;
+  margin-bottom: 14px;
   position: relative;
   cursor: pointer;
   box-shadow: 4px 4px 0px var(--border-color);
   transition: transform 100ms, box-shadow 100ms, background-color 100ms;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .candy-card:active {
@@ -185,6 +186,7 @@ main {
 .form-group {
   margin-bottom: 14px;
   box-sizing: border-box;
+  min-width: 0; /* Prevents flex overflow */
 }
 
 .form-group label {
@@ -202,7 +204,7 @@ main {
   background-color: var(--bg-card);
   border: 2px solid var(--border-color);
   border-radius: 6px;
-  padding: 10px 14px;
+  padding: 8px 10px;
   font-family: var(--font-body);
   font-size: 13px;
   box-sizing: border-box;
@@ -213,6 +215,17 @@ main {
 .candy-input:focus {
   outline: none;
   background-color: #FAF5FF;
+}
+
+/* Responsive form rows */
+.form-row {
+  display: flex;
+  gap: 8px;
+}
+
+.form-row > * {
+  flex: 1;
+  min-width: 0;
 }
 
 /* Steppers Fluid J-Max */

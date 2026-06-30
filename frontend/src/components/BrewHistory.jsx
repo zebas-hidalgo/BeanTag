@@ -17,7 +17,7 @@ export default function BrewHistory({ onNavigateToInventory }) {
 
   // R3: Skeleton loading state
   if (history === null) return (
-    <div style={{ padding: '16px 16px 90px 16px' }}>
+    <div style={{ padding: '14px 14px 90px 14px' }}>
       <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', marginBottom: '14px' }}>
         Bitácoras
       </h2>
