@@ -52,43 +52,47 @@ body {
 
 /* Soft UI Outset Card */
 .candy-card {
-  background-color: var(--color-card);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  background-color: var(--color-card-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-card-border);
   border-radius: 24px;
-  padding: 18px;
+  padding: 20px;
   margin-bottom: 16px;
   box-shadow: 
-    6px 6px 14px var(--color-shadow-dark-soft), 
-    -6px -6px 14px var(--color-shadow-light);
+    0 8px 32px 0 rgba(0, 0, 0, 0.25), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
   cursor: pointer;
   transition: all var(--transition-fast);
   box-sizing: border-box;
+  color: white;
 }
 
 .candy-card:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
+  background-color: rgba(255, 255, 255, 0.14);
   box-shadow: 
-    inset 4px 4px 8px var(--color-shadow-dark-soft),
-    inset -4px -4px 8px var(--color-shadow-light);
+    0 4px 16px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* Palette backgrounds blended with soft neumorphic shadows */
+/* Palette backgrounds blended with soft glass shadows */
 .bg-rose { 
-  background-color: #FCE7F3; 
-  --color-shadow-dark-soft: rgba(219, 39, 119, 0.12);
+  background-color: rgba(244, 63, 94, 0.08); 
+  border-color: rgba(244, 63, 94, 0.25);
 }
 .bg-peach { 
-  background-color: #FFEDD5; 
-  --color-shadow-dark-soft: rgba(217, 119, 6, 0.12);
+  background-color: rgba(249, 115, 22, 0.08); 
+  border-color: rgba(249, 115, 22, 0.25);
 }
 .bg-lime { 
-  background-color: #E6FFFA; 
-  --color-shadow-dark-soft: rgba(13, 148, 136, 0.12);
+  background-color: rgba(20, 184, 166, 0.08); 
+  border-color: rgba(20, 184, 166, 0.25);
 }
 .bg-lavender { 
-  background-color: #F3E8FF; 
-  --color-shadow-dark-soft: rgba(124, 58, 237, 0.12);
+  background-color: rgba(139, 92, 246, 0.08); 
+  border-color: rgba(139, 92, 246, 0.25);
 }
 
 /* Soft UI Header */
