@@ -1,0 +1,350 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --font-brutal: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    
+    --brutal-bg: #FFFDF5;
+    --brutal-black: #000000;
+    --brutal-white: #FFFFFF;
+    
+    --brutal-yellow: #FFD93D;
+    --brutal-red: #FF6B6B;
+    --brutal-violet: #A8A2FF;
+    --brutal-green: #6BCB77;
+    --brutal-orange: #FF9F43;
+    
+    --border-width-thick: 4px;
+    --border-width-thin: 2px;
+    --shadow-offset-thick: 6px;
+    --shadow-offset-thin: 3px;
+  }
+
+  .brutal-preview-container {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 24px 0;
+    font-family: var(--font-body);
+    background-color: #F8F7F0;
+  }
+
+  /* Phone Mockup Frame */
+  .phone-frame {
+    width: 360px;
+    height: 760px;
+    background-color: var(--brutal-bg);
+    border: 4px solid var(--brutal-black);
+    border-radius: 36px;
+    box-shadow: var(--shadow-offset-thick) var(--shadow-offset-thick) 0px var(--brutal-black);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    color: var(--brutal-black);
+  }
+
+  /* Phone Header */
+  .phone-header {
+    height: 34px;
+    background-color: var(--brutal-black);
+    color: var(--brutal-white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 28px;
+    font-size: 11px;
+    font-family: var(--font-brutal);
+    font-weight: 700;
+  }
+
+  .phone-header-notch {
+    width: 130px;
+    height: 18px;
+    background-color: var(--brutal-black);
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+
+  /* App Bar */
+  .app-bar {
+    background-color: var(--brutal-violet);
+    border-bottom: var(--border-width-thick) solid var(--brutal-black);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .app-bar h1 {
+    font-family: var(--font-brutal);
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .app-bar-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: var(--brutal-white);
+    border: var(--border-width-thin) solid var(--brutal-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 800;
+  }
+
+  .phone-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    padding-bottom: 90px;
+  }
+
+  /* Bottom Tab Navigation */
+  .tab-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background-color: var(--brutal-white);
+    border-top: var(--border-width-thick) solid var(--brutal-black);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 5;
+  }
+
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--brutal-black);
+    font-size: 11px;
+    font-family: var(--font-brutal);
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    text-transform: uppercase;
+    padding: 6px;
+  }
+
+  .tab-item.active {
+    background-color: var(--brutal-yellow);
+    border: var(--border-width-thin) solid var(--brutal-black);
+    box-shadow: 2px 2px 0px var(--brutal-black);
+  }
+
+  .tab-icon {
+    font-size: 18px;
+    margin-bottom: 2px;
+  }
+
+  h2 {
+    font-family: var(--font-brutal);
+    font-size: 18px;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-top: 0;
+    margin-bottom: 12px;
+  }
+
+  .brutal-card {
+    background-color: var(--brutal-white);
+    border: var(--border-width-thick) solid var(--brutal-black);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-offset-thick) var(--shadow-offset-thick) 0px var(--brutal-black);
+  }
+
+  .btn-brutal-action {
+    background-color: var(--brutal-red);
+    color: var(--brutal-white);
+    border: var(--border-width-thick) solid var(--brutal-black);
+    border-radius: 10px;
+    padding: 12px;
+    font-family: var(--font-brutal);
+    font-weight: 800;
+    font-size: 14px;
+    text-transform: uppercase;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: var(--shadow-offset-thick) var(--shadow-offset-thick) 0px var(--brutal-black);
+    transition: transform 0.05s, box-shadow 0.05s;
+    text-shadow: 1px 1px 0px var(--brutal-black);
+  }
+
+  .btn-brutal-action:active {
+    transform: translate(6px, 6px);
+    box-shadow: 0px 0px 0px var(--brutal-black);
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .meta-item {
+    background-color: var(--brutal-white);
+    border: var(--border-width-thin) solid var(--brutal-black);
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+
+  .meta-label {
+    font-family: var(--font-brutal);
+    font-weight: 800;
+    font-size: 9px;
+    text-transform: uppercase;
+    color: #555;
+    margin-bottom: 2px;
+  }
+
+  .meta-value {
+    font-weight: 600;
+  }
+
+</style>
+
+<h2>Refinamiento de Flujo: Link Único de Lote NFC</h2>
+<p class="subtitle">¡Tienes toda la razón! Usar un enlace único por lote simplifica drásticamente la programación de las etiquetas NFC.</p>
+
+<div class="brutal-preview-container">
+
+  <!-- PREVIEW: ESCANEO DE ETIQUETA DEL LOTE -->
+  <div>
+    <h3 style="text-align: center; font-family: var(--font-brutal); margin-bottom: 8px;">Vista al Escanear Cualquier Tubo del Lote</h3>
+    <p style="font-size: 11px; color:#555; text-align:center; max-width: 340px; margin:0 auto 12px auto;">
+      Todas las etiquetas NFC del lote apuntan a esta misma página. Escaneas cualquiera de ellas, ves la información técnica completa y restas una dosis.
+    </p>
+
+    <div class="phone-frame">
+      <div class="phone-header-notch"></div>
+      <div class="phone-header">
+        <span>08:32 AM</span>
+        <span>☕ ESCANEO DE LOTE</span>
+      </div>
+      
+      <div class="app-bar">
+        <button class="app-bar-btn" style="box-shadow:none; border-width:2px; height:32px; width:32px;">←</button>
+        <h1>Lote #diviso-pb</h1>
+        <button class="app-bar-btn" style="box-shadow:none; border-width:2px; height:32px; width:32px;">⚙️</button>
+      </div>
+
+      <div class="phone-content">
+        
+        <!-- Ficha técnica con tus campos especificados -->
+        <h2>Ficha de Café</h2>
+        <div class="brutal-card" style="background-color: #FFFDF5;">
+          <h3 style="font-family: var(--font-brutal); font-size: 20px; font-weight: 800; margin: 0 0 8px 0; text-transform: uppercase; color: var(--brutal-violet); text-shadow: 1px 1px 0 #000;">
+            Pink Bourbon
+          </h3>
+          
+          <div class="meta-grid">
+            <div class="meta-item">
+              <div class="meta-label">Productor / Finca</div>
+              <div class="meta-value">Nestor Lasso / El Diviso</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Tostador</div>
+              <div class="meta-value">Coffee Circular</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Altitud</div>
+              <div class="meta-value">1,800 msnm</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Varietal</div>
+              <div class="meta-value">Pink Bourbon</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Proceso</div>
+              <div class="meta-value">Anaeróbico Natural</div>
+            </div>
+            <div class="meta-item" style="grid-column: span 2;">
+              <div class="meta-label">Notas de Cata (Tostador)</div>
+              <div class="meta-value" style="font-size:11px; font-style:italic;">Fresa madura, maracuyá, chocolate blanco, cuerpo sedoso.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel de control de stock de dosis -->
+        <div class="brutal-card" style="text-align: center; background-color: var(--brutal-yellow);">
+          <div style="font-family: var(--font-brutal); font-weight: 800; font-size: 14px; text-transform: uppercase; margin-bottom: 4px;">
+            Dosis en el Congelador
+          </div>
+          <div style="font-family: var(--font-brutal); font-size: 42px; font-weight: 800; margin: 4px 0;">
+            8 Tubos
+          </div>
+          <p style="font-size: 11px; font-weight:600; margin-top: 0; margin-bottom: 12px; color: #333;">
+            (De un lote original de 10 dosis)
+          </p>
+          
+          <button class="btn-brutal-action">🧪 Consumir 1 Tubo</button>
+        </div>
+
+        <!-- Botón para ver recetas históricas de este lote -->
+        <div style="text-align:center; margin-top: 8px;">
+          <a style="font-family:var(--font-brutal); font-weight:800; font-size:12px; text-transform:uppercase; color:#000; text-decoration:underline; cursor:pointer;">
+            📖 Ver recetas de este lote
+          </a>
+        </div>
+
+      </div>
+
+      <div class="tab-bar">
+        <a class="tab-item">
+          <span class="tab-icon">🏠</span>
+          <span>Inventario</span>
+        </a>
+        <a class="tab-item active">
+          <span class="tab-icon">📖</span>
+          <span>Bitácoras</span>
+        </a>
+        <a class="tab-item">
+          <span class="tab-icon">📦</span>
+          <span>Lotes</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL EXPLICATIVO NFC -->
+  <div style="max-width: 320px; align-self: center;">
+    <div class="brutal-card" style="background-color: var(--brutal-green);">
+      <h3 style="font-family: var(--font-brutal); font-weight: 800; margin-top:0;">💡 Ventajas de este Flujo:</h3>
+      <ul style="font-size:12px; padding-left:20px; margin:0;">
+        <li style="margin-bottom:8px;"><strong>1 sola escritura:</strong> Al congelar un lote de 12 tubos, programas el link único una sola vez en NFC Tools, y escribes las 12 etiquetas consecutivamente usando la misma URL en segundos.</li>
+        <li style="margin-bottom:8px;"><strong>Flexibilidad total:</strong> No importa qué tubo específico saques del congelador; al escanearlo, siempre te llevará al lote correcto.</li>
+        <li style="margin-bottom:8px;"><strong>Campos precisos:</strong> Implementamos exactamente los 7 campos técnicos que especificaste para detallar el café.</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- Opciones para interacción en el visual companion -->
+<div class="options">
+  <div class="option" data-choice="approve-refinement" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>¡Aprobado! Este es el flujo definitivo</h3>
+      <p>Procedamos a escribir la especificación del diseño y a estructurar el código.</p>
+    </div>
+  </div>
+</div>

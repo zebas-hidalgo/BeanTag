@@ -1,0 +1,8 @@
+{"type":"server-started","port":61261,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:61261","screen_dir":"/Users/zebas/Desktop/Proyecto_cafe/.superpowers/brainstorm/1281-1782822041/content","state_dir":"/Users/zebas/Desktop/Proyecto_cafe/.superpowers/brainstorm/1281-1782822041/state"}
+{"type":"screen-added","file":"/Users/zebas/Desktop/Proyecto_cafe/.superpowers/brainstorm/1281-1782822041/content/1-layout-preview.html"}
+{"source":"user-event","type":"click","text":"B\n    \n      Hacer modificaciones en el diseño\n      Quiero hacer algunos cambios de campos, colores, o distribución antes de programar.","choice":"modify","id":null,"timestamp":1782822136332}
+{"type":"screen-added","file":"/Users/zebas/Desktop/Proyecto_cafe/.superpowers/brainstorm/1281-1782822041/content/2-minimalist-3d-styles.html"}
+{"source":"user-event","type":"click","text":"A\n    \n      Opción A: Neo-Brutalismo\n      3D duro con sombras negras sólidas, muy retro y táctil.","choice":"a","id":null,"timestamp":1782822299384}
+{"type":"screen-added","file":"/Users/zebas/Desktop/Proyecto_cafe/.superpowers/brainstorm/1281-1782822041/content/3-neo-brutalism-screens.html"}
+{"type":"screen-added","file":"/Users/zebas/Desktop/Proyecto_cafe/.superpowers/brainstorm/1281-1782822041/content/4-batch-url-refinement.html"}
+{"type":"screen-added","file":"/Users/zebas/Desktop/Proyecto_cafe/.superpowers/brainstorm/1281-1782822041/content/5-cryobrew-fluid-iterations.html"}
