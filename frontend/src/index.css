@@ -1,21 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
 
 :root {
-  --color-bg: #EEF2F6;             /* Gris azulado neumórfico */
-  --color-navy: #1E293B;           /* Texto oscuro elegante */
-  --color-purple: #8B5CF6;
-  --color-cyan: #06B6D4;
-  --color-pink: #EC4899;
-  --color-peach: #FED7AA;
-  --color-rose: #FBCFE8;
-  --color-lime: #CCFBF1;
-  --color-yellow: #FBBF24;
-  --color-orange: #F97316;
-  --color-green: #10B981;
-  --color-card: #EEF2F6;
-  
-  --color-shadow-light: #FFFFFF;
-  --color-shadow-dark-soft: rgba(165, 180, 203, 0.5);
+  --color-bg-gradient: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #311042 100%);
+  --color-bg-solid: #0F172A;
+  --color-navy: #FFFFFF;           /* Texto principal en blanco para contraste en fondo oscuro */
+  --color-text-muted: #94A3B8;     /* Texto secundario grisáceo */
+  --color-purple: #C084FC;         /* Violeta pastel brillante */
+  --color-cyan: #22D3EE;           /* Cian brillante */
+  --color-pink: #F472B6;           /* Rosa brillante */
+  --color-peach: #FDBA74;          /* Durazno brillante */
+  --color-rose: #FDA4AF;           /* Rosa pastel brillante */
+  --color-lime: #99F6E4;           /* Turquesa claro */
+  --color-yellow: #FDE047;         /* Amarillo brillante */
+  --color-orange: #FB923C;         /* Naranja brillante */
+  --color-green: #34D399;          /* Verde brillante */
+  --color-card-glass: rgba(255, 255, 255, 0.08);
+  --color-card-border: rgba(255, 255, 255, 0.15);
   
   --font-heading: 'Comfortaa', cursive;
   --font-body: 'Inter', sans-serif;
@@ -28,25 +28,26 @@
 body {
   margin: 0;
   font-family: var(--font-body);
-  background-color: var(--color-bg);
+  background-color: var(--color-bg-solid);
+  background-image: var(--color-bg-gradient);
+  background-attachment: fixed;
   color: var(--color-navy);
   -webkit-font-smoothing: antialiased;
   touch-action: manipulation;
 }
 
-/* Safe Area layout helper */
 .app-container {
   max-width: 480px;
   margin: 0 auto;
-  background-color: var(--color-bg);
+  background: transparent; /* Permite ver el gradiente de body */
   min-height: 100dvh;
   position: relative;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  overflow-x: hidden; /* Evitar desbordamiento lateral */
-  border-left: 1px solid rgba(255, 255, 255, 0.8);
-  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  overflow-x: hidden;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Soft UI Outset Card */
