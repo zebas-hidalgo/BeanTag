@@ -29,15 +29,6 @@ export default function App() {
     }
   }, []);
 
-  useEffect(() => {
-    if (showToast) {
-      const timer = setTimeout(() => {
-        setShowToast(false);
-      }, 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [showToast]);
-
   const handleBack = () => {
     window.history.pushState({}, '', '/');
     setCurrentView('inventory');
@@ -121,22 +112,24 @@ export default function App() {
     <div className="app-container">
       <header className="app-header">
         <h1 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <svg viewBox="0 0 100 100" style={{ width: '30px', height: '30px', filter: 'drop-shadow(0px 2px 0px var(--color-navy))' }} fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="35" y="10" width="30" height="12" rx="4" fill="#1D4ED8" stroke="#1A365D" strokeWidth="5" />
-            <path d="M40 22V72C40 80.28 44.48 87 50 87C55.52 87 60 80.28 60 72V22" fill="#93C5FD" stroke="#1A365D" strokeWidth="5" />
-            <ellipse cx="50" cy="55" rx="7" ry="11" transform="rotate(-15 50 55)" fill="#B45309" stroke="#1A365D" strokeWidth="4" />
-            <path d="M48.5 45C50 49 50 59 51.5 63" stroke="#1A365D" strokeWidth="2.5" strokeLinecap="round" />
-            <path d="M43 38a10 10 0 0 1 14 0" stroke="#1A365D" strokeWidth="3" strokeLinecap="round" />
-            <path d="M37 31a18 18 0 0 1 26 0" stroke="#1A365D" strokeWidth="3" strokeLinecap="round" />
+          <svg viewBox="0 0 100 100" style={{ width: '28px', height: '28px' }} fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="35" y="10" width="30" height="12" rx="4" fill="#000000" stroke="#000000" strokeWidth="5" />
+            <path d="M40 22V72C40 80.28 44.48 87 50 87C55.52 87 60 80.28 60 72V22" fill="#FFFFFF" stroke="#000000" strokeWidth="5" />
+            <ellipse cx="50" cy="55" rx="7" ry="11" transform="rotate(-15 50 55)" fill="#000000" stroke="#000000" strokeWidth="4" />
           </svg>
           <span>BeanTag</span>
         </h1>
-        {currentView === 'inventory' && (
-          <button className="app-bar-btn" onClick={() => setCurrentView('creator')}>➕</button>
-        )}
+        <div style={{ display: 'flex', gap: '6px' }}>
+          {currentView === 'inventory' && (
+            <>
+              <button className="app-bar-btn" onClick={triggerNfcScanSimulate}>Escaneo</button>
+              <button className="app-bar-btn" onClick={() => setCurrentView('creator')}>Registrar</button>
+            </>
+          )}
+        </div>
       </header>
 
-      <main style={{ flex: 1 }}>
+      <main style={{ flex: 1, position: 'relative' }}>
         {currentView === 'inventory' && (
           <Inventory 
             batches={batches} 
@@ -173,19 +166,13 @@ export default function App() {
 
       <nav className="nb-tabbar">
         <button className={`tab-item ${currentView === 'inventory' ? 'active' : ''}`} onClick={() => { setCurrentView('inventory'); setSelectedBatchId(null); }}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square"><path d="M6 3h12M9 3v11l3 7 3-7V3"/><path d="M12 7h2M12 11h2M12 15h1.5"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M4 3h16a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm0 8h16a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1zm0 8h16a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1z"/></svg>
           <span>Congelador</span>
         </button>
         
-        <button className="tab-item scan-trigger" onClick={triggerNfcScanSimulate}>
-          <div className="scan-ring">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 17v.01" strokeLinecap="round"/><path d="M9 9a3 3 0 0 1 6 0"/><path d="M7 7a6 6 0 0 1 10 0"/></svg>
-          </div>
-        </button>
-        
         <button className={`tab-item ${currentView === 'history' ? 'active' : ''}`} onClick={() => { setCurrentView('history'); setSelectedBatchId(null); }}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 5h18"/><path d="M4 5l6 14h4l6-14"/><path d="M9 19h6v2H9z"/><path d="M12 5v14" strokeDasharray="2 2"/></svg>
-          <span>Bitácora</span>
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15z"/></svg>
+          <span>Bitácoras</span>
         </button>
       </nav>
     </div>

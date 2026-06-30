@@ -1,45 +1,77 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
-  const cardColors = ['bg-rose', 'bg-peach', 'bg-lime', 'bg-lavender'];
+export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onScanSimulate }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roastFilter, setRoastFilter] = useState('ALL');
+
+  // Filtrado de lotes
+  const filteredBatches = batches.filter(batch => {
+    const matchesSearch = 
+      batch.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      batch.producer.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesRoast = 
+      roastFilter === 'ALL' || 
+      (batch.roast_level || 'Medio').toUpperCase() === roastFilter;
+      
+    return matchesSearch && matchesRoast;
+  });
 
   return (
     <div style={{ padding: '16px 16px 90px 16px' }}>
-      <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', marginBottom: '14px' }}>
-        Mi Congelador
-      </h2>
+      {/* Search bar */}
+      <input 
+        className="candy-input" 
+        placeholder="🔍 Buscar café o productor..." 
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        style={{ marginBottom: '10px' }}
+      />
 
-      {batches.length === 0 ? (
-        <div className="candy-card bg-rose" style={{ textAlign: 'center', padding: '30px' }} onClick={onCreateTrigger}>
-          <p style={{ fontWeight: 'bold' }}>¡No tienes cafés guardados!</p>
+      {/* Roast level filters */}
+      <div className="filter-toolbar">
+        <button className={`filter-btn ${roastFilter === 'ALL' ? 'active' : ''}`} onClick={() => setRoastFilter('ALL')}>Todos</button>
+        <button className={`filter-btn ${roastFilter === 'CLARO' ? 'active' : ''}`} onClick={() => setRoastFilter('CLARO')}>Claro (Light)</button>
+        <button className={`filter-btn ${roastFilter === 'MEDIO' ? 'active' : ''}`} onClick={() => setRoastFilter('MEDIO')}>Medio (Medium)</button>
+        <button className={`filter-btn ${roastFilter === 'OSCURO' ? 'active' : ''}`} onClick={() => setRoastFilter('OSCURO')}>Oscuro (Dark)</button>
+      </div>
+
+      {filteredBatches.length === 0 ? (
+        <div className="candy-card" style={{ textAlign: 'center', padding: '30px' }} onClick={onCreateTrigger}>
+          <p style={{ fontWeight: 'bold' }}>¡No se encontraron cafés!</p>
           <button className="btn-candy primary" style={{ margin: '10px auto 0 auto' }}>Registrar Primer Lote</button>
         </div>
       ) : (
-        batches.map((batch, index) => (
-          <div 
-            key={batch.id} 
-            className={`candy-card ${cardColors[index % cardColors.length]}`}
-            onClick={() => onSelectBatch(batch.id)}
-          >
-            <div className="card-header-flex">
-              <div>
-                <h3 className="card-title">{batch.name}</h3>
-                <p className="card-sub">{batch.producer}</p>
+        filteredBatches.map(batch => {
+          const isLowStock = batch.remaining_doses <= 2;
+          return (
+            <div 
+              key={batch.id} 
+              className={`candy-card ${isLowStock ? 'low-stock' : ''}`}
+              onClick={() => onSelectBatch(batch.id)}
+            >
+              <div className="card-header-flex">
+                <div>
+                  <h3 className="card-title">{batch.name}</h3>
+                  <p className="card-sub">{batch.producer}</p>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                  <span className="mono-lbl-tag">{batch.origin || 'N/A'}</span>
+                  {batch.roast_date && (
+                    <span style={{ fontSize: '9px', fontWeight: 'bold', color: '#718096' }}>
+                      Tueste: {new Date(batch.roast_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="candy-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" style={{ width: '14px', height: '14px', color: 'var(--color-orange)' }}>
-                  <path d="M6 3h12M9 3v11l3 7 3-7V3"/><path d="M12 7h2M12 11h2M12 15h1.5"/>
-                </svg>
-                <span>{batch.remaining_doses} Dosis</span>
+              <div className="mono-badge-row">
+                <span className="mono-lbl-tag outline">{batch.remaining_doses} Dosis</span>
+                <span className="mono-lbl-tag outline">{batch.roast_level || 'Medio'}</span>
+                {isLowStock && <span className="mono-lbl-tag" style={{ background: '#E53E3E' }}>¡Últimos tubos!</span>}
               </div>
             </div>
-            <div>
-              {batch.altitude && <span className="candy-tag">{batch.altitude}</span>}
-              {batch.variety && <span className="candy-tag">{batch.variety}</span>}
-              {batch.process && <span className="candy-tag">{batch.process}</span>}
-            </div>
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );
