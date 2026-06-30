@@ -68,16 +68,16 @@ El objetivo es crear una aplicación web altamente responsiva y optimizada para 
 
 ## 4. Diseño de Pantallas e Identidad Visual
 
-### 🎨 Paleta de Colores (Candy Claymorphism)
-*   **Fondo General:** Crema de menta pálido (`#E6FFFA`)
-*   **Contornos y Texto Principal:** Azul Marino Oscuro (`#1A365D`)
-*   **Tarjetas de Lote:** Blanco con fondos alternados en tonos pastel:
-    *   Crema: `#FFFDF5`
-    *   Menta Suave: `#F0FFF4`
-    *   Amarillo Huevo: `#FFFFF0`
-    *   Naranja Suave: `#FFF5F2`
-*   **Botón Principal de Acción:** Naranja vibrante (`#FF5722`) con barra de progreso en verde dulce (`#00E676`).
-*   **Elementos Auxiliares:** Púrpura pastel (`#A8A2FF`) y Amarillo neón (`#FFD93D`).
+### 🎨 Paleta de Colores (Neón Cósmico)
+*   **Fondo General:** Lavanda Bruma Pálido (`#F3E8FF`)
+*   **Contornos y Texto Principal:** Negro Obsidiana (`#0F081D`)
+*   **Tarjetas de Lote:** Blanco con fondos alternados en tonos neón pastel:
+    *   Rosa Caramelo: `#FBCFE8`
+    *   Durazno Neón: `#FED7AA`
+    *   Cian Eléctrico: `#CCFBF1`
+    *   Lavanda Claro: `#E9D5FF`
+*   **Botón Principal de Acción:** Violeta Eléctrico (`#8B5CF6`) con barra de progreso en Cian Eléctrico (`#06B6D4`).
+*   **Elementos Auxiliares:** Rosa brillante (`#EC4899`) y Cian neón (`#06B6D4`).
 
 ### 🏷️ Identidad de Marca e Iconos (3D Candy Claymorphism)
 
