@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Inventory from './components/Inventory';
 import BatchDetail from './components/BatchDetail';
 import BatchCreator from './components/BatchCreator';
@@ -8,9 +8,27 @@ export default function App() {
   const [currentView, setCurrentView] = useState('inventory');
   const [batches, setBatches] = useState([]);
   const [selectedBatchId, setSelectedBatchId] = useState(null);
-  const [toastMessage, setToastMessage] = useState('');
-  const [showToast, setShowToast] = useState(false);
   const [lastSubtractedBatch, setLastSubtractedBatch] = useState(null);
+
+  // R1: Generalized Toast system (replaces all alert() calls)
+  const [toast, setToast] = useState({ message: '', type: 'info', visible: false, showUndo: false });
+  const toastTimerRef = React.useRef(null);
+
+  const showToast = useCallback((message, { type = 'info', duration = 3000, showUndo = false } = {}) => {
+    clearTimeout(toastTimerRef.current);
+    setToast({ message, type, visible: true, showUndo });
+    toastTimerRef.current = setTimeout(() => {
+      setToast(prev => ({ ...prev, visible: false }));
+    }, duration);
+  }, []);
+
+  const dismissToast = useCallback(() => {
+    clearTimeout(toastTimerRef.current);
+    setToast(prev => ({ ...prev, visible: false }));
+  }, []);
+
+  // R10: Delete confirmation modal
+  const [deleteModal, setDeleteModal] = useState({ visible: false, batchId: null, batchName: '' });
 
   const fetchBatches = () => {
     fetch('/api/batches')
@@ -33,7 +51,7 @@ export default function App() {
     window.history.pushState({}, '', '/');
     setCurrentView('inventory');
     setSelectedBatchId(null);
-    setShowToast(false); // Dismiss toast on back navigation
+    dismissToast();
     fetchBatches();
   };
 
@@ -48,13 +66,7 @@ export default function App() {
       if (data.success) {
         callback();
         setLastSubtractedBatch(id);
-        setToastMessage('Dosis restada con éxito.');
-        setShowToast(true);
-        
-        // Auto-dismiss after 5 seconds
-        setTimeout(() => {
-          setShowToast(false);
-        }, 5000);
+        showToast('Dosis restada con éxito.', { type: 'success', duration: 5000, showUndo: true });
         
         if (navigator.vibrate) {
           navigator.vibrate([70, 50, 100]);
@@ -70,6 +82,7 @@ export default function App() {
     });
   };
 
+  // R4: Undo without page reload — re-fetch batch data instead
   const handleUndo = () => {
     if (!lastSubtractedBatch) return;
     fetch(`/api/batches/${lastSubtractedBatch}/doses`, {
@@ -80,16 +93,20 @@ export default function App() {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        setShowToast(false);
+        dismissToast();
+        showToast('Dosis restaurada.', { type: 'info', duration: 2000 });
+        // R4: Instead of window.location.reload(), re-fetch batches
+        fetchBatches();
+        // If in detail view, trigger a re-fetch via key change
         if (currentView === 'detail' && selectedBatchId === lastSubtractedBatch) {
-          window.location.reload();
-        } else {
-          fetchBatches();
+          setSelectedBatchId(null);
+          setTimeout(() => setSelectedBatchId(lastSubtractedBatch), 50);
         }
       }
     });
   };
 
+  // R5: Save recipe with toast transition instead of alert + instant redirect
   const handleSaveRecipe = (recipePayload) => {
     fetch('/api/recipes', {
       method: 'POST',
@@ -99,18 +116,21 @@ export default function App() {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert('¡Receta guardada en la bitácora!');
-        handleBack();
+        showToast('Receta guardada en la bitácora.', { type: 'success', duration: 2000 });
+        setTimeout(() => {
+          handleBack();
+        }, 1500);
       }
     });
   };
 
+  // R1: NFC scan with toast instead of alert
   const handleNfcScan = async () => {
     if ('NDEFReader' in window) {
       try {
         const ndef = new NDEFReader();
         await ndef.scan();
-        alert('Lector NFC activado. Acerca el tag al reverso de tu teléfono...');
+        showToast('Lector NFC activado. Acerca el tag...', { type: 'info', duration: 8000 });
         ndef.onreading = (event) => {
           const message = event.message;
           for (const record of message.records) {
@@ -122,17 +142,41 @@ export default function App() {
                 const batchId = parts[1].trim();
                 setSelectedBatchId(batchId);
                 setCurrentView('detail');
-                alert(`¡Café detectado: ${batchId}!`);
+                showToast(`Café detectado: ${batchId}`, { type: 'success', duration: 3000 });
               }
             }
           }
         };
       } catch (error) {
-        alert('Error al escanear NFC: ' + error.message);
+        showToast('Error al escanear NFC: ' + error.message, { type: 'error', duration: 4000 });
       }
     } else {
-      alert('Tu navegador o dispositivo no soporta escaneo NFC directo (Web NFC). \n\n• Si usas Android: Abre la app en Chrome.\n• Si usas iPhone: iOS no permite lectura NFC web directa por seguridad. Solo acerca el tag a tu iPhone desde la pantalla de inicio y se abrirá automáticamente.');
+      showToast('NFC no disponible. En iPhone, acerca el tag desde la pantalla de inicio.', { type: 'info', duration: 5000 });
     }
+  };
+
+  // R10: Delete batch handler
+  const handleDeleteBatch = (batchId, batchName) => {
+    setDeleteModal({ visible: true, batchId, batchName });
+  };
+
+  const confirmDeleteBatch = () => {
+    fetch(`/api/batches/${deleteModal.batchId}`, { method: 'DELETE' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setDeleteModal({ visible: false, batchId: null, batchName: '' });
+          showToast('Lote eliminado.', { type: 'success', duration: 2500 });
+          handleBack();
+        }
+      });
+  };
+
+  // Toast color based on type
+  const toastStyles = {
+    success: { backgroundColor: '#1A0505', color: '#FFFFFF' },
+    error: { backgroundColor: '#E53E3E', color: '#FFFFFF' },
+    info: { backgroundColor: '#1A0505', color: '#FFFFFF' },
   };
 
   return (
@@ -164,12 +208,15 @@ export default function App() {
           />
         )}
 
-        {currentView === 'detail' && (
+        {currentView === 'detail' && selectedBatchId && (
           <BatchDetail 
+            key={selectedBatchId}
             batchId={selectedBatchId} 
             onBack={handleBack}
             onSubtractDose={handleSubtractDose}
             onSaveRecipe={handleSaveRecipe}
+            onDeleteBatch={handleDeleteBatch}
+            showToast={showToast}
           />
         )}
 
@@ -177,18 +224,63 @@ export default function App() {
           <BatchCreator 
             onBatchCreated={fetchBatches} 
             onBack={handleBack}
+            showToast={showToast}
           />
         )}
 
         {currentView === 'history' && (
-          <BrewHistory />
+          <BrewHistory onNavigateToInventory={() => { setCurrentView('inventory'); setSelectedBatchId(null); }} />
         )}
       </main>
 
-      <div className={`undo-toast ${showToast ? 'show' : ''}`}>
-        <span>{toastMessage}</span>
-        <button className="undo-btn" onClick={handleUndo}>Deshacer</button>
+      {/* R1: Generalized Toast — replaces all alert() calls */}
+      <div 
+        className={`undo-toast ${toast.visible ? 'show' : ''}`}
+        style={toast.visible ? toastStyles[toast.type] : {}}
+      >
+        <span>{toast.message}</span>
+        {toast.showUndo && (
+          <button className="undo-btn" onClick={handleUndo}>Deshacer</button>
+        )}
       </div>
+
+      {/* R10: Delete Confirmation Modal */}
+      {deleteModal.visible && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 100,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '24px', boxSizing: 'border-box'
+        }}>
+          <div className="candy-card" style={{
+            cursor: 'default', maxWidth: '340px', width: '100%',
+            textAlign: 'center', padding: '24px'
+          }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', textTransform: 'uppercase', margin: '0 0 8px 0' }}>
+              Eliminar Lote
+            </h3>
+            <p style={{ fontSize: '13px', margin: '0 0 16px 0', color: 'var(--color-text-muted)' }}>
+              ¿Estás seguro de eliminar <strong>{deleteModal.batchName}</strong>? Esta acción no se puede deshacer.
+            </p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button 
+                className="btn-candy" 
+                style={{ flex: 1 }} 
+                onClick={() => setDeleteModal({ visible: false, batchId: null, batchName: '' })}
+              >
+                Cancelar
+              </button>
+              <button 
+                className="btn-candy primary" 
+                style={{ flex: 1 }} 
+                onClick={confirmDeleteBatch}
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <nav className="nb-tabbar">
         <button className={`tab-item ${currentView === 'inventory' ? 'active' : ''}`} onClick={() => { setCurrentView('inventory'); setSelectedBatchId(null); }}>

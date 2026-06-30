@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
-export default function BrewHistory() {
-  const [history, setHistory] = useState([]);
+export default function BrewHistory({ onNavigateToInventory }) {
+  const [history, setHistory] = useState(null); // null = loading, [] = empty
 
   useEffect(() => {
     let active = true;
@@ -15,6 +15,22 @@ export default function BrewHistory() {
     return () => { active = false; };
   }, []);
 
+  // R3: Skeleton loading state
+  if (history === null) return (
+    <div style={{ padding: '16px 16px 90px 16px' }}>
+      <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', marginBottom: '14px' }}>
+        Bitácoras
+      </h2>
+      {[1, 2, 3].map(i => (
+        <div key={i} className="candy-card skeleton-card" style={{ cursor: 'default', height: '90px' }}>
+          <div className="skeleton-line" style={{ width: '50%', height: '14px' }} />
+          <div className="skeleton-line" style={{ width: '80%', height: '10px', marginTop: '10px' }} />
+          <div className="skeleton-line" style={{ width: '30%', height: '10px', marginTop: '6px' }} />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div style={{ padding: '16px 16px 90px 16px' }}>
       <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', marginBottom: '14px' }}>
@@ -22,8 +38,16 @@ export default function BrewHistory() {
       </h2>
 
       {history.length === 0 ? (
-        <div className="candy-card" style={{ textAlign: 'center', padding: '20px' }}>
-          <p style={{ fontWeight: 'bold' }}>Aún no has registrado ninguna receta.</p>
+        /* R8: Empty state CTA with guidance */
+        <div className="candy-card" style={{ textAlign: 'center', padding: '30px', cursor: 'default' }}>
+          <div style={{ fontSize: '32px', marginBottom: '12px' }}>☕</div>
+          <p style={{ fontWeight: 'bold', margin: '0 0 6px 0' }}>Aún no has registrado ninguna receta.</p>
+          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 16px 0' }}>
+            Selecciona un café del congelador y registra tu primera preparación.
+          </p>
+          <button className="btn-candy primary" style={{ margin: '0 auto' }} onClick={onNavigateToInventory}>
+            Ir al Congelador
+          </button>
         </div>
       ) : (
         history.map(item => (
@@ -31,7 +55,7 @@ export default function BrewHistory() {
             <div className="card-header-flex">
               <div>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', margin: '0 0 2px 0', textTransform: 'uppercase' }}>{item.method}</h3>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-navy)', textTransform: 'uppercase' }}>{item.batch_name}</span>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>{item.batch_name}</span>
               </div>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#4A5568' }}>
                 {new Date(item.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}

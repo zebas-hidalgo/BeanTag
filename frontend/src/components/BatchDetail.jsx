@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRecipe }) {
+export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRecipe, onDeleteBatch, showToast }) {
   const [batch, setBatch] = useState(null);
   
   // Form fields
@@ -80,13 +80,14 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
     setTimerSeconds(0);
   };
 
+  // R1: Timer stop uses toast instead of alert
   const handleStopTimer = () => {
     setTimerActive(false);
     const mins = Math.floor(timerSeconds / 60);
     const secs = timerSeconds % 60;
     const formattedTime = `${mins}:${secs < 10 ? '0' : ''}${secs} min`;
     setBrewTime(formattedTime);
-    alert(`¡Tiempo de extracción registrado: ${formattedTime}!`);
+    showToast(`Tiempo registrado: ${formattedTime}`, { type: 'success', duration: 2500 });
   };
 
   const handleDoseDeduction = () => {
@@ -136,7 +137,18 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
     setNotes('');
   };
 
-  if (!batch) return <div style={{ padding: '30px', textAlign: 'center' }}>Cargando detalles...</div>;
+  // R3: Skeleton loading state
+  if (!batch) return (
+    <div style={{ padding: '16px 16px 90px 16px' }}>
+      {[1, 2, 3].map(i => (
+        <div key={i} className="candy-card skeleton-card" style={{ cursor: 'default', height: i === 1 ? '80px' : '120px' }}>
+          <div className="skeleton-line" style={{ width: '60%', height: '14px' }} />
+          <div className="skeleton-line" style={{ width: '90%', height: '10px', marginTop: '10px' }} />
+          <div className="skeleton-line" style={{ width: '40%', height: '10px', marginTop: '6px' }} />
+        </div>
+      ))}
+    </div>
+  );
 
   const doseNum = parseFloat(batch.dose_weight) || 20.0;
   const isLowStock = batch.remaining_doses <= 2;
@@ -169,6 +181,26 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   const timerMins = Math.floor(timerSeconds / 60);
   const timerSecs = timerSeconds % 60;
   const timerFormatted = `${timerMins < 10 ? '0' : ''}${timerMins}:${timerSecs < 10 ? '0' : ''}${timerSecs}`;
+
+  // R9: Interactive star rating component
+  const StarRating = ({ value, onChange }) => (
+    <div style={{ display: 'flex', gap: '4px', cursor: 'pointer' }}>
+      {[1, 2, 3, 4, 5].map(star => (
+        <span
+          key={star}
+          onClick={() => onChange(star)}
+          style={{
+            fontSize: '24px',
+            color: star <= value ? 'var(--color-crimson)' : '#D1D5DB',
+            transition: 'color 150ms, transform 150ms',
+            userSelect: 'none',
+          }}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
 
   return (
     <div style={{ padding: '16px 16px 90px 16px' }}>
@@ -314,19 +346,16 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
             <div className="form-group" style={{ flex: 1 }}>
               <label>Tiempo de Extracción</label>
               <input className="candy-input" value={brewTime} onChange={(e) => setBrewTime(e.target.value)} type="text" />
             </div>
             
+            {/* R9: Interactive Star Rating */}
             <div className="form-group" style={{ flex: 1 }}>
-              <label>Puntuación (Estrellas)</label>
-              <div className="mono-stepper" style={{ width: '100%' }}>
-                <button type="button" className="stepper-btn" onClick={() => setRating(r => Math.max(1, r - 1))}>-</button>
-                <div className="stepper-value">{rating}</div>
-                <button type="button" className="stepper-btn" onClick={() => setRating(r => Math.min(5, r + 1))}>+</button>
-              </div>
+              <label>Puntuación</label>
+              <StarRating value={rating} onChange={setRating} />
             </div>
           </div>
 
@@ -338,6 +367,19 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
           <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '8px' }}>Guardar Bitácora</button>
         </form>
       </div>
+
+      {/* R10: Delete batch button */}
+      <button 
+        className="btn-candy" 
+        onClick={() => onDeleteBatch(batch.id, batch.name)}
+        style={{ 
+          width: '100%', marginTop: '24px', 
+          color: 'var(--color-crimson)', borderColor: 'var(--color-crimson)',
+          fontSize: '11px'
+        }}
+      >
+        Eliminar Lote
+      </button>
     </div>
   );
 }

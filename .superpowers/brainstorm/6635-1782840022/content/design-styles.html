@@ -1,0 +1,267 @@
+<h2>Elige un Estilo de Diseño Visual</h2>
+<p class="subtitle">Compara estas 4 direcciones estéticas diversas aplicadas a una tarjeta de lote de café.</p>
+
+<style>
+  .styles-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 20px;
+    margin-bottom: 50px;
+  }
+  
+  .style-card {
+    border-radius: 20px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    box-sizing: border-box;
+  }
+  
+  .style-card:hover {
+    transform: translateY(-4px);
+  }
+  
+  .style-info {
+    margin-bottom: 20px;
+  }
+  
+  .style-info h3 {
+    margin: 0 0 6px 0;
+    font-family: 'Comfortaa', cursive;
+    font-size: 18px;
+    color: #1A202C;
+  }
+  
+  .style-info p {
+    margin: 0;
+    font-size: 12px;
+    color: #4A5568;
+    line-height: 1.5;
+  }
+  
+  /* Mockup Visual Wrapper */
+  .preview-wrapper {
+    padding: 20px;
+    border-radius: 16px;
+    background: #EDF2F7;
+    display: flex;
+    justify-content: center;
+  }
+  
+  /* --- 1. GLASSMORPHISM --- */
+  .glass-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 24px;
+    padding: 20px;
+    width: 320px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.3);
+    color: white;
+  }
+  .glass-card h4 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .glass-card .sub {
+    font-size: 11px;
+    opacity: 0.8;
+    margin-bottom: 12px;
+  }
+  .glass-card .badge {
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  /* --- 2. FLAT AURORA --- */
+  .aurora-bg {
+    background: #0B0E14;
+  }
+  .aurora-card {
+    background: #141923;
+    border-radius: 20px;
+    padding: 20px;
+    width: 320px;
+    border: 1px solid #1E293B;
+    box-shadow: 0px 10px 30px rgba(139, 92, 246, 0.2);
+    color: #F8FAFC;
+    position: relative;
+    overflow: hidden;
+  }
+  .aurora-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .aurora-card h4 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    color: #F8FAFC;
+  }
+  .aurora-card .sub {
+    font-size: 11px;
+    color: #94A3B8;
+    margin-bottom: 12px;
+  }
+  .aurora-card .badge {
+    background: #1E293B;
+    border: 1px solid #334155;
+    color: #06B6D4;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  
+  /* --- 3. NEO-BRUTALIST POP --- */
+  .brutal-bg {
+    background: #F3E8FF;
+  }
+  .brutal-card {
+    background: #FEF08A;
+    border: 3px solid #000000;
+    border-radius: 16px;
+    padding: 18px;
+    width: 320px;
+    box-shadow: 6px 6px 0px #000000;
+    color: #000000;
+  }
+  .brutal-card h4 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-family: 'Comfortaa', cursive;
+    font-weight: 900;
+  }
+  .brutal-card .sub {
+    font-size: 11px;
+    font-weight: bold;
+    color: #000000;
+    margin-bottom: 12px;
+  }
+  .brutal-card .badge {
+    background: #FFFFFF;
+    border: 2px solid #000000;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 900;
+    box-shadow: 2px 2px 0px #000000;
+  }
+
+  /* --- 4. ORGANIC NORDIC --- */
+  .nordic-bg {
+    background: #F4F3EF;
+  }
+  .nordic-card {
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 20px;
+    width: 320px;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02);
+    color: #2D3748;
+    border: 1px solid #E2E8F0;
+  }
+  .nordic-card h4 {
+    margin: 0 0 4px 0;
+    font-size: 17px;
+    font-family: 'Outfit', sans-serif;
+    color: #1A202C;
+    letter-spacing: -0.3px;
+  }
+  .nordic-card .sub {
+    font-size: 11px;
+    color: #718096;
+    margin-bottom: 12px;
+  }
+  .nordic-card .badge {
+    background: #EDF2F7;
+    color: #4A5568;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+</style>
+
+<div class="styles-container">
+  <!-- Glassmorphism -->
+  <div class="style-card option" data-choice="glass" onclick="toggleSelect(this)" style="background: #FAF8F5; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+    <div class="style-info">
+      <h3>1. Glassmorphism Premium (Efecto Vidrio)</h3>
+      <p>Tarjetas translúcidas con desenfoque de fondo tipo iOS/macOS, flotando sobre un gradiente de fondo dinámico y colorido.</p>
+    </div>
+    <div class="preview-wrapper glass-bg">
+      <div class="glass-card">
+        <h4>Pink Bourbon</h4>
+        <div class="sub">Nestor Lasso / El Diviso</div>
+        <div class="badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px; height:11px;"><path d="M6 3h12M9 3v11l3 7 3-7V3"/></svg>
+          <span>12 Dosis</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flat Aurora -->
+  <div class="style-card option" data-choice="aurora" onclick="toggleSelect(this)" style="background: #FAF8F5; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+    <div class="style-info">
+      <h3>2. Flat Aurora (Diseño Cyber-Futurista)</h3>
+      <p>Modo oscuro profundo donde las tarjetas son oscuras y lisas, pero emiten sombras difusas de color neón (Aurora) que brillan hacia el fondo.</p>
+    </div>
+    <div class="preview-wrapper aurora-bg">
+      <div class="aurora-card">
+        <h4>Pink Bourbon</h4>
+        <div class="sub">Nestor Lasso / El Diviso</div>
+        <div class="badge">12 Dosis</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Neo-Brutalist Pop -->
+  <div class="style-card option" data-choice="brutal" onclick="toggleSelect(this)" style="background: #FAF8F5; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+    <div class="style-info">
+      <h3>3. Neo-Brutalist Pop (Refinado)</h3>
+      <p>Bordes negros marcados, sombras paralelas gruesas y colores amarillos/violetas de alto contraste. Aspecto juguetón, lúdico e interactivo.</p>
+    </div>
+    <div class="preview-wrapper brutal-bg">
+      <div class="brutal-card">
+        <h4>Pink Bourbon</h4>
+        <div class="sub">Nestor Lasso / El Diviso</div>
+        <div class="badge">12 Dosis</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Organic Nordic -->
+  <div class="style-card option" data-choice="nordic" onclick="toggleSelect(this)" style="background: #FAF8F5; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+    <div class="style-info">
+      <h3>4. Organic Nordic (Minimalismo Minimal)</h3>
+      <p>Bordes finos, tipografía sobria y elegante, colores tierra apagados y sombras ultra-sutiles. Enfoque puro en el contenido del café de especialidad.</p>
+    </div>
+    <div class="preview-wrapper nordic-bg">
+      <div class="nordic-card">
+        <h4>Pink Bourbon</h4>
+        <div class="sub">Nestor Lasso / El Diviso</div>
+        <div class="badge">12 Dosis</div>
+      </div>
+    </div>
+  </div>
+</div>

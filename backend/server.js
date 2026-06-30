@@ -119,6 +119,42 @@ app.get('/api/recipes', async (req, res) => {
   }
 });
 
+// R10: Delete batch and its recipes
+app.delete('/api/batches/:id', async (req, res) => {
+  try {
+    const db = await getDb();
+    const batch = await db.get('SELECT id FROM batches WHERE id = ?', req.params.id);
+    if (!batch) {
+      return res.status(404).json({ error: 'Lote no encontrado' });
+    }
+    await db.run('DELETE FROM recipes WHERE batch_id = ?', req.params.id);
+    await db.run('DELETE FROM batches WHERE id = ?', req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// R7: PWA manifest
+app.get('/manifest.json', (req, res) => {
+  res.json({
+    name: 'BeanTag',
+    short_name: 'BeanTag',
+    description: 'Gestión de café specialty congelado con NFC',
+    start_url: '/',
+    display: 'standalone',
+    background_color: '#FFF5F5',
+    theme_color: '#FFF5F5',
+    icons: [
+      {
+        src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="35" y="10" width="30" height="12" rx="4" fill="%23E53E3E" stroke="%23000000" stroke-width="5"/><path d="M40 22V72C40 80.28 44.48 87 50 87C55.52 87 60 80.28 60 72V22" fill="%23FFFFFF" stroke="%23000000" stroke-width="5"/><ellipse cx="50" cy="55" rx="7" ry="11" transform="rotate(-15 50 55)" fill="%23000000" stroke="%23000000" stroke-width="4"/></svg>',
+        sizes: '192x192',
+        type: 'image/svg+xml'
+      }
+    ]
+  });
+});
+
 // Serve React front for fallback routing
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

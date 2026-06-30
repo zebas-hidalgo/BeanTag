@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function BatchCreator({ onBatchCreated, onBack }) {
+export default function BatchCreator({ onBatchCreated, onBack, showToast }) {
   const [name, setName] = useState('');
   const [producer, setProducer] = useState('');
   const [altitude, setAltitude] = useState('');
@@ -38,13 +38,15 @@ export default function BatchCreator({ onBatchCreated, onBack }) {
         const host = window.location.origin;
         setGeneratedUrl(`${host}/batch/${id}`);
         if (onBatchCreated) onBatchCreated();
+        showToast('Lote creado con éxito.', { type: 'success', duration: 2500 });
       }
     });
   };
 
+  // R1: Copy URL with toast instead of alert
   const copyUrl = () => {
     navigator.clipboard.writeText(generatedUrl);
-    alert('¡Enlace único copiado al portapapeles!');
+    showToast('Enlace copiado al portapapeles.', { type: 'success', duration: 2000 });
   };
 
   return (
@@ -53,9 +55,14 @@ export default function BatchCreator({ onBatchCreated, onBack }) {
         <button className="btn-candy" onClick={onBack}>✕ Cancelar</button>
       </div>
 
-      <h2 style={{ fontFamily: 'var(--font-heading)' }}>Registrar Lote</h2>
-      <div className="candy-card" style={{ cursor: 'default' }}>
-        <form onSubmit={handleSubmit}>
+      <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 16px 0' }}>Registrar Lote</h2>
+      
+      <form onSubmit={handleSubmit}>
+        {/* R6: Sección 1 — Identidad del Café */}
+        <div className="candy-card" style={{ cursor: 'default' }}>
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 12px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
+            Identidad del Café
+          </h4>
           <div className="form-group">
             <label>Nombre del Café</label>
             <input className="candy-input" value={name} onChange={(e) => setName(e.target.value)} type="text" required placeholder="Ej. Pink Bourbon" />
@@ -70,6 +77,34 @@ export default function BatchCreator({ onBatchCreated, onBack }) {
             <div className="form-group" style={{ flex: 1 }}>
               <label>Origen / País</label>
               <input className="candy-input" value={origin} onChange={(e) => setOrigin(e.target.value)} type="text" placeholder="Ej. Colombia" />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Varietal</label>
+              <input className="candy-input" value={variety} onChange={(e) => setVariety(e.target.value)} type="text" placeholder="Ej. Bourbon" />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Altitud</label>
+              <input className="candy-input" value={altitude} onChange={(e) => setAltitude(e.target.value)} type="text" placeholder="Ej. 1800 msnm" />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Proceso</label>
+              <input className="candy-input" value={process} onChange={(e) => setProcess(e.target.value)} type="text" placeholder="Ej. Anaeróbico" />
+            </div>
+          </div>
+        </div>
+
+        {/* R6: Sección 2 — Perfil de Tueste */}
+        <div className="candy-card" style={{ cursor: 'default' }}>
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 12px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
+            Perfil de Tueste
+          </h4>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Tostador</label>
+              <input className="candy-input" value={roaster} onChange={(e) => setRoaster(e.target.value)} type="text" placeholder="Ej. Coffee Circular" />
             </div>
             <div className="form-group" style={{ flex: 1 }}>
               <label>Nivel de Tueste</label>
@@ -92,33 +127,17 @@ export default function BatchCreator({ onBatchCreated, onBack }) {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Altitud</label>
-              <input className="candy-input" value={altitude} onChange={(e) => setAltitude(e.target.value)} type="text" placeholder="Ej. 1800 msnm" />
-            </div>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Varietal</label>
-              <input className="candy-input" value={variety} onChange={(e) => setVariety(e.target.value)} type="text" placeholder="Ej. Bourbon" />
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Proceso</label>
-              <input className="candy-input" value={process} onChange={(e) => setProcess(e.target.value)} type="text" placeholder="Ej. Anaeróbico" />
-            </div>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Tostador</label>
-              <input className="candy-input" value={roaster} onChange={(e) => setRoaster(e.target.value)} type="text" placeholder="Ej. Coffee Circular" />
-            </div>
-          </div>
-
           <div className="form-group">
             <label>Notas de Cata (Tostador)</label>
             <input className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Fresa, chocolate, cuerpo sedoso" />
           </div>
+        </div>
 
+        {/* R6: Sección 3 — Dosificación */}
+        <div className="candy-card" style={{ cursor: 'default' }}>
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 12px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
+            Dosificación
+          </h4>
           <div style={{ display: 'flex', gap: '8px' }}>
             <div className="form-group" style={{ flex: 1 }}>
               <label>Cantidad de Tubos</label>
@@ -133,10 +152,10 @@ export default function BatchCreator({ onBatchCreated, onBack }) {
               <input className="candy-input" value={doseWeight} onChange={(e) => setDoseWeight(e.target.value)} type="text" />
             </div>
           </div>
+        </div>
 
-          <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '10px' }}>Crear Lote y Obtener Link</button>
-        </form>
-      </div>
+        <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '4px' }}>Crear Lote y Obtener Link</button>
+      </form>
 
       {generatedUrl && (
         <div className="instr-box" style={{ marginTop: '16px' }}>
