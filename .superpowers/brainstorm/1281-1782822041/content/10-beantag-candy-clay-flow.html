@@ -596,7 +596,17 @@
     <!-- --- APP SCREEN 1: INVENTARIO (HOME) --- -->
     <div id="view-inventory" class="phone-content-view active">
       <div class="app-bar" style="background-color: var(--color-yellow); margin: -16px -16px 16px -16px;">
-        <h1>BeanTag ☕</h1>
+        <h1 style="display: flex; align-items: center; gap: 8px;">
+          <svg viewBox="0 0 100 100" style="width: 30px; height: 30px; filter: drop-shadow(0px 2px 0px var(--color-navy));" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="35" y="10" width="30" height="12" rx="4" fill="#1D4ED8" stroke="var(--color-navy)" stroke-width="5" />
+            <path d="M40 22V72C40 80.28 44.48 87 50 87C55.52 87 60 80.28 60 72V22" fill="#93C5FD" stroke="var(--color-navy)" stroke-width="5" />
+            <ellipse cx="50" cy="55" rx="7" ry="11" transform="rotate(-15 50 55)" fill="#B45309" stroke="var(--color-navy)" stroke-width="4" />
+            <path d="M48.5 45C50 49 50 59 51.5 63" stroke="var(--color-navy)" stroke-width="2.5" stroke-linecap="round" />
+            <path d="M43 38a10 10 0 0 1 14 0" stroke="var(--color-navy)" stroke-width="3" stroke-linecap="round" />
+            <path d="M37 31a18 18 0 0 1 26 0" stroke="var(--color-navy)" stroke-width="3" stroke-linecap="round" />
+          </svg>
+          <span>BeanTag</span>
+        </h1>
         <button class="app-bar-btn" onclick="switchView('view-creator')">➕</button>
       </div>
 

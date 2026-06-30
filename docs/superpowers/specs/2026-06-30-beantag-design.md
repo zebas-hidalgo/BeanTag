@@ -79,12 +79,28 @@ El objetivo es crear una aplicación web altamente responsiva y optimizada para 
 *   **Botón Principal de Acción:** Naranja vibrante (`#FF5722`) con barra de progreso en verde dulce (`#00E676`).
 *   **Elementos Auxiliares:** Púrpura pastel (`#A8A2FF`) y Amarillo neón (`#FFD93D`).
 
-### 🏷️ Iconos Unificados (3D Candy Claymorphism)
+### 🏷️ Identidad de Marca e Iconos (3D Candy Claymorphism)
+
+#### Logo Oficial: El Tubo Tecnológico (Opción B)
+Representa un tubo de centrífuga de café de especialidad con un chip/grano emitiendo ondas NFC. Se renderizará en el header mediante el siguiente SVG vectorial:
+
+```html
+<svg viewBox="0 0 100 100" style="width: 30px; height: 30px;" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="35" y="10" width="30" height="12" rx="4" fill="#1D4ED8" stroke="#1A365D" stroke-width="5" />
+  <path d="M40 22V72C40 80.28 44.48 87 50 87C55.52 87 60 80.28 60 72V22" fill="#93C5FD" stroke="#1A365D" stroke-width="5" />
+  <ellipse cx="50" cy="55" rx="7" ry="11" transform="rotate(-15 50 55)" fill="#B45309" stroke="#1A365D" stroke-width="4" />
+  <path d="M48.5 45C50 49 50 59 51.5 63" stroke="#1A365D" stroke-width="2.5" stroke-linecap="round" />
+  <path d="M43 38a10 10 0 0 1 14 0" stroke="#1A365D" stroke-width="3" stroke-linecap="round" />
+  <path d="M37 31a18 18 0 0 1 26 0" stroke="#1A365D" stroke-width="3" stroke-linecap="round" />
+</svg>
+```
+
+#### Iconografía del Sistema
 Se utilizarán los iconos vectoriales recreados en este estilo:
-1.  **Tubo de Centrífuga (Inventario):** Tubo con tapa naranja inclinada y granos de café 3D.
-2.  **Taza de Café (Bitácora/Cata):** Taza redondeada amarilla con espuma latte art 3D.
+1.  **Tubo de Centrífuga (Inventario/Dosis):** Representa las dosis congeladas. Tubo con tapa azul e indicador de stock.
+2.  **Taza de Café (Bitácora/Cata):** Taza redondeada amarilla con espuma latte art 3D para calificar tazas.
 3.  **Onda de Escaneo NFC (Interacción):** Teléfono móvil 3D verde neón emitiendo ondas de radio.
-4.  **V60 Dripper (Métodos/Extracción):** Extractor cónico estriado en naranja y jarra de cristal 3D.
+4.  **V60 Dripper (Métodos/Extracción):** Extractor cónico estriado en naranja y jarra de cristal 3D para el recetario.
 
 ---
 
