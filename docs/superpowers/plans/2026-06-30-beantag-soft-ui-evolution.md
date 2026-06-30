@@ -1,0 +1,536 @@
+# BeanTag: Migración Visual a Soft UI Evolution (Neumorfismo Premium)
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Reemplazar el sistema de diseño visual Candy Claymorphism (bordes gruesos negros, alto contraste) por **Soft UI Evolution** (neumorfismo moderno con sombras suaves, bordes transparentes reflectantes, y menús flotantes), asegurando que todos los elementos queden contenidos perfectamente dentro de los contenedores sin sangrado visual ni desbordamiento horizontal.
+
+**Architecture:** Modificación principal de la hoja de estilos CSS de la aplicación frontend, ajuste fino de bordes y márgenes.
+
+---
+
+## Estructura de Archivos Modificados
+
+*   `frontend/src/index.css` (Rediseño de todas las clases visuales de neumorfismo y corrección de desbordamientos)
+
+---
+
+## Tareas de Implementación
+
+### Tarea 1: Rediseño del CSS Global a Soft UI Evolution
+
+**Files:**
+- Modify: `frontend/src/index.css`
+
+- [ ] **Paso 1: Reemplazar el archivo de estilos index.css con la especificación de Soft UI**
+  
+  Actualizar `frontend/src/index.css` para configurar las variables de tema neumórficas y eliminar los contornos negros gruesos.
+  
+  *Tokens del tema:*
+  - Fondo general: `#EEF2F6` (Gris azulado neutro suave)
+  - Sombras: Sólidas blancas en el borde superior izquierdo y sombras de contraste suave en el borde inferior derecho.
+  - Colores pastel dinámicos para las tarjetas.
+  - Tabbar flotante redondeado en la base de la pantalla.
+  
+  ```css
+  @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
+
+  :root {
+    --color-bg: #EEF2F6;             /* Gris azulado neumórfico */
+    --color-navy: #1E293B;           /* Texto oscuro elegante */
+    --color-purple: #8B5CF6;
+    --color-cyan: #06B6D4;
+    --color-pink: #EC4899;
+    --color-peach: #FED7AA;
+    --color-rose: #FBCFE8;
+    --color-lime: #CCFBF1;
+    --color-yellow: #FBBF24;
+    --color-orange: #F97316;
+    --color-green: #10B981;
+    --color-card: #EEF2F6;
+    
+    --color-shadow-light: #FFFFFF;
+    --color-shadow-dark-soft: rgba(165, 180, 203, 0.5);
+    
+    --font-heading: 'Comfortaa', cursive;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --transition-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    background-color: var(--color-bg);
+    color: var(--color-navy);
+    -webkit-font-smoothing: antialiased;
+    touch-action: manipulation;
+  }
+
+  /* Safe Area layout helper */
+  .app-container {
+    max-width: 480px;
+    margin: 0 auto;
+    background-color: var(--color-bg);
+    min-height: 100dvh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow-x: hidden; /* Evitar desbordamiento lateral */
+    border-left: 1px solid rgba(255, 255, 255, 0.8);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  /* Soft UI Outset Card */
+  .candy-card {
+    background-color: var(--color-card);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 24px;
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: 
+      6px 6px 14px var(--color-shadow-dark-soft), 
+      -6px -6px 14px var(--color-shadow-light);
+    position: relative;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-sizing: border-box;
+  }
+
+  .candy-card:active {
+    transform: scale(0.98);
+    box-shadow: 
+      inset 4px 4px 8px var(--color-shadow-dark-soft),
+      inset -4px -4px 8px var(--color-shadow-light);
+  }
+
+  /* Palette backgrounds blended with soft neumorphic shadows */
+  .bg-rose { 
+    background-color: #FCE7F3; 
+    --color-shadow-dark-soft: rgba(219, 39, 119, 0.12);
+  }
+  .bg-peach { 
+    background-color: #FFEDD5; 
+    --color-shadow-dark-soft: rgba(217, 119, 6, 0.12);
+  }
+  .bg-lime { 
+    background-color: #E6FFFA; 
+    --color-shadow-dark-soft: rgba(13, 148, 136, 0.12);
+  }
+  .bg-lavender { 
+    background-color: #F3E8FF; 
+    --color-shadow-dark-soft: rgba(124, 58, 237, 0.12);
+  }
+
+  /* Soft UI Header */
+  .app-header {
+    background-color: var(--color-bg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0px 4px 12px rgba(165, 180, 203, 0.15);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .app-header h1 {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    margin: 0;
+    color: var(--color-navy);
+  }
+
+  /* App bar buttons */
+  .app-bar-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background-color: var(--color-card);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 4px 4px 8px var(--color-shadow-dark-soft), -4px -4px 8px var(--color-shadow-light);
+    transition: all 0.1s;
+    color: var(--color-navy);
+    font-size: 18px;
+  }
+
+  .app-bar-btn:active {
+    transform: scale(0.95);
+    box-shadow: inset 2px 2px 5px var(--color-shadow-dark-soft), inset -2px -2px 5px var(--color-shadow-light);
+  }
+
+  /* Buttons */
+  .btn-candy {
+    background-color: var(--color-card);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 16px;
+    padding: 12px 16px;
+    font-family: var(--font-heading);
+    font-weight: bold;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 4px 4px 10px var(--color-shadow-dark-soft), -4px -4px 10px var(--color-shadow-light);
+    transition: all var(--transition-fast);
+    color: var(--color-navy);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .btn-candy:active {
+    transform: scale(0.96);
+    box-shadow: inset 3px 3px 6px var(--color-shadow-dark-soft), inset -3px -3px 6px var(--color-shadow-light);
+  }
+
+  .btn-candy.primary {
+    background: linear-gradient(135deg, #9F7AEA, #764BA2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 4px 4px 12px rgba(118, 75, 162, 0.3), -4px -4px 12px var(--color-shadow-light);
+  }
+
+  .btn-candy.accent {
+    background: linear-gradient(135deg, #ED8936, #DD6B20);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 4px 4px 12px rgba(221, 107, 32, 0.3), -4px -4px 12px var(--color-shadow-light);
+  }
+
+  /* Inset Form Inputs */
+  .form-group {
+    margin-bottom: 14px;
+    box-sizing: border-box;
+  }
+
+  .form-group label {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 11px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-weight: bold;
+    color: #4A5568;
+  }
+
+  .candy-input {
+    width: 100%;
+    background-color: var(--color-bg);
+    border: none;
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    box-sizing: border-box;
+    box-shadow: inset 3px 3px 6px var(--color-shadow-dark-soft), inset -3px -3px 6px var(--color-shadow-light);
+    color: var(--color-navy);
+    transition: all 0.2s;
+  }
+
+  .candy-input:focus {
+    outline: none;
+    box-shadow: inset 3px 3px 6px rgba(139, 92, 246, 0.15), inset -3px -3px 6px var(--color-shadow-light);
+    background-color: #FFFFFF;
+  }
+
+  /* Neumorphic Steppers */
+  .stepper {
+    display: flex;
+    align-items: center;
+    border: none;
+    border-radius: 14px;
+    padding: 4px;
+    width: fit-content;
+    box-shadow: inset 2px 2px 5px var(--color-shadow-dark-soft), inset -2px -2px 5px var(--color-shadow-light);
+    background-color: var(--color-bg);
+    box-sizing: border-box;
+  }
+
+  .stepper-btn {
+    background-color: var(--color-card);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--color-navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 5px var(--color-shadow-dark-soft), -2px -2px 5px var(--color-shadow-light);
+    transition: all 0.1s;
+  }
+
+  .stepper-btn:active {
+    transform: scale(0.92);
+    box-shadow: inset 1px 1px 3px var(--color-shadow-dark-soft), inset -1px -1px 3px var(--color-shadow-light);
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  .stepper-value {
+    width: 44px;
+    height: 32px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-weight: bold;
+    font-size: 14px;
+    color: var(--color-navy);
+  }
+
+  /* Floating Bottom Navigation Tab Bar */
+  .nb-tabbar {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 448px;
+    height: 72px;
+    background-color: var(--color-card);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 50;
+    box-shadow: 8px 8px 24px var(--color-shadow-dark-soft), -8px -8px 24px var(--color-shadow-light);
+    box-sizing: border-box;
+    padding: 0 10px;
+    overflow: hidden;
+  }
+
+  .tab-item {
+    flex: 1;
+    text-align: center;
+    background: none;
+    border: none;
+    font-size: 10px;
+    font-family: var(--font-heading);
+    font-weight: bold;
+    color: #718096;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    padding: 8px 0;
+    margin: 4px;
+    border-radius: 16px;
+    transition: all var(--transition-fast);
+  }
+
+  .tab-item.active {
+    box-shadow: inset 3px 3px 6px var(--color-shadow-dark-soft), inset -3px -3px 6px var(--color-shadow-light);
+    color: var(--color-purple);
+  }
+
+  .tab-item.scan-trigger {
+    transform: none; /* Mantener alineado de forma elegante */
+    flex: 0 0 60px;
+  }
+
+  .scan-ring {
+    background: linear-gradient(135deg, var(--color-orange), var(--color-pink));
+    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 4px 4px 10px rgba(249, 115, 22, 0.35), -4px -4px 10px var(--color-shadow-light);
+    transition: all 0.1s;
+  }
+
+  .scan-ring:active {
+    transform: scale(0.94);
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
+  }
+
+  .tab-item svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Bounce-pop */
+  .bounce-pop {
+    animation: soft-pop 400ms var(--transition-spring);
+  }
+
+  @keyframes soft-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  /* Grid of 7 fields */
+  .candy-fields-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .field-item {
+    background-color: var(--color-card);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 16px;
+    padding: 10px 12px;
+    box-shadow: 4px 4px 8px var(--color-shadow-dark-soft), -4px -4px 8px var(--color-shadow-light);
+    box-sizing: border-box;
+  }
+
+  .field-item.full-width {
+    grid-column: span 2;
+  }
+
+  .field-label {
+    font-family: var(--font-heading);
+    font-size: 9px;
+    text-transform: uppercase;
+    color: #718096;
+    margin-bottom: 2px;
+  }
+
+  .field-value {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  /* Floating Toast Undo */
+  .undo-toast {
+    position: fixed;
+    bottom: 96px;
+    left: 50%;
+    transform: translateX(-50%) translateY(150px);
+    width: calc(100% - 48px);
+    max-width: 416px;
+    background-color: var(--color-card);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 20px;
+    padding: 12px 18px;
+    box-shadow: 8px 8px 24px var(--color-shadow-dark-soft), -8px -8px 24px var(--color-shadow-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 60;
+    transition: transform 0.4s var(--transition-spring);
+    font-weight: 700;
+    box-sizing: border-box;
+    color: var(--color-navy);
+  }
+
+  .undo-toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .undo-btn {
+    background-color: var(--color-card);
+    color: var(--color-purple);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+    padding: 6px 12px;
+    font-family: var(--font-heading);
+    font-weight: bold;
+    font-size: 11px;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 2px 2px 5px var(--color-shadow-dark-soft), -2px -2px 5px var(--color-shadow-light);
+    transition: all 0.1s;
+  }
+
+  .undo-btn:active {
+    transform: scale(0.94);
+    box-shadow: inset 1px 1px 3px var(--color-shadow-dark-soft), inset -1px -1px 3px var(--color-shadow-light);
+  }
+
+  /* Miscellaneous Helpers */
+  .card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .card-title {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    margin: 0 0 4px 0;
+  }
+
+  .card-sub {
+    font-size: 12px;
+    color: #718096;
+    margin: 0 0 8px 0;
+    font-weight: 600;
+  }
+
+  .candy-badge {
+    background-color: var(--color-card);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 16px;
+    padding: 6px 12px;
+    font-family: var(--font-heading);
+    font-weight: bold;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: inset 2px 2px 5px var(--color-shadow-dark-soft), inset -2px -2px 5px var(--color-shadow-light);
+  }
+
+  .candy-tag {
+    background-color: var(--color-card);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+    box-shadow: 2px 2px 5px var(--color-shadow-dark-soft), -2px -2px 5px var(--color-shadow-light);
+    margin-right: 8px;
+    margin-top: 8px;
+  }
+
+  .instr-box {
+    background-color: #FEF3C7;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 11px;
+    margin-top: 14px;
+    color: #92400E;
+    box-shadow: inset 2px 2px 5px rgba(146, 64, 14, 0.1), 2px 2px 5px var(--color-shadow-light);
+  }
+
+  .nb-action-wrap {
+    margin: 18px 0;
+    position: relative;
+    box-sizing: border-box;
+  }
+  ```
+
+---
+
+## Plan de Verificación
+
+- [ ] **Compilación:** Ejecutar `npm run build-frontend` localmente para confirmar que compile sin errores de dependencias o linter.
+- [ ] **Sincronización:** Ejecutar `./deploy.sh` localmente para subir de forma automática al VPS y reiniciar PM2.
+- [ ] **Estética:** Visualizar `http://5.189.152.68` para validar la fluidez del Neumorfismo Soft UI y asegurar el centrado del tabbar y ausencia de desbordamiento horizontal.
