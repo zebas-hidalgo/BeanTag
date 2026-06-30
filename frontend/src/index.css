@@ -432,3 +432,46 @@ body {
   background: #000000;
   color: #FFFFFF;
 }
+
+/* Banner de Referencia de Receta */
+.recipe-target-banner {
+  background-color: #F8FAFC;
+  border: 2px solid var(--color-border);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+/* Cronómetro de Extracción */
+.timer-container {
+  border: 2px solid var(--color-border);
+  background-color: #FFFFFF;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: 36px;
+  font-weight: 900;
+  margin: 10px 0;
+  color: var(--color-navy);
+}
+
+.timer-controls {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Ficha del Grano Simplificada */
+.grain-details-compact {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.grain-details-compact strong {
+  color: var(--color-navy);
+}
