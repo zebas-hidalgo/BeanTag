@@ -1,20 +1,14 @@
 import React, { useState } from 'react';
 
-export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onScanSimulate }) {
+export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [roastFilter, setRoastFilter] = useState('ALL');
 
-  // Filtrado de lotes
+  // Filtrado de lotes solo por buscador
   const filteredBatches = batches.filter(batch => {
-    const matchesSearch = 
+    return (
       batch.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      batch.producer.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesRoast = 
-      roastFilter === 'ALL' || 
-      (batch.roast_level || 'Medio').toUpperCase() === roastFilter;
-      
-    return matchesSearch && matchesRoast;
+      batch.producer.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   });
 
   return (
@@ -25,16 +19,8 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
         placeholder="🔍 Buscar café o productor..." 
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        style={{ marginBottom: '10px' }}
+        style={{ marginBottom: '16px' }}
       />
-
-      {/* Roast level filters */}
-      <div className="filter-toolbar">
-        <button className={`filter-btn ${roastFilter === 'ALL' ? 'active' : ''}`} onClick={() => setRoastFilter('ALL')}>Todos</button>
-        <button className={`filter-btn ${roastFilter === 'CLARO' ? 'active' : ''}`} onClick={() => setRoastFilter('CLARO')}>Claro (Light)</button>
-        <button className={`filter-btn ${roastFilter === 'MEDIO' ? 'active' : ''}`} onClick={() => setRoastFilter('MEDIO')}>Medio (Medium)</button>
-        <button className={`filter-btn ${roastFilter === 'OSCURO' ? 'active' : ''}`} onClick={() => setRoastFilter('OSCURO')}>Oscuro (Dark)</button>
-      </div>
 
       {filteredBatches.length === 0 ? (
         <div className="candy-card" style={{ textAlign: 'center', padding: '30px' }} onClick={onCreateTrigger}>

@@ -33,6 +33,7 @@ export default function App() {
     window.history.pushState({}, '', '/');
     setCurrentView('inventory');
     setSelectedBatchId(null);
+    setShowToast(false); // Dismiss toast on back navigation
     fetchBatches();
   };
 
@@ -49,6 +50,11 @@ export default function App() {
         setLastSubtractedBatch(id);
         setToastMessage('Dosis restada con éxito.');
         setShowToast(true);
+        
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+          setShowToast(false);
+        }, 5000);
         
         if (navigator.vibrate) {
           navigator.vibrate([70, 50, 100]);
@@ -99,12 +105,33 @@ export default function App() {
     });
   };
 
-  const triggerNfcScanSimulate = () => {
-    if (batches.length > 0) {
-      setSelectedBatchId(batches[0].id);
-      setCurrentView('detail');
+  const handleNfcScan = async () => {
+    if ('NDEFReader' in window) {
+      try {
+        const ndef = new NDEFReader();
+        await ndef.scan();
+        alert('Lector NFC activado. Acerca el tag al reverso de tu teléfono...');
+        ndef.onreading = (event) => {
+          const message = event.message;
+          for (const record of message.records) {
+            if (record.recordType === 'url') {
+              const decoder = new TextDecoder();
+              const url = decoder.decode(record.data);
+              const parts = url.split('/batch/');
+              if (parts.length > 1) {
+                const batchId = parts[1].trim();
+                setSelectedBatchId(batchId);
+                setCurrentView('detail');
+                alert(`¡Café detectado: ${batchId}!`);
+              }
+            }
+          }
+        };
+      } catch (error) {
+        alert('Error al escanear NFC: ' + error.message);
+      }
     } else {
-      alert('Por favor, registra un lote primero para simular el escaneo.');
+      alert('Tu navegador o dispositivo no soporta escaneo NFC directo (Web NFC). \n\n• Si usas Android: Abre la app en Chrome.\n• Si usas iPhone: iOS no permite lectura NFC web directa por seguridad. Solo acerca el tag a tu iPhone desde la pantalla de inicio y se abrirá automáticamente.');
     }
   };
 
@@ -122,7 +149,7 @@ export default function App() {
         <div style={{ display: 'flex', gap: '6px' }}>
           {currentView === 'inventory' && (
             <>
-              <button className="app-bar-btn" onClick={triggerNfcScanSimulate}>Escaneo</button>
+              <button className="app-bar-btn" onClick={handleNfcScan}>Escaneo</button>
               <button className="app-bar-btn" onClick={() => setCurrentView('creator')}>Registrar</button>
             </>
           )}

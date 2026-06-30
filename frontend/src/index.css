@@ -309,7 +309,9 @@ body {
   align-items: center;
   z-index: 60;
   transform: translateY(150px);
-  transition: transform 0.3s var(--transition-spring);
+  visibility: hidden;
+  opacity: 0;
+  transition: transform 0.3s var(--transition-spring), opacity 0.3s ease, visibility 0.3s;
   font-weight: 700;
   box-sizing: border-box;
   font-size: 12px;
@@ -317,6 +319,8 @@ body {
 
 .undo-toast.show {
   transform: translateY(0);
+  visibility: visible;
+  opacity: 1;
 }
 
 .undo-btn {
