@@ -19,12 +19,24 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
       });
   }, [batchId]);
 
+  useEffect(() => {
+    return () => {
+      if (holdTimer.current) {
+        clearInterval(holdTimer.current);
+      }
+    };
+  }, []);
+
   const startHold = () => {
+    if (holdTimer.current) {
+      clearInterval(holdTimer.current);
+    }
     setHoldPct(0);
     holdTimer.current = setInterval(() => {
       setHoldPct(prev => {
         if (prev >= 100) {
           clearInterval(holdTimer.current);
+          holdTimer.current = null;
           handleDoseDeduction();
           return 0;
         }
@@ -34,7 +46,10 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   };
 
   const endHold = () => {
-    clearInterval(holdTimer.current);
+    if (holdTimer.current) {
+      clearInterval(holdTimer.current);
+      holdTimer.current = null;
+    }
     setHoldPct(0);
   };
 

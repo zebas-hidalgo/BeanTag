@@ -29,6 +29,15 @@ export default function App() {
     }
   }, []);
 
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        setShowToast(false);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
   const handleBack = () => {
     window.history.pushState({}, '', '/');
     setCurrentView('inventory');
@@ -170,12 +179,12 @@ export default function App() {
         
         <button className="tab-item scan-trigger" onClick={triggerNfcScanSimulate}>
           <div className="scan-ring">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 17v.01" stroke-linecap="round"/><path d="M9 9a3 3 0 0 1 6 0"/><path d="M7 7a6 6 0 0 1 10 0"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 17v.01" strokeLinecap="round"/><path d="M9 9a3 3 0 0 1 6 0"/><path d="M7 7a6 6 0 0 1 10 0"/></svg>
           </div>
         </button>
         
         <button className={`tab-item ${currentView === 'history' ? 'active' : ''}`} onClick={() => { setCurrentView('history'); setSelectedBatchId(null); }}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 5h18"/><path d="M4 5l6 14h4l6-14"/><path d="M9 19h6v2H9z"/><path d="M12 5v14" stroke-dasharray="2 2"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 5h18"/><path d="M4 5l6 14h4l6-14"/><path d="M9 19h6v2H9z"/><path d="M12 5v14" strokeDasharray="2 2"/></svg>
           <span>Bitácora</span>
         </button>
       </nav>
