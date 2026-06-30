@@ -1,0 +1,435 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+  .variants-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+    padding: 20px 0;
+    background-color: #ECEEF2;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .style-card-container {
+    width: 320px;
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 18px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .style-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-top: 0;
+    margin-bottom: 4px;
+    text-align: center;
+    color: #1F2937;
+  }
+
+  .style-desc {
+    font-size: 11px;
+    color: #6B7280;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 18px;
+    min-height: 32px;
+  }
+
+  .screen-mock {
+    height: 350px;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+
+  /* ========================================================
+     1A. CLAYMORPHISM: WARM LATTE CLAY
+     ======================================================== */
+  .style-latte-clay {
+    background-color: #F5EFEB; /* Soft milk cream */
+    color: #4A3E3D;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .style-latte-clay .app-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #7A5C58;
+    margin-bottom: 12px;
+  }
+
+  .style-latte-clay .card {
+    background-color: #FFFFFF;
+    border-radius: 20px;
+    padding: 12px;
+    margin-bottom: 12px;
+    /* Porcelain-smooth latte clay effect */
+    box-shadow: 
+      inset 4px 4px 8px rgba(255, 255, 255, 1), 
+      inset -4px -4px 8px rgba(122, 92, 88, 0.1), 
+      5px 8px 16px rgba(122, 92, 88, 0.15);
+  }
+
+  .style-latte-clay .badge {
+    background-color: #7A5C58;
+    color: #F5EFEB;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: bold;
+    box-shadow: inset 1px 1px 2px rgba(255,255,255,0.3);
+  }
+
+  .style-latte-clay .btn {
+    background-color: #D4A373; /* Warm Caramel */
+    color: white;
+    border: none;
+    border-radius: 16px;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 12px;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: 
+      inset 2px 2px 4px rgba(255, 255, 255, 0.4), 
+      inset -2px -2px 4px rgba(0, 0, 0, 0.15),
+      0 6px 12px rgba(212, 163, 115, 0.3);
+  }
+
+  .style-latte-clay .btn:active {
+    transform: scale(0.97);
+  }
+
+  /* ========================================================
+     1B. CLAYMORPHISM: VIBRANT CANDY CLAY (Duolingo Style)
+     ======================================================== */
+  .style-candy-clay {
+    background-color: #E6FFFA; /* Pale mint */
+    color: #1A365D;
+    font-family: 'Comfortaa', cursive;
+  }
+
+  .style-candy-clay .app-title {
+    font-size: 15px;
+    font-weight: bold;
+    color: #059669;
+    margin-bottom: 12px;
+  }
+
+  .style-candy-clay .card {
+    background-color: #FFFFFF;
+    border: 3px solid #1A365D;
+    border-radius: 20px;
+    padding: 10px;
+    margin-bottom: 12px;
+    /* Outlined candy clay */
+    box-shadow: 
+      inset 3px 3px 0px rgba(255, 255, 255, 0.9), 
+      0 6px 0px #1A365D;
+  }
+
+  .style-candy-clay .badge {
+    background-color: #00E676; /* Vivid green */
+    color: #1A365D;
+    border: 2px solid #1A365D;
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+  }
+
+  .style-candy-clay .btn {
+    background-color: #FF5722; /* Vivid orange */
+    color: white;
+    border: 3px solid #1A365D;
+    border-radius: 16px;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 12px;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: 0 5px 0px #1A365D;
+  }
+
+  .style-candy-clay .btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0px #1A365D;
+  }
+
+  /* ========================================================
+     2A. 3D ISOMÉTRICO: TECH BLUEPRINT (MINIMALIST GRID)
+     ======================================================== */
+  .style-blueprint {
+    background-color: #0F172A; /* Deep slate */
+    color: #38BDF8; /* Sky blue */
+    font-family: 'JetBrains Mono', monospace;
+    perspective: 900px;
+  }
+
+  .style-blueprint .grid-bg {
+    position: absolute;
+    width: 150%;
+    height: 150%;
+    background-size: 20px 20px;
+    background-image: 
+      linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+    top: -20%;
+    left: -20%;
+    transform: rotateX(55deg) rotateZ(-25deg);
+    z-index: 1;
+  }
+
+  .style-blueprint .content-wrap {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+  }
+
+  .style-blueprint .app-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: #38BDF8;
+    text-shadow: 0 0 4px rgba(56, 189, 248, 0.3);
+  }
+
+  .style-blueprint .card-3d {
+    background-color: rgba(15, 23, 42, 0.85);
+    border: 1.5px solid #38BDF8;
+    border-radius: 8px;
+    padding: 10px;
+    transform: rotateX(40deg) rotateZ(-20deg) translateZ(10px);
+    box-shadow: 6px 6px 0px rgba(56, 189, 248, 0.2);
+    margin-top: 14px;
+  }
+
+  .style-blueprint .btn {
+    background-color: #38BDF8;
+    color: #0F172A;
+    border: none;
+    border-radius: 6px;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 11px;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3);
+  }
+
+  /* ========================================================
+     2B. 3D ISOMÉTRICO: FLOATING GLASS (VIDRIO FLOTANTE)
+     ======================================================== */
+  .style-glass-isometric {
+    background: linear-gradient(135deg, #1E1B4B 0%, #0F0E26 100%);
+    color: #FFFFFF;
+    perspective: 900px;
+  }
+
+  .style-glass-isometric .glow {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(168, 85, 247, 0) 70%);
+    top: 60px;
+    left: 40px;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .style-glass-isometric .content-wrap {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+  }
+
+  .style-glass-isometric .app-title {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .style-glass-isometric .card-3d {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 12px;
+    transform: rotateX(40deg) rotateZ(-20deg) translateZ(30px);
+    /* Soft 3D shadow cast on layers below */
+    box-shadow: 
+      12px 18px 24px rgba(0, 0, 0, 0.4), 
+      inset 0 1px 0px rgba(255,255,255,0.1);
+    margin-top: 10px;
+  }
+
+  .style-glass-isometric .badge {
+    background: rgba(168, 85, 247, 0.2);
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    color: #E9D5FF;
+    border-radius: 99px;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .style-glass-isometric .btn {
+    background: linear-gradient(135deg, #A855F7 0%, #7E22CE 100%);
+    border: none;
+    color: white;
+    border-radius: 12px;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 11px;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(168, 85, 247, 0.35);
+  }
+
+</style>
+
+<h2>Variantes Refinadas: Arcilla 3D e Isometría 3D</h2>
+<p class="subtitle">Explora dos versiones distintas de tus estilos preferidos: Arcilla (Cálida y Vibrante) e Isométrico (Técnico y de Vidrio).</p>
+
+<div class="variants-grid">
+
+  <!-- 1A. LATTE CLAY (ARCILLA CÁLIDA) -->
+  <div class="style-card-container">
+    <h3 class="style-title">1A. Latte Clay (Cálida)</h3>
+    <p class="style-desc">Estilo orgánico y apetecible. Tarjetas de arcilla en crema y marrón caramelo, con un tacto cerámico suave y pulido.</p>
+    
+    <div class="screen-mock style-latte-clay">
+      <div class="app-title">BeanTag ☕</div>
+      
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+          <span style="font-weight:700; font-size:14px;">Pacamara</span>
+          <span class="badge">8 Dosis</span>
+        </div>
+        <p style="font-size:11px; color:#7A6A68; margin:0;">Diego Bermúdez | Finca Paraíso</p>
+      </div>
+      
+      <div style="margin-top:auto;">
+        <button class="btn">Restar Dosis</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1B. CANDY CLAY (ARCILLA DUOLINGO) -->
+  <div class="style-card-container">
+    <h3 class="style-title">1B. Candy Clay (Vibrante)</h3>
+    <p class="style-desc">Lúdico e interactivo. Contornos marcados y volumen inflado con sombras estilo caricatura y colores dulces de alta energía.</p>
+    
+    <div class="screen-mock style-candy-clay">
+      <div class="app-title">BeanTag 🧪</div>
+      
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+          <span style="font-weight:bold; font-size:13px;">PACAMARA</span>
+          <span class="badge">8 DOSIS</span>
+        </div>
+        <p style="font-size:10px; color:#1A365D; margin:0;">Finca Paraíso (D. Bermúdez)</p>
+      </div>
+      
+      <div style="margin-top:auto;">
+        <button class="btn">Restar Dosis</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2A. BLUEPRINT ISOMETRIC (TÉCNICO) -->
+  <div class="style-card-container">
+    <h3 class="style-title">2A. Blueprint Isometric</h3>
+    <p class="style-desc">Técnico e industrial. Cuadrícula de ingeniería de precisión en azul neón sobre fondo pizarra oscura. Tarjetas isométricas tipo plano.</p>
+    
+    <div class="screen-mock style-blueprint">
+      <div class="grid-bg"></div>
+      <div class="content-wrap">
+        <div class="app-title">> BEANTAG_SYS</div>
+        
+        <div class="card-3d">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+            <span style="font-weight:bold; font-size:12px;">PACAMARA</span>
+            <span style="font-size:10px;">8 D.</span>
+          </div>
+          <span style="font-size:9px; color:#38BDF8;">D. Bermudez | Paraiso</span>
+        </div>
+        
+        <div style="margin-top:auto;">
+          <button class="btn">SUB_DOSE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2B. GLASS ISOMETRIC (FUTURISTA) -->
+  <div class="style-card-container">
+    <h3 class="style-title">2B. Glass Isometric</h3>
+    <p class="style-desc">De vanguardia y tridimensional. Tarjetas de vidrio esmerilado translúcido que flotan sobre un vacío oscuro con reflejos púrpura.</p>
+    
+    <div class="screen-mock style-glass-isometric">
+      <div class="glow"></div>
+      <div class="content-wrap">
+        <div class="app-title">BeanTag // 🧪</div>
+        
+        <div class="card-3d">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-weight:700; font-size:13px;">Pacamara</span>
+            <span class="badge">8 Dosis</span>
+          </div>
+          <p style="font-size:10px; color:#C084FC; margin:0;">Diego Bermúdez | Finca Paraíso</p>
+        </div>
+        
+        <div style="margin-top:auto;">
+          <button class="btn">Restar Dosis</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Opciones para interacción en el visual companion -->
+<div class="options">
+  <div class="option" data-choice="latte-clay" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Variante 1A: Latte Clay (Cálida)</h3>
+      <p>Estilo arcilla en crema y marrón caramelo, suave y agradable.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="candy-clay" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Variante 1B: Candy Clay (Duolingo)</h3>
+      <p>Estilo arcilla lúdico de alta energía con bordes marcados.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="blueprint-iso" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Variante 2A: Blueprint Isometric</h3>
+      <p>Estilo técnico azul neón sobre fondo oscuro con rejilla de ingeniería.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="glass-iso" onclick="toggleSelect(this)">
+    <div class="letter">D</div>
+    <div class="content">
+      <h3>Variante 2B: Glass Isometric</h3>
+      <p>Estilo de vidrio esmerilado translúcido flotando en perspectiva 3D.</p>
+    </div>
+  </div>
+</div>

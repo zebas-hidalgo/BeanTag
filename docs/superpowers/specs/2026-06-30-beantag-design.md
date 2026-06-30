@@ -1,4 +1,4 @@
-# CryoBrew: Sistema de Inventario y Bitácora de Café con NFC
+# BeanTag: Sistema de Inventario y Bitácora de Café con NFC
 
 Especificación técnica y de diseño para la aplicación móvil-first de seguimiento de monodosis de café congeladas en tubos de centrífuga.
 
@@ -6,21 +6,26 @@ Especificación técnica y de diseño para la aplicación móvil-first de seguim
 
 ## 1. Objetivos del Proyecto
 
-El objetivo es crear una aplicación web altamente responsiva y optimizada para dispositivos móviles (**"CryoBrew"**) que simplifique la gestión de dosis de café congeladas en tubos de centrífuga utilizando etiquetas NFC.
+El objetivo es crear una aplicación web altamente responsiva y optimizada para dispositivos móviles (**"BeanTag"**) que simplifique la gestión de dosis de café congeladas en tubos de centrífuga utilizando etiquetas NFC.
 
-### Flujo Clave de Experiencia de Usuario:
-1. El usuario registra un lote de café (ej. 12 tubos de 20g de "Colombia Pink Bourbon") e ingresa sus 7 campos técnicos.
-2. El sistema genera una URL de lote única (ej. `https://tu-vps.com/batch/diviso-pb`).
+### Flujo de Trabajo:
+1. El usuario registra un lote de café (ej. 12 tubos de 20g de "Colombia Pink Bourbon") ingresando sus 7 campos técnicos.
+2. El sistema guarda el lote en SQLite y genera una URL única de lote (ej. `https://tu-vps.com/batch/diviso-pb`).
 3. El usuario escribe esta URL en las 12 etiquetas NFC usando su celular (con la app *NFC Tools*).
-4. Cada vez que el usuario saca un tubo del congelador, **acerca su celular al tubo NFC**, lo cual abre automáticamente su navegador web en la ficha del lote.
-5. El usuario realiza una pulsación larga (Hold) en el botón **"Restar Dosis"** para descontar el tubo del congelador y, opcionalmente, rellena la receta de extracción del café.
+4. Al acercar el celular a cualquier tubo del lote, **el chip NFC abre automáticamente el navegador web** en la ficha del lote de BeanTag.
+5. El usuario realiza una pulsación larga (Hold) en el botón **"Restar Dosis"** para descontar el tubo del congelador y, opcionalmente, rellena la receta de extracción.
 
 ---
 
 ## 2. Especificación del Stack Tecnológico
 
 *   **Frontend:** React (Vite) para una interfaz ágil, reactiva y modular.
-*   **Diseño Visual:** CSS Puro (Vanilla CSS) siguiendo un estilo **Neo-Brutalist 3D** (trazos negros de 3-4px, sombras duras desplazadas sin difuminar, feedback táctil inmediato, botones grandes de mínimo 48px).
+*   **Diseño Visual:** CSS Puro (Vanilla CSS) siguiendo la estética **Candy Claymorphism (3D Arcilla Vibrante)**:
+    *   Formas redondeadas orgánicas (`border-radius: 24px`).
+    *   Bordes y contornos gruesos en color azul marino oscuro (`#1A365D`) de `3px`.
+    *   Sombras 3D sólidas en la base (`box-shadow: 0px 6px 0px #1A365D`).
+    *   Feedback táctil interactivo (las tarjetas y botones se hunden físicamente al presionarlos desplazándose en el eje Y `translateY(6px)` y anulando la sombra de base).
+    *   Tipografía: `Comfortaa` para títulos redondeados amigables y `Inter` para texto de lectura técnica.
 *   **Backend:** Node.js + Express.js para proveer una API REST sencilla que sirva el frontend y maneje los datos.
 *   **Base de Datos:** SQLite (un único archivo local en el VPS, muy liviano y de fácil respaldo).
 *   **Despliegue:** Autohospedado en el VPS del usuario.
@@ -63,35 +68,38 @@ El objetivo es crear una aplicación web altamente responsiva y optimizada para 
 
 ## 4. Diseño de Pantallas e Identidad Visual
 
-### 🎨 Tokens de Diseño (Neo-Brutalista)
-*   **Fondo General:** Crema Cálido (`#FFFBEB`)
-*   **Texto y Bordes:** Negro Carbón (`#0F172A`)
-*   **Bordes:** Sólidos de `3px` o `4px` en elementos principales.
-*   **Sombras:** Desplazamiento rígido (sin difuminar) de `5px` en X/Y (`box-shadow: 5px 5px 0px #0F172A`).
-*   **Tipografía:** `Calistoga` para encabezados (estilo boutique editorial) y `Inter` para texto legible en pantallas pequeñas.
-*   **Colores de Tarjetas:** Color-blocking alternado usando tonos pastel saturados: Terracota (`#FBEFEA`), Verde (`#EEFBF2`), Naranja (`#FFF3EB`), Amarillo (`#FFFDE6`).
+### 🎨 Paleta de Colores (Candy Claymorphism)
+*   **Fondo General:** Crema de menta pálido (`#E6FFFA`)
+*   **Contornos y Texto Principal:** Azul Marino Oscuro (`#1A365D`)
+*   **Tarjetas de Lote:** Blanco con fondos alternados en tonos pastel:
+    *   Crema: `#FFFDF5`
+    *   Menta Suave: `#F0FFF4`
+    *   Amarillo Huevo: `#FFFFF0`
+    *   Naranja Suave: `#FFF5F2`
+*   **Botón Principal de Acción:** Naranja vibrante (`#FF5722`) con barra de progreso en verde dulce (`#00E676`).
+*   **Elementos Auxiliares:** Púrpura pastel (`#A8A2FF`) y Amarillo neón (`#FFD93D`).
 
-### 🏷️ Iconos Unificados (SVGs personalizados de CryoBrew)
-Para mantener consistencia, se utilizarán exclusivamente los cuatro iconos vectoriales en Neo-Brutalismo:
-1.  **Tubo de Centrífuga (Gestión de Inventario/Dosis):** Estructura angular con marcas de graduación.
-2.  **Taza de Café (Bitácora/Cata):** Silueta sólida con vapor ascendente.
-3.  **Onda de Escaneo NFC (Interacción Física):** Celular esquemático emitiendo ondas concéntricas.
-4.  **V60 Dripper (Métodos/Extracción):** Embudo cónico estriado sobre jarra.
+### 🏷️ Iconos Unificados (3D Candy Claymorphism)
+Se utilizarán los iconos vectoriales recreados en este estilo:
+1.  **Tubo de Centrífuga (Inventario):** Tubo con tapa naranja inclinada y granos de café 3D.
+2.  **Taza de Café (Bitácora/Cata):** Taza redondeada amarilla con espuma latte art 3D.
+3.  **Onda de Escaneo NFC (Interacción):** Teléfono móvil 3D verde neón emitiendo ondas de radio.
+4.  **V60 Dripper (Métodos/Extracción):** Extractor cónico estriado en naranja y jarra de cristal 3D.
 
 ---
 
 ## 5. Micro-Interacciones y Experiencia Táctil (Fluidez)
 
 1.  **Mantener para Restar (Hold-to-Confirm):**
-    Para evitar que el usuario descuente dosis por toques accidentales al sacar el tubo, el botón principal **"Restar Dosis"** requiere mantenerse presionado por `800ms`. Visualmente, una barra de carga verde (`--color-accent`) se llenará de izquierda a derecha. Si se suelta antes de tiempo, regresa a cero.
+    Para evitar que el usuario descuente dosis por toques accidentales, el botón **"Restar Dosis"** requiere mantenerse presionado por `800ms`. Durante este lapso, una barra verde (`#00E676`) avanza fluidamente de izquierda a derecha. Si se suelta antes de tiempo, regresa a cero.
 2.  **Animación Elástica de Contador (Bounce-Pop):**
-    Al descontar exitosamente una dosis, el número del contador se encoge y luego rebota con un escalado de `1.3x` y una ligera rotación antes de regresar a su estado original, reforzando la confirmación visual de la acción.
+    Al descontar una dosis, el número del contador se encoge y luego rebota con un escalado de `1.3x` y una ligera rotación antes de regresar a su tamaño original, dando un feedback visual muy orgánico.
 3.  **Haptic Feedback (Vibración del Celular):**
-    En navegadores móviles compatibles, la acción de restar dosis genera una vibración de doble pulso físico (`navigator.vibrate([70, 50, 100])`) imitando el tacto de un interruptor mecánico.
+    En navegadores móviles compatibles, la acción de restar dosis genera una vibración de doble pulso físico (`navigator.vibrate([70, 50, 100])`) imitando el tacto de un botón de juguete.
 4.  **Toast de Deshacer (Undo):**
-    Al restar una dosis, aparece un banner inferior durante 6 segundos. Si el usuario se equivocó, puede tocar **"Deshacer"** y el stock se restaura inmediatamente de forma elástica en el cliente y el servidor.
-5.  **Fichas Compactas de 2 Columnas:**
-    Los 7 campos técnicos se acomodan en una cuadrícula compacta de 2 columnas. Esto asegura que en la pantalla de un celular mediano, el botón de acción y el formulario de la receta queden visibles sin obligar al usuario a hacer scroll infinito.
+    Al restar una dosis, aparece un banner inferior durante 6 segundos. Si el usuario se equivocó, puede tocar **"Deshacer"** y el stock se restaura inmediatamente en el cliente y el servidor.
+5.  **Selector de Molienda con Stepper:**
+    El campo de clicks de molienda se maneja con un control stepper 3D táctil (`+` y `-`) grande, facilitando el cambio de parámetros con una sola mano sin necesidad de abrir el teclado numérico.
 
 ---
 

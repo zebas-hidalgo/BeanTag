@@ -1,0 +1,1140 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
+
+  :root {
+    --color-bg: #E6FFFA;           /* Pale mint cream */
+    --color-navy: #1A365D;         /* Dark navy outlines */
+    --color-orange: #FF5722;       /* Candy orange */
+    --color-green: #00E676;        /* Candy green */
+    --color-yellow: #FFD93D;       /* Candy yellow */
+    --color-pink: #FF6B6B;         /* Candy pink */
+    --color-purple: #A8A2FF;       /* Candy purple */
+    --color-card: #FFFFFF;
+    
+    --font-heading: 'Comfortaa', cursive;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  .candy-wrapper {
+    font-family: var(--font-body);
+    background-color: #D1FAE5;
+    padding: 20px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    min-height: 80vh;
+  }
+
+  /* Phone Mockup Frame */
+  .phone-frame {
+    width: 360px;
+    height: 740px;
+    background-color: var(--color-bg);
+    border: 4px solid var(--color-navy);
+    border-radius: 40px;
+    box-shadow: 0px 16px 0px var(--color-navy);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    color: var(--color-navy);
+  }
+
+  /* Phone Header */
+  .phone-header {
+    height: 34px;
+    background-color: var(--color-navy);
+    color: #FFFFFF;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 28px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    z-index: 10;
+  }
+
+  .phone-header-notch {
+    width: 130px;
+    height: 18px;
+    background-color: var(--color-navy);
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 12;
+  }
+
+  /* App Bar */
+  .app-bar {
+    background-color: var(--color-yellow);
+    border-bottom: 4px solid var(--color-navy);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 5;
+  }
+
+  .app-bar h1 {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    margin: 0;
+    color: var(--color-navy);
+  }
+
+  .app-bar-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background-color: #FFFFFF;
+    border: 3px solid var(--color-navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0px 4px 0px var(--color-navy);
+    transition: transform 0.1s, box-shadow 0.1s;
+    color: var(--color-navy);
+  }
+
+  .app-bar-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0px 0px 0px var(--color-navy);
+  }
+
+  /* Scroll Area */
+  .phone-content-view {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    padding-bottom: 96px;
+    display: none;
+  }
+
+  .phone-content-view.active {
+    display: block;
+  }
+
+  /* Candy 3D Card */
+  .candy-card {
+    background-color: var(--color-card);
+    border: 3px solid var(--color-navy);
+    border-radius: 24px;
+    padding: 14px;
+    margin-bottom: 16px;
+    box-shadow: 
+      inset 3px 3px 0px rgba(255, 255, 255, 1), 
+      0px 6px 0px var(--color-navy);
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+
+  .candy-card:active {
+    transform: translateY(6px);
+    box-shadow: 
+      inset 3px 3px 0px rgba(255, 255, 255, 1),
+      0px 0px 0px var(--color-navy);
+  }
+
+  /* Card Colors */
+  .card-cream { background-color: #FFFDF5; }
+  .card-mint { background-color: #F0FFF4; }
+  .card-yellow { background-color: #FFFFF0; }
+  .card-orange { background-color: #FFF5F2; }
+
+  .card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .card-title {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    margin: 0 0 4px 0;
+  }
+
+  .card-sub {
+    font-size: 12px;
+    color: #4A5568;
+    margin: 0 0 8px 0;
+    font-weight: 600;
+  }
+
+  /* Badges */
+  .candy-badge {
+    background-color: #FFFFFF;
+    border: 2px solid var(--color-navy);
+    border-radius: 16px;
+    padding: 4px 10px;
+    font-family: var(--font-heading);
+    font-weight: bold;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0px 3px 0px var(--color-navy);
+  }
+
+  .candy-badge svg {
+    width: 14px;
+    height: 14px;
+    color: var(--color-orange);
+  }
+
+  .candy-tag {
+    background-color: #FFFFFF;
+    border: 2px solid var(--color-navy);
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+    box-shadow: 0px 2px 0px var(--color-navy);
+    margin-right: 6px;
+    margin-top: 6px;
+  }
+
+  /* 7 Coffee Fields Grid */
+  .candy-fields-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .field-item {
+    background-color: #FFFFFF;
+    border: 2.5px solid var(--color-navy);
+    border-radius: 16px;
+    padding: 8px 10px;
+    box-shadow: 0px 3px 0px var(--color-navy);
+  }
+
+  .field-item.full-width {
+    grid-column: span 2;
+  }
+
+  .field-label {
+    font-family: var(--font-heading);
+    font-size: 9px;
+    text-transform: uppercase;
+    color: #718096;
+    margin-bottom: 2px;
+  }
+
+  .field-value {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  /* Steppers */
+  .stepper {
+    display: flex;
+    align-items: center;
+    border: 2.5px solid var(--color-navy);
+    border-radius: 12px;
+    overflow: hidden;
+    width: fit-content;
+    box-shadow: 0px 3px 0px var(--color-navy);
+    background-color: white;
+  }
+
+  .stepper-btn {
+    background-color: var(--color-yellow);
+    border: none;
+    width: 36px;
+    height: 36px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--color-navy);
+  }
+
+  .stepper-btn:active {
+    background-color: #E2B900;
+  }
+
+  .stepper-value {
+    width: 44px;
+    height: 36px;
+    text-align: center;
+    border: none;
+    border-left: 2.5px solid var(--color-navy);
+    border-right: 2.5px solid var(--color-navy);
+    font-family: var(--font-mono);
+    font-weight: bold;
+    font-size: 14px;
+    color: var(--color-navy);
+  }
+
+  /* Form Inputs */
+  .form-group {
+    margin-bottom: 12px;
+  }
+
+  .form-group label {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 11px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-weight: bold;
+  }
+
+  .candy-input {
+    width: 100%;
+    background-color: #FFFFFF;
+    border: 2.5px solid var(--color-navy);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    box-sizing: border-box;
+    box-shadow: 0px 3px 0px var(--color-navy);
+    color: var(--color-navy);
+  }
+
+  .candy-input:focus {
+    outline: none;
+    background-color: #F0FFF4;
+  }
+
+  /* 3D Tactile Hold Button */
+  .nb-action-wrap {
+    margin: 18px 0;
+    position: relative;
+  }
+
+  .btn-candy-hold {
+    position: relative;
+    width: 100%;
+    height: 60px;
+    background-color: var(--color-orange);
+    border: 3.5px solid var(--color-navy);
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0px 6px 0px var(--color-navy);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+
+  .btn-candy-hold:active {
+    transform: translateY(6px);
+    box-shadow: 0px 0px 0px var(--color-navy);
+  }
+
+  .btn-hold-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background-color: var(--color-green);
+    transition: width 0.1s linear;
+  }
+
+  .btn-hold-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: bold;
+    color: #FFFFFF;
+    text-transform: uppercase;
+    text-shadow: 1.5px 1.5px 0px var(--color-navy);
+    z-index: 5;
+  }
+
+  .btn-hold-content svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Elastic pop animation */
+  .bounce-pop {
+    animation: brutal-pop 500ms var(--transition-spring);
+  }
+
+  @keyframes brutal-pop {
+    0% { transform: scale(1); }
+    30% { transform: scale(0.6) rotate(-8deg); }
+    70% { transform: scale(1.3) rotate(8deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+
+  /* Undo alert */
+  .undo-toast {
+    position: absolute;
+    bottom: 90px;
+    left: 16px;
+    right: 16px;
+    background-color: var(--color-green);
+    color: var(--color-navy);
+    border: 3px solid var(--color-navy);
+    border-radius: 16px;
+    padding: 10px 14px;
+    box-shadow: 0px 5px 0px var(--color-navy);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 60;
+    transform: translateY(150px);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-weight: 700;
+  }
+
+  .undo-toast.show {
+    transform: translateY(0);
+  }
+
+  .undo-btn {
+    background-color: var(--color-yellow);
+    color: var(--color-navy);
+    border: 2px solid var(--color-navy);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-family: var(--font-heading);
+    font-weight: bold;
+    font-size: 11px;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 0px 2px 0px var(--color-navy);
+  }
+
+  .undo-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0px 0px 0px var(--color-navy);
+  }
+
+  /* Tab Bar Navigation */
+  .nb-tabbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 76px;
+    background-color: var(--color-card);
+    border-top: 4px solid var(--color-navy);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 50;
+    padding-bottom: 6px;
+  }
+
+  .tab-item {
+    background: none;
+    border: none;
+    font-size: 10px;
+    font-family: var(--font-heading);
+    font-weight: bold;
+    color: var(--color-navy);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 12px;
+  }
+
+  .tab-item.active {
+    background-color: var(--color-yellow);
+    border: 2.5px solid var(--color-navy);
+    box-shadow: 0px 3px 0px var(--color-navy);
+  }
+
+  .tab-item.scan-trigger {
+    transform: translateY(-16px);
+  }
+
+  .scan-ring {
+    background: var(--color-orange);
+    color: white;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 3.5px solid var(--color-navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0px 4px 0px var(--color-navy);
+    transition: transform 0.1s;
+  }
+
+  .scan-ring:active {
+    transform: translateY(4px);
+    box-shadow: 0px 0px 0px var(--color-navy);
+  }
+
+  .scan-ring svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .tab-item svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Scan NFC modal */
+  .nfc-scan-overlay {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-bg);
+    z-index: 100;
+    padding: 30px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .nfc-scan-overlay.active {
+    display: flex;
+  }
+
+  .pulsing-nfc-icon {
+    width: 96px;
+    height: 96px;
+    background-color: var(--color-orange);
+    color: white;
+    border-radius: 50%;
+    border: 3.5px solid var(--color-navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0px 6px 0px var(--color-navy);
+    margin-bottom: 24px;
+    animation: nfc-wave 1.6s infinite ease-in-out;
+  }
+
+  .pulsing-nfc-icon svg {
+    width: 44px;
+    height: 44px;
+  }
+
+  @keyframes nfc-wave {
+    0% { transform: scale(0.96); box-shadow: 0px 6px 0px var(--color-navy); }
+    50% { transform: scale(1.06); box-shadow: 0px 9px 0px var(--color-navy); }
+    100% { transform: scale(0.96); box-shadow: 0px 6px 0px var(--color-navy); }
+  }
+
+  h2 {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    margin-top: 8px;
+    margin-bottom: 12px;
+  }
+
+  .btn-candy-outline {
+    background-color: white;
+    border: 2.5px solid var(--color-navy);
+    color: var(--color-navy);
+    border-radius: 14px;
+    padding: 10px;
+    font-family: var(--font-heading);
+    font-weight: bold;
+    font-size: 12px;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: 0px 3px 0px var(--color-navy);
+  }
+
+  .btn-candy-outline:active {
+    transform: translateY(3px);
+    box-shadow: 0px 0px 0px var(--color-navy);
+  }
+
+  .instr-box {
+    background-color: #FEF3C7;
+    border: 2px solid var(--color-navy);
+    border-radius: 12px;
+    padding: 10px;
+    font-size: 11px;
+    margin-top: 12px;
+  }
+
+</style>
+
+<h2>BeanTag: Flujo de Pantallas en Candy Claymorphism (1B)</h2>
+<p class="subtitle">Este prototipo interactivo muestra la app BeanTag vestida con el estilo de Arcilla 3D de alta energía que seleccionaste.</p>
+
+<div class="candy-wrapper">
+
+  <div class="phone-frame">
+    <!-- Phone Top Status Bar -->
+    <div class="phone-header-notch"></div>
+    <div class="phone-header">
+      <span id="time-display">09:07 AM</span>
+      <span>🧪 BEANTAG APP 🔋</span>
+    </div>
+
+    <!-- --- APP SCREEN 1: INVENTARIO (HOME) --- -->
+    <div id="view-inventory" class="phone-content-view active">
+      <div class="app-bar" style="background-color: var(--color-yellow); margin: -16px -16px 16px -16px;">
+        <h1>BeanTag ☕</h1>
+        <button class="app-bar-btn" onclick="switchView('view-creator')">➕</button>
+      </div>
+
+      <h2>Mi Congelador</h2>
+      
+      <!-- Lote 1 (Mint green candy card) -->
+      <div class="candy-card card-mint" onclick="openBatchDetail('El Diviso Pink Bourbon', 'Néstor Lasso / El Diviso', '1800 msnm', 'Pink Bourbon', 'Anaeróbico Natural', 'Coffee Circular', 'Fresa madura, chocolate, cuerpo sedoso.', 8)">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">Pink Bourbon</h3>
+            <p class="card-sub">Néstor Lasso / El Diviso</p>
+          </div>
+          <div class="candy-badge" id="doses-counter-diviso">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M6 3h12M9 3v11l3 7 3-7V3"/><path d="M12 7h2M12 11h2M12 15h1.5"/></svg>
+            <span class="val">8 Dosis</span>
+          </div>
+        </div>
+        <div>
+          <span class="candy-tag">1800 msnm</span>
+          <span class="candy-tag">Anaeróbico</span>
+          <span class="candy-tag">Circular</span>
+        </div>
+      </div>
+
+      <!-- Lote 2 (Yellow candy card) -->
+      <div class="candy-card card-yellow" onclick="openBatchDetail('Geisha Natural Finca Sophia', 'Finca Sophia', '2100 msnm', 'Geisha', 'Natural', 'Stumptown', 'Jazmín, bergamota, melocotón dulce.', 6)">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">Geisha Natural</h3>
+            <p class="card-sub">Finca Sophia - Panamá</p>
+          </div>
+          <div class="candy-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M6 3h12M9 3v11l3 7 3-7V3"/><path d="M12 7h2M12 11h2M12 15h1.5"/></svg>
+            <span class="val">6 Dosis</span>
+          </div>
+        </div>
+        <div>
+          <span class="candy-tag">2100 msnm</span>
+          <span class="candy-tag">Natural</span>
+          <span class="candy-tag">Sophia</span>
+        </div>
+      </div>
+
+      <!-- Lote 3 (Orange candy card) -->
+      <div class="candy-card card-orange" onclick="openBatchDetail('Yirgacheffe Orgánico', 'Cooperativa Yirgacheffe', '1900 msnm', 'Heirloom', 'Lavado', 'Tim Wendelboe', 'Té negro, limón, flor de azahar.', 4)">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">Yirgacheffe</h3>
+            <p class="card-sub">Etiopía - Lavado</p>
+          </div>
+          <div class="candy-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M6 3h12M9 3v11l3 7 3-7V3"/><path d="M12 7h2M12 11h2M12 15h1.5"/></svg>
+            <span class="val">4 Dosis</span>
+          </div>
+        </div>
+        <div>
+          <span class="candy-tag">1900 msnm</span>
+          <span class="candy-tag">Lavado</span>
+          <span class="candy-tag">Wendelboe</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- --- APP SCREEN 2: FICHA DETALLE LOTE / TUBO --- -->
+    <div id="view-details" class="phone-content-view">
+      <div class="app-bar" style="background-color: var(--color-purple); margin: -16px -16px 16px -16px;">
+        <button class="app-bar-btn" onclick="switchView('view-inventory')" style="box-shadow:0 2px 0 var(--color-navy); height:32px; width:32px;">←</button>
+        <h1 id="detail-nav-title" style="font-size:18px;">Detalle</h1>
+        <button class="app-bar-btn" style="box-shadow:0 2px 0 var(--color-navy); height:32px; width:32px;">⚙️</button>
+      </div>
+
+      <h2 id="detail-title">Pink Bourbon</h2>
+      
+      <!-- 7 Coffee Fields Grid (Tactile 3D boxes) -->
+      <div class="candy-fields-grid">
+        <div class="field-item">
+          <div class="field-label">Productor / Finca</div>
+          <div class="field-value" id="field-producer">Nestor Lasso</div>
+        </div>
+        <div class="field-item">
+          <div class="field-label">Tostador</div>
+          <div class="field-value" id="field-roaster">Coffee Circular</div>
+        </div>
+        <div class="field-item">
+          <div class="field-label">Altitud</div>
+          <div class="field-value" id="field-altitude">1800 msnm</div>
+        </div>
+        <div class="field-item">
+          <div class="field-label">Varietal</div>
+          <div class="field-value" id="field-variety">Pink Bourbon</div>
+        </div>
+        <div class="field-item">
+          <div class="field-label">Proceso</div>
+          <div class="field-value" id="field-process">Anaeróbico</div>
+        </div>
+        <div class="field-item">
+          <div class="field-label">Dosis / Tubos</div>
+          <div class="field-value" id="field-doses-summary">8 Tubos</div>
+        </div>
+        <div class="field-item full-width">
+          <div class="field-label">Notas de Cata del Tostador</div>
+          <div class="field-value" id="field-notes" style="font-size:12px; font-style:italic;">Fresa, chocolate.</div>
+        </div>
+      </div>
+
+      <!-- Action Area: Press and Hold to Subtract -->
+      <div class="nb-action-wrap">
+        <div class="card-header-flex" style="align-items:center; margin-bottom: 8px;">
+          <span style="font-family: var(--font-heading); font-size: 13px; text-transform:uppercase;">Dosis en Congelador:</span>
+          <span class="candy-badge" id="detail-doses-badge" style="transform-origin: center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3h12M9 3v11l3 7 3-7V3"/><path d="M12 7h2M12 11h2M12 15h1.5"/></svg>
+            <span id="detail-doses-count">8 Dosis</span>
+          </span>
+        </div>
+
+        <button class="btn-candy-hold" id="btn-subtract-dose" 
+                onmousedown="startHold()" onmouseup="endHold()" 
+                onmouseleave="endHold()" ontouchstart="startHold()" ontouchend="endHold()">
+          <div class="btn-hold-fill" id="btn-fill"></div>
+          <div class="btn-hold-content">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a3 3 0 0 1 0 6h-1"/><path d="M3 8h15v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><path d="M6 3v2M10 3v2M14 3v2"/></svg>
+            <span>Restar Dosis (Mantener)</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Brew Recipe Log -->
+      <h2>📝 Recetario de Extracción</h2>
+      <div class="candy-card card-cream" style="cursor:default;">
+        <div class="form-group">
+          <label>Método de Extracción</label>
+          <select class="candy-input" style="width:100%; padding:8px;">
+            <option>V60 (Filtrado)</option>
+            <option>Espresso</option>
+            <option>AeroPress</option>
+            <option>Prensa Francesa</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <div class="form-group" style="flex:1;">
+            <label>Ratio (Agua)</label>
+            <input class="candy-input" type="text" value="300g (1:15)">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Molienda (Clicks)</label>
+            <div class="stepper">
+              <button class="stepper-btn" onclick="adjustClicks(-1)">-</button>
+              <input class="stepper-value" id="clicks-val" value="22" readonly>
+              <button class="stepper-btn" onclick="adjustClicks(1)">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Mis Notas de Cata</label>
+          <input class="candy-input" type="text" placeholder="Ej. Muy dulce, notas frutales intensas.">
+        </div>
+        <button class="btn-candy-outline" style="width:100%; margin-top:8px; background-color:var(--color-yellow);">Guardar Receta en Bitácora</button>
+      </div>
+    </div>
+
+
+    <!-- --- APP SCREEN 3: CREADOR DE LOTES --- -->
+    <div id="view-creator" class="phone-content-view">
+      <div class="app-bar" style="background-color: var(--color-green); margin: -16px -16px 16px -16px;">
+        <h1>Crear Lote 📦</h1>
+        <button class="app-bar-btn" onclick="switchView('view-inventory')">✕</button>
+      </div>
+
+      <h2>Nuevo Lote de Café</h2>
+      <div class="candy-card card-cream" style="cursor:default;">
+        <div class="form-group">
+          <label>Nombre del Café</label>
+          <input class="candy-input" id="new-coffee-name" type="text" placeholder="Ej. Pink Bourbon">
+        </div>
+        <div class="form-group">
+          <label>Productor / Finca</label>
+          <input class="candy-input" id="new-coffee-producer" type="text" placeholder="Ej. Nestor Lasso / El Diviso">
+        </div>
+        
+        <div style="display:flex; gap:8px;">
+          <div class="form-group" style="flex:1;">
+            <label>Altitud</label>
+            <input class="candy-input" id="new-coffee-altitude" type="text" placeholder="Ej. 1800 msnm">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Varietal</label>
+            <input class="candy-input" id="new-coffee-variety" type="text" placeholder="Ej. Bourbon">
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <div class="form-group" style="flex:1;">
+            <label>Proceso</label>
+            <input class="candy-input" id="new-coffee-process" type="text" placeholder="Ej. Anaeróbico Natural">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Tostador</label>
+            <input class="candy-input" id="new-coffee-roaster" type="text" placeholder="Ej. Coffee Circular">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Notas de Cata (Tostador)</label>
+          <input class="candy-input" id="new-coffee-notes" type="text" placeholder="Ej. Fresa, chocolate, cuerpo sedoso">
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <div class="form-group" style="flex:1;">
+            <label>Cantidad de Tubos</label>
+            <div class="stepper">
+              <button class="stepper-btn" onclick="adjustTubos(-1)">-</button>
+              <input class="stepper-value" id="tubos-val" value="12" readonly>
+              <button class="stepper-btn" onclick="adjustTubos(1)">+</button>
+            </div>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Gramos por Dosis</label>
+            <input class="candy-input" type="text" value="20.0g">
+          </div>
+        </div>
+
+        <button class="btn-candy-outline" style="width:100%; background-color: var(--color-orange); color: white; margin-top:8px;" onclick="simulateCreateBatch()">Crear Lote y Generar Link</button>
+      </div>
+
+      <!-- NFC Link generator -->
+      <div id="nfc-link-section" style="display:none;">
+        <h2>Enlace del Lote para NFC</h2>
+        <div class="candy-card card-yellow" style="cursor:default;">
+          <p style="font-size:11px; margin-top:0;">Escribe este enlace único para programar todas tus etiquetas del lote:</p>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input class="candy-input" id="generated-nfc-url" type="text" value="https://beantag.vps/batch/diviso-pb" readonly style="font-family:var(--font-mono); font-size:11px;">
+            <button class="btn-candy-outline" style="width:auto; padding:10px 14px; background-color:var(--color-green);" onclick="copyNfcUrl()">Copiar</button>
+          </div>
+          
+          <div class="instr-box">
+            <strong>Instrucciones NFC Tools:</strong><br>
+            1. Copia el enlace de arriba.<br>
+            2. En la app NFC Tools, toca <strong>Escribir</strong> > <strong>Añadir un registro</strong> > <strong>URL/URI</strong> y pega el link.<br>
+            3. Selecciona <strong>Escribir / Escribir múltiples</strong> y acerca el celular a todos los tubos uno por uno.
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- --- APP SCREEN 4: BITÁCORAS --- -->
+    <div id="view-history" class="phone-content-view">
+      <div class="app-bar" style="background-color: var(--color-yellow); margin: -16px -16px 16px -16px;">
+        <h1>Bitácoras 📖</h1>
+        <button class="app-bar-btn">🔍</button>
+      </div>
+
+      <h2>Historial de Brews</h2>
+
+      <!-- Receta 1 -->
+      <div class="candy-card card-mint" style="border-left: 6px solid var(--color-orange); cursor:default;">
+        <div class="card-header-flex">
+          <div>
+            <h3 style="font-family: var(--font-heading); font-size: 15px; margin:0 0 2px 0;">V60 (Filtrado)</h3>
+            <span style="font-size:10px; font-weight:700; color:var(--color-navy); text-transform:uppercase;">EL DIVISO PINK BOURBON</span>
+          </div>
+          <span style="font-family: var(--font-mono); font-size: 11px; color:#475569;">Hoy - 08:30 AM</span>
+        </div>
+        <div style="font-size:12px; margin-top:8px;">
+          <p style="margin:2px 0;"><strong>Ratio:</strong> 1:15 (15g/225g) | <strong>Molienda:</strong> 22 clicks</p>
+          <p style="margin:2px 0; font-style:italic;"><strong>Cata:</strong> Dulzura muy alta, acidez a frutos rojos brillante, final limpio.</p>
+          <p style="margin:4px 0 0 0; color:#EAB308; font-size:14px;">⭐⭐⭐⭐⭐ (5/5)</p>
+        </div>
+      </div>
+
+      <!-- Receta 2 -->
+      <div class="candy-card card-yellow" style="border-left: 6px solid var(--color-orange); cursor:default;">
+        <div class="card-header-flex">
+          <div>
+            <h3 style="font-family: var(--font-heading); font-size: 15px; margin:0 0 2px 0;">Espresso</h3>
+            <span style="font-size:10px; font-weight:700; color:var(--color-navy); text-transform:uppercase;">GEISHA NATURAL</span>
+          </div>
+          <span style="font-family: var(--font-mono); font-size: 11px; color:#475569;">Ayer - 07:15 AM</span>
+        </div>
+        <div style="font-size:12px; margin-top:8px;">
+          <p style="margin:2px 0;"><strong>Ratio:</strong> 1:2 (18g/36g) en 28s | <strong>Molienda:</strong> Fina (1.2 clicks)</p>
+          <p style="margin:2px 0; font-style:italic;"><strong>Cata:</strong> Notas florales intensas, cuerpo sedoso con regusto a jazmín prolongado.</p>
+          <p style="margin:4px 0 0 0; color:#EAB308; font-size:14px;">⭐⭐⭐⭐★ (4/5)</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- --- SCAN OVERLAY --- -->
+    <div id="nfc-overlay" class="nfc-scan-overlay">
+      <div class="pulsing-nfc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 17v.01" stroke-linecap="round"/><path d="M9 9a3 3 0 0 1 6 0"/><path d="M7 7a6 6 0 0 1 10 0"/></svg>
+      </div>
+      <h2>Esperando Tag NFC...</h2>
+      <p style="font-size:12px; color: var(--color-navy); max-width: 240px; margin: 0 auto 24px auto; font-weight:600;">
+        Sostén tu celular cerca de un tubo etiquetado para cargarlo en pantalla.
+      </p>
+      
+      <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
+        <button class="btn-candy-outline" style="background-color: var(--color-yellow);" onclick="simulateNfcScan('El Diviso Pink Bourbon')">
+          Simular Escaneo: Pink Bourbon
+        </button>
+        <button class="btn-candy-outline" style="background-color: var(--color-pink); color: white;" onclick="hideNfcOverlay()">
+          Cancelar
+        </button>
+      </div>
+    </div>
+
+    <!-- --- UNDO ACTION TOAST --- -->
+    <div class="undo-toast" id="undo-toast">
+      <span>Dosis restada con éxito.</span>
+      <button class="undo-btn" onclick="undoDoseSubtract()">Deshacer</button>
+    </div>
+
+    <!-- Phone Tab Bar Navigation -->
+    <div class="nb-tabbar">
+      <button id="tab-inventory" class="tab-item active" onclick="switchView('view-inventory')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3h12M9 3v11l3 7 3-7V3"/><path d="M12 7h2M12 11h2M12 15h1.5"/></svg>
+        <span>Inventario</span>
+      </button>
+      
+      <button class="tab-item scan-trigger" onclick="showNfcOverlay()">
+        <div class="scan-ring">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 17v.01" stroke-linecap="round"/><path d="M9 9a3 3 0 0 1 6 0"/><path d="M7 7a6 6 0 0 1 10 0"/></svg>
+        </div>
+      </button>
+      
+      <button id="tab-history" class="tab-item" onclick="switchView('view-history')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 5h18"/><path d="M4 5l6 14h4l6-14"/><path d="M9 19h6v2H9z"/><path d="M12 5v14" stroke-dasharray="2 2"/></svg>
+        <span>Bitácora</span>
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  // Clock Helper
+  function updateTime() {
+    const now = new Date();
+    let hours = now.getHours();
+    let minutes = now.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    minutes = minutes < 10 ? '0'+minutes : minutes;
+    const strTime = hours + ':' + minutes + ' ' + ampm;
+    document.getElementById('time-display').textContent = strTime;
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+
+  // Navigation Controller
+  function switchView(viewId) {
+    document.querySelectorAll('.phone-content-view').forEach(view => {
+      view.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-item').forEach(tab => {
+      tab.classList.remove('active');
+    });
+
+    document.getElementById(viewId).classList.add('active');
+
+    if (viewId === 'view-inventory') {
+      document.getElementById('tab-inventory').classList.add('active');
+    } else if (viewId === 'view-history') {
+      document.getElementById('tab-history').classList.add('active');
+    }
+  }
+
+  // NFC Scan Modal
+  function showNfcOverlay() {
+    document.getElementById('nfc-overlay').classList.add('active');
+  }
+
+  function hideNfcOverlay() {
+    document.getElementById('nfc-overlay').classList.remove('active');
+  }
+
+  function simulateNfcScan(coffeeName) {
+    hideNfcOverlay();
+    openBatchDetail(
+      'El Diviso Pink Bourbon', 
+      'Néstor Lasso / El Diviso', 
+      '1800 msnm', 
+      'Pink Bourbon', 
+      'Anaeróbico Natural', 
+      'Coffee Circular', 
+      'Fresa madura, chocolate blanco, cuerpo sedoso.', 
+      parseInt(document.getElementById('doses-counter-diviso').querySelector('.val').textContent)
+    );
+  }
+
+  // Details
+  let currentBatch = { name: '', doses: 8 };
+
+  function openBatchDetail(name, producer, altitude, variety, process, roaster, notes, doses) {
+    currentBatch.name = name;
+    currentBatch.doses = doses;
+
+    document.getElementById('detail-title').textContent = name;
+    document.getElementById('detail-nav-title').textContent = variety;
+    document.getElementById('field-producer').textContent = producer;
+    document.getElementById('field-roaster').textContent = roaster;
+    document.getElementById('field-altitude').textContent = altitude;
+    document.getElementById('field-variety').textContent = variety;
+    document.getElementById('field-process').textContent = process;
+    document.getElementById('field-doses-summary').textContent = doses + ' Tubos';
+    document.getElementById('field-notes').textContent = notes;
+    
+    document.getElementById('detail-doses-count').textContent = doses + ' Dosis';
+    
+    switchView('view-details');
+  }
+
+  // Steppers
+  function adjustClicks(val) {
+    const input = document.getElementById('clicks-val');
+    let current = parseInt(input.value) + val;
+    if (current < 0) current = 0;
+    input.value = current;
+  }
+
+  function adjustTubos(val) {
+    const input = document.getElementById('tubos-val');
+    let current = parseInt(input.value) + val;
+    if (current < 1) current = 1;
+    input.value = current;
+  }
+
+  // Create Batch
+  function simulateCreateBatch() {
+    document.getElementById('nfc-link-section').style.display = 'block';
+    
+    // Generate mock url slug
+    const name = document.getElementById('new-coffee-name').value || 'coffee';
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    document.getElementById('generated-nfc-url').value = 'https://beantag.vps/batch/' + slug;
+    
+    document.getElementById('nfc-link-section').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function copyNfcUrl() {
+    const input = document.getElementById('generated-nfc-url');
+    input.select();
+    document.execCommand('copy');
+    alert('¡Enlace copiado al portapapeles! Listo para grabar en tu tag.');
+  }
+
+  // Hold Button
+  let holdTimer;
+  let holdPct = 0;
+  const fillElement = document.getElementById('btn-fill');
+
+  function startHold() {
+    holdPct = 0;
+    fillElement.style.width = '0%';
+    holdTimer = setInterval(() => {
+      holdPct += 10;
+      fillElement.style.width = holdPct + '%';
+      if (holdPct >= 100) {
+        clearInterval(holdTimer);
+        triggerDoseSubtract();
+      }
+    }, 80); // 800ms
+  }
+
+  function endHold() {
+    clearInterval(holdTimer);
+    if (holdPct < 100) {
+      fillElement.style.width = '0%';
+    }
+  }
+
+  function triggerDoseSubtract() {
+    fillElement.style.width = '0%';
+    if (currentBatch.doses > 0) {
+      currentBatch.doses -= 1;
+      
+      document.getElementById('detail-doses-count').textContent = currentBatch.doses + ' Dosis';
+      document.getElementById('field-doses-summary').textContent = currentBatch.doses + ' Tubos';
+      
+      if (currentBatch.name.includes('Diviso')) {
+        document.getElementById('doses-counter-diviso').querySelector('.val').textContent = currentBatch.doses + ' Dosis';
+      }
+
+      // Pop elastic counter
+      const badge = document.getElementById('detail-doses-badge');
+      badge.classList.remove('bounce-pop');
+      void badge.offsetWidth;
+      badge.classList.add('bounce-pop');
+
+      if (navigator.vibrate) {
+        navigator.vibrate([70, 50, 100]);
+      }
+
+      showUndoToast();
+    }
+  }
+
+  // Undo Toast
+  let undoTimeout;
+  function showUndoToast() {
+    const toast = document.getElementById('undo-toast');
+    toast.classList.add('show');
+    clearTimeout(undoTimeout);
+    undoTimeout = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 6000);
+  }
+
+  function undoDoseSubtract() {
+    currentBatch.doses += 1;
+    document.getElementById('detail-doses-count').textContent = currentBatch.doses + ' Dosis';
+    document.getElementById('field-doses-summary').textContent = currentBatch.doses + ' Tubos';
+    
+    if (currentBatch.name.includes('Diviso')) {
+      document.getElementById('doses-counter-diviso').querySelector('.val').textContent = currentBatch.doses + ' Dosis';
+    }
+
+    document.getElementById('undo-toast').classList.remove('show');
+
+    const badge = document.getElementById('detail-doses-badge');
+    badge.classList.remove('bounce-pop');
+    void badge.offsetWidth;
+    badge.classList.add('bounce-pop');
+  }
+
+</script>
+
+<div class="options">
+  <div class="option" data-choice="approve-candy-final" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>¡Aprobar flujo final de BeanTag!</h3>
+      <p>El diseño Candy Claymorphism con sus contornos gruesos y feedback elástico es perfecto. ¡Comencemos el desarrollo!</p>
+    </div>
+  </div>
+</div>

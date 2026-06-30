@@ -1,0 +1,1128 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+  :root {
+    --bg-gradient: linear-gradient(135deg, #0A0A0F 0%, #030304 100%);
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: #94A3B8;
+    --color-accent: #6366F1;       /* Premium Indigo */
+    --color-accent-glow: rgba(99, 102, 241, 0.15);
+    --color-green: #10B981;        /* Emerald */
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-card-bg: rgba(255, 255, 255, 0.03);
+    
+    --font-sans: 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    
+    --glass-blur: blur(16px);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+    
+    --radius-lg: 20px;
+    --radius-md: 12px;
+    --radius-pill: 99px;
+    
+    --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+  }
+
+  .sleek-wrapper {
+    font-family: var(--font-sans);
+    background-color: #0F0F16;
+    padding: 24px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    min-height: 80vh;
+  }
+
+  /* Phone Mockup Frame */
+  .phone-frame {
+    width: 360px;
+    height: 740px;
+    background: var(--bg-gradient);
+    border: 4px solid #1E1E2E;
+    border-radius: 40px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 40px rgba(99, 102, 241, 0.05);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    color: var(--color-text-primary);
+  }
+
+  /* Top Status Bar */
+  .phone-header {
+    height: 34px;
+    background-color: rgba(0, 0, 0, 0.2);
+    color: var(--color-text-secondary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 28px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    z-index: 10;
+  }
+
+  .phone-header-notch {
+    width: 130px;
+    height: 18px;
+    background-color: #1E1E2E;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 12;
+  }
+
+  /* Ambient light blobs for 3D depth (Iteration 3 style but refined) */
+  .ambient-blob-1 {
+    position: absolute;
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
+    top: -50px;
+    right: -50px;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .ambient-blob-2 {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, rgba(16, 185, 129, 0) 70%);
+    bottom: 100px;
+    left: -100px;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* App Bar */
+  .app-bar {
+    background-color: rgba(10, 10, 15, 0.5);
+    backdrop-filter: var(--glass-blur);
+    border-bottom: var(--glass-border);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 5;
+  }
+
+  .app-bar h1 {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.5px;
+    background: linear-gradient(to right, #FFFFFF, #E2E8F0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .app-bar-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background-color: rgba(255, 255, 255, 0.04);
+    border: var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    transition: background-color 0.2s, transform 0.2s;
+  }
+
+  .app-bar-btn:active {
+    transform: scale(0.95);
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  /* Scroll Area */
+  .phone-content-view {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px;
+    padding-bottom: 96px;
+    z-index: 2;
+    display: none;
+  }
+
+  .phone-content-view.active {
+    display: block;
+  }
+
+  /* Glassmorphic 3D Card (Sleek and Premium) */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: var(--glass-blur);
+    border: var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-premium), inset 0 1px 0px rgba(255,255,255,0.1);
+    transition: transform 0.2s, background-color 0.2s;
+  }
+
+  .glass-card:active {
+    transform: scale(0.98);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    color: var(--color-text-primary);
+  }
+
+  .card-sub {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  /* Sleek doses badge (looks like glass pill) */
+  .doses-badge {
+    background-color: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: #A5B4FC;
+    border-radius: var(--radius-pill);
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .doses-badge svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .sleek-tag {
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--color-text-secondary);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    display: inline-block;
+    margin-right: 6px;
+    margin-top: 8px;
+  }
+
+  /* Detailed 7 Fields Compact Layout */
+  .sleek-fields-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .field-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    box-shadow: inset 0 1px 0px rgba(255,255,255,0.05);
+  }
+
+  .field-item.full-width {
+    grid-column: span 2;
+  }
+
+  .field-label {
+    font-size: 10px;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .field-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  /* Form Elements */
+  .form-group {
+    margin-bottom: 12px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .sleek-input {
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    color: white;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .sleek-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
+  }
+
+  /* Premium Hold Action Button */
+  .btn-sleek-hold {
+    position: relative;
+    width: 100%;
+    height: 56px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.05) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.2);
+    transition: transform 0.2s;
+  }
+
+  .btn-sleek-hold:active {
+    transform: scale(0.98);
+  }
+
+  .btn-hold-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #6366F1 0%, #4F46E5 100%);
+    transition: width 0.1s linear;
+  }
+
+  .btn-hold-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 5;
+  }
+
+  .btn-hold-content svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Dynamic Tab Bar Navigation */
+  .nb-tabbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 76px;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: var(--glass-blur);
+    border-top: var(--glass-border);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 50;
+    padding-bottom: 6px;
+  }
+
+  .tab-item {
+    background: none;
+    border: none;
+    font-size: 10px;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 6px 14px;
+    border-radius: var(--radius-md);
+    transition: color 0.2s, background-color 0.2s;
+  }
+
+  .tab-item.active {
+    color: var(--color-text-primary);
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .tab-item.scan-trigger {
+    transform: translateY(-16px);
+  }
+
+  .scan-ring {
+    background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+    color: white;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+    transition: transform 0.2s;
+  }
+
+  .scan-ring:active {
+    transform: scale(0.92);
+  }
+
+  .scan-ring svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .tab-item svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Steppers */
+  .stepper {
+    display: flex;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: var(--glass-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    width: fit-content;
+  }
+
+  .stepper-btn {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: none;
+    width: 36px;
+    height: 36px;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s;
+  }
+
+  .stepper-btn:active {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .stepper-value {
+    width: 44px;
+    height: 36px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    color: white;
+    border-left: var(--glass-border);
+    border-right: var(--glass-border);
+    font-family: var(--font-mono);
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  /* Undo alert */
+  .undo-toast {
+    position: absolute;
+    bottom: 90px;
+    left: 16px;
+    right: 16px;
+    background-color: rgba(16, 185, 129, 0.95);
+    backdrop-filter: var(--glass-blur);
+    color: white;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: var(--radius-md);
+    padding: 10px 16px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 60;
+    transform: translateY(150px);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .undo-toast.show {
+    transform: translateY(0);
+  }
+
+  .undo-btn {
+    background-color: white;
+    color: #10B981;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 11px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+
+  /* Bouncecounter */
+  .bounce-pop {
+    animation: bounce-badge 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  @keyframes bounce-badge {
+    0% { transform: scale(1); }
+    30% { transform: scale(0.7); }
+    70% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+
+  /* NFC Scanning modal */
+  .nfc-scan-overlay {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(5, 5, 8, 0.95);
+    backdrop-filter: var(--glass-blur);
+    z-index: 100;
+    padding: 30px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .nfc-scan-overlay.active {
+    display: flex;
+  }
+
+  .pulsing-nfc-icon {
+    width: 90px;
+    height: 90px;
+    background: radial-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+    margin-bottom: 24px;
+    animation: nfc-wave 1.6s infinite ease-in-out;
+  }
+
+  .pulsing-nfc-icon svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  @keyframes nfc-wave {
+    0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+    50% { transform: scale(1.04); box-shadow: 0 0 25px 10px rgba(99, 102, 241, 0.2); }
+    100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+  }
+
+  .btn-outline-glass {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: var(--glass-border);
+    color: white;
+    border-radius: var(--radius-md);
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    width: 100%;
+    transition: background-color 0.2s;
+  }
+
+  .btn-outline-glass:active {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  h2 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 8px;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+  }
+
+</style>
+
+<h2>Rediseño: Estilo 3D Oscuro Cinemático (Glassmorphism)</h2>
+<p class="subtitle">He eliminado el diseño Neo-Brutalista agresivo (sin bordes negros gruesos). Aquí tienes un enfoque de 3D lumínico y vidrio esmerilado.</p>
+
+<div class="sleek-wrapper">
+
+  <div class="phone-frame">
+    <!-- Ambient glowing backgrounds for Z-depth 3D feeling -->
+    <div class="ambient-blob-1"></div>
+    <div class="ambient-blob-2"></div>
+
+    <!-- Phone Top Status Bar -->
+    <div class="phone-header-notch"></div>
+    <div class="phone-header">
+      <span id="time-display">08:46 AM</span>
+      <span>📶 CryoBrew (Premium Glass) 🔋</span>
+    </div>
+
+    <!-- --- SCREEN 1: INVENTARIO (HOME) --- -->
+    <div id="view-inventory" class="phone-content-view active">
+      <div class="app-bar" style="margin: -18px -18px 16px -18px; background: transparent;">
+        <h1>CryoBrew 🧪</h1>
+        <button class="app-bar-btn" onclick="switchView('view-creator')">➕</button>
+      </div>
+
+      <h2>Mi Congelador</h2>
+      
+      <!-- Café 1 -->
+      <div class="glass-card" onclick="openBatchDetail('El Diviso Pink Bourbon', 'Néstor Lasso / El Diviso', '1800 msnm', 'Pink Bourbon', 'Anaeróbico Natural', 'Coffee Circular', 'Fresa madura, chocolate, cuerpo sedoso.', 8)">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">Pink Bourbon</h3>
+            <p class="card-sub">Néstor Lasso / El Diviso</p>
+          </div>
+          <div class="doses-badge" id="doses-counter-diviso">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 3h12M9 3v11l3 7 3-7V3"/><path d="M12 7h2M12 11h2M12 15h1.5"/></svg>
+            <span class="val">8 Dosis</span>
+          </div>
+        </div>
+        <div>
+          <span class="sleek-tag">1800 msnm</span>
+          <span class="sleek-tag">Anaeróbico</span>
+          <span class="sleek-tag">Circular</span>
+        </div>
+      </div>
+
+      <!-- Café 2 -->
+      <div class="glass-card" onclick="openBatchDetail('Geisha Natural Finca Sophia', 'Finca Sophia', '2100 msnm', 'Geisha', 'Natural', 'Stumptown', 'Jazmín, bergamota, melocotón dulce.', 6)">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">Geisha Natural</h3>
+            <p class="card-sub">Finca Sophia - Panamá</p>
+          </div>
+          <div class="doses-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 3h12M9 3v11l3 7 3-7V3"/><path d="M12 7h2M12 11h2M12 15h1.5"/></svg>
+            <span class="val">6 Dosis</span>
+          </div>
+        </div>
+        <div>
+          <span class="sleek-tag">2100 msnm</span>
+          <span class="sleek-tag">Natural</span>
+          <span class="sleek-tag">Sophia</span>
+        </div>
+      </div>
+
+      <!-- Café 3 -->
+      <div class="glass-card" onclick="openBatchDetail('Yirgacheffe Orgánico', 'Cooperativa Yirgacheffe', '1900 msnm', 'Heirloom', 'Lavado', 'Tim Wendelboe', 'Té negro, limón, flor de azahar.', 4)">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">Yirgacheffe</h3>
+            <p class="card-sub">Etiopía - Lavado</p>
+          </div>
+          <div class="doses-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 3h12M9 3v11l3 7 3-7V3"/><path d="M12 7h2M12 11h2M12 15h1.5"/></svg>
+            <span class="val">4 Dosis</span>
+          </div>
+        </div>
+        <div>
+          <span class="sleek-tag">1900 msnm</span>
+          <span class="sleek-tag">Lavado</span>
+          <span class="sleek-tag">Wendelboe</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- --- SCREEN 2: FICHA DETALLE LOTE / TUBO --- -->
+    <div id="view-details" class="phone-content-view">
+      <div class="app-bar" style="margin: -18px -18px 16px -18px; background: transparent;">
+        <button class="app-bar-btn" onclick="switchView('view-inventory')">←</button>
+        <h1 id="detail-nav-title">Detalle</h1>
+        <button class="app-bar-btn">⚙️</button>
+      </div>
+
+      <h2 id="detail-title" style="font-size:20px; margin-top:0; margin-bottom:12px;">Pink Bourbon</h2>
+      
+      <!-- 7 Fields compact grid -->
+      <div class="sleek-fields-grid">
+        <div class="field-item">
+          <div class="field-label">Productor / Finca</div>
+          <div class="field-value" id="field-producer">Nestor Lasso</div>
+        </div>
+        <div class="field-item">
+          <div class="field-label">Tostador</div>
+          <div class="field-value" id="field-roaster">Coffee Circular</div>
+        </div>
+        <div class="field-item">
+          <div class="field-label">Altitud</div>
+          <div class="field-value" id="field-altitude">1800 msnm</div>
+        </div>
+        <div class="field-item">
+          <div class="field-label">Varietal</div>
+          <div class="field-value" id="field-variety">Pink Bourbon</div>
+        </div>
+        <div class="field-item">
+          <div class="field-label">Proceso</div>
+          <div class="field-value" id="field-process">Anaeróbico</div>
+        </div>
+        <div class="field-item">
+          <div class="field-label">Dosis / Tubos</div>
+          <div class="field-value" id="field-doses-summary">8 Tubos</div>
+        </div>
+        <div class="field-item full-width">
+          <div class="field-label">Notas del Tostador</div>
+          <div class="field-value" id="field-notes" style="font-size:12px; color: var(--color-text-secondary);">Fresa, chocolate.</div>
+        </div>
+      </div>
+
+      <!-- Action Area: Press and Hold to Subtract (3D filling progress) -->
+      <div class="nb-action-wrap" style="margin-top: 20px;">
+        <div class="card-header-flex" style="align-items:center; margin-bottom: 8px;">
+          <span style="font-size: 12px; color: var(--color-text-secondary); text-transform:uppercase; font-weight:700;">Dosis Restantes:</span>
+          <span class="doses-badge" id="detail-doses-badge" style="transform-origin: center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3h12M9 3v11l3 7 3-7V3"/><path d="M12 7h2M12 11h2M12 15h1.5"/></svg>
+            <span id="detail-doses-count">8 Dosis</span>
+          </span>
+        </div>
+
+        <button class="btn-sleek-hold" id="btn-subtract-dose" 
+                onmousedown="startHold()" onmouseup="endHold()" 
+                onmouseleave="endHold()" ontouchstart="startHold()" ontouchend="endHold()">
+          <div class="btn-hold-fill" id="btn-fill"></div>
+          <div class="btn-hold-content">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 8h1a3 3 0 0 1 0 6h-1"/><path d="M3 8h15v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><path d="M6 3v2M10 3v2M14 3v2"/></svg>
+            <span>Restar Dosis (Mantener)</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Brew Recipe Log -->
+      <h2>📝 Recetario de Extracción</h2>
+      <div class="glass-card" style="cursor:default;">
+        <div class="form-group">
+          <label>Método de Extracción</label>
+          <select class="sleek-input" style="width:100%;">
+            <option>V60 (Filtrado)</option>
+            <option>Espresso</option>
+            <option>AeroPress</option>
+            <option>Prensa Francesa</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <div class="form-group" style="flex:1;">
+            <label>Ratio (Agua)</label>
+            <input class="sleek-input" type="text" value="300g (1:15)">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Molienda (Clicks)</label>
+            <div class="stepper">
+              <button class="stepper-btn" onclick="adjustClicks(-1)">-</button>
+              <input class="stepper-value" id="clicks-val" value="22" readonly>
+              <button class="stepper-btn" onclick="adjustClicks(1)">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Mis Notas de Cata</label>
+          <input class="sleek-input" type="text" placeholder="Ej. Muy dulce, notas frutales intensas.">
+        </div>
+        <button class="btn-outline-glass" style="width:100%; border-color: rgba(99,102,241,0.5); color: #A5B4FC; margin-top:8px;">Guardar Receta en Bitácora</button>
+      </div>
+    </div>
+
+
+    <!-- --- SCREEN 3: CREADOR DE LOTES --- -->
+    <div id="view-creator" class="phone-content-view">
+      <div class="app-bar" style="margin: -18px -18px 16px -18px; background: transparent;">
+        <h1>Crear Lote 📦</h1>
+        <button class="app-bar-btn" onclick="switchView('view-inventory')">✕</button>
+      </div>
+
+      <h2>Nuevo Lote de Café</h2>
+      <div class="glass-card" style="cursor:default;">
+        <div class="form-group">
+          <label>Nombre del Café</label>
+          <input class="sleek-input" type="text" placeholder="Ej. Pink Bourbon">
+        </div>
+        <div class="form-group">
+          <label>Productor / Finca</label>
+          <input class="sleek-input" type="text" placeholder="Ej. Nestor Lasso / El Diviso">
+        </div>
+        
+        <div style="display:flex; gap:8px;">
+          <div class="form-group" style="flex:1;">
+            <label>Altitud</label>
+            <input class="sleek-input" type="text" placeholder="Ej. 1800 msnm">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Varietal</label>
+            <input class="sleek-input" type="text" placeholder="Ej. Bourbon">
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <div class="form-group" style="flex:1;">
+            <label>Proceso</label>
+            <input class="sleek-input" type="text" placeholder="Ej. Anaeróbico Natural">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Tostador</label>
+            <input class="sleek-input" type="text" placeholder="Ej. Coffee Circular">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Notas de Cata (Tostador)</label>
+          <input class="sleek-input" type="text" placeholder="Ej. Fresa, chocolate, cuerpo sedoso">
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <div class="form-group" style="flex:1;">
+            <label>Cantidad de Tubos</label>
+            <div class="stepper">
+              <button class="stepper-btn" onclick="adjustTubos(-1)">-</button>
+              <input class="stepper-value" id="tubos-val" value="12" readonly>
+              <button class="stepper-btn" onclick="adjustTubos(1)">+</button>
+            </div>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Gramos por Dosis</label>
+            <input class="sleek-input" type="text" value="20.0g">
+          </div>
+        </div>
+
+        <button class="btn-outline-glass" style="width:100%; margin-top:8px; background-color: var(--color-accent); color: white;" onclick="simulateCreateBatch()">Crear Lote y Obtener Link NFC</button>
+      </div>
+
+      <!-- NFC Link -->
+      <div id="nfc-link-section" style="display:none;">
+        <h2>Enlace del Lote para NFC</h2>
+        <div class="glass-card" style="background-color: rgba(99,102,241,0.05); border-color: rgba(99,102,241,0.2);">
+          <p style="font-size:11px; color: var(--color-text-secondary); margin-top:0;">Usa este enlace único para programar todas tus etiquetas NFC del lote:</p>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input class="sleek-input" id="generated-nfc-url" type="text" value="https://cryobrew.vps/batch/diviso-pb" readonly style="font-family:var(--font-mono); font-size:11px;">
+            <button class="btn-outline-glass" style="width:auto; padding:10px 14px;" onclick="copyNfcUrl()">Copiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- --- SCREEN 4: BITÁCORA --- -->
+    <div id="view-history" class="phone-content-view">
+      <div class="app-bar" style="margin: -18px -18px 16px -18px; background: transparent;">
+        <h1>Bitácoras 📖</h1>
+        <button class="app-bar-btn">🔍</button>
+      </div>
+
+      <h2>Historial de Extracciones</h2>
+
+      <!-- Receta 1 -->
+      <div class="glass-card" style="border-left: 4px solid var(--color-accent); cursor:default;">
+        <div class="card-header-flex">
+          <div>
+            <h3 style="font-size: 15px; margin:0 0 2px 0;">V60 (Filtrado)</h3>
+            <span style="font-size:10px; font-weight:700; color:#A5B4FC; letter-spacing: 0.5px;">EL DIVISO PINK BOURBON</span>
+          </div>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--color-text-secondary);">Hoy - 08:30 AM</span>
+        </div>
+        <div style="font-size:12px; margin-top:8px;">
+          <p style="margin:2px 0;"><strong>Ratio:</strong> 1:15 (15g/225g) | <strong>Molienda:</strong> 22 clicks</p>
+          <p style="margin:2px 0; color: var(--color-text-secondary);"><strong>Cata:</strong> Dulzura muy alta, acidez a frutos rojos brillante, final limpio.</p>
+          <p style="margin:4px 0 0 0; color:#EAB308; font-size:14px;">⭐⭐⭐⭐⭐ (5/5)</p>
+        </div>
+      </div>
+
+      <!-- Receta 2 -->
+      <div class="glass-card" style="border-left: 4px solid var(--color-accent); cursor:default;">
+        <div class="card-header-flex">
+          <div>
+            <h3 style="font-size: 15px; margin:0 0 2px 0;">Espresso</h3>
+            <span style="font-size:10px; font-weight:700; color:#A5B4FC; letter-spacing: 0.5px;">GEISHA NATURAL</span>
+          </div>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--color-text-secondary);">Ayer - 07:15 AM</span>
+        </div>
+        <div style="font-size:12px; margin-top:8px;">
+          <p style="margin:2px 0;"><strong>Ratio:</strong> 1:2 (18g/36g) en 28s | <strong>Molienda:</strong> Fina (1.2 clicks)</p>
+          <p style="margin:2px 0; color: var(--color-text-secondary);"><strong>Cata:</strong> Notas florales intensas, cuerpo sedoso con regusto a jazmín prolongado.</p>
+          <p style="margin:4px 0 0 0; color:#EAB308; font-size:14px;">⭐⭐⭐⭐★ (4/5)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- --- SCAN OVERLAY --- -->
+    <div id="nfc-overlay" class="nfc-scan-overlay">
+      <div class="pulsing-nfc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 17v.01" stroke-linecap="round"/><path d="M9 9a3 3 0 0 1 6 0"/><path d="M7 7a6 6 0 0 1 10 0"/></svg>
+      </div>
+      <h2>Esperando Tag NFC...</h2>
+      <p style="font-size:12px; color: var(--color-text-secondary); max-width: 240px; margin: 0 auto 24px auto;">
+        Sostén el celular cerca de la etiqueta NFC del tubo para leerla.
+      </p>
+      
+      <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
+        <button class="btn-outline-glass" style="border-color: rgba(99,102,241,0.5); color: #A5B4FC;" onclick="simulateNfcScan('El Diviso Pink Bourbon')">
+          Simular Escaneo: Pink Bourbon
+        </button>
+        <button class="btn-outline-glass" style="color: #FF6B6B; border-color: rgba(255,107,107,0.3);" onclick="hideNfcOverlay()">
+          Cancelar
+        </button>
+      </div>
+    </div>
+
+    <!-- --- UNDO ACTION TOAST --- -->
+    <div class="undo-toast" id="undo-toast">
+      <span>Dosis restada con éxito.</span>
+      <button class="undo-btn" onclick="undoDoseSubtract()">Deshacer</button>
+    </div>
+
+    <!-- Bottom Tab bar -->
+    <div class="nb-tabbar">
+      <button id="tab-inventory" class="tab-item active" onclick="switchView('view-inventory')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3h12M9 3v11l3 7 3-7V3"/><path d="M12 7h2M12 11h2M12 15h1.5"/></svg>
+        <span>Inventario</span>
+      </button>
+      
+      <button class="tab-item scan-trigger" onclick="showNfcOverlay()">
+        <div class="scan-ring">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 17v.01" stroke-linecap="round"/><path d="M9 9a3 3 0 0 1 6 0"/><path d="M7 7a6 6 0 0 1 10 0"/></svg>
+        </div>
+      </button>
+      
+      <button id="tab-history" class="tab-item" onclick="switchView('view-history')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 5h18"/><path d="M4 5l6 14h4l6-14"/><path d="M9 19h6v2H9z"/><path d="M12 5v14" stroke-dasharray="2 2"/></svg>
+        <span>Bitácora</span>
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  // Clock Helper
+  function updateTime() {
+    const now = new Date();
+    let hours = now.getHours();
+    let minutes = now.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 12 instead of 0
+    minutes = minutes < 10 ? '0'+minutes : minutes;
+    const strTime = hours + ':' + minutes + ' ' + ampm;
+    document.getElementById('time-display').textContent = strTime;
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+
+  // Navigation Controller
+  function switchView(viewId) {
+    document.querySelectorAll('.phone-content-view').forEach(view => {
+      view.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-item').forEach(tab => {
+      tab.classList.remove('active');
+    });
+
+    document.getElementById(viewId).classList.add('active');
+
+    if (viewId === 'view-inventory') {
+      document.getElementById('tab-inventory').classList.add('active');
+    } else if (viewId === 'view-history') {
+      document.getElementById('tab-history').classList.add('active');
+    }
+  }
+
+  // NFC Scan
+  function showNfcOverlay() {
+    document.getElementById('nfc-overlay').classList.add('active');
+  }
+
+  function hideNfcOverlay() {
+    document.getElementById('nfc-overlay').classList.remove('active');
+  }
+
+  function simulateNfcScan(coffeeName) {
+    hideNfcOverlay();
+    openBatchDetail(
+      'El Diviso Pink Bourbon', 
+      'Néstor Lasso / El Diviso', 
+      '1800 msnm', 
+      'Pink Bourbon', 
+      'Anaeróbico Natural', 
+      'Coffee Circular', 
+      'Fresa madura, chocolate blanco, cuerpo sedoso.', 
+      parseInt(document.getElementById('doses-counter-diviso').querySelector('.val').textContent)
+    );
+  }
+
+  // Details
+  let currentBatch = { name: '', doses: 8 };
+
+  function openBatchDetail(name, producer, altitude, variety, process, roaster, notes, doses) {
+    currentBatch.name = name;
+    currentBatch.doses = doses;
+
+    document.getElementById('detail-title').textContent = name;
+    document.getElementById('detail-nav-title').textContent = variety;
+    document.getElementById('field-producer').textContent = producer;
+    document.getElementById('field-roaster').textContent = roaster;
+    document.getElementById('field-altitude').textContent = altitude;
+    document.getElementById('field-variety').textContent = variety;
+    document.getElementById('field-process').textContent = process;
+    document.getElementById('field-doses-summary').textContent = doses + ' Tubos';
+    document.getElementById('field-notes').textContent = notes;
+    
+    document.getElementById('detail-doses-count').textContent = doses + ' Dosis';
+    
+    switchView('view-details');
+  }
+
+  // Steppers
+  function adjustClicks(val) {
+    const input = document.getElementById('clicks-val');
+    let current = parseInt(input.value) + val;
+    if (current < 0) current = 0;
+    input.value = current;
+  }
+
+  function adjustTubos(val) {
+    const input = document.getElementById('tubos-val');
+    let current = parseInt(input.value) + val;
+    if (current < 1) current = 1;
+    input.value = current;
+  }
+
+  // Create Batch
+  function simulateCreateBatch() {
+    document.getElementById('nfc-link-section').style.display = 'block';
+    document.getElementById('nfc-link-section').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function copyNfcUrl() {
+    const input = document.getElementById('generated-nfc-url');
+    input.select();
+    document.execCommand('copy');
+    alert('¡Enlace copiado al portapapeles!');
+  }
+
+  // Hold Button
+  let holdTimer;
+  let holdPct = 0;
+  const fillElement = document.getElementById('btn-fill');
+
+  function startHold() {
+    holdPct = 0;
+    fillElement.style.width = '0%';
+    holdTimer = setInterval(() => {
+      holdPct += 10;
+      fillElement.style.width = holdPct + '%';
+      if (holdPct >= 100) {
+        clearInterval(holdTimer);
+        triggerDoseSubtract();
+      }
+    }, 85); // 850ms hold
+  }
+
+  function endHold() {
+    clearInterval(holdTimer);
+    if (holdPct < 100) {
+      fillElement.style.width = '0%';
+    }
+  }
+
+  function triggerDoseSubtract() {
+    fillElement.style.width = '0%';
+    if (currentBatch.doses > 0) {
+      currentBatch.doses -= 1;
+      
+      document.getElementById('detail-doses-count').textContent = currentBatch.doses + ' Dosis';
+      document.getElementById('field-doses-summary').textContent = currentBatch.doses + ' Tubos';
+      
+      if (currentBatch.name.includes('Diviso')) {
+        document.getElementById('doses-counter-diviso').querySelector('.val').textContent = currentBatch.doses + ' Dosis';
+      }
+
+      const badge = document.getElementById('detail-doses-badge');
+      badge.classList.remove('bounce-pop');
+      void badge.offsetWidth;
+      badge.classList.add('bounce-pop');
+
+      showUndoToast();
+    }
+  }
+
+  // Undo Toast
+  let undoTimeout;
+  function showUndoToast() {
+    const toast = document.getElementById('undo-toast');
+    toast.classList.add('show');
+    clearTimeout(undoTimeout);
+    undoTimeout = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 6000);
+  }
+
+  function undoDoseSubtract() {
+    currentBatch.doses += 1;
+    document.getElementById('detail-doses-count').textContent = currentBatch.doses + ' Dosis';
+    document.getElementById('field-doses-summary').textContent = currentBatch.doses + ' Tubos';
+    
+    if (currentBatch.name.includes('Diviso')) {
+      document.getElementById('doses-counter-diviso').querySelector('.val').textContent = currentBatch.doses + ' Dosis';
+    }
+
+    document.getElementById('undo-toast').classList.remove('show');
+
+    const badge = document.getElementById('detail-doses-badge');
+    badge.classList.remove('bounce-pop');
+    void badge.offsetWidth;
+    badge.classList.add('bounce-pop');
+  }
+
+</script>
+
+<div class="options">
+  <div class="option" data-choice="approve-sleek-glass" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>¡Aprobar diseño Glassmorphic 3D!</h3>
+      <p>Este estilo oscuro premium, minimalista y translúcido es perfecto y se ve sumamente profesional.</p>
+    </div>
+  </div>
+</div>
