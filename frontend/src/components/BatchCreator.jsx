@@ -11,13 +11,20 @@ export default function BatchCreator({ onBatchCreated, onBack }) {
   const [totalDoses, setTotalDoses] = useState(12);
   const [doseWeight, setDoseWeight] = useState('20.0g');
   const [generatedUrl, setGeneratedUrl] = useState('');
+  
+  // Nuevos Estados de Metadatos
+  const [origin, setOrigin] = useState('');
+  const [roastLevel, setRoastLevel] = useState('Medio');
+  const [roastDate, setRoastDate] = useState('');
+  const [freezeDate, setFreezeDate] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     
     const payload = {
-      id, name, producer, altitude, variety, process, roaster, roaster_notes: notes, dose_weight: doseWeight, total_doses: totalDoses
+      id, name, producer, altitude, variety, process, roaster, roaster_notes: notes, dose_weight: doseWeight, total_doses: totalDoses,
+      origin, roast_level: roastLevel, roast_date: roastDate, freeze_date: freezeDate
     };
 
     fetch('/api/batches', {
@@ -47,7 +54,7 @@ export default function BatchCreator({ onBatchCreated, onBack }) {
       </div>
 
       <h2 style={{ fontFamily: 'var(--font-heading)' }}>Registrar Lote</h2>
-      <div className="candy-card bg-peach" style={{ cursor: 'default' }}>
+      <div className="candy-card" style={{ cursor: 'default' }}>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Nombre del Café</label>
@@ -57,6 +64,32 @@ export default function BatchCreator({ onBatchCreated, onBack }) {
           <div className="form-group">
             <label>Productor / Finca</label>
             <input className="candy-input" value={producer} onChange={(e) => setProducer(e.target.value)} type="text" required placeholder="Ej. Nestor Lasso / El Diviso" />
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Origen / País</label>
+              <input className="candy-input" value={origin} onChange={(e) => setOrigin(e.target.value)} type="text" placeholder="Ej. Colombia" />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Nivel de Tueste</label>
+              <select className="candy-input" style={{ height: '40px' }} value={roastLevel} onChange={(e) => setRoastLevel(e.target.value)}>
+                <option value="Claro">Claro (Light)</option>
+                <option value="Medio">Medio (Medium)</option>
+                <option value="Oscuro">Oscuro (Dark)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>📅 Fecha de Tueste</label>
+              <input className="candy-input" value={roastDate} onChange={(e) => setRoastDate(e.target.value)} type="date" />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>❄️ Fecha de Congelado</label>
+              <input className="candy-input" value={freezeDate} onChange={(e) => setFreezeDate(e.target.value)} type="date" />
+            </div>
           </div>
 
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -73,7 +106,7 @@ export default function BatchCreator({ onBatchCreated, onBack }) {
           <div style={{ display: 'flex', gap: '8px' }}>
             <div className="form-group" style={{ flex: 1 }}>
               <label>Proceso</label>
-              <input className="candy-input" value={process} onChange={(e) => setProcess(e.target.value)} type="text" placeholder="Ej. Anaeróbico Natural" />
+              <input className="candy-input" value={process} onChange={(e) => setProcess(e.target.value)} type="text" placeholder="Ej. Anaeróbico" />
             </div>
             <div className="form-group" style={{ flex: 1 }}>
               <label>Tostador</label>
@@ -89,9 +122,9 @@ export default function BatchCreator({ onBatchCreated, onBack }) {
           <div style={{ display: 'flex', gap: '8px' }}>
             <div className="form-group" style={{ flex: 1 }}>
               <label>Cantidad de Tubos</label>
-              <div className="stepper">
+              <div className="mono-stepper">
                 <button type="button" className="stepper-btn" onClick={() => setTotalDoses(d => Math.max(1, d - 1))}>-</button>
-                <input className="stepper-value" value={totalDoses} readOnly />
+                <div className="stepper-value">{totalDoses}</div>
                 <button type="button" className="stepper-btn" onClick={() => setTotalDoses(d => d + 1)}>+</button>
               </div>
             </div>
@@ -106,19 +139,13 @@ export default function BatchCreator({ onBatchCreated, onBack }) {
       </div>
 
       {generatedUrl && (
-        <div className="candy-card bg-lime" style={{ cursor: 'default', marginTop: '16px' }}>
-          <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', marginTop: 0 }}>Enlace Único de Lote NFC</h3>
+        <div className="instr-box" style={{ marginTop: '16px' }}>
+          <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', marginTop: 0 }}>Enlace Único de Lote NFC</h3>
           <p style={{ fontSize: '11px', marginTop: 0 }}>Escribe este enlace en tus tags NFC usando la app "NFC Tools":</p>
           
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <input className="candy-input" value={generatedUrl} readOnly style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', flex: 1 }} />
-            <button className="btn-candy primary" style={{ margin: 0 }} onClick={copyUrl}>Copiar</button>
-          </div>
-          
-          <div className="instr-box">
-            <strong>Instrucciones NFC Tools:</strong><br />
-            1. En NFC Tools, toca <strong>Escribir</strong> &gt; <strong>Añadir un registro</strong> &gt; <strong>URL/URI</strong> y pega el link.<br />
-            2. Selecciona <strong>Escribir / Escribir múltiples</strong> y acerca el celular a todos los tubos uno por uno.
+            <button type="button" className="btn-candy primary" style={{ margin: 0 }} onClick={copyUrl}>Copiar</button>
           </div>
         </div>
       )}
