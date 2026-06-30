@@ -11,15 +11,29 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   const [brewTimeSeconds, setBrewTimeSeconds] = useState(150);
   const [notes, setNotes] = useState('');
   const [rating, setRating] = useState(5);
+  const [error, setError] = useState(null);
   
   const holdTimer = useRef(null);
 
   useEffect(() => {
+    let active = true;
+    setBatch(null);
+    setError(null);
     fetch(`/api/batches/${batchId}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Error al cargar los detalles del lote.');
+        return res.json();
+      })
       .then(data => {
-        setBatch(data);
+        if (active) setBatch(data);
+      })
+      .catch(err => {
+        if (active) setError(err.message);
       });
+
+    return () => {
+      active = false;
+    };
   }, [batchId]);
 
   useEffect(() => {
@@ -65,12 +79,16 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
     });
   };
 
+  const doseGrams = batch ? (parseFloat(batch.dose_weight) || 20.0) : 20.0;
+  const safeDoseGrams = doseGrams > 0 ? doseGrams : 20.0;
+  const safeWaterGrams = Math.max(0, waterGrams);
+
   const handleRecipeSubmit = (e) => {
     e.preventDefault();
     onSaveRecipe({
       batch_id: batch.id,
       method,
-      ratio: `${waterGrams}g (1:${(waterGrams / (parseFloat(batch.dose_weight) || 20)).toFixed(1)})`,
+      ratio: `${safeWaterGrams}g (1:${(safeWaterGrams / safeDoseGrams).toFixed(1)})`,
       grind: `J-Max: ${jmaxRot}.${jmaxNum}.${jmaxClick}`,
       temperature: '93°C',
       brew_time: `${Math.floor(brewTimeSeconds / 60)}:${(brewTimeSeconds % 60 < 10 ? '0' : '') + (brewTimeSeconds % 60)} min`,
@@ -80,10 +98,8 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
     setNotes('');
   };
 
+  if (error) return <div style={{ padding: '30px', textAlign: 'center', color: 'var(--color-orange)', fontWeight: 'bold' }}>Error: {error}</div>;
   if (!batch) return <div style={{ padding: '30px', textAlign: 'center' }}>Cargando detalles...</div>;
-
-  const doseGrams = parseFloat(batch.dose_weight) || 20.0;
-  const calculatedRatio = doseGrams > 0 ? (waterGrams / doseGrams).toFixed(1) : '0';
 
   return (
     <div style={{ padding: '16px 16px 90px 16px' }}>
@@ -172,7 +188,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
           
           <div style={{ display: 'flex', gap: '8px' }}>
             <div className="form-group" style={{ flex: 1 }}>
-              <label>Agua (g) {waterGrams > 0 && `(1:${(waterGrams / (parseFloat(batch.dose_weight) || 20)).toFixed(1)})`}</label>
+              <label>Agua (g) {safeWaterGrams > 0 && `(1:${(safeWaterGrams / safeDoseGrams).toFixed(1)})`}</label>
               <input className="candy-input" type="number" value={waterGrams} onChange={(e) => setWaterGrams(Number(e.target.value))} />
             </div>
             <div className="form-group" style={{ flex: 1 }}>
