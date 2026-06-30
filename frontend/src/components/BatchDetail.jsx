@@ -7,7 +7,8 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   const [jmaxNum, setJmaxNum] = useState(5);
   const [jmaxClick, setJmaxClick] = useState(0);
   const [method, setMethod] = useState('V60 (Filtrado)');
-  const [ratio, setRatio] = useState('300g (1:15)');
+  const [waterGrams, setWaterGrams] = useState(300);
+  const [brewTimeSeconds, setBrewTimeSeconds] = useState(150);
   const [notes, setNotes] = useState('');
   const [rating, setRating] = useState(5);
   
@@ -69,10 +70,10 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
     onSaveRecipe({
       batch_id: batch.id,
       method,
-      ratio,
+      ratio: `${waterGrams}g (1:${(waterGrams / (parseFloat(batch.dose_weight) || 20)).toFixed(1)})`,
       grind: `J-Max: ${jmaxRot}.${jmaxNum}.${jmaxClick}`,
       temperature: '93°C',
-      brew_time: '2:45 min',
+      brew_time: `${Math.floor(brewTimeSeconds / 60)}:${(brewTimeSeconds % 60 < 10 ? '0' : '') + (brewTimeSeconds % 60)} min`,
       rating,
       notes
     });
@@ -80,6 +81,9 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   };
 
   if (!batch) return <div style={{ padding: '30px', textAlign: 'center' }}>Cargando detalles...</div>;
+
+  const doseGrams = parseFloat(batch.dose_weight) || 20.0;
+  const calculatedRatio = doseGrams > 0 ? (waterGrams / doseGrams).toFixed(1) : '0';
 
   return (
     <div style={{ padding: '16px 16px 90px 16px' }}>
@@ -168,35 +172,44 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
           
           <div style={{ display: 'flex', gap: '8px' }}>
             <div className="form-group" style={{ flex: 1 }}>
-              <label>Ratio / Agua</label>
-              <input className="candy-input" value={ratio} onChange={(e) => setRatio(e.target.value)} type="text" />
+              <label>Agua (g) {waterGrams > 0 && `(1:${(waterGrams / (parseFloat(batch.dose_weight) || 20)).toFixed(1)})`}</label>
+              <input className="candy-input" type="number" value={waterGrams} onChange={(e) => setWaterGrams(Number(e.target.value))} />
             </div>
             <div className="form-group" style={{ flex: 1 }}>
-              <label>Molienda (J-Max)</label>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span style={{ fontSize: '9px', fontWeight: 'bold' }}>ROT</span>
-                  <div className="stepper">
-                    <button type="button" className="stepper-btn" onClick={() => setJmaxRot(r => Math.max(0, r - 1))}>-</button>
-                    <input className="stepper-value" value={jmaxRot} readOnly />
-                    <button type="button" className="stepper-btn" onClick={() => setJmaxRot(r => Math.min(4, r + 1))}>+</button>
-                  </div>
+              <label>Tiempo: {Math.floor(brewTimeSeconds / 60)}:{(brewTimeSeconds % 60 < 10 ? '0' : '') + (brewTimeSeconds % 60)}</label>
+              <div className="stepper">
+                <button type="button" className="stepper-btn" onClick={() => setBrewTimeSeconds(t => Math.max(0, t - 5))}>-</button>
+                <input className="stepper-value" style={{ width: '56px' }} value={`${brewTimeSeconds}s`} readOnly />
+                <button type="button" className="stepper-btn" onClick={() => setBrewTimeSeconds(t => t + 5)}>+</button>
+              </div>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Molienda (J-Max)</label>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <span style={{ fontSize: '9px', fontWeight: 'bold' }}>ROT</span>
+                <div className="stepper">
+                  <button type="button" className="stepper-btn" onClick={() => setJmaxRot(r => Math.max(0, r - 1))}>-</button>
+                  <input className="stepper-value" value={jmaxRot} readOnly />
+                  <button type="button" className="stepper-btn" onClick={() => setJmaxRot(r => Math.min(4, r + 1))}>+</button>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span style={{ fontSize: '9px', fontWeight: 'bold' }}>NUM</span>
-                  <div className="stepper">
-                    <button type="button" className="stepper-btn" onClick={() => setJmaxNum(n => Math.max(0, n - 1))}>-</button>
-                    <input className="stepper-value" value={jmaxNum} readOnly />
-                    <button type="button" className="stepper-btn" onClick={() => setJmaxNum(n => Math.min(8, n + 1))}>+</button>
-                  </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <span style={{ fontSize: '9px', fontWeight: 'bold' }}>NUM</span>
+                <div className="stepper">
+                  <button type="button" className="stepper-btn" onClick={() => setJmaxNum(n => Math.max(0, n - 1))}>-</button>
+                  <input className="stepper-value" value={jmaxNum} readOnly />
+                  <button type="button" className="stepper-btn" onClick={() => setJmaxNum(n => Math.min(8, n + 1))}>+</button>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span style={{ fontSize: '9px', fontWeight: 'bold' }}>CLICK</span>
-                  <div className="stepper">
-                    <button type="button" className="stepper-btn" onClick={() => setJmaxClick(c => Math.max(0, c - 1))}>-</button>
-                    <input className="stepper-value" value={jmaxClick} readOnly />
-                    <button type="button" className="stepper-btn" onClick={() => setJmaxClick(c => Math.min(9, c + 1))}>+</button>
-                  </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <span style={{ fontSize: '9px', fontWeight: 'bold' }}>CLICK</span>
+                <div className="stepper">
+                  <button type="button" className="stepper-btn" onClick={() => setJmaxClick(c => Math.max(0, c - 1))}>-</button>
+                  <input className="stepper-value" value={jmaxClick} readOnly />
+                  <button type="button" className="stepper-btn" onClick={() => setJmaxClick(c => Math.min(9, c + 1))}>+</button>
                 </div>
               </div>
             </div>
