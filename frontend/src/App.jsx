@@ -138,14 +138,13 @@ export default function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <svg viewBox="0 0 100 100" style={{ width: '28px', height: '28px' }} fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="35" y="10" width="30" height="12" rx="4" fill="#000000" stroke="#000000" strokeWidth="5" />
             <path d="M40 22V72C40 80.28 44.48 87 50 87C55.52 87 60 80.28 60 72V22" fill="#FFFFFF" stroke="#000000" strokeWidth="5" />
             <ellipse cx="50" cy="55" rx="7" ry="11" transform="rotate(-15 50 55)" fill="#000000" stroke="#000000" strokeWidth="4" />
           </svg>
-          <span>BeanTag</span>
-        </h1>
+        </div>
         <div style={{ display: 'flex', gap: '6px' }}>
           {currentView === 'inventory' && (
             <>
