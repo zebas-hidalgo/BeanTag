@@ -32,6 +32,19 @@ async function initDb() {
     )
   `);
 
+  try {
+    await db.exec('ALTER TABLE batches ADD COLUMN origin TEXT;');
+  } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE batches ADD COLUMN roast_level TEXT;');
+  } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE batches ADD COLUMN roast_date TEXT;');
+  } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE batches ADD COLUMN freeze_date TEXT;');
+  } catch (e) {}
+
   // Create recipes table
   await db.exec(`
     CREATE TABLE IF NOT EXISTS recipes (

@@ -42,16 +42,16 @@ app.get('/api/batches/:id', async (req, res) => {
 
 // Create new batch
 app.post('/api/batches', async (req, res) => {
-  const { id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses } = req.body;
+  const { id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, origin, roast_level, roast_date, freeze_date } = req.body;
   if (!id || !name || !producer || !total_doses) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
   try {
     const db = await getDb();
     await db.run(
-      `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, total_doses]
+      `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, total_doses, origin, roast_level, roast_date, freeze_date]
     );
     res.status(201).json({ success: true, id });
   } catch (err) {
