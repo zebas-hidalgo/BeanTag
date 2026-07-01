@@ -437,9 +437,9 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
           <div className="form-row">
             <div className="form-group" style={{ flex: 1 }}>
               <label>Ratio de Extracción</label>
-              <div className="mono-stepper" style={{ width: '100%' }}>
+              <div className="mono-stepper compact" style={{ margin: '0 auto' }}>
                 <button type="button" className="stepper-btn" onClick={() => setRatioVal(r => Math.max(1.0, r - 0.5))}>-</button>
-                <div className="stepper-value" style={{ width: '48px' }}>{ratioVal.toFixed(1)}</div>
+                <div className="stepper-value" style={{ width: '38px' }}>{ratioVal.toFixed(1)}</div>
                 <button type="button" className="stepper-btn" onClick={() => setRatioVal(r => r + 0.5)}>+</button>
               </div>
               <div style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '6px', textAlign: 'center' }}>
@@ -452,7 +452,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
               <div className="jmax-steppers-grid" style={{ marginBottom: 4 }}>
                 <div className="jmax-cell">
                   <span className="jmax-hdr-lbl">ROT</span>
-                  <div className="mono-stepper">
+                  <div className="mono-stepper compact">
                     <button type="button" className="stepper-btn" onClick={() => setJmaxRot(r => Math.max(0, r - 1))}>-</button>
                     <div className="stepper-value">{jmaxRot}</div>
                     <button type="button" className="stepper-btn" onClick={() => setJmaxRot(r => Math.min(4, r + 1))}>+</button>
@@ -460,7 +460,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
                 </div>
                 <div className="jmax-cell">
                   <span className="jmax-hdr-lbl">NUM</span>
-                  <div className="mono-stepper">
+                  <div className="mono-stepper compact">
                     <button type="button" className="stepper-btn" onClick={() => setJmaxNum(n => Math.max(0, n - 1))}>-</button>
                     <div className="stepper-value">{jmaxNum}</div>
                     <button type="button" className="stepper-btn" onClick={() => setJmaxNum(n => Math.min(8, n + 1))}>+</button>
@@ -468,7 +468,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
                 </div>
                 <div className="jmax-cell">
                   <span className="jmax-hdr-lbl">CLIC</span>
-                  <div className="mono-stepper">
+                  <div className="mono-stepper compact">
                     <button type="button" className="stepper-btn" onClick={() => setJmaxClick(c => Math.max(0, c - 1))}>-</button>
                     <div className="stepper-value">{jmaxClick}</div>
                     <button type="button" className="stepper-btn" onClick={() => setJmaxClick(c => Math.min(9, c + 1))}>+</button>

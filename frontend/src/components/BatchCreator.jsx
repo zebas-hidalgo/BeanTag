@@ -138,7 +138,7 @@ export default function BatchCreator({ onBatchCreated, onBack, showToast }) {
           <div className="form-row">
             <div className="form-group">
               <label>Cantidad de Tubos</label>
-              <div className="mono-stepper">
+              <div className="mono-stepper compact">
                 <button type="button" className="stepper-btn" onClick={() => setTotalDoses(d => Math.max(1, d - 1))}>-</button>
                 <div className="stepper-value">{totalDoses}</div>
                 <button type="button" className="stepper-btn" onClick={() => setTotalDoses(d => d + 1)}>+</button>
