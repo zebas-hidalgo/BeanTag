@@ -24,6 +24,24 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   // Form input state for brew time
   const [brewTime, setBrewTime] = useState('2:30 min');
 
+  // Sensory Evaluation States (Improvement 5)
+  const [sensoryBalance, setSensoryBalance] = useState('Dulce');
+  const [sensoryBody, setSensoryBody] = useState('Medio');
+  const [sensoryExtraction, setSensoryExtraction] = useState('En Punto');
+  const [selectedFlavorTags, setSelectedFlavorTags] = useState([]);
+
+  // Popular Coffee Flavor Tags (SCA Flavor Wheel)
+  const flavorWheelTags = [
+    { label: '🍒 Cereza', val: 'cereza' },
+    { label: '🍋 Cítrico', val: 'cítrico' },
+    { label: '🌸 Jazmín', val: 'jazmín' },
+    { label: '🍯 Miel', val: 'miel' },
+    { label: '🍫 Chocolate', val: 'chocolate' },
+    { label: '🍮 Caramelo', val: 'caramelo' },
+    { label: '🌰 Avellana', val: 'avellana' },
+    { label: '🪵 Canela', val: 'canela' }
+  ];
+
   useEffect(() => {
     let active = true;
     fetch(`/api/batches/${batchId}`)
@@ -99,6 +117,26 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
     });
   };
 
+  // Helper formula to translate J-Max grind settings to microns (Improvement 3)
+  const calculateMicrons = (rot, num, click) => {
+    const totalClicks = (rot * 90) + (num * 10) + click;
+    return Math.round(totalClicks * 8.8); // 8.8 microns per click
+  };
+
+  // Convert grind text string e.g. "J-Max: 1.5.0" to numeric microns
+  const parseGrindToMicrons = (grindStr) => {
+    if (!grindStr || !grindStr.includes('J-Max:')) return null;
+    const parts = grindStr.replace('J-Max:', '').trim().split('.');
+    if (parts.length === 3) {
+      return calculateMicrons(
+        parseInt(parts[0]) || 0,
+        parseInt(parts[1]) || 0,
+        parseInt(parts[2]) || 0
+      );
+    }
+    return null;
+  };
+
   // 1-Click logging of last recipe
   const handleRepeatLastRecipe = () => {
     if (!batch.recipes || batch.recipes.length === 0) return;
@@ -114,7 +152,10 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
         temperature: last.temperature,
         brew_time: last.brew_time,
         rating: last.rating,
-        notes: `${last.notes || ''} (Repetición rápida)`.trim()
+        notes: `${last.notes || ''} (Repetición rápida)`.trim(),
+        sensory_balance: last.sensory_balance || 'Dulce',
+        sensory_body: last.sensory_body || 'Medio',
+        sensory_extraction: last.sensory_extraction || 'En Punto'
       });
     });
   };
@@ -124,6 +165,12 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
     const doseNum = parseFloat(batch.dose_weight) || 20.0;
     const targetWater = (doseNum * ratioVal).toFixed(0);
 
+    // Combine notes text with flavor tags
+    const combinedNotes = [
+      selectedFlavorTags.length > 0 ? `[Notas: ${selectedFlavorTags.join(', ')}]` : '',
+      notes
+    ].filter(Boolean).join(' ').trim();
+
     onSaveRecipe({
       batch_id: batch.id,
       method,
@@ -132,9 +179,21 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
       temperature: '93°C',
       brew_time: brewTime,
       rating,
-      notes
+      notes: combinedNotes,
+      sensory_balance: sensoryBalance,
+      sensory_body: sensoryBody,
+      sensory_extraction: sensoryExtraction
     });
     setNotes('');
+    setSelectedFlavorTags([]);
+  };
+
+  const toggleFlavorTag = (tagLabel) => {
+    if (selectedFlavorTags.includes(tagLabel)) {
+      setSelectedFlavorTags(selectedFlavorTags.filter(t => t !== tagLabel));
+    } else {
+      setSelectedFlavorTags([...selectedFlavorTags, tagLabel]);
+    }
   };
 
   // R3: Skeleton loading state
@@ -154,15 +213,38 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   const isLowStock = batch.remaining_doses <= 2;
   const lastRecipe = batch.recipes && batch.recipes.length > 0 ? batch.recipes[0] : null;
 
-  // Calculos de dias
-  let restingDays = 'Sin datos';
+  // Improvement 2: Semáforo de Desgasificación Logic & Badge Color
+  let restingDays = 0;
+  let restingDaysText = 'Sin datos';
   let freezeTime = 'Sin datos';
+  let degasStatus = { label: 'Degas Desconocido', color: '#718096', description: 'Sin información de fechas.' };
   
   if (batch.roast_date && batch.freeze_date) {
     const roast = new Date(batch.roast_date);
     const freeze = new Date(batch.freeze_date);
     const diffTime = Math.abs(freeze - roast);
-    restingDays = `${Math.ceil(diffTime / (1000 * 60 * 60 * 24))} días de reposo`;
+    restingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    restingDaysText = `${restingDays} días de reposo`;
+
+    if (restingDays <= 5) {
+      degasStatus = {
+        label: 'Degas Insuficiente',
+        color: '#E53E3E',
+        description: 'Poco reposo. El CO₂ atrapado puede producir sabores metálicos o agrios.'
+      };
+    } else if (restingDays >= 6 && restingDays <= 20) {
+      degasStatus = {
+        label: 'Degas Perfecto',
+        color: '#38A169',
+        description: 'Reposo ideal. Máxima expresión aromática y estabilidad en congelación.'
+      };
+    } else {
+      degasStatus = {
+        label: 'Degas Alto',
+        color: '#D69E2E',
+        description: 'Reposo prolongado. Los aromáticos volátiles pueden estar suavizados.'
+      };
+    }
   }
   
   if (batch.freeze_date) {
@@ -182,6 +264,9 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   const timerSecs = timerSeconds % 60;
   const timerFormatted = `${timerMins < 10 ? '0' : ''}${timerMins}:${timerSecs < 10 ? '0' : ''}${timerSecs}`;
 
+  // J-Max calculated microns for current form state
+  const currentMicrons = calculateMicrons(jmaxRot, jmaxNum, jmaxClick);
+
   // R9: Interactive star rating component
   const StarRating = ({ value, onChange }) => (
     <div style={{ display: 'flex', gap: '4px', cursor: 'pointer' }}>
@@ -190,7 +275,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
           key={star}
           onClick={() => onChange(star)}
           style={{
-            fontSize: '24px',
+            fontSize: '22px',
             color: star <= value ? 'var(--color-crimson)' : '#D1D5DB',
             transition: 'color 150ms, transform 150ms',
             userSelect: 'none',
@@ -241,11 +326,58 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
             <strong>{batch.freeze_date ? new Date(batch.freeze_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Sin fecha'}</strong>
           </div>
           <div style={{ gridColumn: 'span 2', marginTop: '4px', display: 'flex', gap: '12px', color: 'var(--color-text-muted)' }}>
-            <span>Reposado: <strong>{restingDays}</strong></span>
+            <span>Reposado: <strong>{restingDaysText}</strong></span>
             <span>Estadía: <strong>{freezeTime}</strong></span>
           </div>
         </div>
       </div>
+
+      {/* Improvement 2: Semáforo de Desgasificación Box */}
+      {batch.roast_date && batch.freeze_date && (
+        <div className="candy-card" style={{ cursor: 'default', borderLeft: `6px solid ${degasStatus.color}`, backgroundColor: '#FFFFFF' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', fontWeight: '900', color: degasStatus.color, textTransform: 'uppercase' }}>
+              {degasStatus.label} ({restingDays} Días)
+            </span>
+          </div>
+          <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: 'var(--color-text-muted)', lineHeight: '1.4' }}>
+            {degasStatus.description}
+          </p>
+        </div>
+      )}
+
+      {/* Improvement 6: Historial Gráfico de Molienda (Timeline de Micrones) */}
+      {batch.recipes && batch.recipes.length > 0 && (
+        <div className="candy-card" style={{ cursor: 'default' }}>
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 12px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
+            Evolución de Molienda (Micrones)
+          </h4>
+          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px', alignItems: 'flex-end', height: '60px' }}>
+            {batch.recipes.slice(0, 6).reverse().map((recipe, index) => {
+              const microns = parseGrindToMicrons(recipe.grind);
+              if (!microns) return null;
+              // Normalize height for visual display (e.g. min 200, max 2500)
+              const barHeight = Math.min(100, Math.max(15, (microns / 2000) * 100));
+              return (
+                <div key={recipe.id || index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '1', minWidth: '45px' }}>
+                  <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--color-text)' }}>{microns}µm</span>
+                  <div style={{
+                    width: '12px',
+                    height: `${barHeight}px`,
+                    backgroundColor: recipe.rating >= 4 ? 'var(--color-crimson)' : '#CBD5E0',
+                    border: '1.5px solid var(--border-color)',
+                    marginTop: '4px',
+                    borderRadius: '2px 2px 0 0'
+                  }} />
+                  <span style={{ fontSize: '8px', color: 'var(--color-text-muted)', marginTop: '2px', textTransform: 'uppercase' }}>
+                    {recipe.method.split(' ')[0]}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Referencia de Última Configuración Exitosa */}
       {lastRecipe && (
@@ -257,7 +389,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
             {lastRecipe.method} | {lastRecipe.grind} | {lastRecipe.ratio}
           </div>
           <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-            Molido para <strong>{batch.dose_weight}</strong>. Agua requerida: <strong>{(doseNum * ratioVal).toFixed(0)}g</strong>.
+            Molido para <strong>{batch.dose_weight}</strong> (~{parseGrindToMicrons(lastRecipe.grind)} µm). Agua: <strong>{(doseNum * ratioVal).toFixed(0)}g</strong>.
           </div>
           {batch.remaining_doses > 0 && (
             <button className="btn-candy primary" onClick={handleRepeatLastRecipe} style={{ width: '100%', marginTop: '10px', padding: '8px', fontSize: '10px' }}>
@@ -317,7 +449,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
             
             <div className="form-group" style={{ flex: 1 }}>
               <label>Molienda (J-Max: R.N.C)</label>
-              <div className="jmax-steppers-grid" style={{ marginBottom: 0 }}>
+              <div className="jmax-steppers-grid" style={{ marginBottom: 4 }}>
                 <div className="jmax-cell">
                   <span className="jmax-hdr-lbl">ROT</span>
                   <div className="mono-stepper">
@@ -343,6 +475,10 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
                   </div>
                 </div>
               </div>
+              {/* Improvement 3: Micron Grind Translator text output */}
+              <div style={{ fontSize: '10px', textAlign: 'center', fontWeight: 'bold', color: 'var(--color-crimson)' }}>
+                Partícula: ~{currentMicrons} µm
+              </div>
             </div>
           </div>
 
@@ -359,9 +495,130 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
             </div>
           </div>
 
-          <div className="form-group">
-            <label>Notas Personales / Sabores</label>
-            <input className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Acidez a durazno brillante, final dulce." />
+          {/* Improvement 5: Sensory Sliders and Flavor tags */}
+          <div style={{ borderTop: '1.5px solid var(--border-color)', marginTop: '12px', paddingTop: '12px' }}>
+            <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', textTransform: 'uppercase', margin: '0 0 10px 0' }}>
+              Evaluación Sensorial (Taza Perfecta)
+            </h4>
+            
+            {/* Balance Selector */}
+            <div className="form-group">
+              <label style={{ fontSize: '9px' }}>Balance Sensorial (Predominante)</label>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                {['Ácido', 'Dulce', 'Amargo'].map(b => (
+                  <button
+                    key={b}
+                    type="button"
+                    className="btn-candy"
+                    onClick={() => setSensoryBalance(b)}
+                    style={{
+                      flex: 1,
+                      minHeight: '34px',
+                      fontSize: '11px',
+                      padding: '4px',
+                      margin: 0,
+                      backgroundColor: sensoryBalance === b ? 'var(--color-text)' : 'var(--bg-card)',
+                      color: sensoryBalance === b ? '#FFF' : 'var(--color-text)',
+                      boxShadow: sensoryBalance === b ? 'none' : '2px 2px 0px var(--border-color)',
+                      transform: sensoryBalance === b ? 'translate(1px, 1px)' : 'none'
+                    }}
+                  >
+                    {b}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Cuerpo Selector */}
+            <div className="form-group">
+              <label style={{ fontSize: '9px' }}>Cuerpo / Textura</label>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                {['Ligero', 'Medio', 'Sedoso'].map(b => (
+                  <button
+                    key={b}
+                    type="button"
+                    className="btn-candy"
+                    onClick={() => setSensoryBody(b)}
+                    style={{
+                      flex: 1,
+                      minHeight: '34px',
+                      fontSize: '11px',
+                      padding: '4px',
+                      margin: 0,
+                      backgroundColor: sensoryBody === b ? 'var(--color-text)' : 'var(--bg-card)',
+                      color: sensoryBody === b ? '#FFF' : 'var(--color-text)',
+                      boxShadow: sensoryBody === b ? 'none' : '2px 2px 0px var(--border-color)',
+                      transform: sensoryBody === b ? 'translate(1px, 1px)' : 'none'
+                    }}
+                  >
+                    {b}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Extracción Selector */}
+            <div className="form-group">
+              <label style={{ fontSize: '9px' }}>Nivel de Extracción</label>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                {['Sub', 'En Punto', 'Sobre'].map(b => (
+                  <button
+                    key={b}
+                    type="button"
+                    className="btn-candy"
+                    onClick={() => setSensoryExtraction(b)}
+                    style={{
+                      flex: 1,
+                      minHeight: '34px',
+                      fontSize: '11px',
+                      padding: '4px',
+                      margin: 0,
+                      backgroundColor: sensoryExtraction === b ? 'var(--color-text)' : 'var(--bg-card)',
+                      color: sensoryExtraction === b ? '#FFF' : 'var(--color-text)',
+                      boxShadow: sensoryExtraction === b ? 'none' : '2px 2px 0px var(--border-color)',
+                      transform: sensoryExtraction === b ? 'translate(1px, 1px)' : 'none'
+                    }}
+                  >
+                    {b === 'Sub' ? 'Sub (Agrio)' : b === 'Sobre' ? 'Sobre (Amargo)' : 'En Punto'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* SCA Flavor Wheel Tags Selector */}
+            <div className="form-group">
+              <label style={{ fontSize: '9px' }}>Notas de Descriptor (Rueda SCA)</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
+                {flavorWheelTags.map(tag => {
+                  const isSelected = selectedFlavorTags.includes(tag.label);
+                  return (
+                    <button
+                      key={tag.val}
+                      type="button"
+                      onClick={() => toggleFlavorTag(tag.label)}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        border: '1.5px solid var(--border-color)',
+                        borderRadius: '6px',
+                        backgroundColor: isSelected ? 'var(--color-crimson)' : 'var(--bg-card)',
+                        color: isSelected ? '#FFF' : 'var(--border-color)',
+                        cursor: 'pointer',
+                        transition: 'all 100ms'
+                      }}
+                    >
+                      {tag.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="form-group" style={{ marginTop: '12px' }}>
+            <label>Comentarios Adicionales</label>
+            <input className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Retrogusto largo, dulzor a caña." />
           </div>
 
           <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '8px' }}>Guardar Bitácora</button>

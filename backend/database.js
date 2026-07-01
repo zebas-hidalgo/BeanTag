@@ -61,6 +61,16 @@ async function initDb() {
       FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE CASCADE
     )
   `);
+
+  try {
+    await db.exec('ALTER TABLE recipes ADD COLUMN sensory_balance TEXT;');
+  } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE recipes ADD COLUMN sensory_body TEXT;');
+  } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE recipes ADD COLUMN sensory_extraction TEXT;');
+  } catch (e) {}
   
   return db;
 }

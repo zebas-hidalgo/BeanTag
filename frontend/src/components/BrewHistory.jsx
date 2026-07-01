@@ -15,6 +15,20 @@ export default function BrewHistory({ onNavigateToInventory }) {
     return () => { active = false; };
   }, []);
 
+  // J-Max microns calculator helper
+  const parseGrindToMicrons = (grindStr) => {
+    if (!grindStr || !grindStr.includes('J-Max:')) return null;
+    const parts = grindStr.replace('J-Max:', '').trim().split('.');
+    if (parts.length === 3) {
+      const rot = parseInt(parts[0]) || 0;
+      const num = parseInt(parts[1]) || 0;
+      const click = parseInt(parts[2]) || 0;
+      const totalClicks = (rot * 90) + (num * 10) + click;
+      return Math.round(totalClicks * 8.8); // 8.8 microns per click
+    }
+    return null;
+  };
+
   // R3: Skeleton loading state
   if (history === null) return (
     <div style={{ padding: '14px 14px 90px 14px' }}>
@@ -32,7 +46,7 @@ export default function BrewHistory({ onNavigateToInventory }) {
   );
 
   return (
-    <div style={{ padding: '16px 16px 90px 16px' }}>
+    <div style={{ padding: '14px 14px 90px 14px' }}>
       <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', marginBottom: '14px' }}>
         Bitácoras
       </h2>
@@ -50,26 +64,60 @@ export default function BrewHistory({ onNavigateToInventory }) {
           </button>
         </div>
       ) : (
-        history.map(item => (
-          <div key={item.id} className="candy-card" style={{ borderLeft: '6px solid var(--color-crimson)', cursor: 'default' }}>
-            <div className="card-header-flex">
-              <div>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', margin: '0 0 2px 0', textTransform: 'uppercase' }}>{item.method}</h3>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>{item.batch_name}</span>
+        history.map(item => {
+          const microns = parseGrindToMicrons(item.grind);
+          return (
+            <div key={item.id} className="candy-card" style={{ borderLeft: '6px solid var(--color-crimson)', cursor: 'default' }}>
+              <div className="card-header-flex">
+                <div>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: '0 0 2px 0', textTransform: 'uppercase' }}>{item.method}</h3>
+                  <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>{item.batch_name}</span>
+                </div>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#4A5568' }}>
+                  {new Date(item.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                </span>
               </div>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#4A5568' }}>
-                {new Date(item.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-              </span>
+              <div style={{ fontSize: '12px', marginTop: '8px', borderTop: '1px solid #E2E8F0', paddingTop: '6px' }}>
+                <p style={{ margin: '2px 0' }}>
+                  <strong>Molienda:</strong> {item.grind || 'N/A'} {microns ? `(~${microns} µm)` : ''} | <strong>Ratio:</strong> {item.ratio || 'N/A'}
+                </p>
+                
+                {/* Sensory properties tag row (Balance, Body, Extraction) */}
+                {(item.sensory_balance || item.sensory_body || item.sensory_extraction) && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', margin: '6px 0' }}>
+                    {item.sensory_balance && (
+                      <span style={{ fontSize: '9px', fontWeight: 'bold', background: '#FEEBC8', color: '#C05621', padding: '2px 6px', borderRadius: '4px', border: '1px solid #FBD38D' }}>
+                        ⚖️ {item.sensory_balance}
+                      </span>
+                    )}
+                    {item.sensory_body && (
+                      <span style={{ fontSize: '9px', fontWeight: 'bold', background: '#EBF8FF', color: '#2B6CB0', padding: '2px 6px', borderRadius: '4px', border: '1px solid #BEE3F8' }}>
+                        🍯 {item.sensory_body}
+                      </span>
+                    )}
+                    {item.sensory_extraction && (
+                      <span style={{
+                        fontSize: '9px', fontWeight: 'bold',
+                        background: item.sensory_extraction === 'En Punto' ? '#C6F6D5' : '#FED7D7',
+                        color: item.sensory_extraction === 'En Punto' ? '#22543D' : '#9B2C2C',
+                        padding: '2px 6px', borderRadius: '4px',
+                        border: item.sensory_extraction === 'En Punto' ? '1px solid #9AE6B4' : '1px solid #FEB2B2'
+                      }}>
+                        🧪 {item.sensory_extraction === 'Sub' ? 'Sub-ext' : item.sensory_extraction === 'Sobre' ? 'Sobre-ext' : 'En Punto'}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {item.notes && <p style={{ margin: '4px 0 2px 0', fontStyle: 'italic', color: 'var(--color-text)' }}><strong>Notas:</strong> {item.notes}</p>}
+                
+                <p style={{ margin: '6px 0 0 0', fontSize: '12px', fontWeight: 'bold' }}>
+                  Puntuación: <span style={{ color: 'var(--color-crimson)' }}>{'★'.repeat(item.rating || 5)}{'☆'.repeat(5 - (item.rating || 5))}</span> ({item.rating || 5}/5)
+                </p>
+              </div>
             </div>
-            <div style={{ fontSize: '12px', marginTop: '8px', borderTop: '1px solid #E2E8F0', paddingTop: '6px' }}>
-              <p style={{ margin: '2px 0' }}><strong>Molienda:</strong> {item.grind || 'N/A'} | <strong>Ratio:</strong> {item.ratio || 'N/A'}</p>
-              {item.notes && <p style={{ margin: '2px 0', fontStyle: 'italic' }}><strong>Cata:</strong> {item.notes}</p>}
-              <p style={{ margin: '4px 0 0 0', fontSize: '12px', fontWeight: 'bold' }}>
-                Puntuación: <span style={{ color: 'var(--color-crimson)' }}>{'★'.repeat(item.rating || 5)}{'☆'.repeat(5 - (item.rating || 5))}</span> ({item.rating || 5}/5)
-              </p>
-            </div>
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );

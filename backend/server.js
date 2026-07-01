@@ -86,16 +86,16 @@ app.patch('/api/batches/:id/doses', async (req, res) => {
 
 // Save brew recipe
 app.post('/api/recipes', async (req, res) => {
-  const { batch_id, method, ratio, grind, temperature, brew_time, rating, notes } = req.body;
+  const { batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction } = req.body;
   if (!batch_id || !method) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
   try {
     const db = await getDb();
     await db.run(
-      `INSERT INTO recipes (batch_id, method, ratio, grind, temperature, brew_time, rating, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [batch_id, method, ratio, grind, temperature, brew_time, rating, notes]
+      `INSERT INTO recipes (batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction]
     );
     res.status(201).json({ success: true });
   } catch (err) {
