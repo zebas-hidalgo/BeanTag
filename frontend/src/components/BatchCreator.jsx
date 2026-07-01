@@ -114,15 +114,14 @@ export default function BatchCreator({ onBatchCreated, onBack, showToast }) {
             </div>
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label>F. Tueste</label>
-              <input className="candy-input" value={roastDate} onChange={(e) => setRoastDate(e.target.value)} type="date" />
-            </div>
-            <div className="form-group">
-              <label>F. Congelado</label>
-              <input className="candy-input" value={freezeDate} onChange={(e) => setFreezeDate(e.target.value)} type="date" />
-            </div>
+          <div className="form-group">
+            <label>Fecha de Tueste</label>
+            <input className="candy-input" value={roastDate} onChange={(e) => setRoastDate(e.target.value)} type="date" />
+          </div>
+
+          <div className="form-group">
+            <label>Fecha de Congelado</label>
+            <input className="candy-input" value={freezeDate} onChange={(e) => setFreezeDate(e.target.value)} type="date" />
           </div>
 
           <div className="form-group">
