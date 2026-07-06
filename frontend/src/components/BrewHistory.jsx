@@ -77,8 +77,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         ctx.restore();
       }
 
-      // 3. Filtro de opacidad blanco (55%) sobre la textura para legibilidad
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      // 3. Filtro de opacidad blanco (65%) sobre la textura para legibilidad
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
       ctx.fillRect(15, 15, 810, 510);
 
       // 4. Dibujar doble borde negro
@@ -123,7 +123,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
       // 6. Columnas de Detalles
       // Columna Izquierda: El Café
-      ctx.font = '900 9.5px "JetBrains Mono", monospace';
+      ctx.font = '700 9.5px "Space Grotesk", sans-serif';
       ctx.fillStyle = '#000000';
       ctx.fillText('[ GRANO SELECCIONADO ]', 50, 140);
 
@@ -138,6 +138,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       
       const roastDateText = recipe.batch_roast_date ? formatLocalDateStr(recipe.batch_roast_date) : 'N/A';
       ctx.fillText(`Tueste: ${roastDateText} (${recipe.batch_roast_level || 'N/A'})`, 50, 370);
+      ctx.fillText(`Notas: ${recipe.batch_roaster_notes || 'N/A'}`, 50, 405);
 
       // Línea punteada divisoria entre columnas
       ctx.save();
@@ -146,12 +147,12 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.strokeStyle = '#000000';
       ctx.beginPath();
       ctx.moveTo(420, 120);
-      ctx.lineTo(420, 395);
+      ctx.lineTo(420, 415);
       ctx.stroke();
       ctx.restore();
 
       // Columna Derecha: La Extracción
-      ctx.font = '900 9.5px "JetBrains Mono", monospace';
+      ctx.font = '700 9.5px "Space Grotesk", sans-serif';
       ctx.fillStyle = '#000000';
       ctx.fillText('[ EXTRACCIÓN ]', 450, 140);
 
@@ -188,21 +189,21 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.lineWidth = 3.5;
       ctx.strokeStyle = '#000000';
       ctx.beginPath();
-      ctx.moveTo(50, 425);
-      ctx.lineTo(790, 425);
+      ctx.moveTo(50, 435);
+      ctx.lineTo(790, 435);
       ctx.stroke();
 
       if (recipe.notes) {
         ctx.font = 'italic 500 11px Outfit, sans-serif';
         ctx.fillStyle = '#000000';
         const notesText = `"${recipe.notes}"`;
-        ctx.fillText(notesText, 50, 465);
+        ctx.fillText(notesText, 50, 475);
       }
 
       ctx.font = '900 12px "JetBrains Mono", monospace';
       ctx.fillStyle = '#000000';
       ctx.textAlign = 'right';
-      ctx.fillText('BEANTAG.CAFE', 790, 465);
+      ctx.fillText('BEANTAG.CAFE', 790, 475);
       ctx.textAlign = 'left';
 
       // Export as Data URL to preview in modal
