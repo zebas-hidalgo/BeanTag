@@ -421,10 +421,10 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
           {/* Fila 2: Ratio (Filtro) o Dosis Out (Espresso) + Molienda */}
           <div className="form-row">
             {method !== 'Espresso' ? (
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Ratio de Extracción (1:X)</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', height: '40px' }}>
-                  <span style={{ fontFamily: 'var(--font-heading)', fontWeight: '900', fontSize: '16px', flexShrink: 0, lineHeight: 1 }}>1 :</span>
+              <div className="form-group" style={{ flex: '0 0 35%', maxWidth: '35%' }}>
+                <label>Ratio (1:X)</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', height: '40px' }}>
+                  <span style={{ fontFamily: 'var(--font-heading)', fontWeight: '900', fontSize: '14px', flexShrink: 0, lineHeight: 1 }}>1 :</span>
                   <input 
                     type="number"
                     step="0.1"
@@ -433,9 +433,9 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
                     style={{ 
                       fontFamily: 'var(--font-mono)', 
                       fontWeight: '900', 
-                      fontSize: '14px', 
+                      fontSize: '13px', 
                       textAlign: 'center',
-                      padding: '8px 4px',
+                      padding: '8px 2px',
                       margin: 0,
                       flex: 1,
                       height: '100%',
@@ -448,42 +448,42 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
                     }}
                   />
                 </div>
-                <div style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '6px', textAlign: 'center' }}>
-                  Agua Objetivo: <span style={{ color: '#E53E3E' }}>{(doseInG * (parseFloat(ratioVal) || 0)).toFixed(0)}g</span>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px', textAlign: 'center' }}>
+                  H2O: <span style={{ color: '#E53E3E' }}>{(doseInG * (parseFloat(ratioVal) || 0)).toFixed(0)}g</span>
                 </div>
               </div>
             ) : (
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Dosis Out / Yield (g)</label>
+              <div className="form-group" style={{ flex: '0 0 35%', maxWidth: '35%' }}>
+                <label>Yield Out (g)</label>
                 <input 
                   type="number" 
                   step="0.1" 
                   className="candy-input" 
-                  style={{ height: '40px', boxSizing: 'border-box', margin: 0 }}
+                  style={{ height: '40px', boxSizing: 'border-box', margin: 0, padding: '8px 4px', textAlign: 'center', fontSize: '13px' }}
                   value={doseOutG} 
                   onChange={(e) => setDoseOutG(parseFloat(e.target.value) || 0)} 
                   required 
                 />
-                <div style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '6px', textAlign: 'center' }}>
-                  Ratio Resultante: <span style={{ color: '#E53E3E' }}>1:{(doseOutG / (doseInG || 1)).toFixed(1)}</span>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px', textAlign: 'center' }}>
+                  Ratio: <span style={{ color: '#E53E3E' }}>1:{(doseOutG / (doseInG || 1)).toFixed(1)}</span>
                 </div>
               </div>
             )}
             
             {/* Molienda (J-Max) */}
-            <div className="form-group" style={{ flex: 1 }}>
+            <div className="form-group" style={{ flex: '0 0 62%', maxWidth: '62%' }}>
               <label>Molienda (J-Max: R.N.C)</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <select className="candy-input" style={{ flex: 1, padding: '8px', textAlign: 'center', fontSize: '13px', backgroundImage: 'none', paddingRight: '8px' }} value={jmaxRot} onChange={(e) => setJmaxRot(parseInt(e.target.value) || 0)}>
-                  {[0, 1, 2, 3, 4].map(v => <option key={v} value={v}>Rot: {v}</option>)}
+                <select className="candy-input" style={{ flex: 1, padding: '8px 4px', textAlign: 'center', fontSize: '12px', backgroundImage: 'none' }} value={jmaxRot} onChange={(e) => setJmaxRot(parseInt(e.target.value) || 0)}>
+                  {[0, 1, 2, 3, 4].map(v => <option key={v} value={v}>R: {v}</option>)}
                 </select>
                 <span style={{ fontWeight: 'bold', color: 'var(--border-color)' }}>.</span>
-                <select className="candy-input" style={{ flex: 1, padding: '8px', textAlign: 'center', fontSize: '13px', backgroundImage: 'none', paddingRight: '8px' }} value={jmaxNum} onChange={(e) => setJmaxNum(parseInt(e.target.value) || 0)}>
-                  {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(v => <option key={v} value={v}>Nº: {v}</option>)}
+                <select className="candy-input" style={{ flex: 1, padding: '8px 4px', textAlign: 'center', fontSize: '12px', backgroundImage: 'none' }} value={jmaxNum} onChange={(e) => setJmaxNum(parseInt(e.target.value) || 0)}>
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(v => <option key={v} value={v}>N: {v}</option>)}
                 </select>
                 <span style={{ fontWeight: 'bold', color: 'var(--border-color)' }}>.</span>
-                <select className="candy-input" style={{ flex: 1, padding: '8px', textAlign: 'center', fontSize: '13px', backgroundImage: 'none', paddingRight: '8px' }} value={jmaxClick} onChange={(e) => setJmaxClick(parseInt(e.target.value) || 0)}>
-                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(v => <option key={v} value={v}>Clic: {v}</option>)}
+                <select className="candy-input" style={{ flex: 1, padding: '8px 4px', textAlign: 'center', fontSize: '12px', backgroundImage: 'none' }} value={jmaxClick} onChange={(e) => setJmaxClick(parseInt(e.target.value) || 0)}>
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(v => <option key={v} value={v}>C: {v}</option>)}
                 </select>
               </div>
               <div style={{ fontSize: '10px', textAlign: 'center', fontWeight: 'bold', color: 'var(--color-crimson)', marginTop: '8px' }}>
