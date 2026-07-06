@@ -91,59 +91,57 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
       // 5. Encabezado: Línea vertical naranja y textos
       ctx.fillStyle = '#F94C00';
-      ctx.fillRect(50, 45, 6, 38);
+      ctx.fillRect(50, 45, 6, 46);
       ctx.lineWidth = 2;
       ctx.strokeStyle = '#000000';
-      ctx.strokeRect(50, 45, 6, 38);
+      ctx.strokeRect(50, 45, 6, 46);
 
-      ctx.font = '700 24px Fredoka, sans-serif';
+      ctx.font = '500 32px Fredoka, sans-serif';
       ctx.fillStyle = '#000000';
-      ctx.fillText('BeanTag', 68, 68);
+      ctx.fillText('BeanTag', 68, 73);
 
-      ctx.font = '900 8.5px "JetBrains Mono", monospace';
+      ctx.font = '700 13px "Space Grotesk", sans-serif';
       ctx.fillStyle = '#F94C00';
-      ctx.fillText('FICHA TÉCNICA DE ORIGEN NFC', 68, 81);
+      ctx.fillText('FICHA TÉCNICA DE ORIGEN NFC', 68, 89);
 
       // Orden y fecha
-      ctx.font = '700 9.5px "JetBrains Mono", monospace';
+      ctx.font = '700 14px "Share Tech Mono", monospace';
       ctx.fillStyle = '#000000';
       ctx.textAlign = 'right';
       const createdDate = new Date(recipe.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-      ctx.fillText(`REGISTRO: #0${recipe.id || '294'}`, 790, 60);
-      ctx.fillText(createdDate.toUpperCase(), 790, 75);
+      ctx.fillText(`REGISTRO: #0${recipe.id || '294'}`, 790, 63);
+      ctx.fillText(createdDate.toUpperCase(), 790, 83);
       ctx.textAlign = 'left';
 
       // Línea divisoria inferior del encabezado
       ctx.lineWidth = 3.5;
       ctx.strokeStyle = '#000000';
       ctx.beginPath();
-      ctx.moveTo(50, 95);
-      ctx.lineTo(790, 95);
+      ctx.moveTo(50, 105);
+      ctx.lineTo(790, 105);
       ctx.stroke();
 
       // 6. Cuerpo: Detalles Técnicos del Grano (2 columnas limpias sin línea divisoria)
-      ctx.font = '700 9.5px "Space Grotesk", sans-serif';
+      ctx.font = '700 16px "Space Grotesk", sans-serif';
       ctx.fillStyle = '#F94C00';
-      ctx.fillText('[ GRANO SELECCIONADO ]', 50, 130);
+      ctx.fillText('[ GRANO SELECCIONADO ]', 50, 145);
 
-      ctx.font = '500 22px Outfit, sans-serif';
+      ctx.font = '500 34px Outfit, sans-serif';
       ctx.fillStyle = '#000000';
-      ctx.fillText(recipe.batch_name || 'N/A', 50, 168);
+      ctx.fillText(recipe.batch_name || 'N/A', 50, 195);
 
-      ctx.font = '500 12px Outfit, sans-serif';
+      ctx.font = '400 19px Outfit, sans-serif';
       // Columna Izquierda (x = 50)
-      ctx.fillText(`Origen: ${recipe.batch_origin || 'N/A'}`, 50, 205);
-      ctx.fillText(`Tostador: ${recipe.batch_roaster || 'N/A'}`, 50, 235);
-      ctx.fillText(`Variedad: ${recipe.batch_variety || 'N/A'}`, 50, 265);
-      ctx.fillText(`Productor: ${recipe.batch_producer || 'N/A'}`, 50, 295);
+      ctx.fillText(`Origen: ${recipe.batch_origin || 'N/A'}`, 50, 245);
+      ctx.fillText(`Tostador: ${recipe.batch_roaster || 'N/A'}`, 50, 287);
+      ctx.fillText(`Variedad: ${recipe.batch_variety || 'N/A'}`, 50, 329);
 
       // Columna Derecha (x = 450)
-      ctx.fillText(`Altitud: ${recipe.batch_altitude || 'N/A'}`, 450, 205);
-      ctx.fillText(`Proceso: ${recipe.batch_process || 'N/A'}`, 450, 235);
+      ctx.fillText(`Productor: ${recipe.batch_producer || 'N/A'}`, 450, 245);
+      ctx.fillText(`Proceso: ${recipe.batch_process || 'N/A'}`, 450, 287);
       
       const roastDateText = recipe.batch_roast_date ? formatLocalDateStr(recipe.batch_roast_date) : 'N/A';
-      ctx.fillText(`Tueste: ${roastDateText}`, 450, 265);
-      ctx.fillText(`Nivel Tueste: ${recipe.batch_roast_level || 'N/A'}`, 450, 295);
+      ctx.fillText(`Tueste: ${roastDateText}`, 450, 329);
 
       // 7. Sección 1: Descriptores del Café (batch_roaster_notes)
       ctx.lineWidth = 1.5;
@@ -151,38 +149,20 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.save();
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.moveTo(50, 325);
-      ctx.lineTo(790, 325);
+      ctx.moveTo(50, 365);
+      ctx.lineTo(790, 365);
       ctx.stroke();
       ctx.restore();
 
-      ctx.font = '700 8.5px "Space Grotesk", sans-serif';
+      ctx.font = '700 15px "Space Grotesk", sans-serif';
       ctx.fillStyle = '#F94C00';
-      ctx.fillText('[ NOTAS DE CATA / DESCRIPTORES DEL GRANO ]', 50, 348);
+      ctx.fillText('[ NOTAS DE CATA / DESCRIPTORES DEL GRANO ]', 50, 395);
 
-      ctx.font = '700 11px Outfit, sans-serif';
+      ctx.font = '700 18px Outfit, sans-serif';
       ctx.fillStyle = '#000000';
-      ctx.fillText(recipe.batch_roaster_notes || 'N/A', 50, 370);
+      ctx.fillText(recipe.batch_roaster_notes || 'N/A', 50, 425);
 
-      // 8. Sección 2: Notas de la Preparación (recipe.notes)
-      ctx.save();
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(50, 395);
-      ctx.lineTo(790, 395);
-      ctx.stroke();
-      ctx.restore();
-
-      ctx.font = '700 8.5px "Space Grotesk", sans-serif';
-      ctx.fillStyle = '#F94C00';
-      ctx.fillText('[ NOTAS DE CATA DE LA EXTRACCIÓN ]', 50, 418);
-
-      ctx.font = 'italic 500 11px Outfit, sans-serif';
-      ctx.fillStyle = '#000000';
-      const notesText = recipe.notes ? `"${recipe.notes}"` : '"Sin notas de cata adicionales para esta extracción"';
-      ctx.fillText(notesText, 50, 440);
-
-      // 9. Footer: Firma
+      // 8. Footer: Firma
       ctx.lineWidth = 3.5;
       ctx.strokeStyle = '#000000';
       ctx.beginPath();
@@ -190,10 +170,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.lineTo(790, 475);
       ctx.stroke();
 
-      ctx.font = '900 12px "JetBrains Mono", monospace';
+      ctx.font = '900 19px "JetBrains Mono", monospace';
       ctx.fillStyle = '#000000';
       ctx.textAlign = 'right';
-      ctx.fillText('BEANTAG.CAFE', 790, 505);
+      ctx.fillText('BEANTAG.CAFE', 790, 512);
       ctx.textAlign = 'left';
 
       // Export as Data URL to preview in modal
