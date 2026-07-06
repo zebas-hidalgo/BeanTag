@@ -48,10 +48,13 @@ app.post('/api/batches', async (req, res) => {
   }
   try {
     const db = await getDb();
+    const doseWeightNum = parseFloat(dose_weight) || 20.0;
+    const totalWeightG = doseWeightNum * parseInt(total_doses);
+
     await db.run(
-      `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, total_doses, origin, roast_level, roast_date, freeze_date]
+      `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )`,
+      [id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, total_doses, origin, roast_level, roast_date, freeze_date, totalWeightG, totalWeightG]
     );
     res.status(201).json({ success: true, id });
   } catch (err) {
@@ -86,17 +89,34 @@ app.patch('/api/batches/:id/doses', async (req, res) => {
 
 // Save brew recipe
 app.post('/api/recipes', async (req, res) => {
-  const { batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction } = req.body;
+  const { 
+    batch_id, method, ratio, grind, temperature, brew_time, rating, notes, 
+    sensory_balance, sensory_body, sensory_extraction,
+    dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion
+  } = req.body;
   if (!batch_id || !method) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
   try {
     const db = await getDb();
+    
+    // Fetch batch to get default dose weight if needed
+    const batch = await db.get('SELECT dose_weight FROM batches WHERE id = ?', batch_id);
+    const defaultDose = batch ? (parseFloat(batch.dose_weight) || 20.0) : 20.0;
+    const doseInVal = dose_in_g !== undefined ? parseFloat(dose_in_g) : defaultDose;
+
     await db.run(
-      `INSERT INTO recipes (batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction]
+      `INSERT INTO recipes (batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, doseInVal, dose_out_g, espresso_pressure, espresso_preinfusion]
     );
+
+    // Subtract grams from batch remaining weight
+    await db.run(
+      'UPDATE batches SET remaining_weight_g = MAX(0.0, remaining_weight_g - ?) WHERE id = ?',
+      [doseInVal, batch_id]
+    );
+
     res.status(201).json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -149,12 +169,17 @@ app.put('/api/batches/:id', async (req, res) => {
       newRemaining = Math.max(0, current.remaining_doses + diff);
     }
 
+    const doseWeightNum = parseFloat(dose_weight) || 20.0;
+    const newTotalWeight = doseWeightNum * total_doses;
+    const newRemainingWeight = doseWeightNum * newRemaining;
+
     await db.run(
       `UPDATE batches 
        SET name = ?, producer = ?, altitude = ?, variety = ?, process = ?, roaster = ?, roaster_notes = ?, 
-           dose_weight = ?, total_doses = ?, remaining_doses = ?, origin = ?, roast_level = ?, roast_date = ?, freeze_date = ?
+           dose_weight = ?, total_doses = ?, remaining_doses = ?, origin = ?, roast_level = ?, roast_date = ?, freeze_date = ?,
+           total_weight_g = ?, remaining_weight_g = ?
        WHERE id = ?`,
-      [name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, newRemaining, origin, roast_level, roast_date, freeze_date, req.params.id]
+      [name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, newRemaining, origin, roast_level, roast_date, freeze_date, newTotalWeight, newRemainingWeight, req.params.id]
     );
     res.json({ success: true, remaining_doses: newRemaining });
   } catch (err) {
@@ -189,6 +214,67 @@ app.delete('/api/batches/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// JSON Backup: Export all database tables
+app.get('/api/backup/export', async (req, res) => {
+  try {
+    const db = await getDb();
+    const batches = await db.all('SELECT * FROM batches');
+    const recipes = await db.all('SELECT * FROM recipes');
+    res.json({ success: true, batches, recipes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// JSON Backup: Import and replace all database tables
+app.post('/api/backup/import', async (req, res) => {
+  const { batches, recipes } = req.body;
+  if (!Array.isArray(batches) || !Array.isArray(recipes)) {
+    return res.status(400).json({ error: 'Formato de backup inválido' });
+  }
+  try {
+    const db = await getDb();
+    
+    // Clear current database in a transaction/sequence
+    await db.run('DELETE FROM recipes');
+    await db.run('DELETE FROM batches');
+
+    // Insert imported batches
+    for (const b of batches) {
+      await db.run(
+        `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          b.id, b.name, b.producer, b.altitude, b.variety, b.process, b.roaster, b.roaster_notes, 
+          b.dose_weight, b.total_doses, b.remaining_doses, b.origin, b.roast_level, b.roast_date, b.freeze_date,
+          b.total_weight_g !== undefined ? b.total_weight_g : 0, 
+          b.remaining_weight_g !== undefined ? b.remaining_weight_g : 0,
+          b.created_at
+        ]
+      );
+    }
+
+    // Insert imported recipes
+    for (const r of recipes) {
+      await db.run(
+        `INSERT INTO recipes (id, batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          r.id, r.batch_id, r.method, r.ratio, r.grind, r.temperature, r.brew_time, r.rating, r.notes, 
+          r.sensory_balance, r.sensory_body, r.sensory_extraction,
+          r.dose_in_g, r.dose_out_g, r.espresso_pressure, r.espresso_preinfusion,
+          r.created_at
+        ]
+      );
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 // R7: PWA manifest
 app.get('/manifest.json', (req, res) => {
