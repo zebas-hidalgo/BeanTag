@@ -421,10 +421,10 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
           {/* Fila 2: Ratio (Filtro) o Dosis Out (Espresso) + Molienda */}
           <div className="form-row">
             {method !== 'Espresso' ? (
-              <div className="form-group" style={{ flex: '0 0 35%', maxWidth: '35%' }}>
+              <div className="form-group" style={{ flex: '0 0 22%', maxWidth: '22%' }}>
                 <label>Ratio (1:X)</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', height: '40px' }}>
-                  <span style={{ fontFamily: 'var(--font-heading)', fontWeight: '900', fontSize: '14px', flexShrink: 0, lineHeight: 1 }}>1 :</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2px', height: '40px' }}>
+                  <span style={{ fontFamily: 'var(--font-heading)', fontWeight: '900', fontSize: '12px', flexShrink: 0, lineHeight: 1 }}>1:</span>
                   <input 
                     type="number"
                     step="0.1"
@@ -448,30 +448,30 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
                     }}
                   />
                 </div>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px', textAlign: 'center' }}>
+                <div style={{ fontSize: '9px', fontWeight: 'bold', marginTop: '6px', textAlign: 'center' }}>
                   H2O: <span style={{ color: '#E53E3E' }}>{(doseInG * (parseFloat(ratioVal) || 0)).toFixed(0)}g</span>
                 </div>
               </div>
             ) : (
-              <div className="form-group" style={{ flex: '0 0 35%', maxWidth: '35%' }}>
-                <label>Yield Out (g)</label>
+              <div className="form-group" style={{ flex: '0 0 22%', maxWidth: '22%' }}>
+                <label>Yield (g)</label>
                 <input 
                   type="number" 
                   step="0.1" 
                   className="candy-input" 
-                  style={{ height: '40px', boxSizing: 'border-box', margin: 0, padding: '8px 4px', textAlign: 'center', fontSize: '13px' }}
+                  style={{ height: '40px', boxSizing: 'border-box', margin: 0, padding: '8px 2px', textAlign: 'center', fontSize: '13px' }}
                   value={doseOutG} 
                   onChange={(e) => setDoseOutG(parseFloat(e.target.value) || 0)} 
                   required 
                 />
-                <div style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px', textAlign: 'center' }}>
-                  Ratio: <span style={{ color: '#E53E3E' }}>1:{(doseOutG / (doseInG || 1)).toFixed(1)}</span>
+                <div style={{ fontSize: '9px', fontWeight: 'bold', marginTop: '6px', textAlign: 'center' }}>
+                  1:{(doseOutG / (doseInG || 1)).toFixed(1)}
                 </div>
               </div>
             )}
             
             {/* Molienda (J-Max) */}
-            <div className="form-group" style={{ flex: '0 0 62%', maxWidth: '62%' }}>
+            <div className="form-group" style={{ flex: '0 0 75%', maxWidth: '75%' }}>
               <label>Molienda (J-Max: R.N.C)</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <select className="candy-input" style={{ flex: 1, padding: '8px 4px', textAlign: 'center', fontSize: '12px', backgroundImage: 'none' }} value={jmaxRot} onChange={(e) => setJmaxRot(parseInt(e.target.value) || 0)}>
