@@ -108,7 +108,17 @@ app.get('/api/recipes', async (req, res) => {
   try {
     const db = await getDb();
     const history = await db.all(`
-      SELECT r.*, b.name as batch_name, b.variety as batch_variety 
+      SELECT r.*, 
+             b.name as batch_name, 
+             b.variety as batch_variety,
+             b.producer as batch_producer,
+             b.altitude as batch_altitude,
+             b.origin as batch_origin,
+             b.roaster as batch_roaster,
+             b.roast_level as batch_roast_level,
+             b.roaster_notes as batch_roaster_notes,
+             b.roast_date as batch_roast_date,
+             b.process as batch_process
       FROM recipes r 
       JOIN batches b ON r.batch_id = b.id 
       ORDER BY r.created_at DESC
@@ -118,6 +128,51 @@ app.get('/api/recipes', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Update batch details
+app.put('/api/batches/:id', async (req, res) => {
+  const { name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date } = req.body;
+  if (!name || !producer || total_doses === undefined) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  }
+  try {
+    const db = await getDb();
+    const current = await db.get('SELECT total_doses, remaining_doses FROM batches WHERE id = ?', req.params.id);
+    if (!current) {
+      return res.status(404).json({ error: 'Lote no encontrado' });
+    }
+    
+    // Adjust remaining doses if total_doses changed and remaining_doses is not explicitly provided
+    let newRemaining = remaining_doses !== undefined ? remaining_doses : current.remaining_doses;
+    if (total_doses !== current.total_doses && remaining_doses === undefined) {
+      const diff = total_doses - current.total_doses;
+      newRemaining = Math.max(0, current.remaining_doses + diff);
+    }
+
+    await db.run(
+      `UPDATE batches 
+       SET name = ?, producer = ?, altitude = ?, variety = ?, process = ?, roaster = ?, roaster_notes = ?, 
+           dose_weight = ?, total_doses = ?, remaining_doses = ?, origin = ?, roast_level = ?, roast_date = ?, freeze_date = ?
+       WHERE id = ?`,
+      [name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, newRemaining, origin, roast_level, roast_date, freeze_date, req.params.id]
+    );
+    res.json({ success: true, remaining_doses: newRemaining });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete recipe
+app.delete('/api/recipes/:id', async (req, res) => {
+  try {
+    const db = await getDb();
+    await db.run('DELETE FROM recipes WHERE id = ?', req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 // R10: Delete batch and its recipes
 app.delete('/api/batches/:id', async (req, res) => {
