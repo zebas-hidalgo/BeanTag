@@ -60,6 +60,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
     setShareStatus('Generando imagen de receta...');
     setShareImage(null);
     try {
+      if (document.fonts) {
+        await document.fonts.ready;
+      }
+
       const canvas = document.createElement('canvas');
       canvas.width = 840;
       canvas.height = 540;
@@ -143,7 +147,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       const roastDateText = recipe.batch_roast_date ? formatLocalDateStr(recipe.batch_roast_date) : 'N/A';
       ctx.fillText(`Tueste: ${roastDateText}`, 450, 329);
 
-      // 7. Sección 1: Descriptores del Café (batch_roaster_notes)
+      // 7. Sección 1: Notas de Cata de la Extracción (recipe.notes)
       ctx.lineWidth = 1.5;
       ctx.strokeStyle = '#000000';
       ctx.save();
@@ -156,11 +160,12 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
       ctx.font = '700 15px "Space Grotesk", sans-serif';
       ctx.fillStyle = '#F94C00';
-      ctx.fillText('[ NOTAS DE CATA / DESCRIPTORES DEL GRANO ]', 50, 395);
+      ctx.fillText('[ NOTAS DE CATA ]', 50, 395);
 
-      ctx.font = '700 18px Outfit, sans-serif';
+      ctx.font = 'italic 500 18px Outfit, sans-serif';
       ctx.fillStyle = '#000000';
-      ctx.fillText(recipe.batch_roaster_notes || 'N/A', 50, 425);
+      const tastingNotesText = recipe.notes ? `"${recipe.notes}"` : '"Sin notas de cata registradas para esta extracción"';
+      ctx.fillText(tastingNotesText, 50, 425);
 
       // 8. Footer: Firma
       ctx.lineWidth = 3.5;
