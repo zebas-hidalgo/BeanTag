@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
+import { Calculator } from 'lucide-react';
 
 
 
@@ -33,6 +34,12 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   const [sensoryBody, setSensoryBody] = useState('Medio');
   const [sensoryExtraction, setSensoryExtraction] = useState('En Punto');
   const [notes, setNotes] = useState('');
+
+  // Interactive Calculator State
+  const [calcVisible, setCalcVisible] = useState(false);
+  const [calcDose, setCalcDose] = useState(15.0);
+  const [calcRatio, setCalcRatio] = useState(16.0);
+  const [calcWater, setCalcWater] = useState(240);
 
   useEffect(() => {
     let active = true;
@@ -371,7 +378,78 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
         </div>
       )}
 
-
+      {/* Calculadora Interactiva de Ratio */}
+      <div className="candy-card static" style={{ marginTop: '24px', backgroundColor: calcVisible ? 'var(--bg-canvas)' : 'var(--bg-card)' }}>
+        <div 
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+          onClick={() => setCalcVisible(!calcVisible)}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Calculator size={18} color="var(--color-crimson)" />
+            <span style={{ fontWeight: '700', fontSize: '15px' }}>Calculadora de Ratio</span>
+          </div>
+          <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{calcVisible ? 'Ocultar' : 'Abrir'}</span>
+        </div>
+        
+        {calcVisible && (
+          <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }} className="animate-entrance">
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+              <div className="form-group" style={{ flex: 1, margin: 0 }}>
+                <label style={{ fontSize: '11px' }}>Café (g)</label>
+                <input 
+                  type="number" step="0.1" className="candy-input" 
+                  value={calcDose} 
+                  onChange={(e) => {
+                    const dose = parseFloat(e.target.value) || 0;
+                    setCalcDose(dose);
+                    setCalcWater(Math.round(dose * calcRatio));
+                  }} 
+                />
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 'bold', paddingBottom: '10px' }}>×</div>
+              <div className="form-group" style={{ flex: 1, margin: 0 }}>
+                <label style={{ fontSize: '11px' }}>Ratio 1:</label>
+                <input 
+                  type="number" step="0.1" className="candy-input" 
+                  value={calcRatio} 
+                  onChange={(e) => {
+                    const ratio = parseFloat(e.target.value) || 0;
+                    setCalcRatio(ratio);
+                    setCalcWater(Math.round(calcDose * ratio));
+                  }} 
+                />
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 'bold', paddingBottom: '10px' }}>=</div>
+              <div className="form-group" style={{ flex: 1, margin: 0 }}>
+                <label style={{ fontSize: '11px' }}>Agua (g)</label>
+                <input 
+                  type="number" className="candy-input" 
+                  value={calcWater} 
+                  onChange={(e) => {
+                    const water = parseFloat(e.target.value) || 0;
+                    setCalcWater(water);
+                    if (calcDose > 0) setCalcRatio(parseFloat((water / calcDose).toFixed(1)));
+                  }} 
+                />
+              </div>
+            </div>
+            <button 
+              type="button" 
+              className="btn-candy accent" 
+              style={{ padding: '6px', fontSize: '11px', minHeight: '32px', width: '100%' }}
+              onClick={() => {
+                setDoseInG(calcDose);
+                setRatioVal(calcRatio);
+                if (method === 'Espresso') setDoseOutG(calcWater);
+                setCalcVisible(false);
+                if (showToast) showToast('Valores transferidos al formulario.', { type: 'success', duration: 2000 });
+              }}
+            >
+              Transferir datos al formulario
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Formulario de Bitácora */}
       <h2 style={{ fontFamily: 'var(--font-heading)', marginTop: '24px', textTransform: 'uppercase', fontSize: '15px' }}>Registrar Preparación</h2>

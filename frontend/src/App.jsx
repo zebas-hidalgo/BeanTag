@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Moon, Sun } from 'lucide-react';
 import Inventory from './components/Inventory';
 import BatchDetail from './components/BatchDetail';
 import BatchCreator from './components/BatchCreator';
@@ -6,6 +7,20 @@ import BrewHistory from './components/BrewHistory';
 import Settings from './components/Settings';
 
 export default function App() {
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
   const [currentView, setCurrentView] = useState('inventory');
   const [batches, setBatches] = useState([]);
   const [selectedBatchId, setSelectedBatchId] = useState(null);
@@ -209,6 +224,14 @@ export default function App() {
           }}>BeanTag</span>
         </div>
         <div style={{ display: 'flex', gap: '6px' }}>
+          <button 
+            onClick={() => setIsDarkMode(!isDarkMode)} 
+            className="app-bar-btn" 
+            style={{ padding: '0 8px' }}
+            title="Alternar Modo Oscuro"
+          >
+            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
           {currentView === 'inventory' && (
             <>
               <button className="app-bar-btn" onClick={handleNfcScan}>Escaneo</button>
