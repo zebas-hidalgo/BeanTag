@@ -104,12 +104,12 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.fillStyle = '#000000';
       ctx.fillText('BeanTag', 68, 73);
 
-      ctx.font = '700 13px "Space Grotesk", sans-serif';
+      ctx.font = '700 13px Space Grotesk, sans-serif';
       ctx.fillStyle = '#F94C00';
       ctx.fillText('FICHA TÉCNICA DE ORIGEN NFC', 68, 89);
 
       // Orden y fecha
-      ctx.font = '700 14px "Share Tech Mono", monospace';
+      ctx.font = '700 14px Share Tech Mono, monospace';
       ctx.fillStyle = '#000000';
       ctx.textAlign = 'right';
       const createdDate = new Date(recipe.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -125,8 +125,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.lineTo(790, 105);
       ctx.stroke();
 
-      // 6. Cuerpo: Detalles Técnicos del Grano (2 columnas limpias sin línea divisoria)
-      ctx.font = '700 16px "Space Grotesk", sans-serif';
+      // 6. Cuerpo: Detalles Técnicos del Grano
+      ctx.font = '700 16px Space Grotesk, sans-serif';
       ctx.fillStyle = '#F94C00';
       ctx.fillText('[ GRANO SELECCIONADO ]', 50, 145);
 
@@ -134,38 +134,45 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.fillStyle = '#000000';
       ctx.fillText(recipe.batch_name || 'N/A', 50, 195);
 
-      ctx.font = '400 19px Outfit, sans-serif';
-      // Columna Izquierda (x = 50)
-      ctx.fillText(`Origen: ${recipe.batch_origin || 'N/A'}`, 50, 245);
-      ctx.fillText(`Tostador: ${recipe.batch_roaster || 'N/A'}`, 50, 287);
-      ctx.fillText(`Variedad: ${recipe.batch_variety || 'N/A'}`, 50, 329);
-
-      // Columna Derecha (x = 450)
-      ctx.fillText(`Productor: ${recipe.batch_producer || 'N/A'}`, 450, 245);
-      ctx.fillText(`Proceso: ${recipe.batch_process || 'N/A'}`, 450, 287);
-      
-      const roastDateText = recipe.batch_roast_date ? formatLocalDateStr(recipe.batch_roast_date) : 'N/A';
-      ctx.fillText(`Tueste: ${roastDateText}`, 450, 329);
-
-      // 7. Sección 1: Notas de Cata de la Extracción (recipe.notes)
+      // 7. Sección 1: Notas de Cata de la Rueda SCA
       ctx.lineWidth = 1.5;
       ctx.strokeStyle = '#000000';
       ctx.save();
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.moveTo(50, 365);
-      ctx.lineTo(790, 365);
+      ctx.moveTo(50, 240);
+      ctx.lineTo(790, 240);
       ctx.stroke();
       ctx.restore();
 
-      ctx.font = '700 15px "Space Grotesk", sans-serif';
+      ctx.font = '700 15px Space Grotesk, sans-serif';
       ctx.fillStyle = '#F94C00';
-      ctx.fillText('[ NOTAS DE CATA ]', 50, 395);
+      ctx.fillText('[ NOTAS DE CATA (RUEDA SCA) ]', 50, 280);
 
-      ctx.font = 'italic 500 18px Outfit, sans-serif';
+      // Obtener y decodificar sólo los tags de la Rueda SCA de batch_roaster_notes
+      let scaNotes = '';
+      if (recipe.batch_roaster_notes) {
+        const notesStr = String(recipe.batch_roaster_notes);
+        if (notesStr.includes('[Notas: ') && notesStr.includes(']')) {
+          const match = notesStr.match(/\[Notas: (.*?)\]/);
+          if (match) {
+            scaNotes = match[1].trim();
+          }
+        } else {
+          if (notesStr.includes(' | ')) {
+            scaNotes = notesStr.split(' | ')[0].trim();
+          } else {
+            scaNotes = notesStr.trim();
+          }
+        }
+      }
+      if (!scaNotes) {
+        scaNotes = 'Sin notas de cata registradas';
+      }
+
+      ctx.font = '700 28px Outfit, sans-serif';
       ctx.fillStyle = '#000000';
-      const tastingNotesText = recipe.notes ? `"${recipe.notes}"` : '"Sin notas de cata registradas para esta extracción"';
-      ctx.fillText(tastingNotesText, 50, 425);
+      ctx.fillText(scaNotes, 50, 330);
 
       // 8. Footer: Firma
       ctx.lineWidth = 3.5;
@@ -175,7 +182,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.lineTo(790, 475);
       ctx.stroke();
 
-      ctx.font = '900 19px "JetBrains Mono", monospace';
+      ctx.font = '500 19px JetBrains Mono, monospace';
       ctx.fillStyle = '#000000';
       ctx.textAlign = 'right';
       ctx.fillText('BEANTAG.CAFE', 790, 512);
