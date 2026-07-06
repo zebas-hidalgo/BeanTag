@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { formatLocalDateStr } from '../utils/date';
 
-export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRecipe, onDeleteBatch, showToast }) {
+
+
+export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRecipe, onDeleteBatch, onEditBatch, showToast }) {
   const [batch, setBatch] = useState(null);
   
   // Form fields
   const [method, setMethod] = useState('V60 (Filtrado)');
-  const [notes, setNotes] = useState('');
   const [rating, setRating] = useState(5);
   
   // J-Max Steppers (Default: 1.5.0)
@@ -16,10 +18,12 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   // Smart Ratio (Default: 15.0)
   const [ratioVal, setRatioVal] = useState(15.0);
 
-  // Brew Timer states
-  const [timerSeconds, setTimerSeconds] = useState(0);
-  const [timerActive, setTimerActive] = useState(false);
-  const timerRef = useRef(null);
+  // Advanced Coffee Fields (Improvement 6 & 8)
+  const [doseInG, setDoseInG] = useState(20.0);
+  const [doseOutG, setDoseOutG] = useState(36.0);
+  const [waterTemp, setWaterTemp] = useState(93);
+  const [espressoPressure, setEspressoPressure] = useState(9);
+  const [espressoPreinfusion, setEspressoPreinfusion] = useState(5);
 
   // Form input state for brew time
   const [brewTime, setBrewTime] = useState('2:30 min');
@@ -28,19 +32,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   const [sensoryBalance, setSensoryBalance] = useState('Dulce');
   const [sensoryBody, setSensoryBody] = useState('Medio');
   const [sensoryExtraction, setSensoryExtraction] = useState('En Punto');
-  const [selectedFlavorTags, setSelectedFlavorTags] = useState([]);
-
-  // Popular Coffee Flavor Tags (SCA Flavor Wheel)
-  const flavorWheelTags = [
-    { label: '🍒 Cereza', val: 'cereza' },
-    { label: '🍋 Cítrico', val: 'cítrico' },
-    { label: '🌸 Jazmín', val: 'jazmín' },
-    { label: '🍯 Miel', val: 'miel' },
-    { label: '🍫 Chocolate', val: 'chocolate' },
-    { label: '🍮 Caramelo', val: 'caramelo' },
-    { label: '🌰 Avellana', val: 'avellana' },
-    { label: '🪵 Canela', val: 'canela' }
-  ];
+  const [notes, setNotes] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -71,42 +63,30 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
                 setJmaxClick(parseInt(grindParts[2]) || 0);
               }
             }
+
+            // Pre-populate new fields
+            setDoseInG(last.dose_in_g !== null && last.dose_in_g !== undefined ? last.dose_in_g : parseFloat(data.dose_weight) || 20.0);
+            setDoseOutG(last.dose_out_g !== null && last.dose_out_g !== undefined ? last.dose_out_g : 36.0);
+            setWaterTemp(last.temperature ? parseInt(last.temperature) || 93 : 93);
+            setEspressoPressure(last.espresso_pressure !== null && last.espresso_pressure !== undefined ? last.espresso_pressure : 9);
+            setEspressoPreinfusion(last.espresso_preinfusion !== null && last.espresso_preinfusion !== undefined ? last.espresso_preinfusion : 5);
+            setSensoryBalance(last.sensory_balance || 'Dulce');
+            setSensoryBody(last.sensory_body || 'Medio');
+            setSensoryExtraction(last.sensory_extraction || 'En Punto');
+          } else {
+            // Defaults
+            setDoseInG(parseFloat(data.dose_weight) || 20.0);
+            setDoseOutG(36.0);
+            setWaterTemp(93);
+            setEspressoPressure(9);
+            setEspressoPreinfusion(5);
           }
         }
       });
     return () => { active = false; };
   }, [batchId]);
 
-  // Brew Timer Effect
-  useEffect(() => {
-    if (timerActive) {
-      timerRef.current = setInterval(() => {
-        setTimerSeconds(s => s + 1);
-      }, 1000);
-    } else {
-      clearInterval(timerRef.current);
-    }
-    return () => clearInterval(timerRef.current);
-  }, [timerActive]);
 
-  const handleStartPauseTimer = () => {
-    setTimerActive(active => !active);
-  };
-
-  const handleResetTimer = () => {
-    setTimerActive(false);
-    setTimerSeconds(0);
-  };
-
-  // R1: Timer stop uses toast instead of alert
-  const handleStopTimer = () => {
-    setTimerActive(false);
-    const mins = Math.floor(timerSeconds / 60);
-    const secs = timerSeconds % 60;
-    const formattedTime = `${mins}:${secs < 10 ? '0' : ''}${secs} min`;
-    setBrewTime(formattedTime);
-    showToast(`Tiempo registrado: ${formattedTime}`, { type: 'success', duration: 2500 });
-  };
 
   const handleDoseDeduction = () => {
     onSubtractDose(batch.id, () => {
@@ -138,6 +118,8 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   };
 
   // 1-Click logging of last recipe
+  const [repeating, setRepeating] = useState(false);
+
   const handleRepeatLastRecipe = () => {
     if (!batch.recipes || batch.recipes.length === 0) return;
     const last = batch.recipes[0];
@@ -155,46 +137,56 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
         notes: `${last.notes || ''} (Repetición rápida)`.trim(),
         sensory_balance: last.sensory_balance || 'Dulce',
         sensory_body: last.sensory_body || 'Medio',
-        sensory_extraction: last.sensory_extraction || 'En Punto'
+        sensory_extraction: last.sensory_extraction || 'En Punto',
+        dose_in_g: last.dose_in_g !== null && last.dose_in_g !== undefined ? last.dose_in_g : parseFloat(batch.dose_weight) || 20.0,
+        dose_out_g: last.dose_out_g !== null && last.dose_out_g !== undefined ? last.dose_out_g : null,
+        espresso_pressure: last.espresso_pressure !== null && last.espresso_pressure !== undefined ? last.espresso_pressure : null,
+        espresso_preinfusion: last.espresso_preinfusion !== null && last.espresso_preinfusion !== undefined ? last.espresso_preinfusion : null
       });
+      
+      // Update UI remaining weight locally
+      const doseInVal = last.dose_in_g !== null && last.dose_in_g !== undefined ? last.dose_in_g : parseFloat(batch.dose_weight) || 20.0;
+      setBatch(prev => ({
+        ...prev,
+        remaining_weight_g: Math.max(0.0, prev.remaining_weight_g - doseInVal)
+      }));
     });
   };
 
   const handleRecipeSubmit = (e) => {
     e.preventDefault();
-    const doseNum = parseFloat(batch.dose_weight) || 20.0;
-    const targetWater = (doseNum * ratioVal).toFixed(0);
-
-    // Combine notes text with flavor tags
-    const combinedNotes = [
-      selectedFlavorTags.length > 0 ? `[Notas: ${selectedFlavorTags.join(', ')}]` : '',
-      notes
-    ].filter(Boolean).join(' ').trim();
+    const ratioText = method === 'Espresso' 
+      ? `1:${(doseOutG / doseInG).toFixed(1)}` 
+      : `1:${ratioVal.toFixed(1)} (${(doseInG * ratioVal).toFixed(0)}g)`;
 
     onSaveRecipe({
       batch_id: batch.id,
       method,
-      ratio: `1:${ratioVal.toFixed(1)} (${targetWater}g)`,
+      ratio: ratioText,
       grind: `J-Max: ${jmaxRot}.${jmaxNum}.${jmaxClick}`,
-      temperature: '93°C',
+      temperature: `${waterTemp}°C`,
       brew_time: brewTime,
       rating,
-      notes: combinedNotes,
+      notes: notes.trim(),
       sensory_balance: sensoryBalance,
       sensory_body: sensoryBody,
-      sensory_extraction: sensoryExtraction
+      sensory_extraction: sensoryExtraction,
+      dose_in_g: parseFloat(doseInG),
+      dose_out_g: method === 'Espresso' ? parseFloat(doseOutG) : null,
+      espresso_pressure: method === 'Espresso' ? parseFloat(espressoPressure) : null,
+      espresso_preinfusion: method === 'Espresso' ? parseInt(espressoPreinfusion) : null
     });
+
+    // Update remaining weight locally
+    setBatch(prev => ({
+      ...prev,
+      remaining_weight_g: Math.max(0.0, prev.remaining_weight_g - parseFloat(doseInG))
+    }));
+
     setNotes('');
-    setSelectedFlavorTags([]);
   };
 
-  const toggleFlavorTag = (tagLabel) => {
-    if (selectedFlavorTags.includes(tagLabel)) {
-      setSelectedFlavorTags(selectedFlavorTags.filter(t => t !== tagLabel));
-    } else {
-      setSelectedFlavorTags([...selectedFlavorTags, tagLabel]);
-    }
-  };
+
 
   // R3: Skeleton loading state
   if (!batch) return (
@@ -259,17 +251,14 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
     }
   }
 
-  // Format Timer Display (MM:SS)
-  const timerMins = Math.floor(timerSeconds / 60);
-  const timerSecs = timerSeconds % 60;
-  const timerFormatted = `${timerMins < 10 ? '0' : ''}${timerMins}:${timerSecs < 10 ? '0' : ''}${timerSecs}`;
+
 
   // J-Max calculated microns for current form state
   const currentMicrons = calculateMicrons(jmaxRot, jmaxNum, jmaxClick);
 
   // R9: Interactive star rating component
   const StarRating = ({ value, onChange }) => (
-    <div style={{ display: 'flex', gap: '4px', cursor: 'pointer' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '38px', cursor: 'pointer', backgroundColor: 'var(--bg-card)', border: '2px solid var(--border-color)', borderRadius: '6px' }}>
       {[1, 2, 3, 4, 5].map(star => (
         <span
           key={star}
@@ -295,19 +284,25 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
       </div>
 
       {/* Título y Ficha Técnica compacta sin bordes negros */}
-      <h2 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 4px 0', textTransform: 'uppercase' }}>{batch.name}</h2>
-      <div className="grain-details-compact">
-        <strong>Productor:</strong> {batch.producer} <br />
-        <strong>Variedad:</strong> {batch.variety || 'N/A'} • <strong>Proceso:</strong> {batch.process || 'N/A'} <br />
-        <strong>Altitud:</strong> {batch.altitude || 'N/A'} • <strong>Peso Tubo:</strong> {batch.dose_weight || '20.0g'}
+      <h2 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 4px 0', textTransform: 'uppercase', wordBreak: 'break-word' }}>{batch.name}</h2>
+      <div className="grain-details-compact" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div><strong>Productor:</strong> {batch.producer}</div>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <span><strong>Variedad:</strong> {batch.variety || 'N/A'}</span>
+          <span><strong>Proceso:</strong> {batch.process || 'N/A'}</span>
+        </div>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <span><strong>Altitud:</strong> {batch.altitude || 'N/A'}</span>
+          <span><strong>Tubo:</strong> {batch.dose_weight || '20.0g'}</span>
+        </div>
       </div>
 
       {/* Estado del Congelador y Botón Restar Integrado */}
-      <div className="candy-card" style={{ cursor: 'default' }}>
+      <div className="candy-card static">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <div style={{ fontStyle: 'italic', fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '2px' }}>Estado en Congelador:</div>
-            <span style={{ fontSize: '15px', fontWeight: '900' }}>{batch.remaining_doses} / {batch.total_doses} Tubos</span>
+            <span style={{ fontSize: '15px', fontWeight: '900' }}>{batch.remaining_doses} / {batch.total_doses} Tubos ({batch.remaining_weight_g || 0}g rest.)</span>
           </div>
           {batch.remaining_doses > 0 && (
             <button className="btn-candy primary" onClick={handleDoseDeduction} style={{ margin: 0, padding: '8px 12px', fontSize: '11px' }}>
@@ -316,25 +311,33 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
           )}
         </div>
         
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #E2E8F0', fontSize: '11px' }}>
-          <div>
-            <span style={{ color: 'var(--color-text-muted)' }}>Tueste:</span> <br />
-            <strong>{batch.roast_date ? new Date(batch.roast_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Sin fecha'}</strong>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #E2E8F0', fontSize: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '15px' }}>🔥</span>
+            <span style={{ color: 'var(--color-text-muted)', width: '65px' }}>Tueste:</span>
+            <strong>{formatLocalDateStr(batch.roast_date)}</strong>
           </div>
-          <div>
-            <span style={{ color: 'var(--color-text-muted)' }}>Congelado:</span> <br />
-            <strong>{batch.freeze_date ? new Date(batch.freeze_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Sin fecha'}</strong>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '15px' }}>❄️</span>
+            <span style={{ color: 'var(--color-text-muted)', width: '65px' }}>Congelado:</span>
+            <strong>{formatLocalDateStr(batch.freeze_date)}</strong>
           </div>
-          <div style={{ gridColumn: 'span 2', marginTop: '4px', display: 'flex', gap: '12px', color: 'var(--color-text-muted)' }}>
-            <span>Reposado: <strong>{restingDaysText}</strong></span>
-            <span>Estadía: <strong>{freezeTime}</strong></span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '15px' }}>⏳</span>
+            <span style={{ color: 'var(--color-text-muted)', width: '65px' }}>Reposado:</span>
+            <strong>{restingDaysText}</strong>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '15px' }}>🧊</span>
+            <span style={{ color: 'var(--color-text-muted)', width: '65px' }}>Estadía:</span>
+            <strong>{freezeTime}</strong>
           </div>
         </div>
       </div>
 
-      {/* Improvement 2: Semáforo de Desgasificación Box */}
+      {/* Semáforo de Desgasificación Box */}
       {batch.roast_date && batch.freeze_date && (
-        <div className="candy-card" style={{ cursor: 'default', borderLeft: `6px solid ${degasStatus.color}`, backgroundColor: '#FFFFFF' }}>
+        <div className="candy-card static" style={{ borderLeft: `6px solid ${degasStatus.color}`, backgroundColor: '#FFFFFF' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', fontWeight: '900', color: degasStatus.color, textTransform: 'uppercase' }}>
               {degasStatus.label} ({restingDays} Días)
@@ -346,38 +349,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
         </div>
       )}
 
-      {/* Improvement 6: Historial Gráfico de Molienda (Timeline de Micrones) */}
-      {batch.recipes && batch.recipes.length > 0 && (
-        <div className="candy-card" style={{ cursor: 'default' }}>
-          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 12px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
-            Evolución de Molienda (Micrones)
-          </h4>
-          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px', alignItems: 'flex-end', height: '60px' }}>
-            {batch.recipes.slice(0, 6).reverse().map((recipe, index) => {
-              const microns = parseGrindToMicrons(recipe.grind);
-              if (!microns) return null;
-              // Normalize height for visual display (e.g. min 200, max 2500)
-              const barHeight = Math.min(100, Math.max(15, (microns / 2000) * 100));
-              return (
-                <div key={recipe.id || index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '1', minWidth: '45px' }}>
-                  <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--color-text)' }}>{microns}µm</span>
-                  <div style={{
-                    width: '12px',
-                    height: `${barHeight}px`,
-                    backgroundColor: recipe.rating >= 4 ? 'var(--color-crimson)' : '#CBD5E0',
-                    border: '1.5px solid var(--border-color)',
-                    marginTop: '4px',
-                    borderRadius: '2px 2px 0 0'
-                  }} />
-                  <span style={{ fontSize: '8px', color: 'var(--color-text-muted)', marginTop: '2px', textTransform: 'uppercase' }}>
-                    {recipe.method.split(' ')[0]}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+
 
       {/* Referencia de Última Configuración Exitosa */}
       {lastRecipe && (
@@ -399,30 +371,11 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
         </div>
       )}
 
-      {/* Cronómetro Brew Timer */}
-      <div className="timer-container">
-        <div style={{ fontSize: '9px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          Cronómetro de Extracción
-        </div>
-        <div className="timer-display">{timerFormatted}</div>
-        <div className="timer-controls">
-          <button type="button" className="app-bar-btn" onClick={handleStartPauseTimer}>
-            {timerActive ? 'Pausar' : 'Iniciar'}
-          </button>
-          <button type="button" className="app-bar-btn" onClick={handleResetTimer}>
-            Reset
-          </button>
-          {timerSeconds > 0 && (
-            <button type="button" className="app-bar-btn" onClick={handleStopTimer} style={{ background: '#000', color: '#FFF' }}>
-              Registrar Tiempo
-            </button>
-          )}
-        </div>
-      </div>
+
 
       {/* Formulario de Bitácora */}
       <h2 style={{ fontFamily: 'var(--font-heading)', marginTop: '24px', textTransform: 'uppercase', fontSize: '15px' }}>Registrar Preparación</h2>
-      <div className="candy-card" style={{ cursor: 'default' }}>
+      <div className="candy-card static">
         <form onSubmit={handleRecipeSubmit}>
           <div className="form-group">
             <label>Método de Extracción</label>
@@ -434,53 +387,135 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
             </select>
           </div>
           
+          {/* Fila 1: Dosis In y Temperatura (para todos los métodos) */}
           <div className="form-row">
             <div className="form-group" style={{ flex: 1 }}>
-              <label>Ratio de Extracción</label>
-              <div className="mono-stepper compact" style={{ margin: '0 auto' }}>
-                <button type="button" className="stepper-btn" onClick={() => setRatioVal(r => Math.max(1.0, r - 0.5))}>-</button>
-                <div className="stepper-value" style={{ width: '38px' }}>{ratioVal.toFixed(1)}</div>
-                <button type="button" className="stepper-btn" onClick={() => setRatioVal(r => r + 0.5)}>+</button>
-              </div>
-              <div style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '6px', textAlign: 'center' }}>
-                Agua Objetivo: <span style={{ color: '#E53E3E' }}>{(doseNum * ratioVal).toFixed(0)}g</span>
+              <label>Dosis Seco In (g)</label>
+              <input 
+                type="number" 
+                step="0.1" 
+                className="candy-input" 
+                value={doseInG} 
+                onChange={(e) => setDoseInG(parseFloat(e.target.value) || 0)} 
+                required 
+              />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Temperatura Agua (°C)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', height: '40px' }}>
+                <button type="button" className="btn-candy" style={{ margin: 0, padding: '8px 12px', height: '100%', boxSizing: 'border-box' }} onClick={() => setWaterTemp(t => Math.max(80, t - 1))}>-</button>
+                <input 
+                  type="number" 
+                  className="candy-input" 
+                  style={{ textAlign: 'center', flex: 1, height: '100%', boxSizing: 'border-box', margin: 0 }} 
+                  value={waterTemp} 
+                  onChange={(e) => setWaterTemp(parseInt(e.target.value) || 93)} 
+                  min="80" 
+                  max="100" 
+                />
+                <button type="button" className="btn-candy" style={{ margin: 0, padding: '8px 12px', height: '100%', boxSizing: 'border-box' }} onClick={() => setWaterTemp(t => Math.min(100, t + 1))}>+</button>
               </div>
             </div>
-            
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Molienda (J-Max: R.N.C)</label>
-              <div className="jmax-steppers-grid" style={{ marginBottom: 4 }}>
-                <div className="jmax-cell">
-                  <span className="jmax-hdr-lbl">ROT</span>
-                  <div className="mono-stepper compact">
-                    <button type="button" className="stepper-btn" onClick={() => setJmaxRot(r => Math.max(0, r - 1))}>-</button>
-                    <div className="stepper-value">{jmaxRot}</div>
-                    <button type="button" className="stepper-btn" onClick={() => setJmaxRot(r => Math.min(4, r + 1))}>+</button>
-                  </div>
+          </div>
+
+          {/* Fila 2: Ratio (Filtro) o Dosis Out (Espresso) + Molienda */}
+          <div className="form-row">
+            {method !== 'Espresso' ? (
+              <div className="form-group" style={{ flex: 1 }}>
+                <label>Ratio de Extracción (1:X)</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', height: '40px' }}>
+                  <span style={{ fontFamily: 'var(--font-heading)', fontWeight: '900', fontSize: '16px', flexShrink: 0, lineHeight: 1 }}>1 :</span>
+                  <input 
+                    type="number"
+                    step="0.1"
+                    min="1"
+                    className="candy-input"
+                    style={{ 
+                      fontFamily: 'var(--font-mono)', 
+                      fontWeight: '900', 
+                      fontSize: '14px', 
+                      textAlign: 'center',
+                      padding: '8px 4px',
+                      margin: 0,
+                      flex: 1,
+                      height: '100%',
+                      boxSizing: 'border-box'
+                    }}
+                    value={ratioVal}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setRatioVal(val === '' ? '' : parseFloat(val));
+                    }}
+                  />
                 </div>
-                <div className="jmax-cell">
-                  <span className="jmax-hdr-lbl">NUM</span>
-                  <div className="mono-stepper compact">
-                    <button type="button" className="stepper-btn" onClick={() => setJmaxNum(n => Math.max(0, n - 1))}>-</button>
-                    <div className="stepper-value">{jmaxNum}</div>
-                    <button type="button" className="stepper-btn" onClick={() => setJmaxNum(n => Math.min(8, n + 1))}>+</button>
-                  </div>
-                </div>
-                <div className="jmax-cell">
-                  <span className="jmax-hdr-lbl">CLIC</span>
-                  <div className="mono-stepper compact">
-                    <button type="button" className="stepper-btn" onClick={() => setJmaxClick(c => Math.max(0, c - 1))}>-</button>
-                    <div className="stepper-value">{jmaxClick}</div>
-                    <button type="button" className="stepper-btn" onClick={() => setJmaxClick(c => Math.min(9, c + 1))}>+</button>
-                  </div>
+                <div style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '6px', textAlign: 'center' }}>
+                  Agua Objetivo: <span style={{ color: '#E53E3E' }}>{(doseInG * (parseFloat(ratioVal) || 0)).toFixed(0)}g</span>
                 </div>
               </div>
-              {/* Improvement 3: Micron Grind Translator text output */}
-              <div style={{ fontSize: '10px', textAlign: 'center', fontWeight: 'bold', color: 'var(--color-crimson)' }}>
+            ) : (
+              <div className="form-group" style={{ flex: 1 }}>
+                <label>Dosis Out / Yield (g)</label>
+                <input 
+                  type="number" 
+                  step="0.1" 
+                  className="candy-input" 
+                  style={{ height: '40px', boxSizing: 'border-box', margin: 0 }}
+                  value={doseOutG} 
+                  onChange={(e) => setDoseOutG(parseFloat(e.target.value) || 0)} 
+                  required 
+                />
+                <div style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '6px', textAlign: 'center' }}>
+                  Ratio Resultante: <span style={{ color: '#E53E3E' }}>1:{(doseOutG / (doseInG || 1)).toFixed(1)}</span>
+                </div>
+              </div>
+            )}
+            
+            {/* Molienda (J-Max) */}
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Molienda (J-Max: R.N.C)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <select className="candy-input" style={{ flex: 1, padding: '8px', textAlign: 'center', fontSize: '13px', backgroundImage: 'none', paddingRight: '8px' }} value={jmaxRot} onChange={(e) => setJmaxRot(parseInt(e.target.value) || 0)}>
+                  {[0, 1, 2, 3, 4].map(v => <option key={v} value={v}>Rot: {v}</option>)}
+                </select>
+                <span style={{ fontWeight: 'bold', color: 'var(--border-color)' }}>.</span>
+                <select className="candy-input" style={{ flex: 1, padding: '8px', textAlign: 'center', fontSize: '13px', backgroundImage: 'none', paddingRight: '8px' }} value={jmaxNum} onChange={(e) => setJmaxNum(parseInt(e.target.value) || 0)}>
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(v => <option key={v} value={v}>Nº: {v}</option>)}
+                </select>
+                <span style={{ fontWeight: 'bold', color: 'var(--border-color)' }}>.</span>
+                <select className="candy-input" style={{ flex: 1, padding: '8px', textAlign: 'center', fontSize: '13px', backgroundImage: 'none', paddingRight: '8px' }} value={jmaxClick} onChange={(e) => setJmaxClick(parseInt(e.target.value) || 0)}>
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(v => <option key={v} value={v}>Clic: {v}</option>)}
+                </select>
+              </div>
+              <div style={{ fontSize: '10px', textAlign: 'center', fontWeight: 'bold', color: 'var(--color-crimson)', marginTop: '8px' }}>
                 Partícula: ~{currentMicrons} µm
               </div>
             </div>
           </div>
+
+          {/* Fila 3: Presión y Preinfusión (Solo para Espresso) */}
+          {method === 'Espresso' && (
+            <div className="form-row">
+              <div className="form-group" style={{ flex: 1 }}>
+                <label>Presión Extracción (bar)</label>
+                <input 
+                  type="number" 
+                  step="0.5" 
+                  className="candy-input" 
+                  value={espressoPressure} 
+                  onChange={(e) => setEspressoPressure(parseFloat(e.target.value) || 9)} 
+                />
+              </div>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label>Preinfusión (seg)</label>
+                <input 
+                  type="number" 
+                  className="candy-input" 
+                  value={espressoPreinfusion} 
+                  onChange={(e) => setEspressoPreinfusion(parseInt(e.target.value) || 0)} 
+                />
+              </div>
+            </div>
+          )}
 
           <div className="form-row" style={{ alignItems: 'flex-end' }}>
             <div className="form-group" style={{ flex: 1 }}>
@@ -488,14 +523,14 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
               <input className="candy-input" value={brewTime} onChange={(e) => setBrewTime(e.target.value)} type="text" />
             </div>
             
-            {/* R9: Interactive Star Rating */}
+            {/* Interactive Star Rating */}
             <div className="form-group" style={{ flex: 1 }}>
               <label>Puntuación</label>
               <StarRating value={rating} onChange={setRating} />
             </div>
           </div>
 
-          {/* Improvement 5: Sensory Sliders and Flavor tags */}
+          {/* Sensory Sliders and Flavor tags */}
           <div style={{ borderTop: '1.5px solid var(--border-color)', marginTop: '12px', paddingTop: '12px' }}>
             <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', textTransform: 'uppercase', margin: '0 0 10px 0' }}>
               Evaluación Sensorial (Taza Perfecta)
@@ -504,7 +539,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
             {/* Balance Selector */}
             <div className="form-group">
               <label style={{ fontSize: '9px' }}>Balance Sensorial (Predominante)</label>
-              <div style={{ display: 'flex', gap: '6px' }}>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                 {['Ácido', 'Dulce', 'Amargo'].map(b => (
                   <button
                     key={b}
@@ -532,7 +567,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
             {/* Cuerpo Selector */}
             <div className="form-group">
               <label style={{ fontSize: '9px' }}>Cuerpo / Textura</label>
-              <div style={{ display: 'flex', gap: '6px' }}>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                 {['Ligero', 'Medio', 'Sedoso'].map(b => (
                   <button
                     key={b}
@@ -585,58 +620,49 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
               </div>
             </div>
 
-            {/* SCA Flavor Wheel Tags Selector */}
-            <div className="form-group">
-              <label style={{ fontSize: '9px' }}>Notas de Descriptor (Rueda SCA)</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
-                {flavorWheelTags.map(tag => {
-                  const isSelected = selectedFlavorTags.includes(tag.label);
-                  return (
-                    <button
-                      key={tag.val}
-                      type="button"
-                      onClick={() => toggleFlavorTag(tag.label)}
-                      style={{
-                        padding: '4px 8px',
-                        fontSize: '10px',
-                        fontWeight: 'bold',
-                        border: '1.5px solid var(--border-color)',
-                        borderRadius: '6px',
-                        backgroundColor: isSelected ? 'var(--color-crimson)' : 'var(--bg-card)',
-                        color: isSelected ? '#FFF' : 'var(--border-color)',
-                        cursor: 'pointer',
-                        transition: 'all 100ms'
-                      }}
-                    >
-                      {tag.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
 
-          <div className="form-group" style={{ marginTop: '12px' }}>
-            <label>Comentarios Adicionales</label>
-            <input className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Retrogusto largo, dulzor a caña." />
+
+            {/* Additional Notes input */}
+            <div className="form-group" style={{ marginTop: '12px' }}>
+              <label style={{ fontSize: '9px' }}>Notas / Comentarios de Extracción</label>
+              <input 
+                className="candy-input" 
+                value={notes} 
+                onChange={(e) => setNotes(e.target.value)} 
+                type="text" 
+                placeholder="Ej. Muy balanceado, dulzor intenso, retrogusto largo" 
+              />
+            </div>
+
           </div>
 
           <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '8px' }}>Guardar Bitácora</button>
         </form>
       </div>
 
-      {/* R10: Delete batch button */}
-      <button 
-        className="btn-candy" 
-        onClick={() => onDeleteBatch(batch.id, batch.name)}
-        style={{ 
-          width: '100%', marginTop: '24px', 
-          color: 'var(--color-crimson)', borderColor: 'var(--color-crimson)',
-          fontSize: '11px'
-        }}
-      >
-        Eliminar Lote
-      </button>
+      {/* Actions footer: Edit & Delete Lote */}
+      <div style={{ display: 'flex', gap: '8px', marginTop: '24px' }}>
+        <button 
+          type="button"
+          className="btn-candy" 
+          onClick={() => onEditBatch(batch)}
+          style={{ flex: 1, fontSize: '11px', margin: 0 }}
+        >
+          📝 Editar Lote
+        </button>
+        <button 
+          type="button"
+          className="btn-candy" 
+          onClick={() => onDeleteBatch(batch.id, batch.name)}
+          style={{ 
+            flex: 1, margin: 0,
+            color: 'var(--color-crimson)', borderColor: 'var(--color-crimson)',
+            fontSize: '11px'
+          }}
+        >
+          🗑️ Eliminar Lote
+        </button>
+      </div>
     </div>
   );
 }

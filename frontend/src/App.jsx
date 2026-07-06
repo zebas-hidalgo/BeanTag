@@ -9,6 +9,7 @@ export default function App() {
   const [batches, setBatches] = useState([]);
   const [selectedBatchId, setSelectedBatchId] = useState(null);
   const [lastSubtractedBatch, setLastSubtractedBatch] = useState(null);
+  const [batchToEdit, setBatchToEdit] = useState(null);
 
   // R1: Generalized Toast system (replaces all alert() calls)
   const [toast, setToast] = useState({ message: '', type: 'info', visible: false, showUndo: false });
@@ -48,10 +49,16 @@ export default function App() {
   }, []);
 
   const handleBack = () => {
-    window.history.pushState({}, '', '/');
-    setCurrentView('inventory');
-    setSelectedBatchId(null);
-    dismissToast();
+    if (batchToEdit) {
+      setCurrentView('detail');
+      setSelectedBatchId(batchToEdit.id);
+      setBatchToEdit(null);
+    } else {
+      window.history.pushState({}, '', '/');
+      setCurrentView('inventory');
+      setSelectedBatchId(null);
+      dismissToast();
+    }
     fetchBatches();
   };
 
@@ -216,6 +223,7 @@ export default function App() {
             batches={batches} 
             onSelectBatch={(id) => { setSelectedBatchId(id); setCurrentView('detail'); }} 
             onCreateTrigger={() => setCurrentView('creator')}
+            showToast={showToast}
           />
         )}
 
@@ -227,20 +235,34 @@ export default function App() {
             onSubtractDose={handleSubtractDose}
             onSaveRecipe={handleSaveRecipe}
             onDeleteBatch={handleDeleteBatch}
+            onEditBatch={(batch) => { setBatchToEdit(batch); setCurrentView('creator'); }}
             showToast={showToast}
           />
         )}
 
         {currentView === 'creator' && (
           <BatchCreator 
-            onBatchCreated={fetchBatches} 
+            batchToEdit={batchToEdit}
+            onBatchCreated={() => {
+              fetchBatches();
+              if (batchToEdit) {
+                setCurrentView('detail');
+                setSelectedBatchId(batchToEdit.id);
+                setBatchToEdit(null);
+              } else {
+                setCurrentView('inventory');
+              }
+            }} 
             onBack={handleBack}
             showToast={showToast}
           />
         )}
 
         {currentView === 'history' && (
-          <BrewHistory onNavigateToInventory={() => { setCurrentView('inventory'); setSelectedBatchId(null); }} />
+          <BrewHistory 
+            onNavigateToInventory={() => { setCurrentView('inventory'); setSelectedBatchId(null); }} 
+            onSelectBatch={(id) => { setSelectedBatchId(id); setCurrentView('detail'); }}
+          />
         )}
       </main>
 
@@ -263,8 +285,8 @@ export default function App() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: '24px', boxSizing: 'border-box'
         }}>
-          <div className="candy-card" style={{
-            cursor: 'default', maxWidth: '340px', width: '100%',
+          <div className="candy-card static" style={{
+            maxWidth: '340px', width: '100%',
             textAlign: 'center', padding: '24px'
           }}>
             <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', textTransform: 'uppercase', margin: '0 0 8px 0' }}>
