@@ -1,12 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Fredoka:wght@600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&family=Outfit:wght@500;700&display=swap');
+
 
 :root {
-  --bg-canvas: #FFF5F5;
+  --bg-canvas: #CAE7F7;
   --bg-card: #FFFFFF;
   --border-color: #000000;
-  --color-crimson: #E53E3E;
-  --color-text: #1A0505;
-  --color-text-muted: #555555;
+  --color-crimson: #F94C00;
+  --color-text: #48261D;
+  --color-text-muted: #765C58;
   
   --font-heading: 'Comfortaa', cursive;
   --font-body: 'Inter', sans-serif;
@@ -135,11 +136,11 @@ main {
 }
 
 .btn-candy.primary:hover {
-  background-color: #C53030;
+  background-color: #E24500;
 }
 
 .btn-candy.primary:active {
-  background-color: #9B2C2C;
+  background-color: #C03B00;
 }
 
 .btn-candy.accent {
@@ -149,7 +150,7 @@ main {
 }
 
 .btn-candy.accent:hover {
-  background-color: #FFF5F5;
+  background-color: #FAF5F4;
 }
 
 .app-bar-btn {
@@ -216,6 +217,34 @@ main {
   outline: none;
   background-color: #FAF5FF;
   box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.15);
+}
+
+/* Custom styling for date inputs to look clean and uniform across all browsers (including iOS Safari standalone PWA) */
+input[type="date"].candy-input {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 40px;
+  line-height: 1.2;
+  box-sizing: border-box;
+}
+
+/* Align date values left in WebKit browsers (specifically iOS) */
+input[type="date"].candy-input::-webkit-date-and-time-value {
+  text-align: left;
+  min-height: 18px;
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+/* Styled calendar icon button inside input */
+input[type="date"].candy-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }
 
 /* Responsive form rows */
