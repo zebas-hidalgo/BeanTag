@@ -44,6 +44,12 @@ async function initDb() {
   try {
     await db.exec('ALTER TABLE batches ADD COLUMN freeze_date TEXT;');
   } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE batches ADD COLUMN total_weight_g REAL DEFAULT 0;');
+  } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE batches ADD COLUMN remaining_weight_g REAL DEFAULT 0;');
+  } catch (e) {}
 
   // Create recipes table
   await db.exec(`
@@ -70,6 +76,18 @@ async function initDb() {
   } catch (e) {}
   try {
     await db.exec('ALTER TABLE recipes ADD COLUMN sensory_extraction TEXT;');
+  } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE recipes ADD COLUMN dose_in_g REAL;');
+  } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE recipes ADD COLUMN dose_out_g REAL;');
+  } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE recipes ADD COLUMN espresso_pressure REAL;');
+  } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE recipes ADD COLUMN espresso_preinfusion INTEGER;');
   } catch (e) {}
   
   return db;
