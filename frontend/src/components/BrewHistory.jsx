@@ -134,20 +134,33 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.fillStyle = '#000000';
       ctx.fillText(recipe.batch_name || 'N/A', 50, 195);
 
+      ctx.font = '400 19px Outfit, sans-serif';
+      // Columna Izquierda (x = 50)
+      ctx.fillText(`Origen: ${recipe.batch_origin || 'N/A'}`, 50, 245);
+      ctx.fillText(`Tostador: ${recipe.batch_roaster || 'N/A'}`, 50, 287);
+      ctx.fillText(`Variedad: ${recipe.batch_variety || 'N/A'}`, 50, 329);
+
+      // Columna Derecha (x = 450)
+      ctx.fillText(`Productor: ${recipe.batch_producer || 'N/A'}`, 450, 245);
+      ctx.fillText(`Proceso: ${recipe.batch_process || 'N/A'}`, 450, 287);
+      
+      const roastDateText = recipe.batch_roast_date ? formatLocalDateStr(recipe.batch_roast_date) : 'N/A';
+      ctx.fillText(`Tueste: ${roastDateText}`, 450, 329);
+
       // 7. Sección 1: Notas de Cata de la Rueda SCA
       ctx.lineWidth = 1.5;
       ctx.strokeStyle = '#000000';
       ctx.save();
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.moveTo(50, 240);
-      ctx.lineTo(790, 240);
+      ctx.moveTo(50, 365);
+      ctx.lineTo(790, 365);
       ctx.stroke();
       ctx.restore();
 
       ctx.font = '700 15px Space Grotesk, sans-serif';
       ctx.fillStyle = '#F94C00';
-      ctx.fillText('[ NOTAS DE CATA (RUEDA SCA) ]', 50, 280);
+      ctx.fillText('[ NOTAS DE CATA (RUEDA SCA) ]', 50, 395);
 
       // Obtener y decodificar sólo los tags de la Rueda SCA de batch_roaster_notes
       let scaNotes = '';
@@ -170,9 +183,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         scaNotes = 'Sin notas de cata registradas';
       }
 
-      ctx.font = '700 28px Outfit, sans-serif';
+      ctx.font = '700 22px Outfit, sans-serif';
       ctx.fillStyle = '#000000';
-      ctx.fillText(scaNotes, 50, 330);
+      ctx.fillText(scaNotes, 50, 435);
 
       // 8. Footer: Firma
       ctx.lineWidth = 3.5;

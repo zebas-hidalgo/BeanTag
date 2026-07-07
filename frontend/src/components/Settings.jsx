@@ -1,6 +1,7 @@
 import React from 'react';
+import { Moon, Sun } from 'lucide-react';
 
-export default function Settings({ showToast }) {
+export default function Settings({ showToast, isDarkMode, setIsDarkMode }) {
   const handleExportBackup = () => {
     fetch('/api/backup/export')
       .then(res => res.json())
@@ -72,6 +73,25 @@ export default function Settings({ showToast }) {
       <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 14px 0', fontSize: '16px' }}>
         Ajustes y Configuración
       </h2>
+
+      {/* Tema Visual */}
+      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+            Modo Oscuro
+          </h4>
+          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: 0 }}>
+            Cambia a un diseño de bajo brillo
+          </p>
+        </div>
+        <button 
+          onClick={() => setIsDarkMode(!isDarkMode)} 
+          className="btn-candy" 
+          style={{ padding: '8px', margin: 0, minHeight: 'auto' }}
+        >
+          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+      </div>
 
       {/* Backup and restore section */}
       <div className="candy-card static" style={{ padding: '20px', cursor: 'default' }}>

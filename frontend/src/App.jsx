@@ -224,14 +224,7 @@ export default function App() {
           }}>BeanTag</span>
         </div>
         <div style={{ display: 'flex', gap: '6px' }}>
-          <button 
-            onClick={() => setIsDarkMode(!isDarkMode)} 
-            className="app-bar-btn" 
-            style={{ padding: '0 8px' }}
-            title="Alternar Modo Oscuro"
-          >
-            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
+
           {currentView === 'inventory' && (
             <>
               <button className="app-bar-btn" onClick={handleNfcScan}>Escaneo</button>
@@ -290,7 +283,7 @@ export default function App() {
         )}
 
         {currentView === 'settings' && (
-          <Settings showToast={showToast} />
+          <Settings showToast={showToast} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
         )}
       </main>
 
