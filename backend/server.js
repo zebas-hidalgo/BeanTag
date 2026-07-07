@@ -296,6 +296,63 @@ app.get('/manifest.json', (req, res) => {
   });
 });
 
+// AI Recommendation Endpoint
+app.post('/api/recommend-recipe', async (req, res) => {
+  const apiKey = req.headers['x-gemini-key'];
+  if (!apiKey) {
+    return res.status(400).json({ error: 'Falta la clave API de Gemini en las cabeceras' });
+  }
+
+  const { origin, variety, process, altitude, roast_level, roaster_notes } = req.body;
+
+  const prompt = `Eres un barista experto de café de especialidad. Analiza el siguiente lote de café:
+Origen: ${origin || 'Desconocido'}
+Variedad: ${variety || 'N/A'}
+Proceso: ${process || 'N/A'}
+Altitud: ${altitude || 'N/A'}
+Nivel de tueste: ${roast_level || 'Medio'}
+Notas de cata: ${roaster_notes || 'N/A'}
+
+Genera una receta recomendada optimizada para extraer este café de la mejor manera. Debes responder estrictamente con un objeto JSON válido con el siguiente esquema exacto (no agregues formato markdown ni bloques de código \`\`\`json, solo devuelve el string JSON crudo):
+{
+  "method": "nombre del método (V60 (Filtrado), Espresso, Aeropress o Prensa Francesa)",
+  "ratio": "ratio de extracción como string (ej. 1:15 o 1:16, o 1:2 para espresso)",
+  "grind": "molienda sugerida (ej. Fino, Medio-Fino, Medio, Medio-Grueso, Grueso)",
+  "temperature": 94,
+  "brew_time": "tiempo sugerido en formato string (ej: 2:30 o 0:30)",
+  "notes": "Breve explicación barística de por qué esta receta ayuda a resaltar las notas específicas de este grano."
+}`;
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json();
+      return res.status(response.status).json({ error: errData.error?.message || 'Error con la API de Gemini' });
+    }
+
+    const data = await response.json();
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    
+    // Clean up markdown block format
+    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    const recommendation = JSON.parse(text);
+    res.json(recommendation);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al procesar la recomendación: ' + err.message });
+  }
+});
+
 // Serve React front for fallback routing
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

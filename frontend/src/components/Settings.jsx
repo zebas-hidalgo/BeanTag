@@ -2,6 +2,15 @@ import React from 'react';
 import { Moon, Sun, Download, Upload } from 'lucide-react';
 
 export default function Settings({ showToast, isDarkMode, setIsDarkMode, theme, setTheme }) {
+  const [apiKey, setApiKey] = React.useState(() => {
+    return localStorage.getItem('gemini-api-key') || '';
+  });
+
+  const saveApiKey = (val) => {
+    setApiKey(val);
+    localStorage.setItem('gemini-api-key', val);
+  };
+
   const handleExportBackup = () => {
     fetch('/api/backup/export')
       .then(res => res.json())
@@ -134,6 +143,36 @@ export default function Settings({ showToast, isDarkMode, setIsDarkMode, theme, 
               </button>
             );
           })}
+        </div>
+      </div>
+
+      {/* Inteligencia Artificial (Gemini) */}
+      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
+        <div>
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+            Inteligencia Artificial (Gemini)
+          </h4>
+          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
+            Añade tu clave API para habilitar recomendaciones de recetas personalizadas basadas en el origen, variedad y proceso del café.
+          </p>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <input 
+            type="password" 
+            className="candy-input" 
+            value={apiKey} 
+            onChange={(e) => saveApiKey(e.target.value)} 
+            placeholder="Introduce tu clave API de Gemini"
+            style={{ width: '100%', boxSizing: 'border-box' }}
+          />
+          <a 
+            href="https://aistudio.google.com/app/apikey" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            style={{ fontSize: '10px', color: 'var(--color-crimson)', textDecoration: 'underline', fontWeight: 'bold' }}
+          >
+            Obtener clave API gratuita en Google AI Studio →
+          </a>
         </div>
       </div>
 
