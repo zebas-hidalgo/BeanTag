@@ -6,9 +6,11 @@ export default function Settings({ showToast, isDarkMode, setIsDarkMode, theme, 
     return localStorage.getItem('gemini-api-key') || '';
   });
 
-  const saveApiKey = (val) => {
-    setApiKey(val);
-    localStorage.setItem('gemini-api-key', val);
+  const handleSaveKey = () => {
+    localStorage.setItem('gemini-api-key', apiKey);
+    if (showToast) {
+      showToast('Clave API de Gemini guardada correctamente.', { type: 'success', duration: 2500 });
+    }
   };
 
   const handleExportBackup = () => {
@@ -157,14 +159,23 @@ export default function Settings({ showToast, isDarkMode, setIsDarkMode, theme, 
           </p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <input 
-            type="text" 
-            className="candy-input" 
-            value={apiKey} 
-            onChange={(e) => saveApiKey(e.target.value)} 
-            placeholder="Introduce tu clave API (AIzaSy...)"
-            style={{ width: '100%', boxSizing: 'border-box', fontFamily: 'var(--font-mono)' }}
-          />
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <input 
+              type="text" 
+              className="candy-input" 
+              value={apiKey} 
+              onChange={(e) => setApiKey(e.target.value)} 
+              placeholder="Introduce tu clave API (AIzaSy...)"
+              style={{ flex: 1, boxSizing: 'border-box', fontFamily: 'var(--font-mono)', minWidth: 0 }}
+            />
+            <button 
+              onClick={handleSaveKey} 
+              className="btn-candy primary"
+              style={{ margin: 0, padding: '10px 14px', fontSize: '11px', whiteSpace: 'nowrap' }}
+            >
+              Guardar
+            </button>
+          </div>
           <a 
             href="https://aistudio.google.com/app/apikey" 
             target="_blank" 

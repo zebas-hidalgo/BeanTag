@@ -315,14 +315,15 @@ Notas de cata: ${roaster_notes || 'N/A'}
 
 El usuario quiere preparar este café usando específicamente el método de extracción: "${method || 'V60 (Filtrado)'}" y una dosis exacta de café de: "${dose_in_g || '20.0'} gramos".
 
-Genera una receta recomendada y adaptada estrictamente para este método ("${method || 'V60 (Filtrado)'}") y dosis ("${dose_in_g || '20.0'}g"). Debes responder únicamente con un objeto JSON válido con el siguiente esquema exacto (no agregues formato markdown ni bloques de código \`\`\`json, solo devuelve el string JSON crudo):
+Genera una receta recomendada y adaptada estrictamente para este método ("${method || 'V60 (Filtrado)'}") y dosis ("${dose_in_g || '20.0'}g"). Sé extremadamente conciso y directo en el campo "notes", limitándolo a una sola frase de máximo 12 palabras.
+Debes responder únicamente con un objeto JSON válido con el siguiente esquema exacto (no agregues formato markdown ni bloques de código \`\`\`json, solo devuelve el string JSON crudo):
 {
   "method": "${method || 'V60 (Filtrado)'}",
   "ratio": "ratio de extracción como string (ej. 1:15 o 1:16, o 1:2 para espresso)",
   "grind": "molienda sugerida (ej. Fino, Medio-Fino, Medio, Medio-Grueso, Grueso) para este método y gramaje",
-  "temperature": 94, // temperatura del agua sugerida en grados Celsius (número entero)
+  "temperature": 94,
   "brew_time": "tiempo de extracción sugerido en formato string (ej: 2:30 o 0:30)",
-  "notes": "Breve explicación barística de por qué esta receta con ratio y molienda específicos funciona para resaltar las notas del grano con esta dosis y método."
+  "notes": "Una sola frase barística ultra corta (máximo 12 palabras) que explique por qué funciona esta receta."
 }`;
 
   try {
