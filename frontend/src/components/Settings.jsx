@@ -112,7 +112,7 @@ export default function Settings({ showToast, isDarkMode, setIsDarkMode, theme, 
             Elige una paleta de colores personalizada
           </p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(105px, 1fr))', gap: '8px' }}>
           {[
             { id: 'tema1', name: 'Mocha Rosé' },
             { id: 'tema2', name: 'Matcha Tonic' },
@@ -136,7 +136,7 @@ export default function Settings({ showToast, isDarkMode, setIsDarkMode, theme, 
                   boxShadow: isActive ? 'none' : '3px 3px 0px var(--border-color)',
                   transform: isActive ? 'translate(2px, 2px)' : 'none',
                   fontWeight: 'bold',
-                  whiteSpace: 'nowrap'
+                  lineHeight: '1.2'
                 }}
               >
                 {t.name}
@@ -158,12 +158,12 @@ export default function Settings({ showToast, isDarkMode, setIsDarkMode, theme, 
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <input 
-            type="password" 
+            type="text" 
             className="candy-input" 
             value={apiKey} 
             onChange={(e) => saveApiKey(e.target.value)} 
-            placeholder="Introduce tu clave API de Gemini"
-            style={{ width: '100%', boxSizing: 'border-box' }}
+            placeholder="Introduce tu clave API (AIzaSy...)"
+            style={{ width: '100%', boxSizing: 'border-box', fontFamily: 'var(--font-mono)' }}
           />
           <a 
             href="https://aistudio.google.com/app/apikey" 
