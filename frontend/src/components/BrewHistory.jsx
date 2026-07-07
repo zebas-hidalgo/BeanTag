@@ -102,11 +102,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
       ctx.font = '500 32px Fredoka, sans-serif';
       ctx.fillStyle = '#000000';
-      ctx.fillText('BeanTag', 68, 73);
-
-      ctx.font = '700 13px Space Grotesk, sans-serif';
-      ctx.fillStyle = '#F94C00';
-      ctx.fillText('FICHA TÉCNICA DE ORIGEN NFC', 68, 89);
+      ctx.fillText('BeanTag', 68, 78);
 
       // Orden y fecha
       ctx.font = '700 14px Share Tech Mono, monospace';
