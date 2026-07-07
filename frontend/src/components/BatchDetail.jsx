@@ -285,46 +285,64 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
         </div>
       </div>
 
-      {/* Notas de Cata (SCA) */}
+      {/* Notas de Cata y Perfil Sensorial */}
       {(() => {
         let scaTags = [];
+        let customNotes = '';
         if (batch.roaster_notes) {
           const notesStr = String(batch.roaster_notes);
           if (notesStr.includes('[Notas: ') && notesStr.includes(']')) {
             const match = notesStr.match(/\[Notas: (.*?)\]/);
             if (match) scaTags = match[1].split(',').map(s => s.trim());
+            // Get everything after the tags (separated by ' | ')
+            if (notesStr.includes(' | ')) {
+              customNotes = notesStr.split(' | ')[1].trim();
+            }
+          } else {
+            customNotes = notesStr.trim();
           }
         }
-        if (scaTags.length === 0) return null;
+        
+        if (scaTags.length === 0 && !customNotes) return null;
         
         return (
-          <div style={{ marginTop: '12px' }}>
-            <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 8px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
-              Perfil Sensorial (SCA)
+          <div style={{ marginTop: '14px', marginBottom: '14px', padding: '12px', backgroundColor: 'var(--bg-card)', border: '2px solid #000000', borderRadius: '8px', boxShadow: '3px 3px 0px #000000' }}>
+            <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 10px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
+              Notas de Cata
             </h4>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {scaTags.map((tag, i) => {
-                const cleanLabel = stripEmojis(tag);
-                return (
-                  <span key={i} style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '4px 8px',
-                    backgroundColor: '#FFFFFF',
-                    border: '2px solid var(--color-navy)',
-                    borderRadius: '4px',
-                    fontSize: '11px',
-                    fontWeight: 'bold',
-                    color: 'var(--color-navy)',
-                    boxShadow: '2px 2px 0px var(--color-navy)'
-                  }}>
-                    {getScaIcon(tag, 12, 2.5)}
-                    {cleanLabel}
-                  </span>
-                );
-              })}
-            </div>
+            
+            {scaTags.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: customNotes ? '10px' : '0' }}>
+                {scaTags.map((tag, i) => {
+                  const cleanLabel = stripEmojis(tag);
+                  return (
+                    <span key={i} style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '4px 8px',
+                      backgroundColor: '#FFFFFF',
+                      border: '2px solid #000000',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      fontFamily: 'var(--font-heading)',
+                      fontWeight: 'bold',
+                      color: 'var(--color-text)',
+                      boxShadow: '1px 1px 0px #000000'
+                    }}>
+                      {getScaIcon(tag, 13, 2.5)}
+                      {cleanLabel}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+
+            {customNotes && (
+              <div style={{ fontSize: '13px', fontStyle: 'italic', color: 'var(--color-text-muted)', lineHeight: '1.4' }}>
+                "{customNotes}"
+              </div>
+            )}
           </div>
         );
       })()}
