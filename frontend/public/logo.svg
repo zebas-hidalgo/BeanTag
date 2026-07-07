@@ -1,0 +1,6 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+  <circle cx='50' cy='50' r='46' fill='#E53E3E' stroke='#000' stroke-width='6'/>
+  <circle cx='50' cy='50' r='38' fill='none' stroke='#000' stroke-width='2' stroke-dasharray='4 4'/>
+  <path d='M35 50 C 35 30, 65 30, 65 50 C 65 70, 35 70, 35 50 Z' fill='#FFF' stroke='#000' stroke-width='5'/>
+  <path d='M42 62 C 48 55, 52 45, 58 38' fill='none' stroke='#000' stroke-width='4' stroke-linecap='round'/>
+</svg>
