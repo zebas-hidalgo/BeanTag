@@ -15,6 +15,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [shareImage, setShareImage] = useState(null);
   const [shareStatus, setShareStatus] = useState('');
+  const [shareIncludeRecipe, setShareIncludeRecipe] = useState(true);
   const textureRef = useRef(null);
 
   useEffect(() => {
@@ -138,73 +139,140 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.lineTo(790, 105);
       ctx.stroke();
 
-      // Divisor vertical en el centro
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = colorBorder;
-      ctx.save();
-      ctx.setLineDash([6, 6]);
-      ctx.beginPath();
-      ctx.moveTo(420, 125);
-      ctx.lineTo(420, 415);
-      ctx.stroke();
-      ctx.restore();
+      if (shareIncludeRecipe) {
+        // Divisor vertical en el centro
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = colorBorder;
+        ctx.save();
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.moveTo(420, 125);
+        ctx.lineTo(420, 415);
+        ctx.stroke();
+        ctx.restore();
 
-      // 6. Cuerpo Columna Izquierda: Detalles Técnicos del Grano
-      ctx.font = '800 15px "Space Grotesk", sans-serif';
-      ctx.fillStyle = colorAccent;
-      ctx.fillText('[ GRANO DE CAFÉ ]', 50, 138);
-
-      ctx.font = '800 30px Outfit, sans-serif';
-      ctx.fillStyle = colorPrimary;
-      ctx.fillText(recipe.batch_name || 'N/A', 50, 175);
-
-      const batchDetails = [
-        { label: 'Origen', val: recipe.batch_origin },
-        { label: 'Productor', val: recipe.batch_producer },
-        { label: 'Variedad', val: recipe.batch_variety },
-        { label: 'Proceso', val: recipe.batch_process },
-        { label: 'Tostador', val: recipe.batch_roaster },
-        { label: 'Tueste', val: recipe.batch_roast_date ? formatLocalDateStr(recipe.batch_roast_date) : null }
-      ];
-
-      batchDetails.forEach((item, idx) => {
-        const yPos = 215 + idx * 40;
-        ctx.font = '800 17px Outfit, sans-serif';
+        // 6. Cuerpo Columna Izquierda: Detalles Técnicos del Grano
+        ctx.font = '800 15px "Space Grotesk", sans-serif';
         ctx.fillStyle = colorAccent;
-        ctx.fillText(`${item.label}:`, 50, yPos);
-        
-        ctx.font = '500 17px Outfit, sans-serif';
+        ctx.fillText('[ GRANO DE CAFÉ ]', 50, 138);
+
+        ctx.font = '800 30px Outfit, sans-serif';
         ctx.fillStyle = colorPrimary;
-        ctx.fillText(item.val || 'N/A', 150, yPos);
-      });
+        ctx.fillText(recipe.batch_name || 'N/A', 50, 175);
 
-      // 7. Cuerpo Columna Derecha: Detalles de Extracción / Receta
-      ctx.font = '800 15px "Space Grotesk", sans-serif';
-      ctx.fillStyle = colorAccent;
-      ctx.fillText('[ EXTRACCIÓN & CALIBRACIÓN ]', 450, 138);
+        const batchDetails = [
+          { label: 'Origen', val: recipe.batch_origin },
+          { label: 'Productor', val: recipe.batch_producer },
+          { label: 'Variedad', val: recipe.batch_variety },
+          { label: 'Proceso', val: recipe.batch_process },
+          { label: 'Tostador', val: recipe.batch_roaster },
+          { label: 'Tueste', val: recipe.batch_roast_date ? formatLocalDateStr(recipe.batch_roast_date) : null }
+        ];
 
-      ctx.font = '800 30px Outfit, sans-serif';
-      ctx.fillStyle = colorPrimary;
-      ctx.fillText(recipe.method || 'N/A', 450, 175);
+        batchDetails.forEach((item, idx) => {
+          const yPos = 215 + idx * 40;
+          ctx.font = '800 17px Outfit, sans-serif';
+          ctx.fillStyle = colorAccent;
+          ctx.fillText(`${item.label}:`, 50, yPos);
+          
+          ctx.font = '500 17px Outfit, sans-serif';
+          ctx.fillStyle = colorPrimary;
+          ctx.fillText(item.val || 'N/A', 150, yPos);
+        });
 
-      const recipeDetails = [
-        { label: 'Dosis In', val: `${recipe.dose_in_g || 'N/A'} g` },
-        { label: 'Molienda', val: recipe.grind || 'N/A' },
-        { label: 'Ratio', val: recipe.ratio || 'N/A' },
-        { label: 'Agua Temp', val: `${recipe.temperature || '93'} °C` },
-        { label: 'Tiempo', val: recipe.brew_time || 'N/A' }
-      ];
-
-      recipeDetails.forEach((item, idx) => {
-        const yPos = 215 + idx * 40;
-        ctx.font = '800 17px Outfit, sans-serif';
+        // 7. Cuerpo Columna Derecha: Detalles de Extracción / Receta
+        ctx.font = '800 15px "Space Grotesk", sans-serif';
         ctx.fillStyle = colorAccent;
-        ctx.fillText(`${item.label}:`, 450, yPos);
-        
-        ctx.font = '500 17px Outfit, sans-serif';
+        ctx.fillText('[ EXTRACCIÓN & CALIBRACIÓN ]', 450, 138);
+
+        ctx.font = '800 30px Outfit, sans-serif';
         ctx.fillStyle = colorPrimary;
-        ctx.fillText(item.val || 'N/A', 580, yPos);
-      });
+        ctx.fillText(recipe.method || 'N/A', 450, 175);
+
+        const recipeDetails = [
+          { label: 'Dosis In', val: `${recipe.dose_in_g || 'N/A'} g` },
+          { label: 'Molienda', val: recipe.grind || 'N/A' },
+          { label: 'Ratio', val: recipe.ratio || 'N/A' },
+          { label: 'Agua Temp', val: `${recipe.temperature || '93'} °C` },
+          { label: 'Tiempo', val: recipe.brew_time || 'N/A' }
+        ];
+
+        recipeDetails.forEach((item, idx) => {
+          const yPos = 215 + idx * 40;
+          ctx.font = '800 17px Outfit, sans-serif';
+          ctx.fillStyle = colorAccent;
+          ctx.fillText(`${item.label}:`, 450, yPos);
+          
+          ctx.font = '500 17px Outfit, sans-serif';
+          ctx.fillStyle = colorPrimary;
+          ctx.fillText(item.val || 'N/A', 580, yPos);
+        });
+      } else {
+        // --- SOLO INFO DEL LOTE (BRANDED CARD) ---
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = colorBorder;
+        ctx.save();
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.moveTo(460, 125);
+        ctx.lineTo(460, 415);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.font = '800 15px "Space Grotesk", sans-serif';
+        ctx.fillStyle = colorAccent;
+        ctx.fillText('[ DETALLE DEL LOTE ]', 50, 138);
+
+        ctx.font = '800 30px Outfit, sans-serif';
+        ctx.fillStyle = colorPrimary;
+        ctx.fillText(recipe.batch_name || 'N/A', 50, 175);
+
+        const batchDetails = [
+          { label: 'Origen', val: recipe.batch_origin },
+          { label: 'Productor', val: recipe.batch_producer },
+          { label: 'Variedad', val: recipe.batch_variety },
+          { label: 'Proceso', val: recipe.batch_process },
+          { label: 'Tostador', val: recipe.batch_roaster },
+          { label: 'Tueste', val: recipe.batch_roast_date ? formatLocalDateStr(recipe.batch_roast_date) : null }
+        ];
+
+        batchDetails.forEach((item, idx) => {
+          const yPos = 215 + idx * 40;
+          ctx.font = '800 17px Outfit, sans-serif';
+          ctx.fillStyle = colorAccent;
+          ctx.fillText(`${item.label}:`, 50, yPos);
+          
+          ctx.font = '500 17px Outfit, sans-serif';
+          ctx.fillStyle = colorPrimary;
+          ctx.fillText(item.val || 'N/A', 150, yPos);
+        });
+
+        // Columna derecha: Badge brutalista
+        ctx.fillStyle = colorAccent;
+        ctx.fillRect(505, 160, 250, 220);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = colorBorder;
+        ctx.strokeRect(505, 160, 250, 220);
+
+        ctx.fillStyle = colorBg;
+        ctx.fillRect(500, 155, 250, 220);
+        ctx.strokeRect(500, 155, 250, 220);
+
+        ctx.font = '800 24px "Space Grotesk", sans-serif';
+        ctx.fillStyle = colorPrimary;
+        ctx.textAlign = 'center';
+        ctx.fillText('SPECIALTY', 625, 220);
+        ctx.fillText('COFFEE', 625, 255);
+        
+        ctx.font = '900 14px "JetBrains Mono", monospace';
+        ctx.fillStyle = colorAccent;
+        ctx.fillText('• BEANTAG APP •', 625, 300);
+
+        ctx.font = '500 12px Outfit, sans-serif';
+        ctx.fillStyle = colorPrimary;
+        ctx.fillText('ORIGEN GARANTIZADO', 625, 335);
+        ctx.textAlign = 'left';
+      }
 
       // 8. Sección Notas de Cata SCA (Fondo completo)
       ctx.lineWidth = 1.5;
@@ -676,6 +744,62 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
                 </div>
               );
             })()}
+
+            {/* Opciones de Compartir */}
+            <div style={{ 
+              marginTop: '16px', 
+              padding: '12px', 
+              border: '2px solid var(--border-color)', 
+              borderRadius: '6px', 
+              backgroundColor: 'var(--bg-canvas)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px'
+            }}>
+              <span style={{ fontSize: '10px', fontWeight: '900', fontFamily: 'var(--font-heading)', textTransform: 'uppercase', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+                Tipo de Tarjeta para Compartir
+              </span>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                <button 
+                  type="button" 
+                  className="btn-candy"
+                  onClick={() => setShareIncludeRecipe(true)}
+                  style={{ 
+                    flex: 1, 
+                    margin: 0, 
+                    fontSize: '10px', 
+                    padding: '8px 4px',
+                    border: '2px solid var(--border-color)',
+                    backgroundColor: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--bg-card)',
+                    color: shareIncludeRecipe ? '#FFFFFF' : 'var(--color-text)',
+                    boxShadow: shareIncludeRecipe ? 'none' : '3px 3px 0px var(--border-color)',
+                    transform: shareIncludeRecipe ? 'translate(2px, 2px)' : 'none',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Grano + Receta
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-candy"
+                  onClick={() => setShareIncludeRecipe(false)}
+                  style={{ 
+                    flex: 1, 
+                    margin: 0, 
+                    fontSize: '10px', 
+                    padding: '8px 4px',
+                    border: '2px solid var(--border-color)',
+                    backgroundColor: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--bg-card)',
+                    color: !shareIncludeRecipe ? '#FFFFFF' : 'var(--color-text)',
+                    boxShadow: !shareIncludeRecipe ? 'none' : '3px 3px 0px var(--border-color)',
+                    transform: !shareIncludeRecipe ? 'translate(2px, 2px)' : 'none',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Solo Grano
+                </button>
+              </div>
+            </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '18px', gap: '8px' }}>
               <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', flex: 1 }}>
