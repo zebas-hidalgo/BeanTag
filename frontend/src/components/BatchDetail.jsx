@@ -455,12 +455,57 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
       <form onSubmit={handleRecipeSubmit}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px' }}>
           <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', fontSize: '15px', margin: 0 }}>Registrar Preparación</h2>
-          <select className="candy-input" style={{ width: 'auto', padding: '6px 12px', margin: 0, fontSize: '12px' }} value={method} onChange={(e) => setMethod(e.target.value)}>
-            <option value="V60 (Filtrado)">V60</option>
-            <option value="Espresso">Espresso</option>
-            <option value="AeroPress">AeroPress</option>
-            <option value="Prensa Francesa">Prensa Fra.</option>
-          </select>
+        </div>
+
+        {/* Method Icon Selector */}
+        <div style={{ display: 'flex', gap: '12px', margin: '16px 0', overflowX: 'auto', paddingBottom: '4px' }}>
+          {[
+            { id: 'V60 (Filtrado)', icon: '/icons/v60.jpg', label: 'V60' },
+            { id: 'Espresso', icon: '/icons/espresso.jpg', label: 'Espresso' },
+            { id: 'AeroPress', icon: '/icons/aeropress.jpg', label: 'AeroPress' },
+            { id: 'Prensa Francesa', icon: '/icons/frenchpress.jpg', label: 'Prensa' }
+          ].map(m => (
+            <div 
+              key={m.id}
+              onClick={() => {
+                setMethod(m.id);
+                if (navigator.vibrate) navigator.vibrate(40);
+              }}
+              style={{ 
+                flex: '1', 
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer',
+                transform: method === m.id ? 'scale(1.05)' : 'scale(1)',
+                transition: 'all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+              }}
+            >
+              <div 
+                className="candy-card"
+                style={{ 
+                  width: '100%', 
+                  aspectRatio: '1/1', 
+                  padding: 0, 
+                  margin: 0,
+                  overflow: 'hidden',
+                  borderColor: method === m.id ? 'var(--color-crimson)' : 'var(--border-color)',
+                  borderWidth: method === m.id ? '3px' : '2px',
+                  backgroundColor: method === m.id ? 'var(--color-crimson)' : 'var(--bg-card)'
+                }}
+              >
+                <img src={m.icon} alt={m.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <span style={{ 
+                fontSize: '10px', 
+                fontWeight: method === m.id ? '900' : '600',
+                color: method === m.id ? 'var(--color-text)' : 'var(--color-text-muted)'
+              }}>
+                {m.label}
+              </span>
+            </div>
+          ))}
         </div>
 
         <div className="bento-grid">

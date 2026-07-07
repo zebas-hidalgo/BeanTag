@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 
+const METHOD_ICONS = {
+  'V60 (Filtrado)': '/icons/v60.jpg',
+  'Espresso': '/icons/espresso.jpg',
+  'AeroPress': '/icons/aeropress.jpg',
+  'Prensa Francesa': '/icons/frenchpress.jpg'
+};
 
 export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
   const [history, setHistory] = useState(null); // null = loading, [] = empty
@@ -389,7 +395,14 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
             >
               <div className="card-header-flex">
                 <div>
-                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: '0 0 2px 0', textTransform: 'uppercase' }}>{item.method}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                    {METHOD_ICONS[item.method] && (
+                      <div style={{ width: '28px', height: '28px', borderRadius: '4px', overflow: 'hidden', border: '1.5px solid var(--border-color)' }}>
+                        <img src={METHOD_ICONS[item.method]} alt={item.method} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    )}
+                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: 0, textTransform: 'uppercase' }}>{item.method}</h3>
+                  </div>
                   <span 
                     onClick={(e) => {
                       e.stopPropagation();
@@ -471,9 +484,16 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
               <div>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', margin: '0 0 2px 0', textTransform: 'uppercase' }}>
-                  {selectedRecipe.method}
-                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  {METHOD_ICONS[selectedRecipe.method] && (
+                    <div style={{ width: '32px', height: '32px', borderRadius: '4px', overflow: 'hidden', border: '1.5px solid var(--border-color)' }}>
+                      <img src={METHOD_ICONS[selectedRecipe.method]} alt={selectedRecipe.method} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  )}
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', margin: 0, textTransform: 'uppercase' }}>
+                    {selectedRecipe.method}
+                  </h3>
+                </div>
                 <span 
                   onClick={() => {
                     setSelectedRecipe(null);
