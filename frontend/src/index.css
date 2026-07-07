@@ -100,7 +100,7 @@ main {
 .app-header {
   background-color: var(--bg-card);
   border-bottom: 2px solid var(--border-color);
-  padding: 14px 20px;
+  padding: 8px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -112,7 +112,7 @@ main {
 
 .app-header h1 {
   font-family: var(--font-heading);
-  font-size: 18px;
+  font-size: 16px;
   margin: 0;
   text-transform: uppercase;
   color: var(--border-color);
@@ -123,30 +123,29 @@ main {
   background-color: var(--bg-card);
   border: 2px solid var(--border-color);
   border-radius: 8px;
-  padding: 10px 16px;
-  min-height: 44px; /* Touch Target Minimum */
+  padding: 8px 16px;
   font-family: var(--font-heading);
   font-weight: bold;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
-  transition: transform 100ms, box-shadow 100ms, background-color 100ms;
-  color: var(--border-color);
   text-transform: uppercase;
-  display: flex;
+  color: var(--border-color);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  box-shadow: 2px 2px 0px var(--border-color);
+  transition: transform 100ms, box-shadow 100ms, background-color 100ms;
+  box-shadow: 3px 3px 0px var(--border-color);
 }
 
 .btn-candy:hover {
-  background-color: var(--bg-canvas);
+  background-color: #FAF5FF;
 }
 
 .btn-candy:active {
-  transform: scale(0.96) translate(1px, 1px);
+  transform: translate(2px, 2px);
   box-shadow: 1px 1px 0px var(--border-color);
-  background-color: var(--bg-canvas);
+  background-color: #EDF2F7;
 }
 
 .btn-candy.primary {
@@ -155,7 +154,7 @@ main {
 }
 
 .btn-candy.primary:hover {
-  background-color: #E24500;
+  background-color: #E2431C;
 }
 
 .btn-candy.primary:active {
@@ -175,11 +174,11 @@ main {
 .app-bar-btn {
   border: 2px solid var(--border-color);
   background-color: var(--bg-card);
-  padding: 6px 16px;
-  min-height: 44px; /* Touch Target Minimum */
+  padding: 4px 10px;
+  min-height: 32px;
   font-family: var(--font-heading);
   font-weight: bold;
-  font-size: 11px;
+  font-size: 10px;
   cursor: pointer;
   text-transform: uppercase;
   color: var(--border-color);
@@ -188,8 +187,8 @@ main {
   justify-content: center;
   box-sizing: border-box;
   transition: transform 100ms, box-shadow 100ms, background-color 100ms;
-  box-shadow: 2px 2px 0px var(--border-color);
-  border-radius: 8px;
+  box-shadow: 1.5px 1.5px 0px var(--border-color);
+  border-radius: 6px;
 }
 
 .app-bar-btn:hover {
@@ -198,7 +197,7 @@ main {
 
 .app-bar-btn:active {
   transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0px var(--border-color);
+  box-shadow: 0.5px 0.5px 0px var(--border-color);
   background-color: #EDF2F7;
 }
 
@@ -709,4 +708,24 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   text-transform: uppercase;
   text-align: center;
   margin-top: 6px;
+}
+
+@media (max-width: 375px) {
+  .app-header {
+    padding: 6px 10px;
+  }
+  .app-header svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .app-header span {
+    font-size: 15px !important;
+    letter-spacing: 1px !important;
+  }
+  .app-bar-btn {
+    padding: 3px 6px;
+    font-size: 9px;
+    min-height: 28px;
+    gap: 2px !important;
+  }
 }
