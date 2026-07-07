@@ -1,7 +1,7 @@
 import React from 'react';
 import { Moon, Sun, Download, Upload } from 'lucide-react';
 
-export default function Settings({ showToast, isDarkMode, setIsDarkMode }) {
+export default function Settings({ showToast, isDarkMode, setIsDarkMode, theme, setTheme }) {
   const handleExportBackup = () => {
     fetch('/api/backup/export')
       .then(res => res.json())
@@ -75,7 +75,7 @@ export default function Settings({ showToast, isDarkMode, setIsDarkMode }) {
       </h2>
 
       {/* Tema Visual */}
-      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <div>
           <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
             Modo Oscuro
@@ -91,6 +91,43 @@ export default function Settings({ showToast, isDarkMode, setIsDarkMode }) {
         >
           {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
         </button>
+      </div>
+
+      {/* Selector de Tema */}
+      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
+        <div>
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+            Temas de Color
+          </h4>
+          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
+            Elige una paleta de colores personalizada
+          </p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(60px, 1fr))', gap: '8px' }}>
+          {[1, 2, 3, 4, 5].map((num) => {
+            const tName = `tema${num}`;
+            const isActive = theme === tName;
+            return (
+              <button 
+                key={tName}
+                onClick={() => setTheme(tName)} 
+                className="btn-candy"
+                style={{ 
+                  margin: 0, 
+                  fontSize: '11px', 
+                  padding: '8px 4px', 
+                  border: '2px solid var(--border-color)',
+                  backgroundColor: isActive ? 'var(--color-crimson)' : 'var(--bg-card)',
+                  color: isActive ? '#FFFFFF' : 'var(--color-text)',
+                  boxShadow: isActive ? 'none' : '3px 3px 0px var(--border-color)',
+                  transform: isActive ? 'translate(2px, 2px)' : 'none'
+                }}
+              >
+                Tema {num}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Backup and restore section */}

@@ -53,13 +53,35 @@
 }
 
 [data-theme='tema3'] {
-  --bg-canvas: #DAAAAF;
+  --bg-canvas: #FCE7F3;
   --bg-card: #FFFFFF;
-  --border-color: #214335;
-  --color-text: #214335;
-  --color-text-muted: #496256;
-  --color-crimson: #D04C01;
-  --bg-header: #D04C01;
+  --border-color: #0F172A;
+  --color-text: #0F172A;
+  --color-text-muted: #475569;
+  --color-crimson: #EC4899;
+  --bg-header: #EC4899;
+  --color-header-text: #FFFFFF;
+}
+
+[data-theme='tema4'] {
+  --bg-canvas: #FFFDF9;
+  --bg-card: #FFFFFF;
+  --border-color: #4A3525;
+  --color-text: #4A3525;
+  --color-text-muted: #7A6251;
+  --color-crimson: #F1C40F;
+  --bg-header: #F1C40F;
+  --color-header-text: #4A3525;
+}
+
+[data-theme='tema5'] {
+  --bg-canvas: #F3E8FF;
+  --bg-card: #FFFFFF;
+  --border-color: #3B2E58;
+  --color-text: #3B2E58;
+  --color-text-muted: #6B5E8C;
+  --color-crimson: #8B5CF6;
+  --bg-header: #8B5CF6;
   --color-header-text: #FFFFFF;
 }
 
