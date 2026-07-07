@@ -78,6 +78,13 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       canvas.height = 540;
       const ctx = canvas.getContext('2d');
 
+      // Get dynamic CSS variables from active theme
+      const style = getComputedStyle(document.documentElement);
+      const colorBg = style.getPropertyValue('--bg-canvas').trim() || '#CAE7F7';
+      const colorBorder = style.getPropertyValue('--border-color').trim() || '#000000';
+      const colorAccent = style.getPropertyValue('--color-crimson').trim() || '#F94C00';
+      const colorPrimary = style.getPropertyValue('--color-text').trim() || '#48261D';
+
       // 1. Limpiar canvas
       ctx.clearRect(0, 0, 840, 540);
 
@@ -89,32 +96,34 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         ctx.restore();
       }
 
-      // 3. Filtro de opacidad blanco (65%) sobre la textura para legibilidad
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+      // 3. Filtro de opacidad del color de fondo del tema sobre la textura
+      ctx.fillStyle = colorBg;
+      ctx.globalAlpha = 0.8;
       ctx.fillRect(15, 15, 810, 510);
+      ctx.globalAlpha = 1.0;
 
-      // 4. Dibujar doble borde negro
+      // 4. Dibujar doble borde de tema
       ctx.lineWidth = 4;
-      ctx.strokeStyle = '#000000';
+      ctx.strokeStyle = colorBorder;
       ctx.strokeRect(15, 15, 810, 510);
       
       ctx.lineWidth = 1.5;
       ctx.strokeRect(20, 20, 800, 500);
 
-      // 5. Encabezado: Línea vertical naranja y textos
-      ctx.fillStyle = '#F94C00';
+      // 5. Encabezado: Línea vertical de acento y textos
+      ctx.fillStyle = colorAccent;
       ctx.fillRect(50, 45, 6, 46);
       ctx.lineWidth = 2;
-      ctx.strokeStyle = '#000000';
+      ctx.strokeStyle = colorBorder;
       ctx.strokeRect(50, 45, 6, 46);
 
-      ctx.font = '500 32px Fredoka, sans-serif';
-      ctx.fillStyle = '#000000';
+      ctx.font = '800 32px Comfortaa, sans-serif';
+      ctx.fillStyle = colorPrimary;
       ctx.fillText('BeanTag', 68, 78);
 
       // Orden y fecha
-      ctx.font = '700 14px Share Tech Mono, monospace';
-      ctx.fillStyle = '#000000';
+      ctx.font = '700 13px "JetBrains Mono", monospace';
+      ctx.fillStyle = colorPrimary;
       ctx.textAlign = 'right';
       const createdDate = new Date(recipe.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
       ctx.fillText(`REGISTRO: #0${recipe.id || '294'}`, 790, 63);
@@ -123,50 +132,110 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
       // Línea divisoria inferior del encabezado
       ctx.lineWidth = 3.5;
-      ctx.strokeStyle = '#000000';
+      ctx.strokeStyle = colorBorder;
       ctx.beginPath();
       ctx.moveTo(50, 105);
       ctx.lineTo(790, 105);
       ctx.stroke();
 
-      // 6. Cuerpo: Detalles Técnicos del Grano
-      ctx.font = '700 16px Space Grotesk, sans-serif';
-      ctx.fillStyle = '#F94C00';
-      ctx.fillText('[ GRANO SELECCIONADO ]', 50, 145);
-
-      ctx.font = '500 34px Outfit, sans-serif';
-      ctx.fillStyle = '#000000';
-      ctx.fillText(recipe.batch_name || 'N/A', 50, 195);
-
-      ctx.font = '400 19px Outfit, sans-serif';
-      // Columna Izquierda (x = 50)
-      ctx.fillText(`Origen: ${recipe.batch_origin || 'N/A'}`, 50, 245);
-      ctx.fillText(`Tostador: ${recipe.batch_roaster || 'N/A'}`, 50, 287);
-      ctx.fillText(`Variedad: ${recipe.batch_variety || 'N/A'}`, 50, 329);
-
-      // Columna Derecha (x = 450)
-      ctx.fillText(`Productor: ${recipe.batch_producer || 'N/A'}`, 450, 245);
-      ctx.fillText(`Proceso: ${recipe.batch_process || 'N/A'}`, 450, 287);
-      
-      const roastDateText = recipe.batch_roast_date ? formatLocalDateStr(recipe.batch_roast_date) : 'N/A';
-      ctx.fillText(`Tueste: ${roastDateText}`, 450, 329);
-
-      // 7. Sección 1: Notas de Cata de la Rueda SCA
+      // Divisor vertical en el centro
       ctx.lineWidth = 1.5;
-      ctx.strokeStyle = '#000000';
+      ctx.strokeStyle = colorBorder;
       ctx.save();
-      ctx.setLineDash([4, 4]);
+      ctx.setLineDash([6, 6]);
       ctx.beginPath();
-      ctx.moveTo(50, 365);
-      ctx.lineTo(790, 365);
+      ctx.moveTo(420, 125);
+      ctx.lineTo(420, 415);
       ctx.stroke();
       ctx.restore();
 
-      ctx.font = '700 15px Space Grotesk, sans-serif';
-      ctx.fillStyle = '#F94C00';
-      ctx.fillText('[ NOTAS DE CATA (RUEDA SCA) ]', 50, 395);
+      // 6. Cuerpo Columna Izquierda: Detalles Técnicos del Grano
+      ctx.font = '800 13px "Space Grotesk", sans-serif';
+      ctx.fillStyle = colorAccent;
+      ctx.fillText('[ GRANO DE CAFÉ ]', 50, 138);
 
-      // Obtener y decodificar sólo los tags de la Rueda SCA de batch_roaster_notes
+      ctx.font = '800 24px Outfit, sans-serif';
+      ctx.fillStyle = colorPrimary;
+      ctx.fillText(recipe.batch_name || 'N/A', 50, 172);
+
+      const batchDetails = [
+        { label: 'Origen', val: recipe.batch_origin },
+        { label: 'Productor', val: recipe.batch_producer },
+        { label: 'Variedad', val: recipe.batch_variety },
+        { label: 'Proceso', val: recipe.batch_process },
+        { label: 'Tostador', val: recipe.batch_roaster },
+        { label: 'Tueste', val: recipe.batch_roast_date ? formatLocalDateStr(recipe.batch_roast_date) : null }
+      ];
+
+      batchDetails.forEach((item, idx) => {
+        const yPos = 215 + idx * 34;
+        ctx.font = '800 14px Outfit, sans-serif';
+        ctx.fillStyle = colorAccent;
+        ctx.fillText(`${item.label}:`, 50, yPos);
+        
+        ctx.font = '500 14px Outfit, sans-serif';
+        ctx.fillStyle = colorPrimary;
+        ctx.fillText(item.val || 'N/A', 140, yPos);
+      });
+
+      // 7. Cuerpo Columna Derecha: Detalles de Extracción / Receta
+      ctx.font = '800 13px "Space Grotesk", sans-serif';
+      ctx.fillStyle = colorAccent;
+      ctx.fillText('[ EXTRACCIÓN & CALIBRACIÓN ]', 450, 138);
+
+      ctx.font = '800 24px Outfit, sans-serif';
+      ctx.fillStyle = colorPrimary;
+      ctx.fillText(recipe.method || 'N/A', 450, 172);
+
+      const recipeDetails = [
+        { label: 'Dosis In', val: `${recipe.dose_in_g || 'N/A'} g` },
+        { label: 'Molienda', val: recipe.grind || 'N/A' },
+        { label: 'Ratio', val: recipe.ratio || 'N/A' },
+        { label: 'Agua Temp', val: `${recipe.temperature || '93'} °C` },
+        { label: 'Tiempo', val: recipe.brew_time || 'N/A' }
+      ];
+
+      recipeDetails.forEach((item, idx) => {
+        const yPos = 215 + idx * 34;
+        ctx.font = '800 14px Outfit, sans-serif';
+        ctx.fillStyle = colorAccent;
+        ctx.fillText(`${item.label}:`, 450, yPos);
+        
+        ctx.font = '500 14px Outfit, sans-serif';
+        ctx.fillStyle = colorPrimary;
+        ctx.fillText(item.val || 'N/A', 560, yPos);
+      });
+
+      // Calificación en la columna derecha
+      const starYPos = 385;
+      ctx.font = '800 14px Outfit, sans-serif';
+      ctx.fillStyle = colorAccent;
+      ctx.fillText('Calificación:', 450, starYPos);
+
+      const rating = parseFloat(recipe.rating) || 0;
+      let starStr = '';
+      for (let i = 1; i <= 5; i++) {
+        starStr += i <= Math.round(rating) ? '★' : '☆';
+      }
+      ctx.font = '800 18px Outfit, sans-serif';
+      ctx.fillStyle = colorAccent;
+      ctx.fillText(starStr, 560, starYPos - 1);
+
+      // 8. Sección Notas de Cata SCA (Fondo completo)
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = colorBorder;
+      ctx.save();
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(50, 422);
+      ctx.lineTo(790, 422);
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.font = '800 13px "Space Grotesk", sans-serif';
+      ctx.fillStyle = colorAccent;
+      ctx.fillText('[ NOTAS DE CATA (RUEDA SCA) ]', 50, 442);
+
       let scaNotes = '';
       if (recipe.batch_roaster_notes) {
         const notesStr = String(recipe.batch_roaster_notes);
@@ -186,25 +255,24 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       if (!scaNotes) {
         scaNotes = 'Sin notas de cata registradas';
       }
-      
       scaNotes = stripEmojis(scaNotes);
 
-      ctx.font = '700 22px Outfit, sans-serif';
-      ctx.fillStyle = '#000000';
-      ctx.fillText(scaNotes, 50, 435);
+      ctx.font = '800 20px Outfit, sans-serif';
+      ctx.fillStyle = colorPrimary;
+      ctx.fillText(scaNotes, 50, 474);
 
-      // 8. Footer: Firma
-      ctx.lineWidth = 3.5;
-      ctx.strokeStyle = '#000000';
+      // 9. Footer: Firma
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = colorBorder;
       ctx.beginPath();
-      ctx.moveTo(50, 475);
-      ctx.lineTo(790, 475);
+      ctx.moveTo(50, 495);
+      ctx.lineTo(790, 495);
       ctx.stroke();
 
-      ctx.font = '500 19px JetBrains Mono, monospace';
-      ctx.fillStyle = '#000000';
+      ctx.font = '700 15px "JetBrains Mono", monospace';
+      ctx.fillStyle = colorPrimary;
       ctx.textAlign = 'right';
-      ctx.fillText('BEANTAG.CAFE', 790, 512);
+      ctx.fillText('BEANTAG.CAFE', 790, 520);
       ctx.textAlign = 'left';
 
       // Export as Data URL
