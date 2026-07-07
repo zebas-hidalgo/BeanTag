@@ -103,27 +103,34 @@ export default function Settings({ showToast, isDarkMode, setIsDarkMode, theme, 
             Elige una paleta de colores personalizada
           </p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(60px, 1fr))', gap: '8px' }}>
-          {[1, 2, 3, 4, 5].map((num) => {
-            const tName = `tema${num}`;
-            const isActive = theme === tName;
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: '8px' }}>
+          {[
+            { id: 'tema1', name: 'Mocha Rosé' },
+            { id: 'tema2', name: 'Matcha Tonic' },
+            { id: 'tema3', name: 'Cyber Geisha' },
+            { id: 'tema4', name: 'Tueste Dorado' },
+            { id: 'tema5', name: 'Cold Brew Violet' }
+          ].map((t) => {
+            const isActive = theme === t.id;
             return (
               <button 
-                key={tName}
-                onClick={() => setTheme(tName)} 
+                key={t.id}
+                onClick={() => setTheme(t.id)} 
                 className="btn-candy"
                 style={{ 
                   margin: 0, 
-                  fontSize: '11px', 
+                  fontSize: '10px', 
                   padding: '8px 4px', 
                   border: '2px solid var(--border-color)',
                   backgroundColor: isActive ? 'var(--color-crimson)' : 'var(--bg-card)',
                   color: isActive ? '#FFFFFF' : 'var(--color-text)',
                   boxShadow: isActive ? 'none' : '3px 3px 0px var(--border-color)',
-                  transform: isActive ? 'translate(2px, 2px)' : 'none'
+                  transform: isActive ? 'translate(2px, 2px)' : 'none',
+                  fontWeight: 'bold',
+                  whiteSpace: 'nowrap'
                 }}
               >
-                Tema {num}
+                {t.name}
               </button>
             );
           })}
