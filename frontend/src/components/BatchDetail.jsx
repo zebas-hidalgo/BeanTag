@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft } from 'lucide-react';
+import { getScaIcon, stripEmojis } from '../utils/scaIcons';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3 } from 'lucide-react';
 
 
 
@@ -283,6 +284,51 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
           <span><strong>Tubo:</strong> {batch.dose_weight || '20.0g'}</span>
         </div>
       </div>
+
+      {/* Notas de Cata (SCA) */}
+      {(() => {
+        let scaTags = [];
+        if (batch.roaster_notes) {
+          const notesStr = String(batch.roaster_notes);
+          if (notesStr.includes('[Notas: ') && notesStr.includes(']')) {
+            const match = notesStr.match(/\[Notas: (.*?)\]/);
+            if (match) scaTags = match[1].split(',').map(s => s.trim());
+          }
+        }
+        if (scaTags.length === 0) return null;
+        
+        return (
+          <div style={{ marginTop: '12px' }}>
+            <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 8px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
+              Perfil Sensorial (SCA)
+            </h4>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {scaTags.map((tag, i) => {
+                const cleanLabel = stripEmojis(tag);
+                return (
+                  <span key={i} style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 8px',
+                    backgroundColor: '#FFFFFF',
+                    border: '2px solid var(--color-navy)',
+                    borderRadius: '4px',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    color: 'var(--color-navy)',
+                    boxShadow: '2px 2px 0px var(--color-navy)'
+                  }}>
+                    {getScaIcon(tag, 12, 2.5)}
+                    {cleanLabel}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
 
       {/* Estado del Congelador y Botón Restar Integrado */}
       <div className="candy-card static">

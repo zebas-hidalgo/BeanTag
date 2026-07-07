@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X } from 'lucide-react';
+import { stripEmojis } from '../utils/scaIcons';
 
 const METHOD_ICONS = {
   'V60 (Filtrado)': '/icons/v60.jpg',
@@ -185,6 +186,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       if (!scaNotes) {
         scaNotes = 'Sin notas de cata registradas';
       }
+      
+      scaNotes = stripEmojis(scaNotes);
 
       ctx.font = '700 22px Outfit, sans-serif';
       ctx.fillStyle = '#000000';
@@ -598,9 +601,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
               if (selectedRecipe.batch_roaster_notes) {
                 const notesStr = String(selectedRecipe.batch_roaster_notes);
                 if (notesStr.includes(' | ')) {
-                  displayNotes = notesStr.split(' | ')[1].trim();
+                  displayNotes = stripEmojis(notesStr.split(' | ')[1].trim());
                 } else if (!notesStr.includes('[Notas: ')) {
-                  displayNotes = notesStr.trim();
+                  displayNotes = stripEmojis(notesStr.trim());
                 }
               }
               if (!displayNotes && selectedRecipe.notes) {

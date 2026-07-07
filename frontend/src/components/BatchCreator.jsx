@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Save, X, ClipboardCopy } from 'lucide-react';
+import { getScaIcon, stripEmojis } from '../utils/scaIcons';
 export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, showToast }) {
   // Parse initial flavor tags and custom notes if editing
   const getInitialFlavorTags = () => {
@@ -224,6 +225,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
             }}>
               {flavorWheelTags.map(tag => {
                 const isSelected = selectedFlavorTags.includes(tag.label);
+                const cleanLabel = stripEmojis(tag.label);
                 return (
                   <button
                     key={tag.val}
@@ -239,11 +241,15 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
                       color: isSelected ? '#FFFFFF' : 'var(--color-navy)',
                       boxShadow: isSelected ? 'none' : '2px 2px 0px #000000',
                       transition: 'all 0.1s ease',
-                      fontWeight: 'bold'
+                      fontWeight: 'bold',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
                     }}
                     onClick={() => toggleFlavorTag(tag.label)}
                   >
-                    {tag.label}
+                    {getScaIcon(tag.label, 12, 2.5)}
+                    {cleanLabel}
                   </button>
                 );
               })}
