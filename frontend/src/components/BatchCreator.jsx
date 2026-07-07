@@ -42,6 +42,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
   const [roastDate, setRoastDate] = useState(batchToEdit ? batchToEdit.roast_date || '' : '');
   const [freezeDate, setFreezeDate] = useState(batchToEdit ? batchToEdit.freeze_date || '' : '');
   const [selectedFlavorTags, setSelectedFlavorTags] = useState(getInitialFlavorTags());
+  const [activeTab, setActiveTab] = useState('Floral');
 
   // Organized SCA Flavor Wheel Structure (Category -> Subcategory -> Descriptors)
   const scaFlavorStructure = [
@@ -308,33 +309,97 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
               Notas de Cata (Rueda de Sabores SCA)
             </label>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {scaFlavorStructure.map((catGroup, cIdx) => (
-                <div key={cIdx} style={{
+            {/* Selection Summary */}
+            {selectedFlavorTags.length > 0 && (
+              <div style={{ marginBottom: '12px', padding: '10px', backgroundColor: '#F8FAFC', border: '2px solid #000000', borderRadius: '6px', boxShadow: '2px 2px 0px #000000' }}>
+                <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 'bold', textTransform: 'uppercase', display: 'block', marginBottom: '6px', letterSpacing: '0.5px' }}>
+                  Seleccionados ({selectedFlavorTags.length}):
+                </span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                  {selectedFlavorTags.map((tag, i) => (
+                    <span key={i} style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '3px 6px',
+                      backgroundColor: 'var(--color-navy)',
+                      color: '#FFFFFF',
+                      border: '2px solid #000000',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 'bold'
+                    }}>
+                      {getScaIcon(tag, 10, 2.5)}
+                      {stripEmojis(tag)}
+                      <button 
+                        type="button" 
+                        onClick={() => toggleFlavorTag(tag)}
+                        style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer', padding: '0 0 0 4px', fontWeight: '900', fontSize: '10px', display: 'flex', alignItems: 'center' }}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Horizontal Scrollable Tabs */}
+            <div style={{ 
+              display: 'flex', 
+              overflowX: 'auto', 
+              gap: '6px', 
+              marginBottom: '12px',
+              paddingBottom: '6px',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none'
+            }} className="hide-scrollbar">
+              {scaFlavorStructure.map((catGroup) => {
+                const isActive = activeTab === catGroup.category;
+                return (
+                  <button
+                    key={catGroup.category}
+                    type="button"
+                    onClick={() => setActiveTab(catGroup.category)}
+                    style={{
+                      padding: '6px 12px',
+                      fontFamily: 'var(--font-heading)',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      border: '2px solid #000000',
+                      borderRadius: '6px',
+                      whiteSpace: 'nowrap',
+                      backgroundColor: isActive ? 'var(--color-navy)' : '#FFFFFF',
+                      color: isActive ? '#FFFFFF' : 'var(--color-navy)',
+                      boxShadow: isActive ? 'none' : '2px 2px 0px #000000',
+                      cursor: 'pointer',
+                      transition: 'all 0.1s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    {getScaIcon(catGroup.category, 11, 2.5)}
+                    {catGroup.category}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Active Tab Panel */}
+            {(() => {
+              const activeCatGroup = scaFlavorStructure.find(c => c.category === activeTab);
+              if (!activeCatGroup) return null;
+              return (
+                <div style={{
                   padding: '12px',
                   backgroundColor: '#FFFFFF',
                   border: '2px solid #000000',
                   borderRadius: '6px',
                   boxShadow: '3px 3px 0px #000000'
                 }}>
-                  {/* Category Header */}
-                  <h4 style={{ 
-                    fontFamily: 'var(--font-heading)', 
-                    fontSize: '11px', 
-                    textTransform: 'uppercase', 
-                    margin: '0 0 10px 0', 
-                    color: 'var(--color-navy)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
-                    {getScaIcon(catGroup.category, 14, 2.5)}
-                    {catGroup.category}
-                  </h4>
-                  
-                  {/* Subcategories */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {catGroup.subcategories.map((sub, sIdx) => (
+                    {activeCatGroup.subcategories.map((sub, sIdx) => (
                       <div key={sIdx} style={{ 
                         display: 'flex', 
                         flexDirection: 'column', 
@@ -380,8 +445,8 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
                     ))}
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })()}
           </div>
 
           <div className="form-group">
