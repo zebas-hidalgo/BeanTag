@@ -303,7 +303,7 @@ app.post('/api/recommend-recipe', async (req, res) => {
     return res.status(400).json({ error: 'Falta la clave API de Gemini en las cabeceras' });
   }
 
-  const { origin, variety, process, altitude, roast_level, roaster_notes } = req.body;
+  const { origin, variety, process, altitude, roast_level, roaster_notes, method, dose_in_g } = req.body;
 
   const prompt = `Eres un barista experto de café de especialidad. Analiza el siguiente lote de café:
 Origen: ${origin || 'Desconocido'}
@@ -313,14 +313,16 @@ Altitud: ${altitude || 'N/A'}
 Nivel de tueste: ${roast_level || 'Medio'}
 Notas de cata: ${roaster_notes || 'N/A'}
 
-Genera una receta recomendada optimizada para extraer este café de la mejor manera. Debes responder estrictamente con un objeto JSON válido con el siguiente esquema exacto (no agregues formato markdown ni bloques de código \`\`\`json, solo devuelve el string JSON crudo):
+El usuario quiere preparar este café usando específicamente el método de extracción: "${method || 'V60 (Filtrado)'}" y una dosis exacta de café de: "${dose_in_g || '20.0'} gramos".
+
+Genera una receta recomendada y adaptada estrictamente para este método ("${method || 'V60 (Filtrado)'}") y dosis ("${dose_in_g || '20.0'}g"). Debes responder únicamente con un objeto JSON válido con el siguiente esquema exacto (no agregues formato markdown ni bloques de código \`\`\`json, solo devuelve el string JSON crudo):
 {
-  "method": "nombre del método (V60 (Filtrado), Espresso, Aeropress o Prensa Francesa)",
+  "method": "${method || 'V60 (Filtrado)'}",
   "ratio": "ratio de extracción como string (ej. 1:15 o 1:16, o 1:2 para espresso)",
-  "grind": "molienda sugerida (ej. Fino, Medio-Fino, Medio, Medio-Grueso, Grueso)",
-  "temperature": 94,
-  "brew_time": "tiempo sugerido en formato string (ej: 2:30 o 0:30)",
-  "notes": "Breve explicación barística de por qué esta receta ayuda a resaltar las notas específicas de este grano."
+  "grind": "molienda sugerida (ej. Fino, Medio-Fino, Medio, Medio-Grueso, Grueso) para este método y gramaje",
+  "temperature": 94, // temperatura del agua sugerida en grados Celsius (número entero)
+  "brew_time": "tiempo de extracción sugerido en formato string (ej: 2:30 o 0:30)",
+  "notes": "Breve explicación barística de por qué esta receta con ratio y molienda específicos funciona para resaltar las notas del grano con esta dosis y método."
 }`;
 
   try {

@@ -71,7 +71,9 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
         process: batch.process,
         altitude: batch.altitude,
         roast_level: batch.roast_level,
-        roaster_notes: batch.roaster_notes
+        roaster_notes: batch.roaster_notes,
+        method: method,
+        dose_in_g: doseInG
       })
     })
     .then(async (res) => {
@@ -618,87 +620,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
         )}
       </div>
 
-      {/* Receta Recomendada por IA */}
-      <div className="candy-card static" style={{ marginTop: '24px', borderStyle: 'double', borderColor: 'var(--color-crimson)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '20px' }}>✨</span>
-            <span style={{ fontWeight: '700', fontSize: '15px' }}>Asistente Barista IA</span>
-          </div>
-          <span style={{ fontSize: '9px', fontWeight: '900', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Gemini AI
-          </span>
-        </div>
 
-        <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 14px 0', lineHeight: 1.4 }}>
-          Analiza el origen, variedad, proceso y notas de tu grano para diseñar la mejor receta de extracción posible.
-        </p>
-
-        {aiError && (
-          <div style={{ color: '#E53E3E', fontSize: '11px', fontWeight: 'bold', marginBottom: '12px' }}>
-            ⚠️ Error: {aiError}
-          </div>
-        )}
-
-        {aiRecommendation ? (
-          <div style={{ padding: '12px', backgroundColor: 'var(--bg-canvas)', border: '2px solid #000000', borderRadius: '6px', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-              <div style={{ fontSize: '11px' }}>
-                <strong>Método:</strong> {aiRecommendation.method}
-              </div>
-              <div style={{ fontSize: '11px' }}>
-                <strong>Ratio:</strong> {aiRecommendation.ratio}
-              </div>
-              <div style={{ fontSize: '11px' }}>
-                <strong>Molienda:</strong> {aiRecommendation.grind}
-              </div>
-              <div style={{ fontSize: '11px' }}>
-                <strong>Temperatura:</strong> {aiRecommendation.temperature}°C
-              </div>
-              <div style={{ fontSize: '11px' }}>
-                <strong>Tiempo:</strong> {aiRecommendation.brew_time}
-              </div>
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', borderTop: '1px dashed var(--border-color)', paddingTop: '8px', marginTop: '4px', lineHeight: 1.4 }}>
-              <strong>Consejo de Extracción:</strong> {aiRecommendation.notes}
-            </div>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-              <button 
-                type="button" 
-                className="btn-candy primary" 
-                onClick={handleApplyAiRecipe}
-                style={{ flex: 1, padding: '6px', fontSize: '10px', minHeight: '30px' }}
-              >
-                Aplicar al Formulario
-              </button>
-              <button 
-                type="button" 
-                className="btn-candy" 
-                onClick={() => setAiRecommendation(null)}
-                style={{ padding: '6px 12px', fontSize: '10px', minHeight: '30px', margin: 0 }}
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button 
-            type="button" 
-            className="btn-candy" 
-            onClick={handleAiRecommend}
-            disabled={aiLoading}
-            style={{ width: '100%', margin: 0, padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-          >
-            {aiLoading ? (
-              <span>Diseñando receta... 🧠</span>
-            ) : (
-              <>
-                <span>Generar Receta Recomendada ✨</span>
-              </>
-            )}
-          </button>
-        )}
-      </div>
 
       {/* Formulario de Bitácora */}
       <form onSubmit={handleRecipeSubmit}>
@@ -755,6 +677,103 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
               </span>
             </div>
           ))}
+        </div>
+
+        {/* Receta Recomendada por IA (Barista IA) */}
+        <div className="candy-card static" style={{ 
+          margin: '16px 0', 
+          padding: '16px',
+          backgroundColor: 'var(--bg-card)', 
+          border: '2px solid var(--border-color)',
+          boxShadow: '3px 3px 0px var(--border-color)',
+          borderRadius: '8px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>✨</span>
+              <span style={{ fontWeight: '900', fontSize: '12px', textTransform: 'uppercase', fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
+                Sugerencia IA ({method})
+              </span>
+            </div>
+            <span style={{ fontSize: '9px', fontWeight: '900', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {doseInG}g
+            </span>
+          </div>
+
+          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0', lineHeight: 1.4 }}>
+            Diseña una receta de <strong>{method}</strong> para <strong>{doseInG}g</strong> según el perfil de este grano.
+          </p>
+
+          {aiError && (
+            <div style={{ color: '#E53E3E', fontSize: '10px', fontWeight: 'bold', marginBottom: '10px' }}>
+              ⚠️ Error: {aiError}
+            </div>
+          )}
+
+          {aiRecommendation ? (
+            <div style={{ 
+              padding: '12px', 
+              backgroundColor: 'var(--bg-canvas)', 
+              border: '2px solid var(--border-color)', 
+              borderRadius: '6px', 
+              marginBottom: '8px', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '8px' 
+            }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div style={{ fontSize: '11px' }}>
+                  <strong>Ratio:</strong> {aiRecommendation.ratio}
+                </div>
+                <div style={{ fontSize: '11px' }}>
+                  <strong>Molienda:</strong> {aiRecommendation.grind}
+                </div>
+                <div style={{ fontSize: '11px' }}>
+                  <strong>Temperatura:</strong> {aiRecommendation.temperature}°C
+                </div>
+                <div style={{ fontSize: '11px' }}>
+                  <strong>Tiempo:</strong> {aiRecommendation.brew_time}
+                </div>
+              </div>
+              <div style={{ fontSize: '10.5px', color: 'var(--color-text)', borderTop: '1px dashed var(--border-color)', paddingTop: '8px', marginTop: '4px', lineHeight: 1.4 }}>
+                <strong>Notas Barista:</strong> {aiRecommendation.notes}
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <button 
+                  type="button" 
+                  className="btn-candy primary" 
+                  onClick={handleApplyAiRecipe}
+                  style={{ flex: 1, padding: '6px', fontSize: '10px', minHeight: '30px' }}
+                >
+                  Aplicar al Formulario
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-candy" 
+                  onClick={() => setAiRecommendation(null)}
+                  style={{ padding: '6px 12px', fontSize: '10px', minHeight: '30px', margin: 0 }}
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button 
+              type="button" 
+              className="btn-candy" 
+              onClick={handleAiRecommend}
+              disabled={aiLoading}
+              style={{ width: '100%', margin: 0, padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', minHeight: '34px' }}
+            >
+              {aiLoading ? (
+                <span>Diseñando receta para {method}... 🧠</span>
+              ) : (
+                <>
+                  <span>Calcular Receta IA ✨</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
 
         <div className="bento-grid">
