@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
-import { Calculator } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee } from 'lucide-react';
 
 
 
@@ -452,161 +452,216 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
       </div>
 
       {/* Formulario de Bitácora */}
-      <h2 style={{ fontFamily: 'var(--font-heading)', marginTop: '24px', textTransform: 'uppercase', fontSize: '15px' }}>Registrar Preparación</h2>
-      <div className="candy-card static">
-        <form onSubmit={handleRecipeSubmit}>
-          <div className="form-group">
-            <label>Método de Extracción</label>
-            <select className="candy-input" value={method} onChange={(e) => setMethod(e.target.value)}>
-              <option value="V60 (Filtrado)">V60 (Filtrado)</option>
-              <option value="Espresso">Espresso</option>
-              <option value="AeroPress">AeroPress</option>
-              <option value="Prensa Francesa">Prensa Francesa</option>
-            </select>
-          </div>
-          
-          {/* Fila 1: Dosis In y Temperatura (para todos los métodos) */}
-          <div className="form-row">
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Dosis Seco In (g)</label>
+      <form onSubmit={handleRecipeSubmit}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px' }}>
+          <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', fontSize: '15px', margin: 0 }}>Registrar Preparación</h2>
+          <select className="candy-input" style={{ width: 'auto', padding: '6px 12px', margin: 0, fontSize: '12px' }} value={method} onChange={(e) => setMethod(e.target.value)}>
+            <option value="V60 (Filtrado)">V60</option>
+            <option value="Espresso">Espresso</option>
+            <option value="AeroPress">AeroPress</option>
+            <option value="Prensa Francesa">Prensa Fra.</option>
+          </select>
+        </div>
+
+        <div className="bento-grid">
+          {/* GRAMS */}
+          <div className="bento-widget accent">
+            <div className="bento-header">
+              <span>Grams</span>
+              <Scale size={16} />
+            </div>
+            <div className="bento-value-container">
               <input 
-                type="number" 
-                step="0.1" 
-                className="candy-input" 
+                type="number" step="0.1" 
                 value={doseInG} 
                 onChange={(e) => setDoseInG(parseFloat(e.target.value) || 0)} 
-                required 
               />
+              <span className="unit">g</span>
             </div>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Temperatura Agua (°C)</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', height: '40px' }}>
-                <button type="button" className="btn-candy" style={{ margin: 0, padding: '8px 12px', height: '100%', boxSizing: 'border-box' }} onClick={() => setWaterTemp(t => Math.max(80, t - 1))}>-</button>
-                <input 
-                  type="number" 
-                  className="candy-input" 
-                  style={{ textAlign: 'center', flex: 1, height: '100%', boxSizing: 'border-box', margin: 0 }} 
-                  value={waterTemp} 
-                  onChange={(e) => setWaterTemp(parseInt(e.target.value) || 93)} 
-                  min="80" 
-                  max="100" 
-                />
-                <button type="button" className="btn-candy" style={{ margin: 0, padding: '8px 12px', height: '100%', boxSizing: 'border-box' }} onClick={() => setWaterTemp(t => Math.min(100, t + 1))}>+</button>
-              </div>
+            <div className="bento-controls">
+              <button type="button" className="bento-btn" onClick={() => setDoseInG(d => Math.max(0, d - 0.5))}>-</button>
+              <div className="bento-info">DOSE</div>
+              <button type="button" className="bento-btn" onClick={() => setDoseInG(d => d + 0.5)}>+</button>
             </div>
           </div>
 
-          {/* Fila 2: Ratio (Filtro) o Dosis Out (Espresso) + Molienda */}
-          <div className="form-row">
-            {method !== 'Espresso' ? (
-              <div className="form-group" style={{ flex: '0 0 22%', maxWidth: '22%' }}>
-                <label>Ratio (1:X)</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '2px', height: '40px' }}>
-                  <span style={{ fontFamily: 'var(--font-heading)', fontWeight: '900', fontSize: '12px', flexShrink: 0, lineHeight: 1 }}>1:</span>
+          {/* RATIO / YIELD */}
+          <div className="bento-widget">
+            <div className="bento-header">
+              <span>{method !== 'Espresso' ? 'Ratio' : 'Yield'}</span>
+              <Droplet size={16} color="var(--color-crimson)" />
+            </div>
+            <div className="bento-value-container">
+              {method !== 'Espresso' ? (
+                <>
+                  <span style={{ fontSize: '28px', fontWeight: '900', fontFamily: 'var(--font-mono)' }}>1:</span>
                   <input 
-                    type="number"
-                    step="0.1"
-                    min="1"
-                    className="candy-input"
-                    style={{ 
-                      fontFamily: 'var(--font-mono)', 
-                      fontWeight: '900', 
-                      fontSize: '13px', 
-                      textAlign: 'center',
-                      padding: '8px 2px',
-                      margin: 0,
-                      flex: 1,
-                      height: '100%',
-                      boxSizing: 'border-box'
-                    }}
-                    value={ratioVal}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setRatioVal(val === '' ? '' : parseFloat(val));
-                    }}
+                    type="number" step="0.1" 
+                    style={{ textAlign: 'left', color: 'var(--color-crimson)' }}
+                    value={ratioVal} 
+                    onChange={(e) => setRatioVal(parseFloat(e.target.value) || 0)} 
                   />
-                </div>
-                <div style={{ fontSize: '9px', fontWeight: 'bold', marginTop: '6px', textAlign: 'center' }}>
-                  H2O: <span style={{ color: '#E53E3E' }}>{(doseInG * (parseFloat(ratioVal) || 0)).toFixed(0)}g</span>
-                </div>
-              </div>
-            ) : (
-              <div className="form-group" style={{ flex: '0 0 22%', maxWidth: '22%' }}>
-                <label>Yield (g)</label>
-                <input 
-                  type="number" 
-                  step="0.1" 
-                  className="candy-input" 
-                  style={{ height: '40px', boxSizing: 'border-box', margin: 0, padding: '8px 2px', textAlign: 'center', fontSize: '13px' }}
-                  value={doseOutG} 
-                  onChange={(e) => setDoseOutG(parseFloat(e.target.value) || 0)} 
-                  required 
-                />
-                <div style={{ fontSize: '9px', fontWeight: 'bold', marginTop: '6px', textAlign: 'center' }}>
-                  1:{(doseOutG / (doseInG || 1)).toFixed(1)}
-                </div>
-              </div>
-            )}
-            
-            {/* Molienda (J-Max) */}
-            <div className="form-group" style={{ flex: '0 0 75%', maxWidth: '75%' }}>
-              <label>Molienda (J-Max: R.N.C)</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <select className="candy-input" style={{ flex: 1, padding: '8px 4px', textAlign: 'center', fontSize: '12px', backgroundImage: 'none' }} value={jmaxRot} onChange={(e) => setJmaxRot(parseInt(e.target.value) || 0)}>
-                  {[0, 1, 2, 3, 4].map(v => <option key={v} value={v}>R: {v}</option>)}
-                </select>
-                <span style={{ fontWeight: 'bold', color: 'var(--border-color)' }}>.</span>
-                <select className="candy-input" style={{ flex: 1, padding: '8px 4px', textAlign: 'center', fontSize: '12px', backgroundImage: 'none' }} value={jmaxNum} onChange={(e) => setJmaxNum(parseInt(e.target.value) || 0)}>
-                  {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(v => <option key={v} value={v}>N: {v}</option>)}
-                </select>
-                <span style={{ fontWeight: 'bold', color: 'var(--border-color)' }}>.</span>
-                <select className="candy-input" style={{ flex: 1, padding: '8px 4px', textAlign: 'center', fontSize: '12px', backgroundImage: 'none' }} value={jmaxClick} onChange={(e) => setJmaxClick(parseInt(e.target.value) || 0)}>
-                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(v => <option key={v} value={v}>C: {v}</option>)}
-                </select>
-              </div>
-              <div style={{ fontSize: '10px', textAlign: 'center', fontWeight: 'bold', color: 'var(--color-crimson)', marginTop: '8px' }}>
-                Partícula: ~{currentMicrons} µm
-              </div>
+                </>
+              ) : (
+                <>
+                  <input 
+                    type="number" step="0.5" 
+                    style={{ color: 'var(--color-crimson)' }}
+                    value={doseOutG} 
+                    onChange={(e) => setDoseOutG(parseFloat(e.target.value) || 0)} 
+                  />
+                  <span className="unit" style={{ color: 'var(--color-crimson)' }}>g</span>
+                </>
+              )}
+            </div>
+            <div className="bento-controls">
+              <button type="button" className="bento-btn" onClick={() => method !== 'Espresso' ? setRatioVal(r => Math.max(1, r - 0.5)) : setDoseOutG(d => Math.max(0, d - 1))}>-</button>
+              <div className="bento-info">TARGET</div>
+              <button type="button" className="bento-btn" onClick={() => method !== 'Espresso' ? setRatioVal(r => r + 0.5) : setDoseOutG(d => d + 1)}>+</button>
+            </div>
+            <div className="bento-info" style={{ marginTop: '2px', color: 'var(--color-text-muted)' }}>
+              {method !== 'Espresso' ? `OUT: ${(doseInG * (ratioVal || 0)).toFixed(0)} g` : `1:${(doseOutG / (doseInG || 1)).toFixed(1)}`}
             </div>
           </div>
 
-          {/* Fila 3: Presión y Preinfusión (Solo para Espresso) */}
-          {method === 'Espresso' && (
-            <div className="form-row">
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Presión Extracción (bar)</label>
+          {/* TEMP */}
+          <div className="bento-widget">
+            <div className="bento-header">
+              <span>Temp</span>
+              <Thermometer size={16} />
+            </div>
+            <div className="bento-value-container">
+              <input 
+                type="number" 
+                style={{ color: 'var(--color-crimson)' }}
+                value={waterTemp} 
+                onChange={(e) => setWaterTemp(parseInt(e.target.value) || 93)} 
+              />
+              <span className="unit" style={{ color: 'var(--color-crimson)' }}>°C</span>
+            </div>
+            <div className="bento-controls">
+              <button type="button" className="bento-btn" onClick={() => setWaterTemp(t => Math.max(80, t - 1))}>-</button>
+              <div className="bento-info">WATER</div>
+              <button type="button" className="bento-btn" onClick={() => setWaterTemp(t => Math.min(100, t + 1))}>+</button>
+            </div>
+          </div>
+
+          {/* PRESSURE (ESPRESSO) or TIMER (FILTER) */}
+          {method === 'Espresso' ? (
+            <div className="bento-widget accent">
+              <div className="bento-header">
+                <span>Pressure</span>
+                <Gauge size={16} />
+              </div>
+              <div className="bento-value-container">
                 <input 
-                  type="number" 
-                  step="0.5" 
-                  className="candy-input" 
+                  type="number" step="0.5" 
                   value={espressoPressure} 
                   onChange={(e) => setEspressoPressure(parseFloat(e.target.value) || 9)} 
                 />
+                <span className="unit">bar</span>
               </div>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Preinfusión (seg)</label>
+              <div className="bento-controls">
+                <button type="button" className="bento-btn" onClick={() => setEspressoPressure(p => Math.max(0, p - 0.5))}>-</button>
+                <div className="bento-info">EXTRACT</div>
+                <button type="button" className="bento-btn" onClick={() => setEspressoPressure(p => p + 0.5)}>+</button>
+              </div>
+            </div>
+          ) : (
+            <div className="bento-widget">
+              <div className="bento-header">
+                <span>Timer</span>
+                <Timer size={16} />
+              </div>
+              <div className="bento-value-container" style={{ position: 'relative' }}>
                 <input 
-                  type="number" 
-                  className="candy-input" 
-                  value={espressoPreinfusion} 
-                  onChange={(e) => setEspressoPreinfusion(parseInt(e.target.value) || 0)} 
+                  type="text" 
+                  style={{ fontSize: '24px' }}
+                  value={brewTime} 
+                  onChange={(e) => setBrewTime(e.target.value)} 
                 />
+              </div>
+              <div className="bento-controls" style={{ justifyContent: 'center' }}>
+                <div className="bento-info">DURATION</div>
               </div>
             </div>
           )}
 
-          <div className="form-row" style={{ alignItems: 'flex-end' }}>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Tiempo de Extracción</label>
-              <input className="candy-input" value={brewTime} onChange={(e) => setBrewTime(e.target.value)} type="text" />
+          {/* GRIND SETTINGS (Full Row) */}
+          <div className="bento-widget bento-full-row accent">
+            <div className="bento-header">
+              <span>Molienda (J-Max)</span>
+              <Coffee size={16} />
             </div>
-            
-            {/* Interactive Star Rating */}
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Puntuación</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 0' }}>
+              <select className="candy-input" style={{ flex: 1, textAlign: 'center', fontSize: '14px', margin: 0, padding: '8px' }} value={jmaxRot} onChange={(e) => setJmaxRot(parseInt(e.target.value) || 0)}>
+                {[0, 1, 2, 3, 4].map(v => <option key={v} value={v}>Rot: {v}</option>)}
+              </select>
+              <select className="candy-input" style={{ flex: 1, textAlign: 'center', fontSize: '14px', margin: 0, padding: '8px' }} value={jmaxNum} onChange={(e) => setJmaxNum(parseInt(e.target.value) || 0)}>
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(v => <option key={v} value={v}>Num: {v}</option>)}
+              </select>
+              <select className="candy-input" style={{ flex: 1, textAlign: 'center', fontSize: '14px', margin: 0, padding: '8px' }} value={jmaxClick} onChange={(e) => setJmaxClick(parseInt(e.target.value) || 0)}>
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(v => <option key={v} value={v}>Clic: {v}</option>)}
+              </select>
+            </div>
+            <div className="bento-info">Partícula: ~{currentMicrons} µm</div>
+          </div>
+          
+          {/* EXTRA ESPRESSO PARAMS or FILTER RATING */}
+          {method === 'Espresso' && (
+            <>
+              <div className="bento-widget">
+                <div className="bento-header">
+                  <span>Pre-Inf</span>
+                  <Timer size={16} />
+                </div>
+                <div className="bento-value-container">
+                  <input 
+                    type="number" 
+                    value={espressoPreinfusion} 
+                    onChange={(e) => setEspressoPreinfusion(parseInt(e.target.value) || 0)} 
+                  />
+                  <span className="unit">sec</span>
+                </div>
+                <div className="bento-controls">
+                  <button type="button" className="bento-btn" onClick={() => setEspressoPreinfusion(p => Math.max(0, p - 1))}>-</button>
+                  <div className="bento-info">BLOOM</div>
+                  <button type="button" className="bento-btn" onClick={() => setEspressoPreinfusion(p => p + 1)}>+</button>
+                </div>
+              </div>
+              <div className="bento-widget">
+                <div className="bento-header">
+                  <span>Timer</span>
+                  <Timer size={16} />
+                </div>
+                <div className="bento-value-container">
+                  <input 
+                    type="text" 
+                    style={{ fontSize: '24px' }}
+                    value={brewTime} 
+                    onChange={(e) => setBrewTime(e.target.value)} 
+                  />
+                </div>
+                <div className="bento-controls" style={{ justifyContent: 'center' }}>
+                  <div className="bento-info">DURATION</div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* RATING */}
+          <div className="bento-widget bento-full-row">
+            <div className="bento-header">
+              <span>Puntuación Global</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0' }}>
               <StarRating value={rating} onChange={setRating} />
             </div>
           </div>
+
+        </div>
+
+        <div className="candy-card static" style={{ marginTop: '0' }}>
 
           {/* Sensory Sliders and Flavor tags */}
           <div style={{ borderTop: '1.5px solid var(--border-color)', marginTop: '12px', paddingTop: '12px' }}>
@@ -712,11 +767,11 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
               />
             </div>
 
-          </div>
+          </div> {/* end of borderTop div */}
+        </div> {/* end of candy-card static */}
 
-          <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '8px' }}>Guardar Bitácora</button>
-        </form>
-      </div>
+        <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '16px', fontSize: '15px', padding: '16px' }}>Guardar Bitácora</button>
+      </form>
 
       {/* Actions footer: Edit & Delete Lote */}
       <div style={{ display: 'flex', gap: '8px', marginTop: '24px' }}>

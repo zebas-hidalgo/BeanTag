@@ -606,3 +606,107 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   color: var(--color-text-muted);
   margin: 2px 0 0 0;
 }
+
+/* Bento Grid System */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.bento-widget {
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 3px 3px 0px var(--border-color);
+  box-sizing: border-box;
+  min-height: 120px;
+}
+
+.bento-widget.accent {
+  background-color: var(--color-crimson);
+  color: #fff;
+}
+
+.bento-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.bento-value-container {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+}
+
+.bento-value-container input {
+  font-size: 32px;
+  font-family: var(--font-mono);
+  font-weight: 900;
+  text-align: center;
+  border: none;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+.bento-value-container input:focus { outline: none; }
+.bento-value-container span.unit {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-body);
+}
+
+.bento-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 8px;
+}
+.bento-btn {
+  background: transparent;
+  border: 2px solid currentColor;
+  border-radius: 6px;
+  width: 32px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 16px;
+  cursor: pointer;
+  color: inherit;
+  transition: transform 0.1s, background-color 0.1s;
+}
+.bento-btn:active { 
+  transform: scale(0.9);
+  background-color: rgba(0,0,0,0.05);
+}
+.bento-widget.accent .bento-btn:active {
+  background-color: rgba(255,255,255,0.1);
+}
+
+.bento-full-row {
+  grid-column: 1 / -1;
+}
+
+.bento-info {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: 6px;
+}
