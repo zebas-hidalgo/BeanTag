@@ -648,9 +648,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: '6px',
-                cursor: 'pointer',
-                transform: method === m.id ? 'scale(1.05)' : 'scale(1)',
-                transition: 'all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                cursor: 'pointer'
               }}
             >
               <div 
@@ -660,13 +658,17 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
                   aspectRatio: '1/1', 
                   padding: 0, 
                   margin: 0,
-                  overflow: 'hidden',
                   borderColor: method === m.id ? 'var(--color-crimson)' : 'var(--border-color)',
                   borderWidth: method === m.id ? '3px' : '2px',
-                  backgroundColor: method === m.id ? 'var(--color-crimson)' : 'var(--bg-card)'
+                  backgroundColor: method === m.id ? 'var(--color-crimson)' : 'var(--bg-card)',
+                  boxShadow: method === m.id ? 'none' : '3px 3px 0px var(--border-color)',
+                  transform: method === m.id ? 'translate(2px, 2px)' : 'none',
+                  transition: 'all 0.15s var(--transition-spring)'
                 }}
               >
-                <img src={m.icon} alt={m.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '4px' }}>
+                  <img src={m.icon} alt={m.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
               </div>
               <span style={{ 
                 fontSize: '10px', 
