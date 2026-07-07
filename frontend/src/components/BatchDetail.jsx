@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis } from '../utils/scaIcons';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3 } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc } from 'lucide-react';
 
 
 
@@ -159,6 +159,25 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
     });
   };
 
+  const handleWriteNfc = async () => {
+    if ('NDEFReader' in window) {
+      try {
+        const ndef = new window.NDEFReader();
+        await ndef.write({
+          records: [{
+            recordType: "url",
+            data: `https://beantag.cafe/batch/${batch.id}`
+          }]
+        });
+        showToast('Etiqueta NFC vinculada con éxito. 🎉', { type: 'success', duration: 3000 });
+      } catch (error) {
+        showToast('Error al escribir NFC: ' + error.message, { type: 'error', duration: 4000 });
+      }
+    } else {
+      showToast('Escritura NFC no disponible en este dispositivo (Usa Chrome en Android).', { type: 'error', duration: 5000 });
+    }
+  };
+
   const handleRecipeSubmit = (e) => {
     e.preventDefault();
     const ratioText = method === 'Espresso' 
@@ -268,7 +287,18 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
           <ArrowLeft size={16} strokeWidth={3} />
           Volver
         </button>
-        {isLowStock && <span className="mono-lbl-tag" style={{ background: '#E53E3E' }}>¡ÚLTIMOS TUBOS!</span>}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button className="btn-candy" onClick={() => {
+            if ('NDEFReader' in window) {
+              showToast('Acerca la etiqueta NFC al teléfono...', { type: 'info', duration: 5000 });
+            }
+            handleWriteNfc();
+          }} style={{ padding: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Nfc size={16} strokeWidth={2.5} />
+            <span style={{ fontSize: '11px', fontWeight: 'bold' }}>Vincular</span>
+          </button>
+          {isLowStock && <span className="mono-lbl-tag" style={{ background: '#E53E3E' }}>¡ÚLTIMOS TUBOS!</span>}
+        </div>
       </div>
 
       {/* Título y Ficha Técnica compacta sin bordes negros */}
