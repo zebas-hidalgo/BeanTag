@@ -11,15 +11,20 @@ export default function App() {
     return localStorage.getItem('theme') === 'dark';
   });
 
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('active-theme') || 'tema1';
+  });
+
   useEffect(() => {
+    localStorage.setItem('active-theme', theme);
     if (isDarkMode) {
       document.documentElement.setAttribute('data-theme', 'dark');
       localStorage.setItem('theme', 'dark');
     } else {
-      document.documentElement.removeAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('theme', 'light');
     }
-  }, [isDarkMode]);
+  }, [isDarkMode, theme]);
 
   const [currentView, setCurrentView] = useState('inventory');
   const [batches, setBatches] = useState([]);
@@ -224,7 +229,7 @@ export default function App() {
             fontWeight: '700',
             textTransform: 'uppercase',
             letterSpacing: '2px',
-            color: 'var(--color-text)',
+            color: 'var(--color-header-text)',
             lineHeight: 1
           }}>BeanTag</span>
         </div>
@@ -294,7 +299,7 @@ export default function App() {
         )}
 
         {currentView === 'settings' && (
-          <Settings showToast={showToast} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          <Settings showToast={showToast} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} theme={theme} setTheme={setTheme} />
         )}
       </main>
 

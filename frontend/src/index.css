@@ -9,6 +9,8 @@
   --color-crimson: #F94C00;
   --color-text: #48261D;
   --color-text-muted: #765C58;
+  --bg-header: #CAE7F7;
+  --color-header-text: #48261D;
   
   --font-heading: 'Comfortaa', cursive;
   --font-body: 'Inter', sans-serif;
@@ -24,6 +26,41 @@
   --border-color: #cbd5e1;
   --color-text: #f8fafc;
   --color-text-muted: #94a3b8;
+  --bg-header: #0f172a;
+  --color-header-text: #f8fafc;
+}
+
+[data-theme='tema1'] {
+  --bg-canvas: #F5F0E6;
+  --bg-card: #FFFFFF;
+  --border-color: #3E2723;
+  --color-text: #3E2723;
+  --color-text-muted: #765C58;
+  --color-crimson: #3E2723;
+  --bg-header: #F4C9D6;
+  --color-header-text: #3E2723;
+}
+
+[data-theme='tema2'] {
+  --bg-canvas: #F0FDF4;
+  --bg-card: #FFFFFF;
+  --border-color: #2E3A2F;
+  --color-text: #2E3A2F;
+  --color-text-muted: #526A54;
+  --color-crimson: #A3E635;
+  --bg-header: #A3E635;
+  --color-header-text: #2E3A2F;
+}
+
+[data-theme='tema3'] {
+  --bg-canvas: #DAAAAF;
+  --bg-card: #FFFFFF;
+  --border-color: #214335;
+  --color-text: #214335;
+  --color-text-muted: #496256;
+  --color-crimson: #D04C01;
+  --bg-header: #D04C01;
+  --color-header-text: #FFFFFF;
 }
 
 @keyframes slideUpFade {
@@ -98,7 +135,7 @@ main {
 
 /* Header */
 .app-header {
-  background-color: var(--bg-card);
+  background-color: var(--bg-header);
   border-bottom: 2px solid var(--border-color);
   padding: 8px 14px;
   display: flex;
