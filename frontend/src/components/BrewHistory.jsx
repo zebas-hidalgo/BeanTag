@@ -25,6 +25,11 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
           setHistory(data);
         }
       });
+      
+    const img = new Image();
+    img.src = '/paper_texture.jpg';
+    img.onload = () => { textureRef.current = img; };
+
     return () => { active = false; };
   }, []);
 
@@ -63,14 +68,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
     });
   };
 
-  const exportRecipeAsImage = async (recipe) => {
-    setShareStatus('Generando imagen de receta...');
+  const exportRecipeAsImage = (recipe) => {
+    setShareStatus('Abriendo menú de compartir...');
     setShareImage(null);
     try {
-      if (document.fonts) {
-        await document.fonts.ready;
-      }
-
       const canvas = document.createElement('canvas');
       canvas.width = 840;
       canvas.height = 540;
@@ -80,11 +81,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.clearRect(0, 0, 840, 540);
 
       // 2. Dibujar textura del papel de fondo
-      const textureImg = await loadTexture();
-      if (textureImg) {
+      if (textureRef.current) {
         ctx.save();
         ctx.globalAlpha = 1.0;
-        ctx.drawImage(textureImg, 15, 15, 810, 510);
+        ctx.drawImage(textureRef.current, 15, 15, 810, 510);
         ctx.restore();
       }
 
@@ -204,10 +204,35 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.fillText('BEANTAG.CAFE', 790, 512);
       ctx.textAlign = 'left';
 
-      // Export as Data URL to preview in modal
+      // Export as Data URL
       const dataUrl = canvas.toDataURL('image/png');
-      setShareImage(dataUrl);
-      setShareStatus('Imagen lista para compartir.');
+      
+      const blob = dataURLtoBlob(dataUrl);
+      const filename = `${recipe.batch_name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}_receta.png`;
+      const file = new File([blob], filename, { type: 'image/png' });
+
+      // Attempt immediate native share
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({
+          files: [file],
+          title: `Receta de ${recipe.batch_name}`,
+          text: `Calibración de café: ${recipe.method}`
+        }).then(() => {
+          setShareStatus('');
+        }).catch((e) => {
+          if (e.name !== 'AbortError') {
+            console.warn("[BeanTag] Direct Web Share failed, falling back to modal:", e);
+            setShareImage(dataUrl);
+            setShareStatus('Copia o descarga la imagen.');
+          } else {
+            setShareStatus('');
+          }
+        });
+      } else {
+        // Fallback to modal for manual copy/download
+        setShareImage(dataUrl);
+        setShareStatus('Imagen lista para descargar o copiar.');
+      }
     } catch (e) {
       console.error("Canvas rendering failed", e);
       setShareStatus('❌ Fallo al generar la imagen.');
