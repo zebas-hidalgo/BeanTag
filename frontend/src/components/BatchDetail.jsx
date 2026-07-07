@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft } from 'lucide-react';
 
 
 
@@ -9,7 +9,6 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   
   // Form fields
   const [method, setMethod] = useState('V60 (Filtrado)');
-  const [rating, setRating] = useState(5);
   
   // J-Max Steppers (Default: 1.5.0)
   const [jmaxRot, setJmaxRot] = useState(1);
@@ -140,7 +139,6 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
         grind: last.grind,
         temperature: last.temperature,
         brew_time: last.brew_time,
-        rating: last.rating,
         notes: `${last.notes || ''} (Repetición rápida)`.trim(),
         sensory_balance: last.sensory_balance || 'Dulce',
         sensory_body: last.sensory_body || 'Medio',
@@ -173,7 +171,6 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
       grind: `J-Max: ${jmaxRot}.${jmaxNum}.${jmaxClick}`,
       temperature: `${waterTemp}°C`,
       brew_time: brewTime,
-      rating,
       notes: notes.trim(),
       sensory_balance: sensoryBalance,
       sensory_body: sensoryBody,
@@ -263,30 +260,13 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
   // J-Max calculated microns for current form state
   const currentMicrons = calculateMicrons(jmaxRot, jmaxNum, jmaxClick);
 
-  // R9: Interactive star rating component
-  const StarRating = ({ value, onChange }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '38px', cursor: 'pointer', backgroundColor: 'var(--bg-card)', border: '2px solid var(--border-color)', borderRadius: '6px' }}>
-      {[1, 2, 3, 4, 5].map(star => (
-        <span
-          key={star}
-          onClick={() => onChange(star)}
-          style={{
-            fontSize: '22px',
-            color: star <= value ? 'var(--color-crimson)' : '#D1D5DB',
-            transition: 'color 150ms, transform 150ms',
-            userSelect: 'none',
-          }}
-        >
-          ★
-        </span>
-      ))}
-    </div>
-  );
-
   return (
     <div style={{ padding: '14px 14px 90px 14px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-        <button className="btn-candy" onClick={onBack}>← Volver</button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <button className="btn-candy" onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <ArrowLeft size={16} strokeWidth={3} />
+          Volver
+        </button>
         {isLowStock && <span className="mono-lbl-tag" style={{ background: '#E53E3E' }}>¡ÚLTIMOS TUBOS!</span>}
       </div>
 
@@ -693,17 +673,6 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
               </div>
             </>
           )}
-
-          {/* RATING */}
-          <div className="bento-widget bento-full-row">
-            <div className="bento-header">
-              <span>Puntuación Global</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0' }}>
-              <StarRating value={rating} onChange={setRating} />
-            </div>
-          </div>
-
         </div>
 
         <div className="candy-card static" style={{ marginTop: '0' }}>
@@ -815,7 +784,10 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
           </div> {/* end of borderTop div */}
         </div> {/* end of candy-card static */}
 
-        <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '16px', fontSize: '15px', padding: '16px' }}>Guardar Bitácora</button>
+        <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '16px', fontSize: '15px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <Save size={20} strokeWidth={2.5} />
+          Guardar Bitácora
+        </button>
       </form>
 
       {/* Actions footer: Edit & Delete Lote */}
@@ -824,9 +796,10 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
           type="button"
           className="btn-candy" 
           onClick={() => onEditBatch(batch)}
-          style={{ flex: 1, fontSize: '11px', margin: 0 }}
+          style={{ flex: 1, fontSize: '11px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
         >
-          📝 Editar Lote
+          <Edit2 size={14} strokeWidth={2.5} />
+          Editar Lote
         </button>
         <button 
           type="button"
@@ -835,10 +808,12 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
           style={{ 
             flex: 1, margin: 0,
             color: 'var(--color-crimson)', borderColor: 'var(--color-crimson)',
-            fontSize: '11px'
+            fontSize: '11px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
           }}
         >
-          🗑️ Eliminar Lote
+          <Trash2 size={14} strokeWidth={2.5} />
+          Eliminar Lote
         </button>
       </div>
     </div>

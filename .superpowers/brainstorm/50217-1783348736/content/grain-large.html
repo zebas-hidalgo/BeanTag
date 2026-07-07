@@ -1,0 +1,112 @@
+<!-- Load Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Outfit:wght@400;500;700&family=Space+Grotesk:wght@500;700&family=Share+Tech+Mono&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+
+<h2>Propuesta: Letra Mucho Más Grande (Escala 1:1 del Canvas Exportado)</h2>
+<p class="subtitle">Esta es la tarjeta con la proporción exacta de exportación (840x540px) y las fuentes agrandadas significativamente para lectura móvil clara.</p>
+
+<div style="display: flex; justify-content: center; margin: 20px 0;">
+  <!-- Contenedor exacto de la Tarjeta Exportada 840x540px -->
+  <div style="
+    width: 840px;
+    height: 540px;
+    border: 4px solid #000000;
+    box-shadow: 12px 12px 0px #000000;
+    background-image: url('/files/paper_texture.jpg');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 34px;
+    overflow: hidden;
+  ">
+    
+    <!-- Filtro de papel al 65% de opacidad -->
+    <div style="
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255, 255, 255, 0.65);
+      pointer-events: none;
+      z-index: 1;
+    "></div>
+
+    <!-- Contenido de la Tarjeta (Z-Index alto para sobresalir del filtro) -->
+    <div style="position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%; justify-content: space-between; color: #000000; text-align: left;">
+      
+      <!-- Encabezado de la Tarjeta (Logo BeanTag con su Línea Vertical Naranja) -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3.5px solid #000000; padding-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <!-- Línea Vertical de Marca -->
+          <div style="width: 6px; height: 46px; background-color: #F94C00; border: 2px solid #000000; box-sizing: border-box;"></div>
+          <div>
+            <h1 style="font-family: 'Fredoka', sans-serif; font-size: 32px; font-weight: 700; margin: 0; color: #000000; line-height: 1;">BeanTag</h1>
+            <span style="font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: #F94C00; letter-spacing: 0.5px; text-transform: uppercase;">FICHA TÉCNICA DE ORIGEN NFC</span>
+          </div>
+        </div>
+        <div style="font-family: 'Share Tech Mono', monospace; font-size: 14px; color: #000000; text-align: right; font-weight: bold; line-height: 1.3;">
+          REGISTRO: #0294<br>06-JUL-2026
+        </div>
+      </div>
+
+      <!-- Cuerpo: Detalles Técnicos del Grano (2 columnas limpias, sin línea punteada divisoria) -->
+      <div style="display: flex; flex-direction: column; gap: 10px; flex: 1; margin: 18px 0; min-height: 0;">
+        <div style="font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; color: #F94C00; text-transform: uppercase; letter-spacing: 0.5px;">
+          [ Grano Seleccionado ]
+        </div>
+        <!-- Título más limpio y delgado (Outfit 500) -->
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 30px; margin: 0 0 8px 0; color: #000000; font-weight: 500; line-height: 1.1;">
+          Geisha Volcán Azul
+        </h2>
+
+        <!-- Grid de Información Técnica (Outfit 400) -->
+        <div style="display: flex; gap: 60px; font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 400; line-height: 1.6;">
+          <!-- Columna Izquierda -->
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+            <div><strong>Origen:</strong> Costa Rica</div>
+            <div><strong>Tostador:</strong> Origen Tostadores</div>
+            <div><strong>Variedad:</strong> Geisha</div>
+          </div>
+          <!-- Columna Derecha -->
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; padding-left: 20px;">
+            <div><strong>Productor:</strong> Alejo Castro</div>
+            <div><strong>Proceso:</strong> Natural Anaeróbico</div>
+            <div><strong>Tueste:</strong> Claro (25 jun 2026)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 1: Descriptores del Café (batch_roaster_notes) -->
+      <div style="border-top: 1.5px dashed #000000; padding-top: 10px; margin-bottom: 10px; font-family: 'Outfit', sans-serif;">
+        <div style="font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; color: #F94C00; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+          [ Notas de Cata / Descriptores del Grano ]
+        </div>
+        <div style="font-size: 16px; color: #000000; font-weight: bold;">
+          🍒 Cereza, 🍫 Chocolate | Fresa, chocolate, cuerpo sedoso
+        </div>
+      </div>
+
+      <!-- Sección 2: Notas de la Preparación (recipe.notes) -->
+      <div style="border-top: 1.5px dashed #000000; padding-top: 10px; margin-bottom: 16px; font-family: 'Outfit', sans-serif;">
+        <div style="font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; color: #F94C00; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+          [ Notas de Cata de la Extracción ]
+        </div>
+        <div style="font-style: italic; font-size: 16px; color: #000000; line-height: 1.4;">
+          "Increíble dulzor y claridad. Notas florales muy pronunciadas."
+        </div>
+      </div>
+
+      <!-- Footer: Firma -->
+      <div style="border-top: 3.5px solid #000000; padding-top: 12px; display: flex; justify-content: flex-end; align-items: center; color: #000000;">
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: bold; text-align: right; white-space: nowrap;">
+          BEANTAG.CAFE
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>

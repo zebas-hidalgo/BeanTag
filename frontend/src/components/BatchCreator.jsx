@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import { Save, X, ClipboardCopy } from 'lucide-react';
 export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, showToast }) {
   // Parse initial flavor tags and custom notes if editing
   const getInitialFlavorTags = () => {
@@ -134,7 +134,10 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
   return (
     <div style={{ padding: '14px 14px 90px 14px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <button className="btn-candy" onClick={onBack}>✕ Cancelar</button>
+        <button className="btn-candy" onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <X size={16} strokeWidth={2.5} />
+          Cancelar
+        </button>
       </div>
 
       <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 14px 0', fontSize: '16px' }}>
@@ -277,7 +280,8 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
           </div>
         </div>
 
-        <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '4px' }}>
+        <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <Save size={18} strokeWidth={2.5} />
           {batchToEdit ? 'Guardar Cambios' : 'Crear Lote y Obtener Link'}
         </button>
       </form>
@@ -289,7 +293,10 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
           
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <input className="candy-input" value={generatedUrl} readOnly style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', flex: 1, minWidth: 0 }} />
-            <button type="button" className="btn-candy primary" style={{ margin: 0, flexShrink: 0 }} onClick={copyUrl}>Copiar</button>
+            <button type="button" className="btn-candy primary" style={{ margin: 0, flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px' }} onClick={copyUrl}>
+              <ClipboardCopy size={16} strokeWidth={2.5} />
+              Copiar
+            </button>
           </div>
         </div>
       )}

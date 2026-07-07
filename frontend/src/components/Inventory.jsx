@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { formatLocalDateStr } from '../utils/date';
-
+import { Plus } from 'lucide-react';
 
 export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,7 +27,10 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
       {filteredBatches.length === 0 ? (
         <div className="candy-card" style={{ textAlign: 'center', padding: '30px' }} onClick={onCreateTrigger}>
           <p style={{ fontWeight: 'bold' }}>¡No se encontraron cafés!</p>
-          <button className="btn-candy primary" style={{ margin: '10px auto 0 auto' }}>Registrar Primer Lote</button>
+          <button className="btn-candy primary" style={{ margin: '10px auto 0 auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Plus size={16} strokeWidth={2.5} />
+            Registrar Primer Lote
+          </button>
         </div>
       ) : (
         filteredBatches.map(batch => {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
+import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X } from 'lucide-react';
 
 const METHOD_ICONS = {
   'V60 (Filtrado)': '/icons/v60.jpg',
@@ -457,10 +458,6 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
                 )}
 
                 {item.notes && <p style={{ margin: '4px 0 2px 0', fontStyle: 'italic', color: 'var(--color-text)' }}><strong>Notas:</strong> {item.notes}</p>}
-                
-                <p style={{ margin: '6px 0 0 0', fontSize: '12px', fontWeight: 'bold' }}>
-                  Puntuación: <span style={{ color: 'var(--color-crimson)' }}>{'★'.repeat(item.rating || 5)}{'☆'.repeat(5 - (item.rating || 5))}</span>
-                </p>
               </div>
             </div>
           );
@@ -600,17 +597,16 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
             })()}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '18px', gap: '8px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 'bold' }}>
-                Puntuación: <span style={{ color: 'var(--color-crimson)', fontSize: '14px' }}>{'★'.repeat(selectedRecipe.rating || 5)}{'☆'.repeat(5 - (selectedRecipe.rating || 5))}</span>
-              </div>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <button type="button" className="btn-candy" style={{ padding: '8px 10px', margin: 0, fontSize: '11px', color: 'var(--color-crimson)', borderColor: 'var(--color-crimson)' }} onClick={() => handleDeleteRecipe(selectedRecipe.id)}>
-                  🗑️ Eliminar
+              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', flex: 1 }}>
+                <button type="button" className="btn-candy" style={{ padding: '8px 10px', margin: 0, fontSize: '11px', color: 'var(--color-crimson)', borderColor: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => handleDeleteRecipe(selectedRecipe.id)}>
+                  <Trash2 size={12} strokeWidth={2.5} />
+                  Eliminar
                 </button>
-                <button type="button" className="btn-candy" style={{ padding: '8px 10px', margin: 0, fontSize: '11px' }} onClick={() => exportRecipeAsImage(selectedRecipe)}>
-                  📤 Compartir
+                <button type="button" className="btn-candy" style={{ padding: '8px 10px', margin: 0, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => exportRecipeAsImage(selectedRecipe)}>
+                  <ImageIcon size={12} strokeWidth={2.5} />
+                  Compartir (IG)
                 </button>
-                <button type="button" className="btn-candy primary" style={{ padding: '8px 10px', margin: 0, fontSize: '11px' }} onClick={() => setSelectedRecipe(null)}>
+                <button type="button" className="btn-candy primary" style={{ padding: '8px 10px', margin: 0, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => setSelectedRecipe(null)}>
                   Cerrar
                 </button>
               </div>
@@ -679,17 +675,19 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
               <button 
                 type="button" 
                 className="btn-candy primary" 
-                style={{ flex: 1, padding: '10px', margin: 0 }} 
+                style={{ flex: 1, padding: '10px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} 
                 onClick={handleNativeShare}
               >
-                📲 Compartir / Descargar
+                <Share2 size={16} strokeWidth={2.5} />
+                Compartir / Descargar
               </button>
               <button 
                 type="button" 
                 className="btn-candy" 
-                style={{ padding: '10px 16px', margin: 0 }} 
-                onClick={() => { setShareImage(null); setShareStatus(''); }}
+                style={{ padding: '10px 16px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} 
+                onClick={() => setShareImage(null)}
               >
+                <X size={16} strokeWidth={2.5} />
                 Cerrar
               </button>
             </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Download, Upload } from 'lucide-react';
 
 export default function Settings({ showToast, isDarkMode, setIsDarkMode }) {
   const handleExportBackup = () => {
@@ -102,11 +102,13 @@ export default function Settings({ showToast, isDarkMode, setIsDarkMode }) {
           Descarga una copia local con todos tus lotes de café, recetas y notas, o cárgala para restaurarla en cualquier dispositivo.
         </p>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button className="btn-candy primary" style={{ margin: 0, fontSize: '11.5px', padding: '10px 14px', flex: 1 }} onClick={handleExportBackup}>
-            📥 Descargar Respaldo
+          <button className="btn-candy primary" style={{ margin: 0, fontSize: '11.5px', padding: '10px 14px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={handleExportBackup}>
+            <Download size={16} strokeWidth={2.5} />
+            Descargar Respaldo
           </button>
-          <label className="btn-candy" style={{ margin: 0, fontSize: '11.5px', padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, boxSizing: 'border-box' }}>
-            📤 Cargar Respaldo
+          <label className="btn-candy" style={{ margin: 0, fontSize: '11.5px', padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: 1, boxSizing: 'border-box' }}>
+            <Upload size={16} strokeWidth={2.5} />
+            Cargar Respaldo
             <input 
               type="file" 
               accept=".json" 

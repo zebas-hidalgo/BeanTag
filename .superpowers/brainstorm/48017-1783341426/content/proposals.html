@@ -1,0 +1,86 @@
+<h2>Propuestas de Tarjetas para Compartir Receta</h2>
+<p class="subtitle">Selecciona la opción que más te guste haciendo clic en ella y confírmame tu elección en la terminal.</p>
+
+<div class="cards">
+  <!-- Tarjeta 1: Sello Neo-Brutalista -->
+  <div class="card" data-choice="stamp" onclick="toggleSelect(this)">
+    <div class="card-image" style="background-color: #FFFFFF; padding: 15px; display: flex; align-items: center; justify-content: center; height: 180px;">
+      <div style="background-color: #CAE7F7; border: 3px double #000000; width: 100%; height: 100%; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; font-family: sans-serif; position: relative;">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-family: 'Comfortaa', cursive, sans-serif; font-size: 10px; font-weight: bold;">BeanTag ☕</span>
+          <span style="background-color: #F94C00; color: #FFFFFF; border: 1.5px solid #000000; font-size: 7px; padding: 2px 4px; font-weight: bold; text-transform: uppercase;">V60</span>
+        </div>
+        <!-- Center Coffee Stamp -->
+        <div style="text-align: center; margin: 10px 0;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 900; color: #48261D; border-bottom: 2px dashed #000000; display: inline-block; padding-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px;">
+            GEISHA
+          </div>
+          <div style="font-size: 9px; color: #48261D; margin-top: 4px; font-weight: bold;">1.5.0 (1232 µm)</div>
+        </div>
+        <!-- Footer / Score -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <div style="font-size: 7px; line-height: 1.2; font-family: monospace; color: #765C58;">
+            AGUA: 320g<br>TEMP: 93°C<br>TIEMPO: 2:45
+          </div>
+          <div style="color: #F94C00; font-size: 12px; font-weight: bold;">★★★★★</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>1. Neo-Brutalist Stamp (Recomendada)</h3>
+      <p>Diseño cuadrado con doble borde negro, fondo celeste claro y acentos en naranja vibrante. Destaca la molienda y los micrones calculados con un estilo de sello postal retro.</p>
+    </div>
+  </div>
+
+  <!-- Tarjeta 2: Retro Receipt -->
+  <div class="card" data-choice="receipt" onclick="toggleSelect(this)">
+    <div class="card-image" style="background-color: #FFFFFF; padding: 15px; display: flex; align-items: center; justify-content: center; height: 180px;">
+      <div style="background-color: #FFFFFF; border: 2px solid #000000; width: 85%; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 8px; color: #48261D; position: relative; border-style: dashed solid dashed solid; padding: 12px 8px;">
+        <!-- Ticket Header -->
+        <div style="text-align: center; border-bottom: 1.5px dashed #000000; padding-bottom: 6px;">
+          <div style="font-weight: 900; font-size: 10px;">* BEANTAG CAFE *</div>
+          <div style="font-size: 6px; color: #765C58;">TICKET DE EXTRACCION NFC</div>
+        </div>
+        <!-- Ticket Items -->
+        <div style="margin: 8px 0; flex: 1; display: flex; flex-direction: column; gap: 4px; font-family: monospace;">
+          <div style="display: flex; justify-content: space-between;"><span>METODO:</span><strong>V60</strong></div>
+          <div style="display: flex; justify-content: space-between;"><span>MOLIENDA:</span><strong>1.5.0</strong></div>
+          <div style="display: flex; justify-content: space-between;"><span>AGUA/RATIO:</span><strong>320g (1:16)</strong></div>
+          <div style="display: flex; justify-content: space-between;"><span>EXTRACCION:</span><span style="background-color: #F94C00; color: #FFFFFF; padding: 0 3px; font-weight: bold;">EN PUNTO</span></div>
+        </div>
+        <!-- Ticket Footer -->
+        <div style="border-top: 1.5px dashed #000000; paddingTop: 6px; text-align: center; font-size: 9px; font-weight: 900; color: #F94C00;">
+          SCORE: 5.0 / 5.0
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>2. Retro Receipt</h3>
+      <p>Estilo de boleto o recibo de cafetería térmica. Bordes superior e inferior punteados, fuente monoespaciada e ítems estructurados como una boleta de compra minimalista.</p>
+    </div>
+  </div>
+
+  <!-- Tarjeta 3: Coffee Polaroid -->
+  <div class="card" data-choice="polaroid" onclick="toggleSelect(this)">
+    <div class="card-image" style="background-color: #FFFFFF; padding: 15px; display: flex; align-items: center; justify-content: center; height: 180px;">
+      <div style="background-color: #CAE7F7; border: 2.5px solid #000000; box-shadow: 3px 3px 0px #000000; width: 90%; height: 100%; padding: 6px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; font-family: sans-serif;">
+        <!-- Photo Frame -->
+        <div style="background-color: #48261D; border: 2px solid #000000; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #CAE7F7; text-align: center; padding: 6px;">
+          <div style="font-size: 18px;">☕</div>
+          <div style="font-size: 8px; font-weight: 900; letter-spacing: 0.5px; margin-top: 3px; text-transform: uppercase;">GEISHA COSTA RICA</div>
+          <div style="font-size: 6px; color: #765C58; margin-top: 1px;">Natural Anaeróbico</div>
+        </div>
+        <!-- Photo Margin / Signature -->
+        <div style="height: 38px; display: flex; flex-direction: column; justify-content: center; padding-top: 4px; font-family: Georgia, serif; font-style: italic; font-size: 9px; text-align: center; color: #48261D;">
+          <div>"Florales intensos, 5 estrellas"</div>
+          <div style="font-size: 7px; color: #F94C00; font-weight: bold; margin-top: 2px; font-style: normal;">★ ★ ★ ★ ★</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>3. Coffee Polaroid</h3>
+      <p>Inspirado en una fotografía instantánea Polaroid. Marco celeste claro que encierra una "fotografía" en marrón chocolate y un margen inferior blanco con tus notas manuscritas.</p>
+    </div>
+  </div>
+</div>
