@@ -117,9 +117,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.strokeStyle = colorBorder;
       ctx.strokeRect(50, 45, 6, 46);
 
-      ctx.font = '800 32px Comfortaa, sans-serif';
+      ctx.font = '800 38px Comfortaa, sans-serif';
       ctx.fillStyle = colorPrimary;
-      ctx.fillText('BeanTag', 68, 78);
+      ctx.fillText('BeanTag', 68, 80);
 
       // Orden y fecha
       ctx.font = '700 13px "JetBrains Mono", monospace';
@@ -150,13 +150,13 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.restore();
 
       // 6. Cuerpo Columna Izquierda: Detalles Técnicos del Grano
-      ctx.font = '800 13px "Space Grotesk", sans-serif';
+      ctx.font = '800 15px "Space Grotesk", sans-serif';
       ctx.fillStyle = colorAccent;
       ctx.fillText('[ GRANO DE CAFÉ ]', 50, 138);
 
-      ctx.font = '800 24px Outfit, sans-serif';
+      ctx.font = '800 30px Outfit, sans-serif';
       ctx.fillStyle = colorPrimary;
-      ctx.fillText(recipe.batch_name || 'N/A', 50, 172);
+      ctx.fillText(recipe.batch_name || 'N/A', 50, 175);
 
       const batchDetails = [
         { label: 'Origen', val: recipe.batch_origin },
@@ -168,24 +168,24 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ];
 
       batchDetails.forEach((item, idx) => {
-        const yPos = 215 + idx * 34;
-        ctx.font = '800 14px Outfit, sans-serif';
+        const yPos = 215 + idx * 40;
+        ctx.font = '800 17px Outfit, sans-serif';
         ctx.fillStyle = colorAccent;
         ctx.fillText(`${item.label}:`, 50, yPos);
         
-        ctx.font = '500 14px Outfit, sans-serif';
+        ctx.font = '500 17px Outfit, sans-serif';
         ctx.fillStyle = colorPrimary;
-        ctx.fillText(item.val || 'N/A', 140, yPos);
+        ctx.fillText(item.val || 'N/A', 150, yPos);
       });
 
       // 7. Cuerpo Columna Derecha: Detalles de Extracción / Receta
-      ctx.font = '800 13px "Space Grotesk", sans-serif';
+      ctx.font = '800 15px "Space Grotesk", sans-serif';
       ctx.fillStyle = colorAccent;
       ctx.fillText('[ EXTRACCIÓN & CALIBRACIÓN ]', 450, 138);
 
-      ctx.font = '800 24px Outfit, sans-serif';
+      ctx.font = '800 30px Outfit, sans-serif';
       ctx.fillStyle = colorPrimary;
-      ctx.fillText(recipe.method || 'N/A', 450, 172);
+      ctx.fillText(recipe.method || 'N/A', 450, 175);
 
       const recipeDetails = [
         { label: 'Dosis In', val: `${recipe.dose_in_g || 'N/A'} g` },
@@ -196,30 +196,15 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ];
 
       recipeDetails.forEach((item, idx) => {
-        const yPos = 215 + idx * 34;
-        ctx.font = '800 14px Outfit, sans-serif';
+        const yPos = 215 + idx * 40;
+        ctx.font = '800 17px Outfit, sans-serif';
         ctx.fillStyle = colorAccent;
         ctx.fillText(`${item.label}:`, 450, yPos);
         
-        ctx.font = '500 14px Outfit, sans-serif';
+        ctx.font = '500 17px Outfit, sans-serif';
         ctx.fillStyle = colorPrimary;
-        ctx.fillText(item.val || 'N/A', 560, yPos);
+        ctx.fillText(item.val || 'N/A', 580, yPos);
       });
-
-      // Calificación en la columna derecha
-      const starYPos = 385;
-      ctx.font = '800 14px Outfit, sans-serif';
-      ctx.fillStyle = colorAccent;
-      ctx.fillText('Calificación:', 450, starYPos);
-
-      const rating = parseFloat(recipe.rating) || 0;
-      let starStr = '';
-      for (let i = 1; i <= 5; i++) {
-        starStr += i <= Math.round(rating) ? '★' : '☆';
-      }
-      ctx.font = '800 18px Outfit, sans-serif';
-      ctx.fillStyle = colorAccent;
-      ctx.fillText(starStr, 560, starYPos - 1);
 
       // 8. Sección Notas de Cata SCA (Fondo completo)
       ctx.lineWidth = 1.5;
@@ -232,7 +217,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.stroke();
       ctx.restore();
 
-      ctx.font = '800 13px "Space Grotesk", sans-serif';
+      ctx.font = '800 15px "Space Grotesk", sans-serif';
       ctx.fillStyle = colorAccent;
       ctx.fillText('[ NOTAS DE CATA (RUEDA SCA) ]', 50, 442);
 
@@ -257,7 +242,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       }
       scaNotes = stripEmojis(scaNotes);
 
-      ctx.font = '800 20px Outfit, sans-serif';
+      ctx.font = '800 24px Outfit, sans-serif';
       ctx.fillStyle = colorPrimary;
       ctx.fillText(scaNotes, 50, 474);
 
