@@ -284,6 +284,59 @@ app.post('/api/backup/import', async (req, res) => {
   }
 });
 
+// GET /api/export/json
+app.get('/api/export/json', async (req, res) => {
+  try {
+    const db = await getDb();
+    const batches = await db.all('SELECT * FROM batches');
+    const recipes = await db.all('SELECT * FROM recipes');
+    res.json({ batches, recipes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/import/json
+app.post('/api/import/json', async (req, res) => {
+  const { batches, recipes } = req.body;
+  if (!Array.isArray(batches) || !Array.isArray(recipes)) {
+    return res.status(400).json({ error: 'Formato de importación inválido' });
+  }
+  try {
+    const db = await getDb();
+    await db.run('BEGIN TRANSACTION');
+    
+    // Clear existing tables
+    await db.run('DELETE FROM recipes');
+    await db.run('DELETE FROM batches');
+    
+    // Insert batches
+    for (const b of batches) {
+      await db.run(
+        `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [b.id, b.name, b.producer, b.altitude, b.variety, b.process, b.roaster, b.roaster_notes, b.dose_weight, b.total_doses, b.remaining_doses, b.origin, b.roast_level, b.roast_date, b.freeze_date, b.total_weight_g, b.remaining_weight_g]
+      );
+    }
+    
+    // Insert recipes
+    for (const r of recipes) {
+      await db.run(
+        `INSERT INTO recipes (id, batch_id, method, ratio, grind, temperature, brew_time, rating, notes, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [r.id, r.batch_id, r.method, r.ratio, r.grind, r.temperature, r.brew_time, r.rating, r.notes, r.created_at]
+      );
+    }
+    
+    await db.run('COMMIT');
+    res.json({ success: true, message: `Importados: ${batches.length} lotes y ${recipes.length} recetas.` });
+  } catch (err) {
+    const db = await getDb();
+    await db.run('ROLLBACK');
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 // R7: PWA manifest
 app.get('/manifest.json', (req, res) => {
