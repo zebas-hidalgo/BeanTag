@@ -331,8 +331,12 @@ app.post('/api/import/json', async (req, res) => {
     await db.run('COMMIT');
     res.json({ success: true, message: `Importados: ${batches.length} lotes y ${recipes.length} recetas.` });
   } catch (err) {
-    const db = await getDb();
-    await db.run('ROLLBACK');
+    try {
+      const db = await getDb();
+      await db.run('ROLLBACK');
+    } catch (rollbackErr) {
+      console.error('Failed to rollback transaction:', rollbackErr);
+    }
     res.status(500).json({ error: err.message });
   }
 });
