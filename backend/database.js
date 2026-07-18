@@ -89,6 +89,12 @@ async function initDb() {
   try {
     await db.exec('ALTER TABLE recipes ADD COLUMN espresso_preinfusion INTEGER;');
   } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE recipes ADD COLUMN recipe_steps TEXT;');
+  } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE recipes ADD COLUMN grind_jmax TEXT;');
+  } catch (e) {}
   
   return db;
 }
