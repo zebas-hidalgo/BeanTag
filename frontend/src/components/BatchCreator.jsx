@@ -188,7 +188,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
       origin, roast_level: roastLevel, roast_date: roastDate, freeze_date: freezeDate
     };
 
-    const url = batchToEdit ? `api/batches/${batchToEdit.id}` : 'api/batches';
+    const url = batchToEdit ? `/api/batches/${batchToEdit.id}` : '/api/batches';
     const method = batchToEdit ? 'PUT' : 'POST';
 
     // If creating, send the ID in the payload

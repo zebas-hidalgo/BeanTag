@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
-import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X } from 'lucide-react';
+import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw } from 'lucide-react';
 import { stripEmojis } from '../utils/scaIcons';
 
 const METHOD_ICONS = {
-  'V60 (Filtrado)': `${import.meta.env.BASE_URL}icons/v60.jpg`,
-  'Espresso': `${import.meta.env.BASE_URL}icons/espresso.jpg`,
-  'AeroPress': `${import.meta.env.BASE_URL}icons/aeropress.jpg`,
-  'Prensa Francesa': `${import.meta.env.BASE_URL}icons/frenchpress.jpg`
+  'V60 (Filtrado)': '/icons/v60.jpg',
+  'Espresso': '/icons/espresso.jpg',
+  'AeroPress': '/icons/aeropress.jpg',
+  'Prensa Francesa': '/icons/frenchpress.jpg'
 };
 
 export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
@@ -18,9 +18,13 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(true);
   const textureRef = useRef(null);
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedMethod, setSelectedMethod] = useState('Todos');
+  const [selectedExtractionResult, setSelectedExtractionResult] = useState('Todos');
+
   useEffect(() => {
     let active = true;
-    fetch('api/recipes')
+    fetch('/api/recipes')
       .then(res => res.json())
       .then(data => {
         if (active) {
@@ -29,7 +33,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       });
       
     const img = new Image();
-    img.src = import.meta.env.BASE_URL + 'paper_texture.jpg';
+    img.src = '/paper_texture.jpg';
     img.onload = () => { textureRef.current = img; };
 
     return () => { active = false; };
@@ -64,7 +68,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
   const loadTexture = () => {
     return new Promise((resolve) => {
       const img = new Image();
-      img.src = import.meta.env.BASE_URL + 'paper_texture.jpg';
+      img.src = '/paper_texture.jpg';
       img.onload = () => resolve(img);
       img.onerror = () => resolve(null);
     });
@@ -486,18 +490,44 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
   const handleDeleteRecipe = (recipeId) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta preparación de la bitácora?')) {
-      fetch(`api/recipes/${recipeId}`, { method: 'DELETE' })
+      fetch(`/api/recipes/${recipeId}`, { method: 'DELETE' })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
             setSelectedRecipe(null);
-            fetch('api/recipes')
+            fetch('/api/recipes')
               .then(res => res.json())
               .then(d => setHistory(d));
           }
         });
     }
   };
+
+  const filteredHistory = (history || []).filter(recipe => {
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      const batchName = (recipe.batch_name || '').toLowerCase();
+      const roaster = (recipe.batch_roaster || recipe.roaster || '').toLowerCase();
+      const origin = (recipe.batch_origin || recipe.origin || '').toLowerCase();
+      const notes = (recipe.notes || '').toLowerCase();
+      
+      const matchesText = batchName.includes(term) || roaster.includes(term) || origin.includes(term) || notes.includes(term);
+      if (!matchesText) return false;
+    }
+
+    if (selectedMethod !== 'Todos') {
+      if (recipe.method !== selectedMethod) return false;
+    }
+
+    if (selectedExtractionResult !== 'Todos') {
+      const ext = recipe.sensory_extraction || '';
+      if (selectedExtractionResult === 'En Punto' && ext !== 'En Punto') return false;
+      if (selectedExtractionResult === 'Sub' && ext !== 'Sub') return false;
+      if (selectedExtractionResult === 'Sobre' && ext !== 'Sobre') return false;
+    }
+
+    return true;
+  });
 
   // R3: Skeleton loading state
   if (history === null) return (
@@ -517,9 +547,92 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
   return (
     <div style={{ padding: '14px 14px 90px 14px' }}>
-      <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', marginBottom: '14px' }}>
-        Bitácoras
-      </h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', margin: 0 }}>
+          Bitácoras
+        </h2>
+        {history.length > 0 && (
+          <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>
+            {filteredHistory.length} {filteredHistory.length === 1 ? 'receta' : 'recetas'}
+          </span>
+        )}
+      </div>
+
+      {history.length > 0 && (
+        <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ position: 'relative' }}>
+            <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}>
+              <Search size={16} strokeWidth={2.5} />
+            </div>
+            <input
+              type="text"
+              placeholder="Buscar por nombre, tostador u origen..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="candy-input"
+              style={{ width: '100%', paddingLeft: '38px', boxSizing: 'border-box' }}
+            />
+          </div>
+          
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {['Todos', 'V60 (Filtrado)', 'Espresso', 'AeroPress', 'Prensa Francesa'].map(m => (
+              <span
+                key={m}
+                onClick={() => setSelectedMethod(m)}
+                className={`candy-badge ${selectedMethod === m ? 'active' : ''}`}
+                style={{ 
+                  cursor: 'pointer', 
+                  fontSize: '11px',
+                  backgroundColor: selectedMethod === m ? 'var(--color-crimson)' : 'var(--bg-card)',
+                  color: selectedMethod === m ? '#FFFFFF' : 'var(--color-text)',
+                  border: '2px solid var(--border-color)',
+                  boxShadow: selectedMethod === m ? 'none' : '2px 2px 0px var(--border-color)',
+                  transform: selectedMethod === m ? 'translate(2px, 2px)' : 'none'
+                }}
+              >
+                {m}
+              </span>
+            ))}
+          </div>
+          
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+            <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Extracción:</span>
+            {['Todos', 'En Punto', 'Sub', 'Sobre'].map(ext => (
+              <span
+                key={ext}
+                onClick={() => setSelectedExtractionResult(ext)}
+                className={`candy-badge ${selectedExtractionResult === ext ? 'active' : ''}`}
+                style={{ 
+                  cursor: 'pointer', 
+                  fontSize: '11px',
+                  backgroundColor: selectedExtractionResult === ext ? (ext === 'En Punto' ? '#C6F6D5' : ext === 'Todos' ? '#EDF2F7' : '#FED7D7') : 'var(--bg-card)',
+                  color: selectedExtractionResult === ext ? (ext === 'En Punto' ? '#22543D' : ext === 'Todos' ? '#4A5568' : '#9B2C2C') : 'var(--color-text)',
+                  border: '2px solid var(--border-color)',
+                  boxShadow: selectedExtractionResult === ext ? 'none' : '2px 2px 0px var(--border-color)',
+                  transform: selectedExtractionResult === ext ? 'translate(2px, 2px)' : 'none'
+                }}
+              >
+                {ext}
+              </span>
+            ))}
+            
+            {(searchTerm || selectedMethod !== 'Todos' || selectedExtractionResult !== 'Todos') && (
+              <button 
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedMethod('Todos');
+                  setSelectedExtractionResult('Todos');
+                }}
+                className="btn-candy"
+                style={{ marginLeft: 'auto', padding: '4px 8px', fontSize: '10px', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <RotateCcw size={12} strokeWidth={2.5} />
+                Limpiar
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {history.length === 0 ? (
         /* R8: Empty state CTA with guidance */
@@ -533,13 +646,20 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
             Ir al Congelador
           </button>
         </div>
+      ) : filteredHistory.length === 0 ? (
+        <div className="candy-card static soft-fade-in" style={{ textAlign: 'center', padding: '30px' }}>
+          <p style={{ fontWeight: 'bold', margin: '0 0 6px 0' }}>No hay resultados</p>
+          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: 0 }}>
+            Intenta ajustar los filtros de búsqueda.
+          </p>
+        </div>
       ) : (
-        history.map(item => {
+        filteredHistory.map(item => {
           const microns = parseGrindToMicrons(item.grind);
           return (
             <div 
               key={item.id} 
-              className="candy-card" 
+              className="candy-card soft-fade-in" 
               style={{ borderLeft: '6px solid var(--color-crimson)' }}
               onClick={() => setSelectedRecipe(item)}
             >

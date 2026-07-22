@@ -788,3 +788,58 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
     gap: 2px !important;
   }
 }
+
+@keyframes softFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.soft-fade-in {
+  animation: softFadeIn 250ms var(--transition-spring, ease-out);
+}
+
+.filter-scroll-container {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.filter-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip {
+  flex: 0 0 auto;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 2px solid var(--border-color);
+  background-color: var(--bg-card);
+  color: var(--color-text);
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 150ms ease;
+  user-select: none;
+}
+
+.filter-chip:hover {
+  transform: translateY(-1px);
+}
+
+.filter-chip.active {
+  background-color: var(--color-crimson);
+  color: #FFFFFF;
+  border-color: var(--border-color);
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Moon, Sun, Plus, ScanLine, Package, BookOpen, Settings as SettingsIcon } from 'lucide-react';
+import { Moon, Sun, Plus, ScanLine, Package, BookOpen, Settings as SettingsIcon, Nfc } from 'lucide-react';
 import Inventory from './components/Inventory';
 import BatchDetail from './components/BatchDetail';
 import BatchCreator from './components/BatchCreator';
 import BrewHistory from './components/BrewHistory';
 import Settings from './components/Settings';
+import NfcToolsModal from './components/NfcToolsModal';
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -31,6 +32,7 @@ export default function App() {
   const [selectedBatchId, setSelectedBatchId] = useState(null);
   const [lastSubtractedBatch, setLastSubtractedBatch] = useState(null);
   const [batchToEdit, setBatchToEdit] = useState(null);
+  const [showNfcTools, setShowNfcTools] = useState(false);
 
   // R1: Generalized Toast system (replaces all alert() calls)
   const [toast, setToast] = useState({ message: '', type: 'info', visible: false, showUndo: false });
@@ -53,7 +55,7 @@ export default function App() {
   const [deleteModal, setDeleteModal] = useState({ visible: false, batchId: null, batchName: '' });
 
   const fetchBatches = () => {
-    fetch('api/batches')
+    fetch('/api/batches')
       .then(res => res.json())
       .then(data => setBatches(data));
   };
@@ -84,7 +86,7 @@ export default function App() {
   };
 
   const handleSubtractDose = (id, callback) => {
-    fetch(`api/batches/${id}/doses`, {
+    fetch(`/api/batches/${id}/doses`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ change: -1 })
@@ -113,7 +115,7 @@ export default function App() {
   // R4: Undo without page reload — re-fetch batch data instead
   const handleUndo = () => {
     if (!lastSubtractedBatch) return;
-    fetch(`api/batches/${lastSubtractedBatch}/doses`, {
+    fetch(`/api/batches/${lastSubtractedBatch}/doses`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ change: 1 })
@@ -136,7 +138,7 @@ export default function App() {
 
   // R5: Save recipe with toast transition instead of alert + instant redirect
   const handleSaveRecipe = (recipePayload) => {
-    fetch('api/recipes', {
+    fetch('/api/recipes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(recipePayload)
@@ -189,7 +191,7 @@ export default function App() {
   };
 
   const confirmDeleteBatch = () => {
-    fetch(`api/batches/${deleteModal.batchId}`, { method: 'DELETE' })
+    fetch(`/api/batches/${deleteModal.batchId}`, { method: 'DELETE' })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -236,16 +238,10 @@ export default function App() {
         <div style={{ display: 'flex', gap: '6px' }}>
 
           {currentView === 'inventory' && (
-            <>
-              <button className="app-bar-btn" onClick={handleNfcScan} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <ScanLine size={14} strokeWidth={2.5} />
-                Escaneo
-              </button>
-              <button className="app-bar-btn" onClick={() => setCurrentView('creator')} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Plus size={14} strokeWidth={2.5} />
-                Registrar
-              </button>
-            </>
+            <button className="app-bar-btn" onClick={() => setCurrentView('creator')} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Plus size={14} strokeWidth={2.5} />
+              Registrar
+            </button>
           )}
         </div>
       </header>
@@ -350,6 +346,10 @@ export default function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {showNfcTools && (
+        <NfcToolsModal onClose={() => setShowNfcTools(false)} showToast={showToast} />
       )}
 
       <nav className="nb-tabbar">

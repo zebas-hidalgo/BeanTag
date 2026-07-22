@@ -9,15 +9,6 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Middleware to strip subpath prefix /beantag if present (essential for local direct access and Vite dev server compatibility)
-app.use((req, res, next) => {
-  if (req.url.startsWith('/beantag')) {
-    req.url = req.url.replace(/^\/beantag/, '');
-    if (req.url === '') req.url = '/';
-  }
-  next();
-});
-
 // Serve static files from compiled React app
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -236,107 +227,100 @@ app.get('/api/backup/export', async (req, res) => {
   }
 });
 
-// JSON Backup: Import and replace all database tables
+// CSV Export: Export all recipes joined with batch information
+app.get('/api/backup/export/csv', async (req, res) => {
+  try {
+    const db = await getDb();
+    const rows = await db.all(`
+      SELECT 
+        r.id, r.created_at, b.name as batch_name, b.roaster, b.origin, b.variety, b.process,
+        r.method, r.ratio, r.grind, r.temperature, r.brew_time, r.sensory_balance, r.sensory_body,
+        r.sensory_extraction, r.dose_in_g, r.dose_out_g, r.notes
+      FROM recipes r
+      LEFT JOIN batches b ON r.batch_id = b.id
+      ORDER BY r.created_at DESC
+    `);
+
+    const headers = [
+      'ID', 'Fecha', 'Lote', 'Tostador', 'Origen', 'Variedad', 'Proceso',
+      'Método', 'Ratio', 'Molienda (J-Max)', 'Temperatura', 'Tiempo Extracción',
+      'Balance', 'Cuerpo', 'Resultado Sensorial', 'Dosis Entrada (g)', 'Dosis Salida (g)', 'Notas de Cata'
+    ];
+
+    const escapeCsv = (str) => {
+      if (str === null || str === undefined) return '""';
+      const cleanStr = String(str).replace(/"/g, '""');
+      return `"${cleanStr}"`;
+    };
+
+    let csvContent = '\uFEFF'; // UTF-8 BOM para compatibilidad con Excel
+    csvContent += headers.map(escapeCsv).join(',') + '\n';
+
+    rows.forEach(r => {
+      const rowData = [
+        r.id, r.created_at, r.batch_name, r.roaster, r.origin, r.variety, r.process,
+        r.method, r.ratio, r.grind, r.temperature, r.brew_time, r.sensory_balance, r.sensory_body,
+        r.sensory_extraction, r.dose_in_g, r.dose_out_g, r.notes
+      ];
+      csvContent += rowData.map(escapeCsv).join(',') + '\n';
+    });
+
+    const filename = `beantag_bitacora_${new Date().toISOString().split('T')[0]}.csv`;
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(csvContent);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// JSON Backup: Import (replace or merge) database tables
 app.post('/api/backup/import', async (req, res) => {
-  const { batches, recipes } = req.body;
+  const { batches, recipes, mode = 'replace' } = req.body;
   if (!Array.isArray(batches) || !Array.isArray(recipes)) {
     return res.status(400).json({ error: 'Formato de backup inválido' });
   }
   try {
     const db = await getDb();
     
-    // Clear current database in a transaction/sequence
-    await db.run('DELETE FROM recipes');
-    await db.run('DELETE FROM batches');
-
-    // Insert imported batches
-    for (const b of batches) {
-      await db.run(
-        `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          b.id, b.name, b.producer, b.altitude, b.variety, b.process, b.roaster, b.roaster_notes, 
-          b.dose_weight, b.total_doses, b.remaining_doses, b.origin, b.roast_level, b.roast_date, b.freeze_date,
-          b.total_weight_g !== undefined ? b.total_weight_g : 0, 
-          b.remaining_weight_g !== undefined ? b.remaining_weight_g : 0,
-          b.created_at
-        ]
-      );
+    if (mode === 'replace') {
+      await db.run('DELETE FROM recipes');
+      await db.run('DELETE FROM batches');
     }
 
-    // Insert imported recipes
+    const insertBatchSql = mode === 'merge' 
+      ? `INSERT OR IGNORE INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      : `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    for (const b of batches) {
+      await db.run(insertBatchSql, [
+        b.id, b.name, b.producer, b.altitude, b.variety, b.process, b.roaster, b.roaster_notes, 
+        b.dose_weight, b.total_doses, b.remaining_doses, b.origin, b.roast_level, b.roast_date, b.freeze_date,
+        b.total_weight_g !== undefined ? b.total_weight_g : 0, 
+        b.remaining_weight_g !== undefined ? b.remaining_weight_g : 0,
+        b.created_at
+      ]);
+    }
+
+    const insertRecipeSql = mode === 'merge'
+      ? `INSERT OR IGNORE INTO recipes (id, batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      : `INSERT INTO recipes (id, batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
     for (const r of recipes) {
-      await db.run(
-        `INSERT INTO recipes (id, batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          r.id, r.batch_id, r.method, r.ratio, r.grind, r.temperature, r.brew_time, r.rating, r.notes, 
-          r.sensory_balance, r.sensory_body, r.sensory_extraction,
-          r.dose_in_g, r.dose_out_g, r.espresso_pressure, r.espresso_preinfusion,
-          r.created_at
-        ]
-      );
+      await db.run(insertRecipeSql, [
+        r.id, r.batch_id, r.method, r.ratio, r.grind, r.temperature, r.brew_time, r.rating, r.notes, 
+        r.sensory_balance, r.sensory_body, r.sensory_extraction,
+        r.dose_in_g, r.dose_out_g, r.espresso_pressure, r.espresso_preinfusion,
+        r.created_at
+      ]);
     }
 
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET /api/export/json
-app.get('/api/export/json', async (req, res) => {
-  try {
-    const db = await getDb();
-    const batches = await db.all('SELECT * FROM batches');
-    const recipes = await db.all('SELECT * FROM recipes');
-    res.json({ batches, recipes });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// POST /api/import/json
-app.post('/api/import/json', async (req, res) => {
-  const { batches, recipes } = req.body;
-  if (!Array.isArray(batches) || !Array.isArray(recipes)) {
-    return res.status(400).json({ error: 'Formato de importación inválido' });
-  }
-  try {
-    const db = await getDb();
-    await db.run('BEGIN TRANSACTION');
-    
-    // Clear existing tables
-    await db.run('DELETE FROM recipes');
-    await db.run('DELETE FROM batches');
-    
-    // Insert batches
-    for (const b of batches) {
-      await db.run(
-        `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [b.id, b.name, b.producer, b.altitude, b.variety, b.process, b.roaster, b.roaster_notes, b.dose_weight, b.total_doses, b.remaining_doses, b.origin, b.roast_level, b.roast_date, b.freeze_date, b.total_weight_g, b.remaining_weight_g]
-      );
-    }
-    
-    // Insert recipes
-    for (const r of recipes) {
-      await db.run(
-        `INSERT INTO recipes (id, batch_id, method, ratio, grind, temperature, brew_time, rating, notes, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [r.id, r.batch_id, r.method, r.ratio, r.grind, r.temperature, r.brew_time, r.rating, r.notes, r.created_at]
-      );
-    }
-    
-    await db.run('COMMIT');
-    res.json({ success: true, message: `Importados: ${batches.length} lotes y ${recipes.length} recetas.` });
-  } catch (err) {
-    try {
-      const db = await getDb();
-      await db.run('ROLLBACK');
-    } catch (rollbackErr) {
-      console.error('Failed to rollback transaction:', rollbackErr);
-    }
     res.status(500).json({ error: err.message });
   }
 });
@@ -424,6 +408,7 @@ Debes responder únicamente con un objeto JSON válido con el siguiente esquema 
 
 // Serve React front for fallback routing
 app.get('*', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
