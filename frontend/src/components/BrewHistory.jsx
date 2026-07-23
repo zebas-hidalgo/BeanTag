@@ -101,7 +101,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       const colorAccent = style.getPropertyValue('--color-crimson').trim() || '#F94C00';
       const colorPrimary = style.getPropertyValue('--color-text').trim() || '#48261D';
 
-      // Helpers para prevenir colisión de texto en Canvas
+      // Helpers para prevenir colisión y permitir salto de línea
       const drawTruncatedText = (text, x, y, maxWidth) => {
         const str = String(text || '');
         if (!maxWidth || ctx.measureText(str).width <= maxWidth) {
@@ -119,11 +119,43 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         const str = String(text || '');
         let size = initialSize;
         ctx.font = `${weight} ${size}px ${fontName}, sans-serif`;
-        while (size > 11 && ctx.measureText(str).width > maxWidth) {
+        while (size > 14 && ctx.measureText(str).width > maxWidth) {
           size -= 1;
           ctx.font = `${weight} ${size}px ${fontName}, sans-serif`;
         }
-        drawTruncatedText(str, x, y, maxWidth);
+        if (ctx.measureText(str).width > maxWidth) {
+          drawWrappedText(str, x, y, maxWidth, size * 1.2, 2);
+        } else {
+          ctx.fillText(str, x, y);
+        }
+      };
+
+      const drawWrappedText = (text, x, y, maxWidth, lineHeight = 22, maxLines = 3) => {
+        const str = String(text || '');
+        if (!str) return 0;
+        const words = str.split(' ');
+        let line = '';
+        let currentY = y;
+        let lineCount = 0;
+
+        for (let n = 0; n < words.length; n++) {
+          const testLine = line + words[n] + ' ';
+          if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+            ctx.fillText(line.trim(), x, currentY);
+            line = words[n] + ' ';
+            currentY += lineHeight;
+            lineCount++;
+            if (lineCount >= maxLines - 1) {
+              const remaining = words.slice(n).join(' ');
+              drawTruncatedText(remaining, x, currentY, maxWidth);
+              return lineCount + 1;
+            }
+          } else {
+            line = testLine;
+          }
+        }
+        ctx.fillText(line.trim(), x, currentY);
+        return lineCount + 1;
       };
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
