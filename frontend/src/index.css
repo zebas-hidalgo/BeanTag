@@ -22,59 +22,54 @@
 
 
 
-[data-theme='tema1'] {
-  --bg-canvas: #F5F0E6;
+[data-theme="sakura"] {
+  --bg-canvas: #FCE4EC;
   --bg-card: #FFFFFF;
-  --border-color: #3E2723;
-  --color-text: #3E2723;
-  --color-text-muted: #765C58;
-  --color-crimson: #3E2723;
-  --bg-header: #F4C9D6;
-  --color-header-text: #3E2723;
-}
-
-[data-theme='tema2'] {
-  --bg-canvas: #F0FDF4;
-  --bg-card: #FFFFFF;
-  --border-color: #2E3A2F;
-  --color-text: #2E3A2F;
-  --color-text-muted: #526A54;
-  --color-crimson: #A3E635;
-  --bg-header: #A3E635;
-  --color-header-text: #2E3A2F;
-}
-
-[data-theme='tema3'] {
-  --bg-canvas: #FCE7F3;
-  --bg-card: #FFFFFF;
-  --border-color: #0F172A;
-  --color-text: #0F172A;
-  --color-text-muted: #475569;
   --color-crimson: #EC4899;
-  --bg-header: #EC4899;
-  --color-header-text: #FFFFFF;
+  --color-text: #4A154B;
+  --color-text-muted: #8338EC;
+  --bg-header: #FCE4EC;
+  --color-header-text: #4A154B;
 }
 
-[data-theme='tema4'] {
-  --bg-canvas: #FFFDF9;
+[data-theme="matcha"] {
+  --bg-canvas: #E8F5E9;
   --bg-card: #FFFFFF;
-  --border-color: #4A3525;
-  --color-text: #4A3525;
-  --color-text-muted: #7A6251;
-  --color-crimson: #F1C40F;
-  --bg-header: #F1C40F;
-  --color-header-text: #4A3525;
+  --color-crimson: #2E7D32;
+  --color-text: #1B4332;
+  --color-text-muted: #40916C;
+  --bg-header: #E8F5E9;
+  --color-header-text: #1B4332;
 }
 
-[data-theme='tema5'] {
-  --bg-canvas: #F3E8FF;
+[data-theme="cyberpunk"] {
+  --bg-canvas: #E0F7FA;
   --bg-card: #FFFFFF;
-  --border-color: #3B2E58;
-  --color-text: #3B2E58;
-  --color-text-muted: #6B5E8C;
-  --color-crimson: #8B5CF6;
-  --bg-header: #8B5CF6;
-  --color-header-text: #FFFFFF;
+  --color-crimson: #9C27B0;
+  --color-text: #102A43;
+  --color-text-muted: #334E68;
+  --bg-header: #E0F7FA;
+  --color-header-text: #102A43;
+}
+
+[data-theme="miel"] {
+  --bg-canvas: #FFF8E1;
+  --bg-card: #FFFFFF;
+  --color-crimson: #F59E0B;
+  --color-text: #4A2C11;
+  --color-text-muted: #784212;
+  --bg-header: #FFF8E1;
+  --color-header-text: #4A2C11;
+}
+
+[data-theme="velvet"] {
+  --bg-canvas: #F3E5F5;
+  --bg-card: #FFFFFF;
+  --color-crimson: #8E24AA;
+  --color-text: #3B1046;
+  --color-text-muted: #6A1B9A;
+  --bg-header: #F3E5F5;
+  --color-header-text: #3B1046;
 }
 
 @keyframes slideUpFade {

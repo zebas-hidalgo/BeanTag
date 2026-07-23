@@ -15,6 +15,16 @@ export default function App() {
   const [lastSubtractedBatch, setLastSubtractedBatch] = useState(null);
   const [batchToEdit, setBatchToEdit] = useState(null);
   const [showNfcTools, setShowNfcTools] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem('beantag-theme') || 'default');
+
+  useEffect(() => {
+    if (theme === 'default') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+    localStorage.setItem('beantag-theme', theme);
+  }, [theme]);
 
   // R1: Generalized Toast system (replaces all alert() calls)
   const [toast, setToast] = useState({ message: '', type: 'info', visible: false, showUndo: false });
@@ -285,7 +295,7 @@ export default function App() {
         )}
 
         {currentView === 'settings' && (
-          <Settings showToast={showToast} />
+          <Settings theme={theme} setTheme={setTheme} showToast={showToast} />
         )}
       </main>
 

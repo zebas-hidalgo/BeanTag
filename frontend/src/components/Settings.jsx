@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet } from 'lucide-react';
 import NfcToolsModal from './NfcToolsModal';
 
-export default function Settings({ showToast }) {
+export default function Settings({ theme, setTheme, showToast }) {
   const [showNfcModal, setShowNfcModal] = useState(false);
   const [pendingImportData, setPendingImportData] = useState(null);
   const [importMode, setImportMode] = useState('merge');
@@ -98,6 +98,51 @@ export default function Settings({ showToast }) {
       <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 14px 0', fontSize: '16px' }}>
         Ajustes y Configuración
       </h2>
+
+      {/* Temas Visuales de Fantasía */}
+      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
+        <div>
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+            🎨 Temas Visuales de Fantasía
+          </h4>
+          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
+            Elige una paleta Neobrutalista inspirada en el café de especialidad
+          </p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+          {[
+            { id: 'default', name: '☕ Mocha Sky' },
+            { id: 'sakura', name: '🌸 Sakura V60' },
+            { id: 'matcha', name: '🌿 Matcha Tonic' },
+            { id: 'cyberpunk', name: '🌌 Cyber Geisha' },
+            { id: 'miel', name: '🥐 Miel de Brujas' },
+            { id: 'velvet', name: '🍇 Cold Velvet' }
+          ].map((t) => {
+            const isActive = theme === t.id;
+            return (
+              <button 
+                key={t.id}
+                type="button"
+                onClick={() => { setTheme(t.id); if (showToast) showToast(`Tema ${t.name} aplicado.`, { type: 'success', duration: 2000 }); }} 
+                className="btn-candy"
+                style={{ 
+                  margin: 0, 
+                  fontSize: '10px', 
+                  padding: '8px 6px', 
+                  border: '2px solid var(--border-color)',
+                  backgroundColor: isActive ? 'var(--color-crimson)' : 'var(--bg-card)',
+                  color: isActive ? '#FFFFFF' : 'var(--color-text)',
+                  boxShadow: isActive ? 'none' : '3px 3px 0px var(--border-color)',
+                  transform: isActive ? 'translate(2px, 2px)' : 'none',
+                  fontWeight: 'bold'
+                }}
+              >
+                {t.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Inteligencia Artificial (Gemini) */}
       <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
