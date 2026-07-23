@@ -202,16 +202,12 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.stroke();
 
       ctx.fillStyle = colorTextDark;
-      ctx.font = '800 32px "Space Grotesk", sans-serif';
-      drawTruncatedText('=== BEANTAG SPECIALTY COFFEE ===', 50, 62, 740);
-
-      ctx.font = '800 20px "JetBrains Mono", monospace';
-      ctx.fillStyle = colorTextMuted;
-      drawTruncatedText(`RECIBO #0${recipe.id || '294'} | ${incRecipe ? 'REGISTRO DE EXTRACCIÓN' : 'FICHA TÉCNICA DE LOTE'}`, 50, 92, 740);
+      ctx.font = '800 25px "Space Grotesk", sans-serif';
+      drawTruncatedText(`RECIBO #0${recipe.id || '294'} | ${incRecipe ? 'REGISTRO DE EXTRACCIÓN' : 'FICHA TÉCNICA DE LOTE'}`, 50, 68, 740);
 
       ctx.strokeStyle = '#94A3B8';
       ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(50, 108); ctx.lineTo(790, 108); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(50, 95); ctx.lineTo(790, 95); ctx.stroke();
 
       ctx.font = '800 22px "JetBrains Mono", monospace';
       ctx.fillStyle = colorTextDark;
