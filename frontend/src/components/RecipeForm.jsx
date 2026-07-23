@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Filter, Zap } from 'lucide-react';
 
 export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch }) {
   const [method, setMethod] = useState('V60 (Filtrado)');
@@ -139,10 +139,20 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch })
           <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', fontSize: '15px', margin: 0 }}>Registrar Preparación</h2>
         </div>
         <div style={{ display: 'flex', gap: '12px', margin: '16px 0', overflowX: 'auto', paddingBottom: '4px' }}>
-          {[{ id: 'V60 (Filtrado)', icon: `${import.meta.env.BASE_URL}icons/v60.jpg`, label: 'V60' }, { id: 'Espresso', icon: `${import.meta.env.BASE_URL}icons/espresso.jpg`, label: 'Espresso' }, { id: 'AeroPress', icon: `${import.meta.env.BASE_URL}icons/aeropress.jpg`, label: 'AeroPress' }, { id: 'Prensa Francesa', icon: `${import.meta.env.BASE_URL}icons/frenchpress.jpg`, label: 'Prensa' }].map(m => (
+          {[
+            { id: 'V60 (Filtrado)', icon: `${import.meta.env.BASE_URL}icons/v60.jpg`, lucide: <Filter size={22} />, label: 'V60' },
+            { id: 'Espresso', icon: `${import.meta.env.BASE_URL}icons/espresso.jpg`, lucide: <Zap size={22} />, label: 'Espresso' },
+            { id: 'AeroPress', icon: `${import.meta.env.BASE_URL}icons/aeropress.jpg`, lucide: <Droplet size={22} />, label: 'AeroPress' },
+            { id: 'Prensa Francesa', icon: `${import.meta.env.BASE_URL}icons/frenchpress.jpg`, lucide: <Coffee size={22} />, label: 'Prensa' }
+          ].map(m => (
             <div key={m.id} onClick={() => { setMethod(m.id); if (navigator.vibrate) navigator.vibrate(40); }} style={{ flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
               <div className="candy-card" style={{ width: '100%', aspectRatio: '1/1', padding: 0, margin: 0, borderColor: method === m.id ? 'var(--color-crimson)' : 'var(--border-color)', borderWidth: method === m.id ? '3px' : '2px', backgroundColor: method === m.id ? 'var(--color-crimson)' : 'var(--bg-card)', boxShadow: method === m.id ? 'none' : '3px 3px 0px var(--border-color)', transform: method === m.id ? 'translate(2px, 2px)' : 'none', transition: 'all 0.15s var(--transition-spring)' }}>
-                <div style={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '4px' }}><img src={m.icon} alt={m.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
+                <div style={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '4px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img src={m.icon} alt={m.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none'; }} />
+                  <div style={{ position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center', color: method === m.id ? '#FFFFFF' : 'var(--color-crimson)' }}>
+                    {m.lucide}
+                  </div>
+                </div>
               </div>
               <span style={{ fontSize: '10px', fontWeight: method === m.id ? '900' : '600', color: method === m.id ? 'var(--color-text)' : 'var(--color-text-muted)' }}>{m.label}</span>
             </div>

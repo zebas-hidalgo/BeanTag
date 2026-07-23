@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis } from '../utils/scaIcons';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap } from 'lucide-react';
 
 
 
@@ -631,10 +631,10 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
         {/* Method Icon Selector */}
         <div style={{ display: 'flex', gap: '12px', margin: '16px 0', overflowX: 'auto', paddingBottom: '4px' }}>
           {[
-            { id: 'V60 (Filtrado)', icon: '/icons/v60.jpg', label: 'V60' },
-            { id: 'Espresso', icon: '/icons/espresso.jpg', label: 'Espresso' },
-            { id: 'AeroPress', icon: '/icons/aeropress.jpg', label: 'AeroPress' },
-            { id: 'Prensa Francesa', icon: '/icons/frenchpress.jpg', label: 'Prensa' }
+            { id: 'V60 (Filtrado)', icon: `${import.meta.env.BASE_URL}icons/v60.jpg`, lucide: <Filter size={22} />, label: 'V60' },
+            { id: 'Espresso', icon: `${import.meta.env.BASE_URL}icons/espresso.jpg`, lucide: <Zap size={22} />, label: 'Espresso' },
+            { id: 'AeroPress', icon: `${import.meta.env.BASE_URL}icons/aeropress.jpg`, lucide: <Droplet size={22} />, label: 'AeroPress' },
+            { id: 'Prensa Francesa', icon: `${import.meta.env.BASE_URL}icons/frenchpress.jpg`, lucide: <Coffee size={22} />, label: 'Prensa' }
           ].map(m => (
             <div 
               key={m.id}
@@ -666,8 +666,16 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
                   transition: 'all 0.15s var(--transition-spring)'
                 }}
               >
-                <div style={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '4px' }}>
-                  <img src={m.icon} alt={m.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '4px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img 
+                    src={m.icon} 
+                    alt={m.label} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                  <div style={{ position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center', color: method === m.id ? '#FFFFFF' : 'var(--color-crimson)' }}>
+                    {m.lucide}
+                  </div>
                 </div>
               </div>
               <span style={{ 

@@ -1,13 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
-import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw } from 'lucide-react';
+import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw, Filter, Zap, Droplet, Coffee } from 'lucide-react';
 import { stripEmojis } from '../utils/scaIcons';
 
 const METHOD_ICONS = {
-  'V60 (Filtrado)': '/icons/v60.jpg',
-  'Espresso': '/icons/espresso.jpg',
-  'AeroPress': '/icons/aeropress.jpg',
-  'Prensa Francesa': '/icons/frenchpress.jpg'
+  'V60 (Filtrado)': `${import.meta.env.BASE_URL}icons/v60.jpg`,
+  'Espresso': `${import.meta.env.BASE_URL}icons/espresso.jpg`,
+  'AeroPress': `${import.meta.env.BASE_URL}icons/aeropress.jpg`,
+  'Prensa Francesa': `${import.meta.env.BASE_URL}icons/frenchpress.jpg`
+};
+
+const getMethodLucideIcon = (methodName, size = 18) => {
+  const m = (methodName || '').toLowerCase();
+  if (m.includes('v60') || m.includes('filtrado')) return <Filter size={size} color="var(--color-crimson)" />;
+  if (m.includes('espresso') || m.includes('expresso')) return <Zap size={size} color="var(--color-crimson)" />;
+  if (m.includes('aero') || m.includes('press')) return <Droplet size={size} color="var(--color-crimson)" />;
+  if (m.includes('prensa') || m.includes('francesa')) return <Coffee size={size} color="var(--color-crimson)" />;
+  return <Coffee size={size} color="var(--color-crimson)" />;
 };
 
 export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
@@ -19,8 +28,6 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
   const textureRef = useRef(null);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedMethod, setSelectedMethod] = useState('Todos');
-  const [selectedExtractionResult, setSelectedExtractionResult] = useState('Todos');
 
   useEffect(() => {
     let active = true;
@@ -510,22 +517,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       const roaster = (recipe.batch_roaster || recipe.roaster || '').toLowerCase();
       const origin = (recipe.batch_origin || recipe.origin || '').toLowerCase();
       const notes = (recipe.notes || '').toLowerCase();
+      const method = (recipe.method || '').toLowerCase();
       
-      const matchesText = batchName.includes(term) || roaster.includes(term) || origin.includes(term) || notes.includes(term);
-      if (!matchesText) return false;
+      return batchName.includes(term) || roaster.includes(term) || origin.includes(term) || notes.includes(term) || method.includes(term);
     }
-
-    if (selectedMethod !== 'Todos') {
-      if (recipe.method !== selectedMethod) return false;
-    }
-
-    if (selectedExtractionResult !== 'Todos') {
-      const ext = recipe.sensory_extraction || '';
-      if (selectedExtractionResult === 'En Punto' && ext !== 'En Punto') return false;
-      if (selectedExtractionResult === 'Sub' && ext !== 'Sub') return false;
-      if (selectedExtractionResult === 'Sobre' && ext !== 'Sobre') return false;
-    }
-
     return true;
   });
 
@@ -559,77 +554,19 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       </div>
 
       {history.length > 0 && (
-        <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ marginBottom: '16px' }}>
           <div style={{ position: 'relative' }}>
             <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}>
               <Search size={16} strokeWidth={2.5} />
             </div>
             <input
               type="text"
-              placeholder="Buscar por nombre, tostador u origen..."
+              placeholder="Buscar por nombre, tostador, método u origen..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="candy-input"
               style={{ width: '100%', paddingLeft: '38px', boxSizing: 'border-box' }}
             />
-          </div>
-          
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {['Todos', 'V60 (Filtrado)', 'Espresso', 'AeroPress', 'Prensa Francesa'].map(m => (
-              <span
-                key={m}
-                onClick={() => setSelectedMethod(m)}
-                className={`candy-badge ${selectedMethod === m ? 'active' : ''}`}
-                style={{ 
-                  cursor: 'pointer', 
-                  fontSize: '11px',
-                  backgroundColor: selectedMethod === m ? 'var(--color-crimson)' : 'var(--bg-card)',
-                  color: selectedMethod === m ? '#FFFFFF' : 'var(--color-text)',
-                  border: '2px solid var(--border-color)',
-                  boxShadow: selectedMethod === m ? 'none' : '2px 2px 0px var(--border-color)',
-                  transform: selectedMethod === m ? 'translate(2px, 2px)' : 'none'
-                }}
-              >
-                {m}
-              </span>
-            ))}
-          </div>
-          
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
-            <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Extracción:</span>
-            {['Todos', 'En Punto', 'Sub', 'Sobre'].map(ext => (
-              <span
-                key={ext}
-                onClick={() => setSelectedExtractionResult(ext)}
-                className={`candy-badge ${selectedExtractionResult === ext ? 'active' : ''}`}
-                style={{ 
-                  cursor: 'pointer', 
-                  fontSize: '11px',
-                  backgroundColor: selectedExtractionResult === ext ? (ext === 'En Punto' ? '#C6F6D5' : ext === 'Todos' ? '#EDF2F7' : '#FED7D7') : 'var(--bg-card)',
-                  color: selectedExtractionResult === ext ? (ext === 'En Punto' ? '#22543D' : ext === 'Todos' ? '#4A5568' : '#9B2C2C') : 'var(--color-text)',
-                  border: '2px solid var(--border-color)',
-                  boxShadow: selectedExtractionResult === ext ? 'none' : '2px 2px 0px var(--border-color)',
-                  transform: selectedExtractionResult === ext ? 'translate(2px, 2px)' : 'none'
-                }}
-              >
-                {ext}
-              </span>
-            ))}
-            
-            {(searchTerm || selectedMethod !== 'Todos' || selectedExtractionResult !== 'Todos') && (
-              <button 
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedMethod('Todos');
-                  setSelectedExtractionResult('Todos');
-                }}
-                className="btn-candy"
-                style={{ marginLeft: 'auto', padding: '4px 8px', fontSize: '10px', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
-              >
-                <RotateCcw size={12} strokeWidth={2.5} />
-                Limpiar
-              </button>
-            )}
           </div>
         </div>
       )}
