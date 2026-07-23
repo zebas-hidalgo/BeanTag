@@ -30,6 +30,7 @@ export default function App() {
   const [currentView, setCurrentView] = useState('inventory');
   const [batches, setBatches] = useState([]);
   const [selectedBatchId, setSelectedBatchId] = useState(null);
+  const [prefillRecipe, setPrefillRecipe] = useState(null);
   const [lastSubtractedBatch, setLastSubtractedBatch] = useState(null);
   const [batchToEdit, setBatchToEdit] = useState(null);
   const [showNfcTools, setShowNfcTools] = useState(false);
@@ -71,6 +72,13 @@ export default function App() {
     }
   }, []);
 
+  const handleSelectBatch = (batchOrId, options = {}) => {
+    const id = typeof batchOrId === 'object' && batchOrId !== null ? batchOrId.id : batchOrId;
+    setSelectedBatchId(id);
+    setPrefillRecipe(options && options.prefillRecipe ? options.prefillRecipe : null);
+    setCurrentView('detail');
+  };
+
   const handleBack = () => {
     if (batchToEdit) {
       setCurrentView('detail');
@@ -80,6 +88,7 @@ export default function App() {
       window.history.pushState({}, '', '/');
       setCurrentView('inventory');
       setSelectedBatchId(null);
+      setPrefillRecipe(null);
       dismissToast();
     }
     fetchBatches();
@@ -250,7 +259,7 @@ export default function App() {
         {currentView === 'inventory' && (
           <Inventory 
             batches={batches} 
-            onSelectBatch={(id) => { setSelectedBatchId(id); setCurrentView('detail'); }} 
+            onSelectBatch={handleSelectBatch} 
             onCreateTrigger={() => setCurrentView('creator')}
             showToast={showToast}
           />
@@ -260,6 +269,7 @@ export default function App() {
           <BatchDetail 
             key={selectedBatchId}
             batchId={selectedBatchId} 
+            prefillRecipe={prefillRecipe}
             onBack={handleBack}
             onSubtractDose={handleSubtractDose}
             onSaveRecipe={handleSaveRecipe}

@@ -5,7 +5,7 @@ import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Ed
 
 
 
-export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRecipe, onDeleteBatch, onEditBatch, showToast }) {
+export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtractDose, onSaveRecipe, onDeleteBatch, onEditBatch, showToast }) {
   const [batch, setBatch] = useState(null);
   
   // Form fields
@@ -143,22 +143,22 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
       .then(data => {
         if (active) {
           setBatch(data);
-          // If there is a last recipe, pre-populate parameters for convenience
-          if (data.recipes && data.recipes.length > 0) {
-            const last = data.recipes[0];
-            setMethod(last.method || 'V60 (Filtrado)');
+          // If prefillRecipe or last recipe is available, pre-populate parameters
+          const targetRecipe = prefillRecipe || (data.recipes && data.recipes.length > 0 ? data.recipes[0] : null);
+          if (targetRecipe) {
+            setMethod(targetRecipe.method || 'V60 (Filtrado)');
             
             // Try parsing ratio
-            if (last.ratio && last.ratio.includes('1:')) {
-              const ratioMatch = last.ratio.match(/1:([0-9.]+)/);
+            if (targetRecipe.ratio && targetRecipe.ratio.includes('1:')) {
+              const ratioMatch = targetRecipe.ratio.match(/1:([0-9.]+)/);
               if (ratioMatch) {
                 setRatioVal(parseFloat(ratioMatch[1]) || 15.0);
               }
             }
             
             // Try parsing J-Max grind settings (format: "J-Max: R.N.C")
-            if (last.grind && last.grind.includes('J-Max:')) {
-              const grindParts = last.grind.replace('J-Max:', '').trim().split('.');
+            if (targetRecipe.grind && targetRecipe.grind.includes('J-Max:')) {
+              const grindParts = targetRecipe.grind.replace('J-Max:', '').trim().split('.');
               if (grindParts.length === 3) {
                 setJmaxRot(parseInt(grindParts[0]) || 1);
                 setJmaxNum(parseInt(grindParts[1]) || 5);
@@ -167,14 +167,16 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
             }
 
             // Pre-populate new fields
-            setDoseInG(last.dose_in_g !== null && last.dose_in_g !== undefined ? last.dose_in_g : parseFloat(data.dose_weight) || 20.0);
-            setDoseOutG(last.dose_out_g !== null && last.dose_out_g !== undefined ? last.dose_out_g : 36.0);
-            setWaterTemp(last.temperature ? parseInt(last.temperature) || 93 : 93);
-            setEspressoPressure(last.espresso_pressure !== null && last.espresso_pressure !== undefined ? last.espresso_pressure : 9);
-            setEspressoPreinfusion(last.espresso_preinfusion !== null && last.espresso_preinfusion !== undefined ? last.espresso_preinfusion : 5);
-            setSensoryBalance(last.sensory_balance || 'Dulce');
-            setSensoryBody(last.sensory_body || 'Medio');
-            setSensoryExtraction(last.sensory_extraction || 'En Punto');
+            setDoseInG(targetRecipe.dose_in_g !== null && targetRecipe.dose_in_g !== undefined ? targetRecipe.dose_in_g : parseFloat(data.dose_weight) || 20.0);
+            setDoseOutG(targetRecipe.dose_out_g !== null && targetRecipe.dose_out_g !== undefined ? targetRecipe.dose_out_g : 36.0);
+            setWaterTemp(targetRecipe.temperature ? parseInt(targetRecipe.temperature) || 93 : 93);
+            setEspressoPressure(targetRecipe.espresso_pressure !== null && targetRecipe.espresso_pressure !== undefined ? targetRecipe.espresso_pressure : 9);
+            setEspressoPreinfusion(targetRecipe.espresso_preinfusion !== null && targetRecipe.espresso_preinfusion !== undefined ? targetRecipe.espresso_preinfusion : 5);
+            setSensoryBalance(targetRecipe.sensory_balance || 'Dulce');
+            setSensoryBody(targetRecipe.sensory_body || 'Medio');
+            setSensoryExtraction(targetRecipe.sensory_extraction || 'En Punto');
+            if (targetRecipe.brew_time) setBrewTime(targetRecipe.brew_time);
+            if (targetRecipe.notes) setNotes(targetRecipe.notes);
           } else {
             // Defaults
             setDoseInG(parseFloat(data.dose_weight) || 20.0);
@@ -186,7 +188,7 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
         }
       });
     return () => { active = false; };
-  }, [batchId]);
+  }, [batchId, prefillRecipe]);
 
 
 
@@ -539,11 +541,17 @@ export default function BatchDetail({ batchId, onBack, onSubtractDose, onSaveRec
           <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
             Molido para <strong>{batch.dose_weight}</strong> (~{parseGrindToMicrons(lastRecipe.grind)} µm). Agua: <strong>{(doseNum * ratioVal).toFixed(0)}g</strong>.
           </div>
-          {batch.remaining_doses > 0 && (
-            <button className="btn-candy primary" onClick={handleRepeatLastRecipe} style={{ width: '100%', marginTop: '10px', padding: '8px', fontSize: '10px' }}>
-              Repetir Receta Anterior y Restar Tubo (1-Click)
-            </button>
-          )}
+          {batch.remaining_doses > 0 && (() => {
+            const methodLabel = (lastRecipe.method || 'V60').replace(' (Filtrado)', '');
+            const doseLabel = (lastRecipe.dose_in_g !== null && lastRecipe.dose_in_g !== undefined) ? lastRecipe.dose_in_g : (parseFloat(batch.dose_weight) || 18);
+            const ratioLabel = lastRecipe.ratio ? lastRecipe.ratio.split(' ')[0] : '1:15';
+            return (
+              <button className="btn-candy primary" onClick={handleRepeatLastRecipe} style={{ width: '100%', marginTop: '10px', padding: '8px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                <Zap size={12} />
+                ⚡ Repetir Receta (#{lastRecipe.id || 1} {methodLabel} • {doseLabel}g • {ratioLabel})
+              </button>
+            );
+          })()}
         </div>
       )}
 

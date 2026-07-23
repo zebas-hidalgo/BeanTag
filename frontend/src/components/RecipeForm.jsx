@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Filter, Zap } from 'lucide-react';
 
-export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch }) {
+export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, prefillRecipe }) {
   const [method, setMethod] = useState('V60 (Filtrado)');
   const [jmaxRot, setJmaxRot] = useState(1);
   const [jmaxNum, setJmaxNum] = useState(5);
@@ -28,33 +28,35 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch })
   const [aiError, setAiError] = useState('');
 
   useEffect(() => {
-    if (batch && batch.recipes && batch.recipes.length > 0) {
-      const last = batch.recipes[0];
-      setMethod(last.method || 'V60 (Filtrado)');
-      if (last.ratio && last.ratio.includes('1:')) {
-        const rm = last.ratio.match(/1:([0-9.]+)/);
+    const targetRecipe = prefillRecipe || (batch && batch.recipes && batch.recipes.length > 0 ? batch.recipes[0] : null);
+    if (targetRecipe) {
+      setMethod(targetRecipe.method || 'V60 (Filtrado)');
+      if (targetRecipe.ratio && targetRecipe.ratio.includes('1:')) {
+        const rm = targetRecipe.ratio.match(/1:([0-9.]+)/);
         if (rm) setRatioVal(parseFloat(rm[1]) || 15.0);
       }
-      if (last.grind && last.grind.includes('J-Max:')) {
-        const parts = last.grind.replace('J-Max:', '').trim().split('.');
+      if (targetRecipe.grind && targetRecipe.grind.includes('J-Max:')) {
+        const parts = targetRecipe.grind.replace('J-Max:', '').trim().split('.');
         if (parts.length === 3) {
           setJmaxRot(parseInt(parts[0]) || 1);
           setJmaxNum(parseInt(parts[1]) || 5);
           setJmaxClick(parseInt(parts[2]) || 0);
         }
       }
-      setDoseInG(last.dose_in_g !== null && last.dose_in_g !== undefined ? last.dose_in_g : parseFloat(batch.dose_weight) || 20.0);
-      setDoseOutG(last.dose_out_g !== null && last.dose_out_g !== undefined ? last.dose_out_g : 36.0);
-      setWaterTemp(last.temperature ? parseInt(last.temperature) || 93 : 93);
-      setEspressoPressure(last.espresso_pressure !== null && last.espresso_pressure !== undefined ? last.espresso_pressure : 9);
-      setEspressoPreinfusion(last.espresso_preinfusion !== null && last.espresso_preinfusion !== undefined ? last.espresso_preinfusion : 5);
-      setSensoryBalance(last.sensory_balance || 'Dulce');
-      setSensoryBody(last.sensory_body || 'Medio');
-      setSensoryExtraction(last.sensory_extraction || 'En Punto');
+      setDoseInG(targetRecipe.dose_in_g !== null && targetRecipe.dose_in_g !== undefined ? targetRecipe.dose_in_g : parseFloat(batch?.dose_weight) || 20.0);
+      setDoseOutG(targetRecipe.dose_out_g !== null && targetRecipe.dose_out_g !== undefined ? targetRecipe.dose_out_g : 36.0);
+      setWaterTemp(targetRecipe.temperature ? parseInt(targetRecipe.temperature) || 93 : 93);
+      setEspressoPressure(targetRecipe.espresso_pressure !== null && targetRecipe.espresso_pressure !== undefined ? targetRecipe.espresso_pressure : 9);
+      setEspressoPreinfusion(targetRecipe.espresso_preinfusion !== null && targetRecipe.espresso_preinfusion !== undefined ? targetRecipe.espresso_preinfusion : 5);
+      setSensoryBalance(targetRecipe.sensory_balance || 'Dulce');
+      setSensoryBody(targetRecipe.sensory_body || 'Medio');
+      setSensoryExtraction(targetRecipe.sensory_extraction || 'En Punto');
+      if (targetRecipe.brew_time) setBrewTime(targetRecipe.brew_time);
+      if (targetRecipe.notes) setNotes(targetRecipe.notes);
     } else if (batch) {
       setDoseInG(parseFloat(batch.dose_weight) || 20.0);
     }
-  }, [batch]);
+  }, [batch, prefillRecipe]);
 
   const currentMicrons = Math.round(((jmaxRot * 90) + (jmaxNum * 10) + jmaxClick) * 8.8);
 

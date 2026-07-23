@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { RenderScaChips } from '../utils/scaIcons';
-import { Plus } from 'lucide-react';
+import { Plus, Zap } from 'lucide-react';
 
 export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,6 +36,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
       ) : (
         filteredBatches.map(batch => {
           const isLowStock = batch.remaining_doses <= 2;
+          const hasRecipes = batch.recipes && batch.recipes.length > 0;
           return (
             <div 
               key={batch.id} 
@@ -62,6 +63,26 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
                 <span className="mono-lbl-tag outline">{batch.roast_level || 'Medio'}</span>
                 {isLowStock && <span className="mono-lbl-tag" style={{ background: '#E53E3E' }}>¡Últimos tubos!</span>}
               </div>
+              {hasRecipes && (() => {
+                const r = batch.recipes[0];
+                const methodLabel = (r.method || 'V60').replace(' (Filtrado)', '');
+                const doseLabel = (r.dose_in_g !== null && r.dose_in_g !== undefined) ? r.dose_in_g : (parseFloat(batch.dose_weight) || 18);
+                const ratioLabel = r.ratio ? r.ratio.split(' ')[0] : '1:15';
+                return (
+                  <button 
+                    type="button" 
+                    className="btn-candy primary" 
+                    style={{ marginTop: '8px', width: '100%', fontSize: '10px', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectBatch(batch, { prefillRecipe: r });
+                    }}
+                  >
+                    <Zap size={12} />
+                    ⚡ Repetir Receta (#{r.id || 1} {methodLabel} • {doseLabel}g • {ratioLabel})
+                  </button>
+                );
+              })()}
             </div>
           );
         })
@@ -69,4 +90,5 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
     </div>
   );
 }
+
 
