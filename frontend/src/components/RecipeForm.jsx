@@ -234,7 +234,59 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
           ) : (
             <div className="bento-widget"><div className="bento-header"><span>Timer</span><Timer size={16} /></div><div className="bento-value-container" style={{ position: 'relative' }}><input type="text" style={{ fontSize: '24px' }} value={brewTime} onChange={(e) => setBrewTime(e.target.value)} /></div><div className="bento-controls" style={{ justifyContent: 'center' }}><div className="bento-info">DURATION</div></div></div>
           )}
-          <div className="bento-widget bento-full-row accent"><div className="bento-header"><span>Molienda (J-Max)</span><Coffee size={16} /></div><div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 0' }}><select className="candy-input" style={{ flex: 1, textAlign: 'center', fontSize: '14px', margin: 0, padding: '8px' }} value={jmaxRot} onChange={(e) => setJmaxRot(parseInt(e.target.value) || 0)}>{[0, 1, 2, 3, 4].map(v => <option key={v} value={v}>Rot: {v}</option>)}</select><select className="candy-input" style={{ flex: 1, textAlign: 'center', fontSize: '14px', margin: 0, padding: '8px' }} value={jmaxNum} onChange={(e) => setJmaxNum(parseInt(e.target.value) || 0)}>{[0, 1, 2, 3, 4, 5, 6, 7, 8].map(v => <option key={v} value={v}>Num: {v}</option>)}</select><select className="candy-input" style={{ flex: 1, textAlign: 'center', fontSize: '14px', margin: 0, padding: '8px' }} value={jmaxClick} onChange={(e) => setJmaxClick(parseInt(e.target.value) || 0)}>{[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(v => <option key={v} value={v}>Clic: {v}</option>)}</select></div><div className="bento-info">Partícula: ~{currentMicrons} µm</div></div>
+          <div className="bento-widget bento-full-row accent" style={{ padding: '14px' }}>
+            <div className="bento-header">
+              <span>Molienda 1Zpresso J-Max</span>
+              <Coffee size={16} color="var(--color-crimson)" />
+            </div>
+
+            {/* Rotations */}
+            <div style={{ marginTop: '10px' }}>
+              <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Rotación (0..4)</span>
+              <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                {[0, 1, 2, 3, 4].map(r => (
+                  <button key={r} type="button" className={`btn-candy ${jmaxRot === r ? 'primary' : ''}`} onClick={() => setJmaxRot(r)} style={{ flex: 1, padding: '4px', fontSize: '12px', minHeight: '30px', margin: 0 }}>
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Numbers */}
+            <div style={{ marginTop: '8px' }}>
+              <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Número (0..8)</span>
+              <div style={{ display: 'flex', gap: '4px', marginTop: '4px', overflowX: 'auto' }}>
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(n => (
+                  <button key={n} type="button" className={`btn-candy ${jmaxNum === n ? 'primary' : ''}`} onClick={() => setJmaxNum(n)} style={{ flex: 1, padding: '4px', fontSize: '11px', minHeight: '30px', margin: 0 }}>
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Clicks */}
+            <div style={{ marginTop: '8px' }}>
+              <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Clic (0..9)</span>
+              <div style={{ display: 'flex', gap: '3px', marginTop: '4px', overflowX: 'auto' }}>
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(c => (
+                  <button key={c} type="button" className={`btn-candy ${jmaxClick === c ? 'primary' : ''}`} onClick={() => setJmaxClick(c)} style={{ flex: 1, padding: '2px', fontSize: '10px', minHeight: '28px', margin: 0 }}>
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Microns Gauge Spectrum */}
+            <div style={{ marginTop: '12px', padding: '10px', backgroundColor: 'var(--bg-canvas)', border: '2px solid var(--border-color)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: '900', color: 'var(--color-text)' }}>~{currentMicrons} µm</div>
+                <div style={{ fontSize: '9.5px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
+                  {currentMicrons < 400 ? '☕ Espresso Fino' : currentMicrons < 850 ? '💧 Filtrado Medio (V60 / Aero)' : '🫖 Prensa Francesa Grueso'}
+                </div>
+              </div>
+              <span style={{ fontSize: '18px' }}>{currentMicrons < 400 ? '⚡' : currentMicrons < 850 ? '☕' : '🫖'}</span>
+            </div>
+          </div>
           {method === 'Espresso' && (
             <><div className="bento-widget"><div className="bento-header"><span>Pre-Inf</span><Timer size={16} /></div><div className="bento-value-container"><input type="number" value={espressoPreinfusion} onChange={(e) => setEspressoPreinfusion(parseInt(e.target.value) || 0)} /><span className="unit">sec</span></div><div className="bento-controls"><button type="button" className="bento-btn" onClick={() => setEspressoPreinfusion(p => Math.max(0, p - 1))}>-</button><div className="bento-info">BLOOM</div><button type="button" className="bento-btn" onClick={() => setEspressoPreinfusion(p => p + 1)}>+</button></div></div><div className="bento-widget"><div className="bento-header"><span>Timer</span><Timer size={16} /></div><div className="bento-value-container"><input type="text" style={{ fontSize: '24px' }} value={brewTime} onChange={(e) => setBrewTime(e.target.value)} /></div><div className="bento-controls" style={{ justifyContent: 'center' }}><div className="bento-info">DURATION</div></div></div></>
           )}
