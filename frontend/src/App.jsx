@@ -285,7 +285,7 @@ export default function App() {
         )}
 
         {currentView === 'settings' && (
-          <Settings showToast={showToast} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} theme={theme} setTheme={setTheme} />
+          <Settings showToast={showToast} />
         )}
       </main>
 

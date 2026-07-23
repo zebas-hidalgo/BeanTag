@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet } from 'lucide-react';
 import NfcToolsModal from './NfcToolsModal';
 
-export default function Settings({ showToast, isDarkMode, setIsDarkMode, theme, setTheme }) {
+export default function Settings({ showToast }) {
   const [showNfcModal, setShowNfcModal] = useState(false);
   const [pendingImportData, setPendingImportData] = useState(null);
   const [importMode, setImportMode] = useState('merge');
@@ -98,69 +98,6 @@ export default function Settings({ showToast, isDarkMode, setIsDarkMode, theme, 
       <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 14px 0', fontSize: '16px' }}>
         Ajustes y Configuración
       </h2>
-
-      {/* Tema Visual */}
-      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-        <div>
-          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
-            Modo Oscuro
-          </h4>
-          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: 0 }}>
-            Cambia a un diseño de bajo brillo
-          </p>
-        </div>
-        <button 
-          onClick={() => setIsDarkMode(!isDarkMode)} 
-          className="btn-candy" 
-          style={{ padding: '8px', margin: 0, minHeight: 'auto' }}
-        >
-          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
-      </div>
-
-      {/* Selector de Tema */}
-      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
-        <div>
-          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
-            Temas de Color
-          </h4>
-          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
-            Elige una paleta de colores personalizada
-          </p>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(105px, 1fr))', gap: '8px' }}>
-          {[
-            { id: 'tema1', name: 'Mocha Rosé' },
-            { id: 'tema2', name: 'Matcha Tonic' },
-            { id: 'tema3', name: 'Cyber Geisha' },
-            { id: 'tema4', name: 'Tueste Dorado' },
-            { id: 'tema5', name: 'Cold Brew Violet' }
-          ].map((t) => {
-            const isActive = theme === t.id;
-            return (
-              <button 
-                key={t.id}
-                onClick={() => setTheme(t.id)} 
-                className="btn-candy"
-                style={{ 
-                  margin: 0, 
-                  fontSize: '10px', 
-                  padding: '8px 4px', 
-                  border: '2px solid var(--border-color)',
-                  backgroundColor: isActive ? 'var(--color-crimson)' : 'var(--bg-card)',
-                  color: isActive ? '#FFFFFF' : 'var(--color-text)',
-                  boxShadow: isActive ? 'none' : '3px 3px 0px var(--border-color)',
-                  transform: isActive ? 'translate(2px, 2px)' : 'none',
-                  fontWeight: 'bold',
-                  lineHeight: '1.2'
-                }}
-              >
-                {t.name}
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       {/* Inteligencia Artificial (Gemini) */}
       <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
