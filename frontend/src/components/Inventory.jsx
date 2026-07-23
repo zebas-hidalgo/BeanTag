@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { formatLocalDateStr } from '../utils/date';
+import { RenderScaChips } from '../utils/scaIcons';
 import { Plus } from 'lucide-react';
 
 export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
@@ -55,6 +56,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
                   )}
                 </div>
               </div>
+              <RenderScaChips notesStr={batch.roaster_notes || batch.notes} />
               <div className="mono-badge-row">
                 <span className="mono-lbl-tag outline">{batch.remaining_doses} Dosis ({batch.remaining_weight_g || 0}g)</span>
                 <span className="mono-lbl-tag outline">{batch.roast_level || 'Medio'}</span>
@@ -67,3 +69,4 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
     </div>
   );
 }
+

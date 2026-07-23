@@ -113,3 +113,66 @@ export const stripEmojis = (text) => {
   if (!text) return '';
   return text.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '').trim();
 };
+
+export function getScaColorForNote(note) {
+  const n = String(note || '').toLowerCase().trim();
+  if (!n) return { bg: 'var(--bg-canvas)', border: 'var(--border-color)', text: 'var(--color-text)' };
+
+  if (/fresa|cereza|mora|frambuesa|arándano|berry|frutos rojos|ciruela/i.test(n)) {
+    return { bg: '#FFF5F5', border: '#E53E3E', text: '#C53030' };
+  }
+  if (/limón|naranja|cítrico|citrico|bergamota|pomelo|mandarina|manzana/i.test(n)) {
+    return { bg: '#FFFAF0', border: '#DD6B20', text: '#C05621' };
+  }
+  if (/jazmín|jazmin|flor|rosa|lavanda|violeta|floral/i.test(n)) {
+    return { bg: '#FAF5FF', border: '#805AD5', text: '#6B46C1' };
+  }
+  if (/chocolate|cacao|caramelo|miel|panela|vainilla|dulce/i.test(n)) {
+    return { bg: '#FDF6E2', border: '#795548', text: '#4E342E' };
+  }
+  if (/avellana|nuez|almendra|frutos secos|canela|especias|clavo/i.test(n)) {
+    return { bg: '#FEFCBF', border: '#D69E2E', text: '#B7791F' };
+  }
+  if (/vino|ron|anaeróbico|anaerobico|maceración|maceracion|fermentado/i.test(n)) {
+    return { bg: '#FFF5F7', border: '#9B2C2C', text: '#742A2A' };
+  }
+
+  return { bg: '#F7FAFC', border: 'var(--border-color)', text: 'var(--color-text)' };
+}
+
+export function RenderScaChips({ notesStr, maxChips = 4 }) {
+  if (!notesStr) return null;
+  let clean = String(notesStr);
+  if (clean.includes('[Notas: ') && clean.includes(']')) {
+    const match = clean.match(/\[Notas: (.*?)\]/);
+    if (match) clean = match[1];
+  }
+  if (clean.includes(' | ')) clean = clean.split(' | ')[0];
+
+  const notesList = clean.split(/[,|•]/).map(s => s.trim()).filter(Boolean).slice(0, maxChips);
+  if (notesList.length === 0) return null;
+
+  return (
+    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+      {notesList.map((note, idx) => {
+        const colors = getScaColorForNote(note);
+        return (
+          <span key={idx} style={{
+            fontSize: '9.5px',
+            fontWeight: '800',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            backgroundColor: colors.bg,
+            border: `1.5px solid ${colors.border}`,
+            color: colors.text,
+            textTransform: 'uppercase',
+            display: 'inline-block'
+          }}>
+            {note}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+

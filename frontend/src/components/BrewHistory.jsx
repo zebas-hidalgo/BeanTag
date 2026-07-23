@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw, Filter, Zap, Droplet, Coffee } from 'lucide-react';
-import { stripEmojis } from '../utils/scaIcons';
+import { stripEmojis, RenderScaChips } from '../utils/scaIcons';
 
 const METHOD_ICONS = {
   'V60 (Filtrado)': `${import.meta.env.BASE_URL}icons/v60.jpg`,
@@ -583,6 +583,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
                 )}
 
                 {item.notes && <p style={{ margin: '4px 0 2px 0', fontStyle: 'italic', color: 'var(--color-text)' }}><strong>Notas:</strong> {item.notes}</p>}
+                <RenderScaChips notesStr={item.batch_roaster_notes || item.notes} />
               </div>
             </div>
           );
