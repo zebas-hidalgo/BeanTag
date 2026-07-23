@@ -90,16 +90,17 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
     try {
       const canvas = document.createElement('canvas');
-      const isVertical = currentTpl === 'story';
-      canvas.width = isVertical ? 600 : 840;
-      canvas.height = isVertical ? 1066 : 540;
+      // Render at 2x resolution for ultra-sharp typography on high-DPI screens and chat apps
+      const scaleFactor = 2;
+      canvas.width = 840 * scaleFactor;
+      canvas.height = 540 * scaleFactor;
       const ctx = canvas.getContext('2d');
+      ctx.scale(scaleFactor, scaleFactor);
 
       const style = getComputedStyle(document.documentElement);
-      const colorBg = style.getPropertyValue('--bg-canvas').trim() || '#CAE7F7';
-      const colorBorder = style.getPropertyValue('--border-color').trim() || '#000000';
       const colorAccent = style.getPropertyValue('--color-crimson').trim() || '#F94C00';
-      const colorPrimary = style.getPropertyValue('--color-text').trim() || '#48261D';
+      const colorTextDark = '#0F172A'; // High-contrast charcoal black
+      const colorTextMuted = '#334155'; // High-contrast slate
 
       // Helpers para prevenir colisión y permitir salto de línea
       const drawTruncatedText = (text, x, y, maxWidth) => {
@@ -158,30 +159,30 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         return lineCount + 1;
       };
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, 840, 540);
 
-      // --- PLANTILLA: TICKET DE BARISTA (BEANTAG SPEC) ---
-      ctx.fillStyle = '#F7F5F0';
+      // --- PLANTILLA: TICKET DE BARISTA (BEANTAG SPEC - HIGH DPI) ---
+      ctx.fillStyle = '#FAF8F5';
       ctx.fillRect(0, 0, 840, 540);
 
-      ctx.strokeStyle = '#2D3748';
+      ctx.strokeStyle = colorTextDark;
       ctx.lineWidth = 2.5;
       ctx.strokeRect(20, 20, 800, 500);
 
-      ctx.fillStyle = '#1A202C';
+      ctx.fillStyle = colorTextDark;
       ctx.font = '800 34px "Space Grotesk", sans-serif';
       drawTruncatedText('=== BEANTAG SPECIALTY COFFEE ===', 50, 65, 740);
 
-      ctx.font = '700 19px "JetBrains Mono", monospace';
-      ctx.fillStyle = '#4A5568';
+      ctx.font = '800 19px "JetBrains Mono", monospace';
+      ctx.fillStyle = colorTextMuted;
       drawTruncatedText(`RECIBO #0${recipe.id || '294'} | ${incRecipe ? 'REGISTRO DE EXTRACCIÓN' : 'FICHA TÉCNICA DE LOTE'}`, 50, 95, 740);
 
-      ctx.strokeStyle = '#CBD5E0';
+      ctx.strokeStyle = '#94A3B8';
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(50, 112); ctx.lineTo(790, 112); ctx.stroke();
 
-      ctx.font = '700 19px "JetBrains Mono", monospace';
-      ctx.fillStyle = '#1A202C';
+      ctx.font = '800 19px "JetBrains Mono", monospace';
+      ctx.fillStyle = colorTextDark;
       drawTruncatedText(`GRANO: ..... ${String(recipe.batch_name || 'N/A').toUpperCase()}`, 50, 150, 380);
       drawTruncatedText(`ORIGEN: .... ${String(recipe.batch_origin || 'N/A').toUpperCase()}`, 50, 192, 380);
       drawTruncatedText(`TOSTADOR: .. ${String(recipe.batch_roaster || 'N/A').toUpperCase()}`, 50, 234, 380);
@@ -200,7 +201,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         drawTruncatedText(`TUESTE: .... ${recipe.batch_roast_date ? String(recipe.batch_roast_date).toUpperCase() : 'N/A'}`, 450, 276, 340);
       }
 
-      ctx.strokeStyle = '#CBD5E0';
+      ctx.strokeStyle = '#94A3B8';
       ctx.lineWidth = 1.5;
       ctx.save();
       ctx.setLineDash([4, 4]);
@@ -222,13 +223,13 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       if (!receiptNotes) receiptNotes = recipe.notes || 'ESPECIALIDAD';
       receiptNotes = stripEmojis(receiptNotes);
 
-      ctx.font = '700 19px "JetBrains Mono", monospace';
-      ctx.fillStyle = '#4A5568';
+      ctx.font = '800 19px "JetBrains Mono", monospace';
+      ctx.fillStyle = colorTextDark;
       drawTruncatedText(`NOTAS: ..... ${String(receiptNotes).toUpperCase()}`, 50, 372, 740);
       const receiptDate = new Date(recipe.created_at || Date.now()).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
       drawTruncatedText(`FECHA: ..... ${receiptDate.toUpperCase()}`, 50, 408, 520);
 
-      ctx.font = '700 15px "JetBrains Mono", monospace';
+      ctx.font = '800 15px "JetBrains Mono", monospace';
       drawTruncatedText('================================================================', 50, 444, 520);
       drawTruncatedText('THANK YOU FOR BREWING WITH BEANTAG • KEEP EXTRACTING PERFECT COFFEE', 50, 475, 520);
 
