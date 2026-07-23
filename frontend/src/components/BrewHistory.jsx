@@ -101,6 +101,31 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       const colorAccent = style.getPropertyValue('--color-crimson').trim() || '#F94C00';
       const colorPrimary = style.getPropertyValue('--color-text').trim() || '#48261D';
 
+      // Helpers para prevenir colisión de texto en Canvas
+      const drawTruncatedText = (text, x, y, maxWidth) => {
+        const str = String(text || '');
+        if (!maxWidth || ctx.measureText(str).width <= maxWidth) {
+          ctx.fillText(str, x, y);
+          return;
+        }
+        let truncated = str;
+        while (truncated.length > 0 && ctx.measureText(truncated + '…').width > maxWidth) {
+          truncated = truncated.slice(0, -1);
+        }
+        ctx.fillText(truncated + '…', x, y);
+      };
+
+      const drawFittedText = (text, x, y, maxWidth, initialSize, fontName = 'Outfit', weight = '800') => {
+        const str = String(text || '');
+        let size = initialSize;
+        ctx.font = `${weight} ${size}px ${fontName}, sans-serif`;
+        while (size > 11 && ctx.measureText(str).width > maxWidth) {
+          size -= 1;
+          ctx.font = `${weight} ${size}px ${fontName}, sans-serif`;
+        }
+        drawTruncatedText(str, x, y, maxWidth);
+      };
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (currentTpl === 'receipt') {
@@ -113,35 +138,35 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         ctx.strokeRect(20, 20, 800, 500);
 
         ctx.fillStyle = '#1A202C';
-        ctx.font = '800 24px "Space Grotesk", sans-serif';
-        ctx.fillText('=== BEANTAG SPECIALTY COFFEE ===', 50, 65);
+        ctx.font = '800 22px "Space Grotesk", sans-serif';
+        drawTruncatedText('=== BEANTAG SPECIALTY COFFEE ===', 50, 65, 740);
 
         ctx.font = '700 13px "JetBrains Mono", monospace';
         ctx.fillStyle = '#4A5568';
-        ctx.fillText(`RECIBO #0${recipe.id || '294'} | ${incRecipe ? 'REGISTRO DE EXTRACCIÓN' : 'FICHA TÉCNICA DE LOTE'}`, 50, 90);
+        drawTruncatedText(`RECIBO #0${recipe.id || '294'} | ${incRecipe ? 'REGISTRO DE EXTRACCIÓN' : 'FICHA TÉCNICA DE LOTE'}`, 50, 90, 740);
 
         ctx.strokeStyle = '#CBD5E0';
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(50, 105); ctx.lineTo(790, 105); ctx.stroke();
 
-        ctx.font = '700 14px "JetBrains Mono", monospace';
+        ctx.font = '700 13px "JetBrains Mono", monospace';
         ctx.fillStyle = '#1A202C';
-        ctx.fillText(`GRANO: ..... ${String(recipe.batch_name || 'N/A').toUpperCase()}`, 50, 140);
-        ctx.fillText(`ORIGEN: .... ${String(recipe.batch_origin || 'N/A').toUpperCase()}`, 50, 175);
-        ctx.fillText(`TOSTADOR: .. ${String(recipe.batch_roaster || 'N/A').toUpperCase()}`, 50, 210);
-        ctx.fillText(`PROCESO: ... ${String(recipe.batch_process || 'N/A').toUpperCase()}`, 50, 245);
+        drawTruncatedText(`GRANO: ..... ${String(recipe.batch_name || 'N/A').toUpperCase()}`, 50, 140, 380);
+        drawTruncatedText(`ORIGEN: .... ${String(recipe.batch_origin || 'N/A').toUpperCase()}`, 50, 175, 380);
+        drawTruncatedText(`TOSTADOR: .. ${String(recipe.batch_roaster || 'N/A').toUpperCase()}`, 50, 210, 380);
+        drawTruncatedText(`PROCESO: ... ${String(recipe.batch_process || 'N/A').toUpperCase()}`, 50, 245, 380);
 
         if (incRecipe) {
-          ctx.fillText(`MÉTOD: .... ${String(recipe.method || 'N/A').toUpperCase()}`, 450, 140);
-          ctx.fillText(`DOSIS: ..... ${recipe.dose_in_g ? recipe.dose_in_g + ' G' : 'N/A'}`, 450, 175);
-          ctx.fillText(`MOLIENDA: .. ${String(recipe.grind || 'N/A').toUpperCase()}`, 450, 210);
-          ctx.fillText(`RATIO: ..... ${String(recipe.ratio || 'N/A').toUpperCase()}`, 450, 245);
-          ctx.fillText(`TIEMPO: .... ${String(recipe.brew_time || 'N/A').toUpperCase()}`, 450, 280);
+          drawTruncatedText(`MÉTOD: .... ${String(recipe.method || 'N/A').toUpperCase()}`, 450, 140, 340);
+          drawTruncatedText(`DOSIS: ..... ${recipe.dose_in_g ? recipe.dose_in_g + ' G' : 'N/A'}`, 450, 175, 340);
+          drawTruncatedText(`MOLIENDA: .. ${String(recipe.grind || 'N/A').toUpperCase()}`, 450, 210, 340);
+          drawTruncatedText(`RATIO: ..... ${String(recipe.ratio || 'N/A').toUpperCase()}`, 450, 245, 340);
+          drawTruncatedText(`TIEMPO: .... ${String(recipe.brew_time || 'N/A').toUpperCase()}`, 450, 280, 340);
         } else {
-          ctx.fillText(`PRODUCTOR: . ${String(recipe.batch_producer || 'N/A').toUpperCase()}`, 450, 140);
-          ctx.fillText(`VARIEDAD: .. ${String(recipe.batch_variety || 'N/A').toUpperCase()}`, 450, 175);
-          ctx.fillText(`ALTITUD: ... ${String(recipe.batch_altitude || 'N/A').toUpperCase()}`, 450, 210);
-          ctx.fillText(`TUESTE: .... ${recipe.batch_roast_date ? String(recipe.batch_roast_date).toUpperCase() : 'N/A'}`, 450, 245);
+          drawTruncatedText(`PRODUCTOR: . ${String(recipe.batch_producer || 'N/A').toUpperCase()}`, 450, 140, 340);
+          drawTruncatedText(`VARIEDAD: .. ${String(recipe.batch_variety || 'N/A').toUpperCase()}`, 450, 175, 340);
+          drawTruncatedText(`ALTITUD: ... ${String(recipe.batch_altitude || 'N/A').toUpperCase()}`, 450, 210, 340);
+          drawTruncatedText(`TUESTE: .... ${recipe.batch_roast_date ? String(recipe.batch_roast_date).toUpperCase() : 'N/A'}`, 450, 245, 340);
         }
 
         ctx.strokeStyle = '#CBD5E0';
@@ -168,12 +193,13 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
         ctx.font = '700 13px "JetBrains Mono", monospace';
         ctx.fillStyle = '#4A5568';
-        ctx.fillText(`NOTAS: ..... ${String(receiptNotes).toUpperCase()}`, 50, 355);
+        drawTruncatedText(`NOTAS: ..... ${String(receiptNotes).toUpperCase()}`, 50, 355, 740);
         const receiptDate = new Date(recipe.created_at || Date.now()).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-        ctx.fillText(`FECHA: ..... ${receiptDate.toUpperCase()}`, 50, 390);
+        drawTruncatedText(`FECHA: ..... ${receiptDate.toUpperCase()}`, 50, 390, 540);
 
-        ctx.fillText('================================================================', 50, 435);
-        ctx.fillText('THANK YOU FOR BREWING WITH BEANTAG • KEEP EXTRACTING PERFECT COFFEE', 50, 470);
+        ctx.font = '700 11px "JetBrains Mono", monospace';
+        drawTruncatedText('================================================================', 50, 435, 540);
+        drawTruncatedText('THANK YOU FOR BREWING WITH BEANTAG • KEEP EXTRACTING PERFECT COFFEE', 50, 470, 540);
 
         ctx.strokeStyle = colorAccent;
         ctx.lineWidth = 3;
@@ -209,31 +235,27 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         ctx.textAlign = 'center';
         ctx.fillText('BeanTag Story', 300, 105);
 
-        ctx.font = '900 30px Outfit, sans-serif';
         ctx.fillStyle = colorPrimary;
-        ctx.fillText(recipe.batch_name || 'Café de Especialidad', 300, 195);
+        drawFittedText(recipe.batch_name || 'Café de Especialidad', 300, 195, 480, 30, 'Outfit', '900');
 
         ctx.font = '700 16px "Space Grotesk", sans-serif';
         ctx.fillStyle = colorAccent;
-        ctx.fillText(`${recipe.batch_roaster || 'Tostador'} • ${recipe.batch_origin || 'Origen'}`, 300, 230);
+        drawTruncatedText(`${recipe.batch_roaster || 'Tostador'} • ${recipe.batch_origin || 'Origen'}`, 300, 230, 480);
 
         if (incRecipe) {
-          // Método Box
           ctx.fillStyle = colorBg;
           ctx.fillRect(60, 270, 480, 180);
           ctx.lineWidth = 3;
           ctx.strokeStyle = colorBorder;
           ctx.strokeRect(60, 270, 480, 180);
 
-          ctx.font = '800 22px "Space Grotesk", sans-serif';
           ctx.fillStyle = colorPrimary;
-          ctx.fillText(`☕ ${recipe.method || 'Filtrado'}`, 300, 315);
+          drawFittedText(`☕ ${recipe.method || 'Filtrado'}`, 300, 315, 440, 22, 'Space Grotesk', '800');
 
           ctx.font = '600 16px Outfit, sans-serif';
-          ctx.fillText(`Dosis: ${recipe.dose_in_g || 20}g  |  Ratio: ${recipe.ratio || '1:15'}`, 300, 360);
-          ctx.fillText(`Molienda: ${recipe.grind || 'J-Max'}  |  Temp: ${recipe.temperature || '93'}°C`, 300, 400);
+          drawTruncatedText(`Dosis: ${recipe.dose_in_g || 20}g  |  Ratio: ${recipe.ratio || '1:15'}`, 300, 360, 440);
+          drawTruncatedText(`Molienda: ${recipe.grind || 'J-Max'}  |  Temp: ${recipe.temperature || '93'}°C`, 300, 400, 440);
 
-          // Sensorial Card
           ctx.fillStyle = '#FFF5F5';
           ctx.fillRect(60, 480, 480, 210);
           ctx.strokeRect(60, 480, 480, 210);
@@ -244,11 +266,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
           ctx.font = '600 16px Outfit, sans-serif';
           ctx.fillStyle = colorPrimary;
-          ctx.fillText(`Balance: ${recipe.sensory_balance || 'Dulce'}`, 300, 565);
-          ctx.fillText(`Cuerpo: ${recipe.sensory_body || 'Medio'}`, 300, 605);
-          ctx.fillText(`Extracción: ${recipe.sensory_extraction === 'Sub' ? 'Sub-extracción' : recipe.sensory_extraction === 'Sobre' ? 'Sobre-extracción' : (recipe.sensory_extraction || 'En Punto')}`, 300, 645);
+          drawTruncatedText(`Balance: ${recipe.sensory_balance || 'Dulce'}`, 300, 565, 440);
+          drawTruncatedText(`Cuerpo: ${recipe.sensory_body || 'Medio'}`, 300, 605, 440);
+          drawTruncatedText(`Extracción: ${recipe.sensory_extraction === 'Sub' ? 'Sub-extracción' : recipe.sensory_extraction === 'Sobre' ? 'Sobre-extracción' : (recipe.sensory_extraction || 'En Punto')}`, 300, 645, 440);
         } else {
-          // Solo Grano Box
           ctx.fillStyle = colorBg;
           ctx.fillRect(60, 270, 480, 420);
           ctx.lineWidth = 3;
@@ -270,11 +291,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
           storyBatchInfo.forEach((infoLine, idx) => {
             ctx.font = '600 17px Outfit, sans-serif';
             ctx.fillStyle = colorPrimary;
-            ctx.fillText(infoLine, 300, 365 + idx * 55);
+            drawTruncatedText(infoLine, 300, 365 + idx * 55, 440);
           });
         }
 
-        // Card Notas de Cata
         ctx.fillStyle = '#F7FAFC';
         ctx.fillRect(60, 715, 480, 200);
         ctx.strokeRect(60, 715, 480, 200);
@@ -298,9 +318,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         if (!storyNotes) storyNotes = recipe.notes || 'Sin notas de cata';
         storyNotes = stripEmojis(storyNotes);
 
-        ctx.font = '700 20px Outfit, sans-serif';
         ctx.fillStyle = colorPrimary;
-        ctx.fillText(`"${storyNotes}"`, 300, 805);
+        drawFittedText(`"${storyNotes}"`, 300, 805, 440, 20, 'Outfit', '700');
 
         const storyDate = new Date(recipe.created_at || Date.now()).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
         ctx.font = '700 13px "JetBrains Mono", monospace';
@@ -335,7 +354,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
           ctx.beginPath(); ctx.moveTo(420, 125); ctx.lineTo(420, 415); ctx.stroke(); ctx.restore();
 
           ctx.font = '800 15px "Space Grotesk", sans-serif'; ctx.fillStyle = colorAccent; ctx.fillText('[ GRANO DE CAFÉ ]', 50, 138);
-          ctx.font = '800 30px Outfit, sans-serif'; ctx.fillStyle = colorPrimary; ctx.fillText(recipe.batch_name || 'N/A', 50, 175);
+          
+          ctx.fillStyle = colorPrimary;
+          drawFittedText(recipe.batch_name || 'N/A', 50, 175, 340, 30, 'Outfit', '800');
 
           const batchDetails = [
             { label: 'Origen', val: recipe.batch_origin },
@@ -348,11 +369,14 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
           batchDetails.forEach((item, idx) => {
             const yPos = 215 + idx * 40;
             ctx.font = '800 17px Outfit, sans-serif'; ctx.fillStyle = colorAccent; ctx.fillText(`${item.label}:`, 50, yPos);
-            ctx.font = '500 17px Outfit, sans-serif'; ctx.fillStyle = colorPrimary; ctx.fillText(item.val || 'N/A', 150, yPos);
+            ctx.font = '500 17px Outfit, sans-serif'; ctx.fillStyle = colorPrimary;
+            drawTruncatedText(item.val || 'N/A', 150, yPos, 240);
           });
 
           ctx.font = '800 15px "Space Grotesk", sans-serif'; ctx.fillStyle = colorAccent; ctx.fillText('[ EXTRACCIÓN & CALIBRACIÓN ]', 450, 138);
-          ctx.font = '800 30px Outfit, sans-serif'; ctx.fillStyle = colorPrimary; ctx.fillText(recipe.method || 'N/A', 450, 175);
+          
+          ctx.fillStyle = colorPrimary;
+          drawFittedText(recipe.method || 'N/A', 450, 175, 330, 30, 'Outfit', '800');
 
           const recipeDetails = [
             { label: 'Dosis In', val: `${recipe.dose_in_g || 'N/A'} g` },
@@ -364,14 +388,17 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
           recipeDetails.forEach((item, idx) => {
             const yPos = 215 + idx * 40;
             ctx.font = '800 17px Outfit, sans-serif'; ctx.fillStyle = colorAccent; ctx.fillText(`${item.label}:`, 450, yPos);
-            ctx.font = '500 17px Outfit, sans-serif'; ctx.fillStyle = colorPrimary; ctx.fillText(item.val || 'N/A', 580, yPos);
+            ctx.font = '500 17px Outfit, sans-serif'; ctx.fillStyle = colorPrimary;
+            drawTruncatedText(item.val || 'N/A', 580, yPos, 200);
           });
         } else {
           ctx.lineWidth = 1.5; ctx.strokeStyle = colorBorder; ctx.save(); ctx.setLineDash([6, 6]);
           ctx.beginPath(); ctx.moveTo(460, 125); ctx.lineTo(460, 415); ctx.stroke(); ctx.restore();
 
           ctx.font = '800 15px "Space Grotesk", sans-serif'; ctx.fillStyle = colorAccent; ctx.fillText('[ DETALLE DEL LOTE ]', 50, 138);
-          ctx.font = '800 30px Outfit, sans-serif'; ctx.fillStyle = colorPrimary; ctx.fillText(recipe.batch_name || 'N/A', 50, 175);
+          
+          ctx.fillStyle = colorPrimary;
+          drawFittedText(recipe.batch_name || 'N/A', 50, 175, 380, 30, 'Outfit', '800');
 
           const batchDetails = [
             { label: 'Origen', val: recipe.batch_origin },
@@ -384,7 +411,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
           batchDetails.forEach((item, idx) => {
             const yPos = 215 + idx * 40;
             ctx.font = '800 17px Outfit, sans-serif'; ctx.fillStyle = colorAccent; ctx.fillText(`${item.label}:`, 50, yPos);
-            ctx.font = '500 17px Outfit, sans-serif'; ctx.fillStyle = colorPrimary; ctx.fillText(item.val || 'N/A', 150, yPos);
+            ctx.font = '500 17px Outfit, sans-serif'; ctx.fillStyle = colorPrimary;
+            drawTruncatedText(item.val || 'N/A', 150, yPos, 280);
           });
 
           ctx.fillStyle = colorAccent; ctx.fillRect(505, 160, 250, 220); ctx.lineWidth = 3; ctx.strokeStyle = colorBorder; ctx.strokeRect(505, 160, 250, 220);
@@ -416,7 +444,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         if (!scaNotes) scaNotes = recipe.notes || 'Sin notas de cata registradas';
         scaNotes = stripEmojis(scaNotes);
 
-        ctx.font = '800 24px Outfit, sans-serif'; ctx.fillStyle = colorPrimary; ctx.fillText(scaNotes, 50, 474);
+        ctx.fillStyle = colorPrimary;
+        drawFittedText(scaNotes, 50, 474, 730, 24, 'Outfit', '800');
 
         ctx.lineWidth = 2.5; ctx.strokeStyle = colorBorder; ctx.beginPath(); ctx.moveTo(50, 495); ctx.lineTo(790, 495); ctx.stroke();
 
