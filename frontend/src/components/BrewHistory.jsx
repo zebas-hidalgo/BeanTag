@@ -82,8 +82,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
     });
   };
 
-  const exportRecipeAsImage = (recipe, templateOverride) => {
+  const exportRecipeAsImage = (recipe, templateOverride, includeRecipeOverride) => {
     const currentTpl = templateOverride || shareTemplate || 'retro';
+    const incRecipe = includeRecipeOverride !== undefined ? includeRecipeOverride : shareIncludeRecipe;
     setShareStatus('Generando vista previa...');
     setShareImage(null);
 
@@ -107,7 +108,6 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         ctx.fillStyle = '#F7F5F0';
         ctx.fillRect(0, 0, 840, 540);
 
-        // Borde punteado retro ticket
         ctx.strokeStyle = '#2D3748';
         ctx.lineWidth = 2;
         ctx.strokeRect(20, 20, 800, 500);
@@ -118,7 +118,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
         ctx.font = '700 13px "JetBrains Mono", monospace';
         ctx.fillStyle = '#4A5568';
-        ctx.fillText(`RECIBO #0${recipe.id || '294'} | REGISTRO DE EXTRACCIÓN`, 50, 90);
+        ctx.fillText(`RECIBO #0${recipe.id || '294'} | ${incRecipe ? 'REGISTRO DE EXTRACCIÓN' : 'FICHA TÉCNICA DE LOTE'}`, 50, 90);
 
         ctx.strokeStyle = '#CBD5E0';
         ctx.lineWidth = 1;
@@ -131,11 +131,18 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         ctx.fillText(`TOSTADOR: .. ${String(recipe.batch_roaster || 'N/A').toUpperCase()}`, 50, 210);
         ctx.fillText(`PROCESO: ... ${String(recipe.batch_process || 'N/A').toUpperCase()}`, 50, 245);
 
-        ctx.fillText(`MÉTOD: .... ${String(recipe.method || 'N/A').toUpperCase()}`, 450, 140);
-        ctx.fillText(`DOSIS: ..... ${recipe.dose_in_g ? recipe.dose_in_g + ' G' : 'N/A'}`, 450, 175);
-        ctx.fillText(`MOLIENDA: .. ${String(recipe.grind || 'N/A').toUpperCase()}`, 450, 210);
-        ctx.fillText(`RATIO: ..... ${String(recipe.ratio || 'N/A').toUpperCase()}`, 450, 245);
-        ctx.fillText(`TIEMPO: .... ${String(recipe.brew_time || 'N/A').toUpperCase()}`, 450, 280);
+        if (incRecipe) {
+          ctx.fillText(`MÉTOD: .... ${String(recipe.method || 'N/A').toUpperCase()}`, 450, 140);
+          ctx.fillText(`DOSIS: ..... ${recipe.dose_in_g ? recipe.dose_in_g + ' G' : 'N/A'}`, 450, 175);
+          ctx.fillText(`MOLIENDA: .. ${String(recipe.grind || 'N/A').toUpperCase()}`, 450, 210);
+          ctx.fillText(`RATIO: ..... ${String(recipe.ratio || 'N/A').toUpperCase()}`, 450, 245);
+          ctx.fillText(`TIEMPO: .... ${String(recipe.brew_time || 'N/A').toUpperCase()}`, 450, 280);
+        } else {
+          ctx.fillText(`PRODUCTOR: . ${String(recipe.batch_producer || 'N/A').toUpperCase()}`, 450, 140);
+          ctx.fillText(`VARIEDAD: .. ${String(recipe.batch_variety || 'N/A').toUpperCase()}`, 450, 175);
+          ctx.fillText(`ALTITUD: ... ${String(recipe.batch_altitude || 'N/A').toUpperCase()}`, 450, 210);
+          ctx.fillText(`TUESTE: .... ${recipe.batch_roast_date ? String(recipe.batch_roast_date).toUpperCase() : 'N/A'}`, 450, 245);
+        }
 
         ctx.strokeStyle = '#CBD5E0';
         ctx.lineWidth = 1;
@@ -168,7 +175,6 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         ctx.fillText('================================================================', 50, 435);
         ctx.fillText('THANK YOU FOR BREWING WITH BEANTAG • KEEP EXTRACTING PERFECT COFFEE', 50, 470);
 
-        // Sello circular de barista
         ctx.strokeStyle = colorAccent;
         ctx.lineWidth = 3;
         ctx.beginPath(); ctx.arc(650, 390, 55, 0, Math.PI * 2); ctx.stroke();
@@ -188,14 +194,12 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         ctx.fillStyle = colorBg;
         ctx.fillRect(0, 0, 600, 1066);
 
-        // Fondo tarjeta interior
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(30, 40, 540, 986);
         ctx.strokeStyle = colorBorder;
         ctx.lineWidth = 4;
         ctx.strokeRect(30, 40, 540, 986);
 
-        // Header Banner
         ctx.fillStyle = colorAccent;
         ctx.fillRect(50, 60, 500, 70);
         ctx.strokeRect(50, 60, 500, 70);
@@ -205,7 +209,6 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         ctx.textAlign = 'center';
         ctx.fillText('BeanTag Story', 300, 105);
 
-        // Grano Title
         ctx.font = '900 30px Outfit, sans-serif';
         ctx.fillStyle = colorPrimary;
         ctx.fillText(recipe.batch_name || 'Café de Especialidad', 300, 195);
@@ -214,35 +217,62 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         ctx.fillStyle = colorAccent;
         ctx.fillText(`${recipe.batch_roaster || 'Tostador'} • ${recipe.batch_origin || 'Origen'}`, 300, 230);
 
-        // Método Box
-        ctx.fillStyle = colorBg;
-        ctx.fillRect(60, 270, 480, 180);
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = colorBorder;
-        ctx.strokeRect(60, 270, 480, 180);
+        if (incRecipe) {
+          // Método Box
+          ctx.fillStyle = colorBg;
+          ctx.fillRect(60, 270, 480, 180);
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = colorBorder;
+          ctx.strokeRect(60, 270, 480, 180);
 
-        ctx.font = '800 22px "Space Grotesk", sans-serif';
-        ctx.fillStyle = colorPrimary;
-        ctx.fillText(`☕ ${recipe.method || 'Filtrado'}`, 300, 315);
+          ctx.font = '800 22px "Space Grotesk", sans-serif';
+          ctx.fillStyle = colorPrimary;
+          ctx.fillText(`☕ ${recipe.method || 'Filtrado'}`, 300, 315);
 
-        ctx.font = '600 16px Outfit, sans-serif';
-        ctx.fillText(`Dosis: ${recipe.dose_in_g || 20}g  |  Ratio: ${recipe.ratio || '1:15'}`, 300, 360);
-        ctx.fillText(`Molienda: ${recipe.grind || 'J-Max'}  |  Temp: ${recipe.temperature || '93'}°C`, 300, 400);
+          ctx.font = '600 16px Outfit, sans-serif';
+          ctx.fillText(`Dosis: ${recipe.dose_in_g || 20}g  |  Ratio: ${recipe.ratio || '1:15'}`, 300, 360);
+          ctx.fillText(`Molienda: ${recipe.grind || 'J-Max'}  |  Temp: ${recipe.temperature || '93'}°C`, 300, 400);
 
-        // Sensorial Card
-        ctx.fillStyle = '#FFF5F5';
-        ctx.fillRect(60, 480, 480, 210);
-        ctx.strokeRect(60, 480, 480, 210);
+          // Sensorial Card
+          ctx.fillStyle = '#FFF5F5';
+          ctx.fillRect(60, 480, 480, 210);
+          ctx.strokeRect(60, 480, 480, 210);
 
-        ctx.font = '800 18px "Space Grotesk", sans-serif';
-        ctx.fillStyle = colorAccent;
-        ctx.fillText('EVALUACIÓN SENSORIAL', 300, 520);
+          ctx.font = '800 18px "Space Grotesk", sans-serif';
+          ctx.fillStyle = colorAccent;
+          ctx.fillText('EVALUACIÓN SENSORIAL', 300, 520);
 
-        ctx.font = '600 16px Outfit, sans-serif';
-        ctx.fillStyle = colorPrimary;
-        ctx.fillText(`Balance: ${recipe.sensory_balance || 'Dulce'}`, 300, 565);
-        ctx.fillText(`Cuerpo: ${recipe.sensory_body || 'Medio'}`, 300, 605);
-        ctx.fillText(`Extracción: ${recipe.sensory_extraction === 'Sub' ? 'Sub-extracción' : recipe.sensory_extraction === 'Sobre' ? 'Sobre-extracción' : (recipe.sensory_extraction || 'En Punto')}`, 300, 645);
+          ctx.font = '600 16px Outfit, sans-serif';
+          ctx.fillStyle = colorPrimary;
+          ctx.fillText(`Balance: ${recipe.sensory_balance || 'Dulce'}`, 300, 565);
+          ctx.fillText(`Cuerpo: ${recipe.sensory_body || 'Medio'}`, 300, 605);
+          ctx.fillText(`Extracción: ${recipe.sensory_extraction === 'Sub' ? 'Sub-extracción' : recipe.sensory_extraction === 'Sobre' ? 'Sobre-extracción' : (recipe.sensory_extraction || 'En Punto')}`, 300, 645);
+        } else {
+          // Solo Grano Box
+          ctx.fillStyle = colorBg;
+          ctx.fillRect(60, 270, 480, 420);
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = colorBorder;
+          ctx.strokeRect(60, 270, 480, 420);
+
+          ctx.font = '800 22px "Space Grotesk", sans-serif';
+          ctx.fillStyle = colorAccent;
+          ctx.fillText('FICHA TÉCNICA DEL LOTE', 300, 315);
+
+          const storyBatchInfo = [
+            `Productor: ${recipe.batch_producer || 'N/A'}`,
+            `Variedad: ${recipe.batch_variety || 'N/A'}`,
+            `Proceso: ${recipe.batch_process || 'N/A'}`,
+            `Altitud: ${recipe.batch_altitude || 'N/A'}`,
+            `Fecha Tueste: ${recipe.batch_roast_date ? formatLocalDateStr(recipe.batch_roast_date) : 'N/A'}`
+          ];
+
+          storyBatchInfo.forEach((infoLine, idx) => {
+            ctx.font = '600 17px Outfit, sans-serif';
+            ctx.fillStyle = colorPrimary;
+            ctx.fillText(infoLine, 300, 365 + idx * 55);
+          });
+        }
 
         // Card Notas de Cata
         ctx.fillStyle = '#F7FAFC';
@@ -277,7 +307,6 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         ctx.fillStyle = colorAccent;
         ctx.fillText(`FECHA: ${storyDate.toUpperCase()}`, 300, 865);
 
-        // Watermark Footer
         ctx.font = '800 14px "JetBrains Mono", monospace';
         ctx.fillStyle = colorAccent;
         ctx.fillText('• BEANTAG.CAFE •', 300, 980);
@@ -301,7 +330,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
         ctx.lineWidth = 3.5; ctx.strokeStyle = colorBorder; ctx.beginPath(); ctx.moveTo(50, 105); ctx.lineTo(790, 105); ctx.stroke();
 
-        if (shareIncludeRecipe) {
+        if (incRecipe) {
           ctx.lineWidth = 1.5; ctx.strokeStyle = colorBorder; ctx.save(); ctx.setLineDash([6, 6]);
           ctx.beginPath(); ctx.moveTo(420, 125); ctx.lineTo(420, 415); ctx.stroke(); ctx.restore();
 
@@ -846,7 +875,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
                 <button 
                   type="button" 
                   className="btn-candy"
-                  onClick={() => setShareIncludeRecipe(true)}
+                  onClick={() => { setShareIncludeRecipe(true); if (selectedRecipe) exportRecipeAsImage(selectedRecipe, shareTemplate, true); }}
                   style={{ 
                     flex: 1, 
                     margin: 0, 
@@ -865,7 +894,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
                 <button 
                   type="button" 
                   className="btn-candy"
-                  onClick={() => setShareIncludeRecipe(false)}
+                  onClick={() => { setShareIncludeRecipe(false); if (selectedRecipe) exportRecipeAsImage(selectedRecipe, shareTemplate, false); }}
                   style={{ 
                     flex: 1, 
                     margin: 0, 
