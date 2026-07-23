@@ -117,19 +117,58 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch })
     <>
       <div className="candy-card static" style={{ marginTop: '24px', backgroundColor: calcVisible ? 'var(--bg-canvas)' : 'var(--bg-card)' }}>
         <div onClick={() => setCalcVisible(!calcVisible)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Calculator size={18} color="var(--color-crimson)" /><span style={{ fontWeight: '700', fontSize: '15px' }}>Calculadora de Ratio</span></div>
-          <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{calcVisible ? 'Ocultar' : 'Abrir'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Calculator size={18} color="var(--color-crimson)" />
+            <span style={{ fontWeight: '700', fontSize: '15px' }}>Calculadora de Barista & Vertidos</span>
+          </div>
+          <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{calcVisible ? 'Ocultar' : 'Abrir Barista Calc ☕'}</span>
         </div>
         {calcVisible && (
-          <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }} className="animate-entrance">
+          <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }} className="animate-entrance">
             <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-              <div className="form-group" style={{ flex: 1, margin: 0 }}><label style={{ fontSize: '11px' }}>Café (g)</label><input type="number" step="0.1" className="candy-input" value={calcDose} onChange={(e) => { const d = parseFloat(e.target.value) || 0; setCalcDose(d); setCalcWater(Math.round(d * calcRatio)); }} /></div>
+              <div className="form-group" style={{ flex: 1, margin: 0 }}>
+                <label style={{ fontSize: '11px' }}>Dosis Café (g)</label>
+                <input type="number" step="0.5" className="candy-input" value={calcDose} onChange={(e) => { const d = parseFloat(e.target.value) || 0; setCalcDose(d); setCalcWater(Math.round(d * calcRatio)); }} />
+              </div>
               <div style={{ fontSize: '18px', fontWeight: 'bold', paddingBottom: '10px' }}>×</div>
-              <div className="form-group" style={{ flex: 1, margin: 0 }}><label style={{ fontSize: '11px' }}>Ratio 1:</label><input type="number" step="0.1" className="candy-input" value={calcRatio} onChange={(e) => { const r = parseFloat(e.target.value) || 0; setCalcRatio(r); setCalcWater(Math.round(calcDose * r)); }} /></div>
+              <div className="form-group" style={{ flex: 1, margin: 0 }}>
+                <label style={{ fontSize: '11px' }}>Ratio 1:</label>
+                <input type="number" step="0.5" className="candy-input" value={calcRatio} onChange={(e) => { const r = parseFloat(e.target.value) || 0; setCalcRatio(r); setCalcWater(Math.round(calcDose * r)); }} />
+              </div>
               <div style={{ fontSize: '18px', fontWeight: 'bold', paddingBottom: '10px' }}>=</div>
-              <div className="form-group" style={{ flex: 1, margin: 0 }}><label style={{ fontSize: '11px' }}>Agua (g)</label><input type="number" className="candy-input" value={calcWater} onChange={(e) => { const w = parseFloat(e.target.value) || 0; setCalcWater(w); if (calcDose > 0) setCalcRatio(parseFloat((w / calcDose).toFixed(1))); }} /></div>
+              <div className="form-group" style={{ flex: 1, margin: 0 }}>
+                <label style={{ fontSize: '11px' }}>Agua Total (g)</label>
+                <input type="number" className="candy-input" value={calcWater} onChange={(e) => { const w = parseFloat(e.target.value) || 0; setCalcWater(w); if (calcDose > 0) setCalcRatio(parseFloat((w / calcDose).toFixed(1))); }} />
+              </div>
             </div>
-            <button type="button" className="btn-candy accent" onClick={() => { setDoseInG(calcDose); setRatioVal(calcRatio); if (method === 'Espresso') setDoseOutG(calcWater); setCalcVisible(false); if (showToast) showToast('Valores transferidos.', { type: 'success', duration: 2000 }); }} style={{ padding: '6px', fontSize: '11px', minHeight: '32px', width: '100%' }}>Transferir datos al formulario</button>
+
+            {/* Secuencia de Vertidos Recomendada */}
+            <div style={{ padding: '12px', backgroundColor: '#FFFFFF', border: '2px solid var(--border-color)', borderRadius: '6px', boxShadow: '2px 2px 0px var(--border-color)' }}>
+              <div style={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', color: 'var(--color-crimson)', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
+                💧 Guía de Vertidos por Etapas ({calcDose}g café / {calcWater}g agua)
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', textAlign: 'center' }}>
+                <div style={{ padding: '6px', backgroundColor: '#FFF5F5', border: '1px solid var(--color-crimson)', borderRadius: '4px' }}>
+                  <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-crimson)' }}>🌸 Bloom</div>
+                  <div style={{ fontSize: '13px', fontWeight: '900', margin: '2px 0' }}>{Math.round(calcDose * 3)}g</div>
+                  <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>0s - 45s</div>
+                </div>
+                <div style={{ padding: '6px', backgroundColor: 'var(--bg-canvas)', border: '1px solid var(--border-color)', borderRadius: '4px' }}>
+                  <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text)' }}>🌊 Vertido 1</div>
+                  <div style={{ fontSize: '13px', fontWeight: '900', margin: '2px 0' }}>{Math.round(calcDose * 3 + (calcWater - calcDose * 3) * 0.5)}g</div>
+                  <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>45s - 1m 20s</div>
+                </div>
+                <div style={{ padding: '6px', backgroundColor: '#F7FAFC', border: '1px solid var(--border-color)', borderRadius: '4px' }}>
+                  <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text)' }}>☕ Vertido 2</div>
+                  <div style={{ fontSize: '13px', fontWeight: '900', margin: '2px 0' }}>{calcWater}g</div>
+                  <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>1m 20s - 2m 30s</div>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" className="btn-candy accent" onClick={() => { setDoseInG(calcDose); setRatioVal(calcRatio); if (method === 'Espresso') setDoseOutG(calcWater); setCalcVisible(false); if (showToast) showToast('Valores y vertidos transferidos.', { type: 'success', duration: 2000 }); }} style={{ padding: '8px', fontSize: '11px', minHeight: '34px', width: '100%' }}>
+              Usar Dosis ({calcDose}g) y Ratio (1:{calcRatio}) en mi Receta
+            </button>
           </div>
         )}
       </div>

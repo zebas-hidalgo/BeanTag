@@ -159,23 +159,57 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         return lineCount + 1;
       };
 
-      ctx.clearRect(0, 0, 840, 540);
-
-      // --- PLANTILLA: TICKET DE BARISTA (BEANTAG SPEC - HIGH DPI) ---
-      ctx.fillStyle = '#FAF8F5';
+      // --- PLANTILLA: TICKET DE BARISTA (BEANTAG SPEC - HIGH DPI + ZIG ZAG CUT) ---
+      // Fondo marco oscuro contrastante
+      ctx.fillStyle = '#111827';
       ctx.fillRect(0, 0, 840, 540);
 
+      // Dibujar cuerpo de ticket con dientes de corte en zig-zag en la parte superior e inferior
+      const tLeft = 20;
+      const tRight = 820;
+      const toothW = 12;
+      const toothH = 8;
+      const topY = 18;
+      const bottomY = 522;
+
+      ctx.beginPath();
+      ctx.moveTo(tLeft, topY);
+
+      // Zig-zag corte superior
+      for (let x = tLeft; x < tRight; x += toothW) {
+        ctx.lineTo(x + toothW / 2, topY + toothH);
+        ctx.lineTo(Math.min(tRight, x + toothW), topY);
+      }
+
+      // Borde derecho
+      ctx.lineTo(tRight, bottomY);
+
+      // Zig-zag corte inferior
+      for (let x = tRight; x > tLeft; x -= toothW) {
+        ctx.lineTo(x - toothW / 2, bottomY - toothH);
+        ctx.lineTo(Math.max(tLeft, x - toothW), bottomY);
+      }
+
+      // Borde izquierdo
+      ctx.lineTo(tLeft, topY);
+      ctx.closePath();
+
+      // Rellenar recibo en tono papel térmico artesanal
+      ctx.fillStyle = '#FAF8F5';
+      ctx.fill();
+
+      // Borde exterior negro profundo
       ctx.strokeStyle = colorTextDark;
       ctx.lineWidth = 2.5;
-      ctx.strokeRect(20, 20, 800, 500);
+      ctx.stroke();
 
       ctx.fillStyle = colorTextDark;
       ctx.font = '800 34px "Space Grotesk", sans-serif';
-      drawTruncatedText('=== BEANTAG SPECIALTY COFFEE ===', 50, 65, 740);
+      drawTruncatedText('=== BEANTAG SPECIALTY COFFEE ===', 50, 68, 740);
 
       ctx.font = '800 19px "JetBrains Mono", monospace';
       ctx.fillStyle = colorTextMuted;
-      drawTruncatedText(`RECIBO #0${recipe.id || '294'} | ${incRecipe ? 'REGISTRO DE EXTRACCIÓN' : 'FICHA TÉCNICA DE LOTE'}`, 50, 95, 740);
+      drawTruncatedText(`RECIBO #0${recipe.id || '294'} | ${incRecipe ? 'REGISTRO DE EXTRACCIÓN' : 'FICHA TÉCNICA DE LOTE'}`, 50, 98, 740);
 
       ctx.strokeStyle = '#94A3B8';
       ctx.lineWidth = 1.5;
