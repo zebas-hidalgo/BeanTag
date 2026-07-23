@@ -201,6 +201,16 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
+      // Central paper fold crease
+      ctx.save();
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(420, 15);
+      ctx.lineTo(420, 525);
+      ctx.stroke();
+      ctx.restore();
+
       ctx.fillStyle = colorTextDark;
       ctx.font = '800 25px "Space Grotesk", sans-serif';
       drawTruncatedText(`RECIBO #0${recipe.id || '294'} | ${incRecipe ? 'REGISTRO DE EXTRACCIÓN' : 'FICHA TÉCNICA DE LOTE'}`, 50, 68, 740);
@@ -209,24 +219,51 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(50, 95); ctx.lineTo(790, 95); ctx.stroke();
 
-      ctx.font = '800 22px "JetBrains Mono", monospace';
+      // Header Table Columns
+      ctx.font = '800 17px "JetBrains Mono", monospace';
+      ctx.fillStyle = colorTextMuted;
+      drawTruncatedText('CANT.  DESCRIPCIÓN                        VALOR', 50, 125, 740);
+
+      ctx.strokeStyle = '#CBD5E1';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(50, 138); ctx.lineTo(790, 138); ctx.stroke();
+
+      // Table Rows
+      ctx.font = '800 20px "JetBrains Mono", monospace';
       ctx.fillStyle = colorTextDark;
-      drawTruncatedText(`GRANO: ..... ${String(recipe.batch_name || 'N/A').toUpperCase()}`, 50, 148, 380);
-      drawTruncatedText(`ORIGEN: .... ${String(recipe.batch_origin || 'N/A').toUpperCase()}`, 50, 192, 380);
-      drawTruncatedText(`TOSTADOR: .. ${String(recipe.batch_roaster || 'N/A').toUpperCase()}`, 50, 236, 380);
-      drawTruncatedText(`PROCESO: ... ${String(recipe.batch_process || 'N/A').toUpperCase()}`, 50, 280, 380);
 
       if (incRecipe) {
-        drawTruncatedText(`MÉTOD: .... ${String(recipe.method || 'N/A').toUpperCase()}`, 450, 148, 340);
-        drawTruncatedText(`DOSIS: ..... ${recipe.dose_in_g ? recipe.dose_in_g + ' G' : 'N/A'}`, 450, 192, 340);
-        drawTruncatedText(`MOLIENDA: .. ${String(recipe.grind || 'N/A').toUpperCase()}`, 450, 236, 340);
-        drawTruncatedText(`RATIO: ..... ${String(recipe.ratio || 'N/A').toUpperCase()}`, 450, 280, 340);
-        drawTruncatedText(`TIEMPO: .... ${String(recipe.brew_time || 'N/A').toUpperCase()}`, 450, 320, 340);
+        drawTruncatedText('1x     GRANO:', 50, 175, 220);
+        drawTruncatedText(String(recipe.batch_name || 'N/A').toUpperCase(), 230, 175, 360);
+        drawTruncatedText(recipe.batch_roaster ? String(recipe.batch_roaster).toUpperCase() : 'SPECIALTY', 610, 175, 180);
+
+        drawTruncatedText('1x     MÉTODO:', 50, 215, 220);
+        drawTruncatedText(String(recipe.method || 'N/A').toUpperCase(), 230, 215, 360);
+        drawTruncatedText(`${recipe.dose_in_g || 20}G`, 610, 215, 180);
+
+        drawTruncatedText('1x     MOLIENDA:', 50, 255, 220);
+        drawTruncatedText(String(recipe.grind || 'N/A').toUpperCase(), 230, 255, 360);
+        drawTruncatedText(recipe.temperature || '93°C', 610, 255, 180);
+
+        drawTruncatedText('1x     RATIO/TIEMPO:', 50, 295, 220);
+        drawTruncatedText(String(recipe.ratio || '1:15').toUpperCase(), 230, 295, 360);
+        drawTruncatedText(String(recipe.brew_time || '2:30').toUpperCase(), 610, 295, 180);
       } else {
-        drawTruncatedText(`PRODUCTOR: . ${String(recipe.batch_producer || 'N/A').toUpperCase()}`, 450, 148, 340);
-        drawTruncatedText(`VARIEDAD: .. ${String(recipe.batch_variety || 'N/A').toUpperCase()}`, 450, 192, 340);
-        drawTruncatedText(`ALTITUD: ... ${String(recipe.batch_altitude || 'N/A').toUpperCase()}`, 450, 236, 340);
-        drawTruncatedText(`TUESTE: .... ${recipe.batch_roast_date ? String(recipe.batch_roast_date).toUpperCase() : 'N/A'}`, 450, 280, 340);
+        drawTruncatedText('1x     GRANO:', 50, 175, 220);
+        drawTruncatedText(String(recipe.batch_name || 'N/A').toUpperCase(), 230, 175, 360);
+        drawTruncatedText(recipe.batch_origin ? String(recipe.batch_origin).toUpperCase() : 'ORIGEN', 610, 175, 180);
+
+        drawTruncatedText('1x     PRODUCTOR:', 50, 215, 220);
+        drawTruncatedText(String(recipe.batch_producer || 'N/A').toUpperCase(), 230, 215, 360);
+        drawTruncatedText('LOTE', 610, 215, 180);
+
+        drawTruncatedText('1x     VARIEDAD:', 50, 255, 220);
+        drawTruncatedText(String(recipe.batch_variety || 'N/A').toUpperCase(), 230, 255, 360);
+        drawTruncatedText(recipe.batch_altitude ? String(recipe.batch_altitude).toUpperCase() : 'ALTITUD', 610, 255, 180);
+
+        drawTruncatedText('1x     PROCESO:', 50, 295, 220);
+        drawTruncatedText(String(recipe.batch_process || 'N/A').toUpperCase(), 230, 295, 360);
+        drawTruncatedText(recipe.batch_roast_date ? String(recipe.batch_roast_date).toUpperCase() : 'TUESTE', 610, 295, 180);
       }
 
       ctx.strokeStyle = '#94A3B8';
