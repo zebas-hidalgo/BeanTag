@@ -8,24 +8,18 @@ import Settings from './components/Settings';
 import NfcToolsModal from './components/NfcToolsModal';
 
 export default function App() {
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('beantag-theme') || 'light';
+  });
+
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('theme') === 'dark';
   });
 
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('active-theme') || 'tema1';
-  });
-
   useEffect(() => {
-    localStorage.setItem('active-theme', theme);
-    if (isDarkMode) {
-      document.documentElement.setAttribute('data-theme', 'dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDarkMode, theme]);
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('beantag-theme', theme);
+  }, [theme]);
 
   const [currentView, setCurrentView] = useState('inventory');
   const [batches, setBatches] = useState([]);
@@ -244,7 +238,15 @@ export default function App() {
             lineHeight: 1
           }}>BeanTag</span>
         </div>
-        <div style={{ display: 'flex', gap: '6px' }}>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <button 
+            type="button" 
+            className="btn-candy" 
+            style={{ padding: '4px 8px', fontSize: '11px', margin: 0 }}
+            onClick={() => setTheme(t => t === 'light' ? 'espresso' : 'light')}
+          >
+            {theme === 'light' ? '☕ Espresso Dark' : '☀️ Claro'}
+          </button>
 
           {currentView === 'inventory' && (
             <button className="app-bar-btn" onClick={() => setCurrentView('creator')} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
