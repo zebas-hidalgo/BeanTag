@@ -140,18 +140,15 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch })
         </div>
         <div style={{ display: 'flex', gap: '12px', margin: '16px 0', overflowX: 'auto', paddingBottom: '4px' }}>
           {[
-            { id: 'V60 (Filtrado)', icon: `${import.meta.env.BASE_URL}icons/v60.jpg`, lucide: <Filter size={22} />, label: 'V60' },
-            { id: 'Espresso', icon: `${import.meta.env.BASE_URL}icons/espresso.jpg`, lucide: <Zap size={22} />, label: 'Espresso' },
-            { id: 'AeroPress', icon: `${import.meta.env.BASE_URL}icons/aeropress.jpg`, lucide: <Droplet size={22} />, label: 'AeroPress' },
-            { id: 'Prensa Francesa', icon: `${import.meta.env.BASE_URL}icons/frenchpress.jpg`, lucide: <Coffee size={22} />, label: 'Prensa' }
+            { id: 'V60 (Filtrado)', lucide: <Filter size={24} />, label: 'V60' },
+            { id: 'Espresso', lucide: <Zap size={24} />, label: 'Espresso' },
+            { id: 'AeroPress', lucide: <Droplet size={24} />, label: 'AeroPress' },
+            { id: 'Prensa Francesa', lucide: <Coffee size={24} />, label: 'Prensa' }
           ].map(m => (
             <div key={m.id} onClick={() => { setMethod(m.id); if (navigator.vibrate) navigator.vibrate(40); }} style={{ flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
               <div className="candy-card" style={{ width: '100%', aspectRatio: '1/1', padding: 0, margin: 0, borderColor: method === m.id ? 'var(--color-crimson)' : 'var(--border-color)', borderWidth: method === m.id ? '3px' : '2px', backgroundColor: method === m.id ? 'var(--color-crimson)' : 'var(--bg-card)', boxShadow: method === m.id ? 'none' : '3px 3px 0px var(--border-color)', transform: method === m.id ? 'translate(2px, 2px)' : 'none', transition: 'all 0.15s var(--transition-spring)' }}>
-                <div style={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '4px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <img src={m.icon} alt={m.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none'; }} />
-                  <div style={{ position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center', color: method === m.id ? '#FFFFFF' : 'var(--color-crimson)' }}>
-                    {m.lucide}
-                  </div>
+                <div style={{ width: '100%', height: '100%', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: method === m.id ? '#FFFFFF' : 'var(--color-crimson)' }}>
+                  {m.lucide}
                 </div>
               </div>
               <span style={{ fontSize: '10px', fontWeight: method === m.id ? '900' : '600', color: method === m.id ? 'var(--color-text)' : 'var(--color-text-muted)' }}>{m.label}</span>
