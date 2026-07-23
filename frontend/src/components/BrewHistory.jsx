@@ -25,6 +25,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
   const [shareImage, setShareImage] = useState(null);
   const [shareStatus, setShareStatus] = useState('');
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(true);
+  const [shareTemplate, setShareTemplate] = useState('retro');
   const textureRef = useRef(null);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -891,6 +892,30 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
             <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', textTransform: 'uppercase', margin: 0 }}>
               📸 Tarjeta Lista para Compartir
             </h3>
+
+            <div className="filter-scroll-container" style={{ margin: '12px 0' }}>
+              <button
+                type="button"
+                className={`filter-chip ${shareTemplate === 'retro' ? 'active' : ''}`}
+                onClick={() => { setShareTemplate('retro'); exportRecipeAsImage(selectedRecipe, 'retro'); }}
+              >
+                🍬 Retro Candy
+              </button>
+              <button
+                type="button"
+                className={`filter-chip ${shareTemplate === 'receipt' ? 'active' : ''}`}
+                onClick={() => { setShareTemplate('receipt'); exportRecipeAsImage(selectedRecipe, 'receipt'); }}
+              >
+                🧾 Ticket Barista
+              </button>
+              <button
+                type="button"
+                className={`filter-chip ${shareTemplate === 'story' ? 'active' : ''}`}
+                onClick={() => { setShareTemplate('story'); exportRecipeAsImage(selectedRecipe, 'story'); }}
+              >
+                📱 Story 9:16
+              </button>
+            </div>
             
             <img 
               src={shareImage} 
