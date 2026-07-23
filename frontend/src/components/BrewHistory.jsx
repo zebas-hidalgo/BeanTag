@@ -220,57 +220,59 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.beginPath(); ctx.moveTo(50, 95); ctx.lineTo(790, 95); ctx.stroke();
 
       // Header Table Columns
-      ctx.font = '800 17px "JetBrains Mono", monospace';
+      ctx.font = '800 16px "JetBrains Mono", monospace';
       ctx.fillStyle = colorTextMuted;
-      drawTruncatedText('CANT.  DESCRIPCIÓN                        VALOR', 50, 125, 740);
+      drawTruncatedText('CANT.', 50, 125, 140);
+      drawTruncatedText('DESCRIPCIÓN', 210, 125, 370);
+      drawTruncatedText('VALOR', 600, 125, 190);
 
       ctx.strokeStyle = '#CBD5E1';
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(50, 138); ctx.lineTo(790, 138); ctx.stroke();
 
       // Table Rows
-      ctx.font = '800 20px "JetBrains Mono", monospace';
+      ctx.font = '800 19px "JetBrains Mono", monospace';
       ctx.fillStyle = colorTextDark;
 
       if (incRecipe) {
-        drawTruncatedText('1x     GRANO:', 50, 175, 220);
-        drawTruncatedText(String(recipe.batch_name || 'N/A').toUpperCase(), 230, 175, 360);
-        drawTruncatedText(recipe.batch_roaster ? String(recipe.batch_roaster).toUpperCase() : 'SPECIALTY', 610, 175, 180);
+        drawTruncatedText('1x  GRANO', 50, 172, 140);
+        drawFittedText(String(recipe.batch_name || 'N/A').toUpperCase(), 210, 172, 370, 19, 'JetBrains Mono', '800');
+        drawTruncatedText(recipe.batch_roaster ? String(recipe.batch_roaster).toUpperCase() : 'SPECIALTY', 600, 172, 190);
 
-        drawTruncatedText('1x     MÉTODO:', 50, 215, 220);
-        drawTruncatedText(String(recipe.method || 'N/A').toUpperCase(), 230, 215, 360);
-        drawTruncatedText(`${recipe.dose_in_g || 20}G`, 610, 215, 180);
+        drawTruncatedText('1x  MÉTODO', 50, 212, 140);
+        drawFittedText(String(recipe.method || 'N/A').toUpperCase(), 210, 212, 370, 19, 'JetBrains Mono', '800');
+        drawTruncatedText(`${recipe.dose_in_g ? recipe.dose_in_g + 'G' : '20G'}`, 600, 212, 190);
 
-        drawTruncatedText('1x     MOLIENDA:', 50, 255, 220);
-        drawTruncatedText(String(recipe.grind || 'N/A').toUpperCase(), 230, 255, 360);
-        drawTruncatedText(recipe.temperature || '93°C', 610, 255, 180);
+        drawTruncatedText('1x  MOLIENDA', 50, 252, 140);
+        drawFittedText(String(recipe.grind || 'N/A').toUpperCase(), 210, 252, 370, 19, 'JetBrains Mono', '800');
+        drawTruncatedText(recipe.temperature ? String(recipe.temperature).toUpperCase() : '93°C', 600, 252, 190);
 
-        drawTruncatedText('1x     RATIO/TIEMPO:', 50, 295, 220);
-        drawTruncatedText(String(recipe.ratio || '1:15').toUpperCase(), 230, 295, 360);
-        drawTruncatedText(String(recipe.brew_time || '2:30').toUpperCase(), 610, 295, 180);
+        drawTruncatedText('1x  RATIO', 50, 292, 140);
+        drawFittedText(String(recipe.ratio || '1:15').toUpperCase(), 210, 292, 370, 19, 'JetBrains Mono', '800');
+        drawTruncatedText(recipe.brew_time ? String(recipe.brew_time).toUpperCase() : '2:30 MIN', 600, 292, 190);
       } else {
-        drawTruncatedText('1x     GRANO:', 50, 175, 220);
-        drawTruncatedText(String(recipe.batch_name || 'N/A').toUpperCase(), 230, 175, 360);
-        drawTruncatedText(recipe.batch_origin ? String(recipe.batch_origin).toUpperCase() : 'ORIGEN', 610, 175, 180);
+        drawTruncatedText('1x  GRANO', 50, 172, 140);
+        drawFittedText(String(recipe.batch_name || 'N/A').toUpperCase(), 210, 172, 370, 19, 'JetBrains Mono', '800');
+        drawTruncatedText(recipe.batch_roaster ? String(recipe.batch_roaster).toUpperCase() : 'TOSTADOR', 600, 172, 190);
 
-        drawTruncatedText('1x     PRODUCTOR:', 50, 215, 220);
-        drawTruncatedText(String(recipe.batch_producer || 'N/A').toUpperCase(), 230, 215, 360);
-        drawTruncatedText('LOTE', 610, 215, 180);
+        drawTruncatedText('1x  ORIGEN', 50, 212, 140);
+        drawFittedText(String(recipe.batch_origin || 'N/A').toUpperCase(), 210, 212, 370, 19, 'JetBrains Mono', '800');
+        drawTruncatedText(recipe.batch_altitude ? String(recipe.batch_altitude).toUpperCase() : 'ALTITUD', 600, 212, 190);
 
-        drawTruncatedText('1x     VARIEDAD:', 50, 255, 220);
-        drawTruncatedText(String(recipe.batch_variety || 'N/A').toUpperCase(), 230, 255, 360);
-        drawTruncatedText(recipe.batch_altitude ? String(recipe.batch_altitude).toUpperCase() : 'ALTITUD', 610, 255, 180);
+        drawTruncatedText('1x  PRODUCTOR', 50, 252, 140);
+        drawFittedText(String(recipe.batch_producer || 'N/A').toUpperCase(), 210, 252, 370, 19, 'JetBrains Mono', '800');
+        drawTruncatedText(recipe.batch_variety ? String(recipe.batch_variety).toUpperCase() : 'VARIEDAD', 600, 252, 190);
 
-        drawTruncatedText('1x     PROCESO:', 50, 295, 220);
-        drawTruncatedText(String(recipe.batch_process || 'N/A').toUpperCase(), 230, 295, 360);
-        drawTruncatedText(recipe.batch_roast_date ? String(recipe.batch_roast_date).toUpperCase() : 'TUESTE', 610, 295, 180);
+        drawTruncatedText('1x  PROCESO', 50, 292, 140);
+        drawFittedText(String(recipe.batch_process || 'N/A').toUpperCase(), 210, 292, 370, 19, 'JetBrains Mono', '800');
+        drawTruncatedText(recipe.batch_roast_date ? String(recipe.batch_roast_date).toUpperCase() : 'TUESTE', 600, 292, 190);
       }
 
       ctx.strokeStyle = '#94A3B8';
       ctx.lineWidth = 1.5;
       ctx.save();
       ctx.setLineDash([4, 4]);
-      ctx.beginPath(); ctx.moveTo(50, 335); ctx.lineTo(790, 335); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(50, 330); ctx.lineTo(790, 330); ctx.stroke();
       ctx.restore();
 
       let receiptNotes = '';
@@ -288,11 +290,11 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       if (!receiptNotes) receiptNotes = recipe.notes || 'ESPECIALIDAD';
       receiptNotes = stripEmojis(receiptNotes);
 
-      ctx.font = '800 22px "JetBrains Mono", monospace';
+      ctx.font = '800 19px "JetBrains Mono", monospace';
       ctx.fillStyle = colorTextDark;
-      drawTruncatedText(`NOTAS: ..... ${String(receiptNotes).toUpperCase()}`, 50, 368, 740);
+      drawTruncatedText(`NOTAS: ..... ${String(receiptNotes).toUpperCase()}`, 50, 365, 530);
       const receiptDate = new Date(recipe.created_at || Date.now()).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-      drawTruncatedText(`FECHA: ..... ${receiptDate.toUpperCase()}`, 50, 405, 520);
+      drawTruncatedText(`FECHA: ..... ${receiptDate.toUpperCase()}`, 50, 400, 530);
 
       // Código de Barras Térmico Realista de Recibo POS
       ctx.fillStyle = colorTextDark;
