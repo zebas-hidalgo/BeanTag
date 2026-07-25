@@ -3,14 +3,21 @@
 
 
 :root {
-  --bg-canvas: #CAE7F7;
-  --bg-card: #FFFFFF;
+  /* 🎨 Sistema Neo-Brutalista: Fondo Blanco + Elementos con Rotación de Color */
+  --bg-canvas: #FFFFFF; /* 1. Fondo de la App SIEMPRE BLANCO */
+  
+  /* Tema 1: Mocha Sky (Default) */
+  --theme-color-1: #CBE6F6; /* Color Cabecera */
+  --theme-color-2: #F8FAFC; /* Color Tarjetas / Superficies */
+  --theme-color-3: #F94C00; /* Color Acento / Crimson */
+
+  --bg-card: var(--theme-color-2);
+  --color-crimson: var(--theme-color-3);
   --border-color: #000000;
-  --color-crimson: #F94C00;
-  --color-text: #48261D;
-  --color-text-muted: #765C58;
-  --bg-header: #CAE7F7;
-  --color-header-text: #48261D;
+  --color-text: #1A0905;
+  --color-text-muted: #5C433E;
+  --bg-header: var(--theme-color-1);
+  --color-header-text: var(--color-text);
   
   --font-heading: 'Comfortaa', cursive;
   --font-body: 'Inter', sans-serif;
@@ -20,56 +27,84 @@
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-
-
+/* Tema 2: Sakura V60 */
 [data-theme="sakura"] {
-  --bg-canvas: #FCE4EC;
-  --bg-card: #FFFFFF;
-  --color-crimson: #EC4899;
-  --color-text: #4A154B;
-  --color-text-muted: #8338EC;
-  --bg-header: #FCE4EC;
-  --color-header-text: #4A154B;
+  --bg-canvas: #FFFFFF;
+  --theme-color-1: #FCE4EC;
+  --theme-color-2: #FFF5F7;
+  --theme-color-3: #EC4899;
+
+  --bg-card: var(--theme-color-2);
+  --color-crimson: var(--theme-color-3);
+  --border-color: #000000;
+  --color-text: #3A081A;
+  --color-text-muted: #731A3C;
+  --bg-header: var(--theme-color-1);
+  --color-header-text: var(--color-text);
 }
 
+/* Tema 3: Matcha Tonic */
 [data-theme="matcha"] {
-  --bg-canvas: #E8F5E9;
-  --bg-card: #FFFFFF;
-  --color-crimson: #2E7D32;
-  --color-text: #1B4332;
-  --color-text-muted: #40916C;
-  --bg-header: #E8F5E9;
-  --color-header-text: #1B4332;
+  --bg-canvas: #FFFFFF;
+  --theme-color-1: #E8F5E9;
+  --theme-color-2: #F4FBF7;
+  --theme-color-3: #2E7D32;
+
+  --bg-card: var(--theme-color-2);
+  --color-crimson: var(--theme-color-3);
+  --border-color: #000000;
+  --color-text: #0D2818;
+  --color-text-muted: #2D5A3D;
+  --bg-header: var(--theme-color-1);
+  --color-header-text: var(--color-text);
 }
 
+/* Tema 4: Cyber Geisha */
 [data-theme="cyberpunk"] {
-  --bg-canvas: #E0F7FA;
-  --bg-card: #FFFFFF;
-  --color-crimson: #9C27B0;
-  --color-text: #102A43;
-  --color-text-muted: #334E68;
-  --bg-header: #E0F7FA;
-  --color-header-text: #102A43;
+  --bg-canvas: #FFFFFF;
+  --theme-color-1: #1F173D;
+  --theme-color-2: #F5F3FF;
+  --theme-color-3: #7C3AED;
+
+  --bg-card: var(--theme-color-2);
+  --color-crimson: var(--theme-color-3);
+  --border-color: #000000;
+  --color-text: #1E1B4B;
+  --color-text-muted: #4C1D95;
+  --bg-header: var(--theme-color-1);
+  --color-header-text: #F0F6FF;
 }
 
+/* Tema 5: Miel de Tueste */
 [data-theme="miel"] {
-  --bg-canvas: #FFF8E1;
-  --bg-card: #FFFFFF;
-  --color-crimson: #F59E0B;
-  --color-text: #4A2C11;
-  --color-text-muted: #784212;
-  --bg-header: #FFF8E1;
-  --color-header-text: #4A2C11;
+  --bg-canvas: #FFFFFF;
+  --theme-color-1: #FFF3E0;
+  --theme-color-2: #FFFBEB;
+  --theme-color-3: #F59E0B;
+
+  --bg-card: var(--theme-color-2);
+  --color-crimson: var(--theme-color-3);
+  --border-color: #000000;
+  --color-text: #3E1B00;
+  --color-text-muted: #733D14;
+  --bg-header: var(--theme-color-1);
+  --color-header-text: var(--color-text);
 }
 
+/* Tema 6: Espresso Dark Roast */
 [data-theme="velvet"] {
-  --bg-canvas: #F3E5F5;
-  --bg-card: #FFFFFF;
-  --color-crimson: #8E24AA;
-  --color-text: #3B1046;
-  --color-text-muted: #6A1B9A;
-  --bg-header: #F3E5F5;
-  --color-header-text: #3B1046;
+  --bg-canvas: #FFFFFF;
+  --theme-color-1: #2B1D19;
+  --theme-color-2: #FAF5F4;
+  --theme-color-3: #EA580C;
+
+  --bg-card: var(--theme-color-2);
+  --color-crimson: var(--theme-color-3);
+  --border-color: #000000;
+  --color-text: #2B1D19;
+  --color-text-muted: #6B4E47;
+  --bg-header: var(--theme-color-1);
+  --color-header-text: #F5EBE6;
 }
 
 @keyframes slideUpFade {
@@ -113,6 +148,7 @@ main {
   position: relative;
   box-sizing: border-box;
   width: 100%;
+  padding-bottom: calc(78px + env(safe-area-inset-bottom));
 }
 
 /* Neo-Brutalist Bento Card */
@@ -120,20 +156,24 @@ main {
   background-color: var(--bg-card);
   border: 2px solid var(--border-color);
   border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 14px;
+  padding: 12px;
+  margin-bottom: 12px;
   position: relative;
   cursor: pointer;
-  box-shadow: 4px 4px 0px var(--border-color);
-  transition: transform 100ms, box-shadow 100ms, background-color 100ms;
+  box-shadow: 3px 3px 0px var(--border-color);
+  transition: transform 200ms var(--transition-spring), box-shadow 200ms var(--transition-spring), background-color 150ms ease;
   box-sizing: border-box;
   overflow: hidden;
 }
 
-.candy-card:active {
-  transform: scale(0.97) translate(2px, 2px);
-  box-shadow: 2px 2px 0px var(--border-color);
-  background-color: var(--bg-canvas);
+.candy-card:not(.static):hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--border-color);
+}
+
+.candy-card:not(.static):active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--border-color);
 }
 
 /* Alerta de Stock Bajo (Borde Punteado) */
@@ -161,7 +201,8 @@ main {
   font-size: 16px;
   margin: 0;
   text-transform: uppercase;
-  color: var(--border-color);
+  letter-spacing: 0.08em;
+  color: var(--color-header-text);
 }
 
 /* Bento Buttons */
@@ -412,86 +453,104 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   color: var(--color-text);
 }
 
-/* Tab Bar */
+/* Neo-Brutalist Floating Island Dock Navbar (Dynamic Island Styling) */
 .nb-tabbar {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 64px;
-  background-color: var(--bg-card);
-  border-top: 2px solid var(--border-color);
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  left: 12px;
+  width: calc(100% - 24px);
+  height: 52px;
+  background-color: var(--bg-header);
+  border: 2.5px solid var(--border-color);
+  border-radius: 999px;
+  box-shadow: 4px 4px 0px var(--border-color);
   display: flex;
   justify-content: space-around;
   align-items: center;
-  z-index: 50;
+  z-index: 100;
   box-sizing: border-box;
+  padding: 0 8px;
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s var(--transition-spring);
 }
 
 .tab-item {
   flex: 1;
+  height: 38px;
   text-align: center;
   background: none;
   border: none;
   font-size: 9px;
   font-family: var(--font-heading);
-  font-weight: bold;
-  color: var(--border-color);
-  opacity: 0.5;
+  font-weight: 800;
+  color: var(--color-header-text);
+  opacity: 0.65;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 2px;
   cursor: pointer;
   text-transform: uppercase;
-  padding: 8px 0;
-  transition: opacity var(--transition-fast), color var(--transition-fast);
+  letter-spacing: 0.04em;
+  padding: 0;
+  margin: 0 4px;
+  border-radius: 999px;
+  transition: all var(--transition-fast);
+}
+
+.tab-item:hover {
+  opacity: 0.85;
 }
 
 .tab-item.active {
   opacity: 1;
-  color: var(--color-crimson);
+  color: var(--color-header-text);
+  background-color: color-mix(in srgb, var(--border-color) 16%, transparent);
+  border: 1.5px solid var(--border-color);
+  box-shadow: 1px 1px 0px var(--border-color);
 }
 
 .tab-item svg {
-  width: 18px;
-  height: 18px;
-  stroke: var(--border-color);
-  stroke-width: 2px;
+  width: 17px;
+  height: 17px;
+  stroke: var(--color-header-text);
+  stroke-width: 2.2px;
   fill: none;
 }
 
 .tab-item.active svg {
-  stroke: var(--color-crimson);
+  stroke: var(--color-header-text);
 }
 
-/* Absolute Toast Undo */
+/* Floating Pill Toast (Dynamic Island Feeling) */
 .undo-toast {
   position: absolute;
-  bottom: 76px;
-  left: 16px;
-  width: calc(100% - 32px);
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%) translateY(140px);
+  width: max-content;
+  max-width: calc(100% - 32px);
   background-color: var(--color-text);
   color: #FFFFFF;
   border: 2px solid var(--border-color);
-  padding: 12px 18px;
+  padding: 10px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  z-index: 60;
-  transform: translateY(150px);
+  gap: 12px;
+  z-index: 110;
   visibility: hidden;
   opacity: 0;
   transition: transform 0.3s var(--transition-spring), opacity 0.3s ease, visibility 0.3s;
   font-weight: 700;
   box-sizing: border-box;
   font-size: 12px;
-  border-radius: 12px;
+  border-radius: 999px;
   box-shadow: 4px 4px 0px var(--border-color);
 }
 
 .undo-toast.show {
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
   visibility: visible;
   opacity: 1;
 }
@@ -527,17 +586,67 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   color: #FFFFFF;
   padding: 4px 10px;
   font-size: 9px;
-  font-weight: 900;
+  font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 0.06em;
   border-radius: 6px;
   border: 1.5px solid var(--border-color);
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
 }
 
 .mono-lbl-tag.outline {
   background: var(--bg-card);
   color: var(--border-color);
   border: 1.5px solid var(--border-color);
+}
+
+.mono-lbl-tag.low-stock {
+  background: #E53E3E;
+  color: #FFFFFF;
+  animation: pulse-danger 2s infinite;
+}
+
+@keyframes pulse-danger {
+  0% { box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(229, 62, 62, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(229, 62, 62, 0); }
+}
+
+/* Bento Accordion System for Recipe Forms */
+.bento-accordion {
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 3px 3px 0px var(--border-color);
+  margin-bottom: 12px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.bento-accordion[open] {
+  padding-bottom: 16px;
+}
+
+.bento-accordion-header {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--color-text);
+  user-select: none;
+}
+
+.bento-accordion-header::-webkit-details-marker {
+  display: none;
 }
 
 /* Banner de Referencia de Receta */

@@ -7,10 +7,32 @@ import BrewHistory from './components/BrewHistory';
 import Settings from './components/Settings';
 import NfcToolsModal from './components/NfcToolsModal';
 
+const getInitialRoute = () => {
+  const path = window.location.pathname;
+  const searchParams = new URLSearchParams(window.location.search);
+  const queryBatchId = searchParams.get('batch') || searchParams.get('b');
+  
+  let targetBatchId = null;
+  if (path.includes('/batch/')) {
+    const parts = path.split('/batch/');
+    if (parts[1]) {
+      targetBatchId = decodeURIComponent(parts[1].split('?')[0].replace(/\/$/, ''));
+    }
+  } else if (queryBatchId) {
+    targetBatchId = decodeURIComponent(queryBatchId);
+  }
+
+  if (targetBatchId) {
+    return { view: 'detail', batchId: targetBatchId };
+  }
+  return { view: 'inventory', batchId: null };
+};
+
 export default function App() {
-  const [currentView, setCurrentView] = useState('inventory');
+  const initialRoute = getInitialRoute();
+  const [currentView, setCurrentView] = useState(initialRoute.view);
   const [batches, setBatches] = useState([]);
-  const [selectedBatchId, setSelectedBatchId] = useState(null);
+  const [selectedBatchId, setSelectedBatchId] = useState(initialRoute.batchId);
   const [prefillRecipe, setPrefillRecipe] = useState(null);
   const [lastSubtractedBatch, setLastSubtractedBatch] = useState(null);
   const [batchToEdit, setBatchToEdit] = useState(null);
@@ -55,10 +77,9 @@ export default function App() {
   useEffect(() => {
     fetchBatches();
     
-    const path = window.location.pathname;
-    if (path.startsWith('/batch/')) {
-      const id = path.split('/')[2];
-      setSelectedBatchId(id);
+    const route = getInitialRoute();
+    if (route.view === 'detail' && route.batchId) {
+      setSelectedBatchId(route.batchId);
       setCurrentView('detail');
     }
   }, []);
@@ -76,7 +97,7 @@ export default function App() {
       setSelectedBatchId(batchToEdit.id);
       setBatchToEdit(null);
     } else {
-      window.history.pushState({}, '', '/');
+      window.history.pushState({}, '', '/beantag/');
       setCurrentView('inventory');
       setSelectedBatchId(null);
       setPrefillRecipe(null);
@@ -313,8 +334,10 @@ export default function App() {
       {/* R10: Delete Confirmation Modal */}
       {deleteModal.visible && (
         <div style={{
-          position: 'absolute', inset: 0, zIndex: 100,
-          backgroundColor: 'rgba(0,0,0,0.5)',
+          position: 'fixed', inset: 0, zIndex: 100,
+          backgroundColor: 'rgba(18, 10, 8, 0.65)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: '24px', boxSizing: 'border-box'
         }}>

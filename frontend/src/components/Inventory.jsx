@@ -7,15 +7,18 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filtrado de lotes solo por buscador
-  const filteredBatches = batches.filter(batch => {
+  const filteredBatches = (batches || []).filter(batch => {
+    if (!batch) return false;
+    const name = batch.name || '';
+    const producer = batch.producer || '';
     return (
-      batch.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      batch.producer.toLowerCase().includes(searchQuery.toLowerCase())
+      name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      producer.toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
 
   return (
-    <div style={{ padding: '14px 14px 90px 14px' }}>
+    <div style={{ padding: '12px 12px 0 12px' }}>
       {/* Search bar */}
       <input 
         className="candy-input" 
@@ -26,9 +29,15 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
       />
 
       {filteredBatches.length === 0 ? (
-        <div className="candy-card" style={{ textAlign: 'center', padding: '30px' }} onClick={onCreateTrigger}>
-          <p style={{ fontWeight: 'bold' }}>¡No se encontraron cafés!</p>
-          <button className="btn-candy primary" style={{ margin: '10px auto 0 auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div className="candy-card static" style={{ textAlign: 'center', padding: '36px 20px', borderStyle: 'dashed', backgroundColor: 'var(--bg-card)' }}>
+          <div style={{ fontSize: '36px', marginBottom: '10px' }}>☕</div>
+          <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', textTransform: 'uppercase', margin: '0 0 6px 0', color: 'var(--color-text)' }}>
+            ¡No hay lotes en el inventario!
+          </h3>
+          <p style={{ fontSize: '11.5px', color: 'var(--color-text-muted)', margin: '0 0 16px 0', lineHeight: 1.4 }}>
+            Registra tu primer café especial para seguir dosis, tueste y recetas.
+          </p>
+          <button className="btn-candy primary" onClick={onCreateTrigger} style={{ margin: '0 auto', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }}>
             <Plus size={16} strokeWidth={2.5} />
             Registrar Primer Lote
           </button>
@@ -37,6 +46,24 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
         filteredBatches.map(batch => {
           const isLowStock = batch.remaining_doses <= 2;
           const hasRecipes = batch.recipes && batch.recipes.length > 0;
+
+          // Degas status
+          let degasBadge = null;
+          if (batch.roast_date) {
+            const rDate = new Date(batch.roast_date);
+            const today = new Date();
+            const days = Math.floor((today - rDate) / (1000 * 60 * 60 * 24));
+            if (!isNaN(days) && days >= 0) {
+              if (days < 7) {
+                degasBadge = { label: `🟢 ${days}d reposo`, bg: '#FEF9C3', color: '#713F12' };
+              } else if (days <= 30) {
+                degasBadge = { label: `⚡ ${days}d óptimo`, bg: '#DCFCE7', color: '#14532D' };
+              } else {
+                degasBadge = { label: `⚠️ ${days}d antiguo`, bg: '#FEE2E2', color: '#7F1D1D' };
+              }
+            }
+          }
+
           return (
             <div 
               key={batch.id} 
@@ -50,9 +77,9 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                   <span className="mono-lbl-tag">{batch.origin || 'N/A'}</span>
-                  {batch.roast_date && (
-                    <span style={{ fontSize: '9px', fontWeight: 'bold', color: '#718096' }}>
-                      🔥 Tueste: {formatLocalDateStr(batch.roast_date, true)}
+                  {degasBadge && (
+                    <span style={{ fontSize: '9px', fontWeight: '800', backgroundColor: degasBadge.bg, color: degasBadge.color, padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border-color)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      {degasBadge.label}
                     </span>
                   )}
                 </div>
@@ -61,7 +88,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
               <div className="mono-badge-row">
                 <span className="mono-lbl-tag outline">{batch.remaining_doses} Dosis ({batch.remaining_weight_g || 0}g)</span>
                 <span className="mono-lbl-tag outline">{batch.roast_level || 'Medio'}</span>
-                {isLowStock && <span className="mono-lbl-tag" style={{ background: '#E53E3E' }}>¡Últimos tubos!</span>}
+                {isLowStock && <span className="mono-lbl-tag low-stock">¡Últimos tubos!</span>}
               </div>
               {hasRecipes && (() => {
                 const r = batch.recipes[0];

@@ -4,6 +4,9 @@
   "description": "Gestión de café specialty congelado con NFC.",
   "start_url": "/",
   "display": "standalone",
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
   "background_color": "#FFF5F5",
   "theme_color": "#FFF5F5",
   "icons": [

@@ -222,7 +222,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
   };
 
   return (
-    <div style={{ padding: '14px 14px 90px 14px' }}>
+    <div style={{ padding: '12px 12px 0 12px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
         <button className="btn-candy" onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <X size={16} strokeWidth={2.5} />

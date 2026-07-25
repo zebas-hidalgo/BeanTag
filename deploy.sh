@@ -1,28 +1,30 @@
-#!/usr/bin/expect -f
-set timeout 300
+#!/usr/bin/env bash
+set -e
 
-# 1. Comprimir en local
-exec tar --exclude=node_modules --exclude=.git --exclude=frontend/node_modules --exclude=backend/node_modules --exclude=.superpowers -czf /tmp/beantag_update.tar.gz -C /Users/zebas/Desktop/Proyecto_cafe .
+VPS_IP="5.189.152.68"
+VPS_USER="root"
+VPS_PATH="/var/www/beantag"
+ARCHIVE_NAME="beantag_update.tar.gz"
 
+echo "📦 1. Empaquetando BeanTag (usando directorio actual)..."
+tar --exclude=node_modules \
+    --exclude=.git \
+    --exclude=frontend/node_modules \
+    --exclude=backend/node_modules \
+    --exclude=.superpowers \
+    -czf "/tmp/${ARCHIVE_NAME}" -C . .
 
-# 2. Subir archivo
-spawn scp -o StrictHostKeyChecking=no /tmp/beantag_update.tar.gz root@5.189.152.68:/root/beantag_update.tar.gz
-expect {
-    "*password:" {
-        send "261226Kz\r"
-        exp_continue
-    }
-    eof
-}
+echo "🚀 2. Subiendo paquete a VPS (${VPS_IP})..."
+scp -o StrictHostKeyChecking=no "/tmp/${ARCHIVE_NAME}" "${VPS_USER}@${VPS_IP}:/root/${ARCHIVE_NAME}"
 
-# 3. Extraer y compilar en VPS
-spawn ssh -o StrictHostKeyChecking=no root@5.189.152.68 "tar -xzf /root/beantag_update.tar.gz -C /var/www/beantag && cd /var/www/beantag && npm run build-frontend && pm2 restart beantag"
-expect {
-    "*password:" {
-        send "261226Kz\r"
-        exp_continue
-    }
-    eof
-}
+echo "🔄 3. Descomprimiendo y reiniciando servicios en VPS..."
+ssh -o StrictHostKeyChecking=no "${VPS_USER}@${VPS_IP}" "
+  mkdir -p ${VPS_PATH} && \
+  tar -xzf /root/${ARCHIVE_NAME} -C ${VPS_PATH} && \
+  cd ${VPS_PATH} && \
+  npm run build-frontend && \
+  pm2 restart beantag
+"
 
-puts "=== ¡Actualización subida y desplegada en tu VPS! ==="
+rm -f "/tmp/${ARCHIVE_NAME}"
+echo "✨ ¡Actualización despegada con éxito en VPS!"

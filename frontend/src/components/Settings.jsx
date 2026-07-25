@@ -94,7 +94,7 @@ export default function Settings({ theme, setTheme, showToast }) {
   };
 
   return (
-    <div style={{ padding: '14px 14px 90px 14px' }}>
+    <div style={{ padding: '12px 12px 0 12px' }}>
       <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 14px 0', fontSize: '16px' }}>
         Ajustes y Configuración
       </h2>
@@ -111,33 +111,52 @@ export default function Settings({ theme, setTheme, showToast }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
           {[
-            { id: 'default', name: '☕ Mocha Sky' },
-            { id: 'sakura', name: '🌸 Sakura V60' },
-            { id: 'matcha', name: '🌿 Matcha Tonic' },
-            { id: 'cyberpunk', name: '🌌 Cyber Geisha' },
-            { id: 'miel', name: '🥐 Miel de Brujas' },
-            { id: 'velvet', name: '🍇 Cold Velvet' }
+            { id: 'default', name: '☕ Mocha Sky', colors: ['#CBE6F6', '#FFFFFF', '#F94C00'] },
+            { id: 'sakura', name: '🌸 Sakura V60', colors: ['#FCE4EC', '#FFFFFF', '#EC4899'] },
+            { id: 'matcha', name: '🌿 Matcha Tonic', colors: ['#E8F5E9', '#FFFFFF', '#2E7D32'] },
+            { id: 'cyberpunk', name: '🌌 Cyber Geisha', colors: ['#0F0C20', '#1D173B', '#00E5FF'] },
+            { id: 'miel', name: '🥐 Miel de Tueste', colors: ['#FFF3E0', '#FFFFFF', '#F59E0B'] },
+            { id: 'velvet', name: '☕ Espresso Dark', colors: ['#120A08', '#1E1412', '#FF6D00'] }
           ].map((t) => {
             const isActive = theme === t.id;
             return (
               <button 
                 key={t.id}
                 type="button"
-                onClick={() => { setTheme(t.id); if (showToast) showToast(`Tema ${t.name} aplicado.`, { type: 'success', duration: 2000 }); }} 
+                onClick={() => { setTheme(t.id); if (showToast) showToast(`Tema ${t.name} aplicado (3 Colores).`, { type: 'success', duration: 2000 }); }} 
                 className="btn-candy"
                 style={{ 
                   margin: 0, 
-                  fontSize: '10px', 
+                  fontSize: '11px', 
                   padding: '8px 6px', 
                   border: '2px solid var(--border-color)',
                   backgroundColor: isActive ? 'var(--color-crimson)' : 'var(--bg-card)',
                   color: isActive ? '#FFFFFF' : 'var(--color-text)',
                   boxShadow: isActive ? 'none' : '3px 3px 0px var(--border-color)',
                   transform: isActive ? 'translate(2px, 2px)' : 'none',
-                  fontWeight: 'bold'
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px'
                 }}
               >
-                {t.name}
+                <span>{t.name}</span>
+                <div style={{ display: 'flex', gap: '3px' }}>
+                  {t.colors.map((c, idx) => (
+                    <span 
+                      key={idx} 
+                      style={{ 
+                        width: '10px', 
+                        height: '10px', 
+                        borderRadius: '50%', 
+                        backgroundColor: c, 
+                        border: '1.5px solid var(--border-color)',
+                        display: 'inline-block'
+                      }} 
+                    />
+                  ))}
+                </div>
               </button>
             );
           })}

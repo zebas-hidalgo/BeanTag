@@ -83,13 +83,45 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
     }).finally(() => setAiLoading(false));
   };
 
+  const handleAiTuneRecipe = () => {
+    const apiKey = localStorage.getItem('gemini-api-key');
+    if (!apiKey) {
+      if (showToast) showToast('Configura tu clave API de Gemini en Ajustes para recalibrar.', { type: 'error', duration: 4000 });
+      return;
+    }
+    setAiLoading(true); setAiError('');
+    fetch('api/ai/tune-recipe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-gemini-key': apiKey },
+      body: JSON.stringify({
+        method, dose_in_g: doseInG, ratio: `1:${ratioVal}`, temperature: waterTemp,
+        jmax_rot: jmaxRot, jmax_num: jmaxNum, jmax_click: jmaxClick,
+        sensory_extraction: sensoryExtraction, sensory_balance: sensoryBalance,
+        sensory_body: sensoryBody, user_notes: notes, batch_name: batch.name
+      })
+    }).then(async (res) => {
+      if (!res.ok) throw new Error((await res.json()).error || 'Error recalibrando');
+      return res.json();
+    }).then(data => {
+      setAiRecommendation(data);
+      if (showToast) showToast(`🤖 Recalibración IA lista: ${data.correction_reason || 'Nuevos vertidos y molienda sugeridos'}`, { type: 'success', duration: 4000 });
+    }).catch(err => {
+      setAiError(err.message);
+      if (showToast) showToast('Error al recalibrar con IA.', { type: 'error', duration: 4000 });
+    }).finally(() => setAiLoading(false));
+  };
+
   const handleApplyAiRecipe = () => {
     if (!aiRecommendation) return;
-    const recMethod = aiRecommendation.method.toLowerCase();
+    const recMethod = (aiRecommendation.method || '').toLowerCase();
     if (recMethod.includes('v60') || recMethod.includes('filtrado')) setMethod('V60 (Filtrado)');
     else if (recMethod.includes('espresso') || recMethod.includes('expresso')) setMethod('Espresso');
     else if (recMethod.includes('aero') || recMethod.includes('press')) setMethod('AeroPress');
     else if (recMethod.includes('prensa') || recMethod.includes('francesa')) setMethod('Prensa Francesa');
+
+    if (aiRecommendation.jmax_rot !== undefined) setJmaxRot(parseInt(aiRecommendation.jmax_rot) || 0);
+    if (aiRecommendation.jmax_num !== undefined) setJmaxNum(parseInt(aiRecommendation.jmax_num) || 0);
+    if (aiRecommendation.jmax_click !== undefined) setJmaxClick(parseInt(aiRecommendation.jmax_click) || 0);
 
     if (aiRecommendation.ratio && aiRecommendation.ratio.includes('1:')) {
       const rm = aiRecommendation.ratio.match(/1:([0-9.]+)/);
@@ -97,8 +129,8 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
     }
     if (aiRecommendation.temperature) setWaterTemp(parseInt(aiRecommendation.temperature) || 93);
     if (aiRecommendation.brew_time) setBrewTime(aiRecommendation.brew_time);
-    if (aiRecommendation.notes) setNotes(prev => `[Receta IA: ${aiRecommendation.notes}] ${prev.replace(/\[IA:.*?\]/g, '').trim()}`.trim());
-    if (showToast) showToast('Receta sugerida por IA aplicada al borrador.', { type: 'success', duration: 3000 });
+    if (aiRecommendation.notes) setNotes(prev => `[IA: ${aiRecommendation.notes}] ${prev.replace(/\[IA:.*?\]/g, '').trim()}`.trim());
+    if (showToast) showToast('Receta y molienda J-Max de IA aplicadas.', { type: 'success', duration: 3000 });
     setAiRecommendation(null);
   };
 
@@ -117,6 +149,13 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
 
   return (
     <>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <button className="btn-candy" onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <X size={16} strokeWidth={2.5} />
+          Cancelar
+        </button>
+      </div>
+
       <div className="candy-card static" style={{ marginTop: '24px', backgroundColor: calcVisible ? 'var(--bg-canvas)' : 'var(--bg-card)' }}>
         <div onClick={() => setCalcVisible(!calcVisible)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -144,7 +183,6 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
               </div>
             </div>
 
-            {/* Secuencia de Vertidos Recomendada */}
             <div style={{ padding: '12px', backgroundColor: '#FFFFFF', border: '2px solid var(--border-color)', borderRadius: '6px', boxShadow: '2px 2px 0px var(--border-color)' }}>
               <div style={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', color: 'var(--color-crimson)', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
                 💧 Guía de Vertidos por Etapas ({calcDose}g café / {calcWater}g agua)
@@ -186,7 +224,21 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
             { id: 'AeroPress', lucide: <Droplet size={24} />, label: 'AeroPress' },
             { id: 'Prensa Francesa', lucide: <Coffee size={24} />, label: 'Prensa' }
           ].map(m => (
-            <div key={m.id} onClick={() => { setMethod(m.id); if (navigator.vibrate) navigator.vibrate(40); }} style={{ flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+            <div 
+              key={m.id} 
+              role="button"
+              tabIndex={0}
+              aria-label={`Seleccionar método ${m.label}`}
+              onClick={() => { setMethod(m.id); if (navigator.vibrate) navigator.vibrate(40); }} 
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setMethod(m.id);
+                  if (navigator.vibrate) navigator.vibrate(40);
+                }
+              }}
+              style={{ flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+            >
               <div className="candy-card" style={{ width: '100%', aspectRatio: '1/1', padding: 0, margin: 0, borderColor: method === m.id ? 'var(--color-crimson)' : 'var(--border-color)', borderWidth: method === m.id ? '3px' : '2px', backgroundColor: method === m.id ? 'var(--color-crimson)' : 'var(--bg-card)', boxShadow: method === m.id ? 'none' : '3px 3px 0px var(--border-color)', transform: method === m.id ? 'translate(2px, 2px)' : 'none', transition: 'all 0.15s var(--transition-spring)' }}>
                 <div style={{ width: '100%', height: '100%', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: method === m.id ? '#FFFFFF' : 'var(--color-crimson)' }}>
                   {m.lucide}
@@ -199,107 +251,229 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
 
         <div className="candy-card static" style={{ margin: '16px 0', padding: '16px', backgroundColor: 'var(--bg-card)', border: '2px solid var(--border-color)', boxShadow: '3px 3px 0px var(--border-color)', borderRadius: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><span style={{ fontSize: '16px' }}>✨</span><span style={{ fontWeight: '900', fontSize: '12px', textTransform: 'uppercase', fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>Sugerencia IA ({method})</span></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><span style={{ fontSize: '16px' }}>✨</span><span style={{ fontWeight: '900', fontSize: '12px', textTransform: 'uppercase', fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>Asistente IA Barista ({method})</span></div>
             <span style={{ fontSize: '9px', fontWeight: '900', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{doseInG}g</span>
           </div>
-          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0', lineHeight: 1.4 }}>Diseña una receta de <strong>{method}</strong> para <strong>{doseInG}g</strong> según el perfil de este grano.</p>
+          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0', lineHeight: 1.4 }}>Diseña o recalibra una receta completa de <strong>{method}</strong> para <strong>{doseInG}g</strong> con molienda J-Max y secuencia de vertidos.</p>
           {aiError && <div style={{ color: '#E53E3E', fontSize: '10px', fontWeight: 'bold', marginBottom: '10px' }}>⚠️ Error: {aiError}</div>}
           {aiRecommendation ? (
-            <div style={{ padding: '12px', backgroundColor: 'var(--bg-canvas)', border: '2px solid var(--border-color)', borderRadius: '6px', marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <div style={{ fontSize: '11px' }}><strong>Ratio:</strong> {aiRecommendation.ratio}</div>
-                <div style={{ fontSize: '11px' }}><strong>Molienda:</strong> {aiRecommendation.grind}</div>
-                <div style={{ fontSize: '11px' }}><strong>Temperatura:</strong> {aiRecommendation.temperature}°C</div>
-                <div style={{ fontSize: '11px' }}><strong>Tiempo:</strong> {aiRecommendation.brew_time}</div>
-              </div>
-              <div style={{ fontSize: '10.5px', color: 'var(--color-text)', borderTop: '1px dashed var(--border-color)', paddingTop: '8px', marginTop: '4px', lineHeight: 1.4 }}><strong>Notas Barista:</strong> {aiRecommendation.notes}</div>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                <button type="button" className="btn-candy primary" onClick={handleApplyAiRecipe} style={{ flex: 1, padding: '6px', fontSize: '10px', minHeight: '30px' }}>Aplicar al Formulario</button>
-                <button type="button" className="btn-candy" onClick={() => setAiRecommendation(null)} style={{ padding: '6px 12px', fontSize: '10px', minHeight: '30px', margin: 0 }}>Cerrar</button>
-              </div>
-            </div>
-          ) : (
-            <button type="button" className="btn-candy" onClick={handleAiRecommend} disabled={aiLoading} style={{ width: '100%', margin: 0, padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', minHeight: '34px' }}>
-              {aiLoading ? <span>Diseñando receta para {method}... 🧠</span> : <span>Calcular Receta IA ✨</span>}
-            </button>
-          )}
-        </div>
+            <div style={{ padding: '14px', backgroundColor: '#FFFFFF', border: '2px solid var(--border-color)', borderRadius: '8px', marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '3px 3px 0px var(--border-color)' }}>
+              {aiRecommendation.correction_reason && (
+                <div style={{ backgroundColor: '#FEF2F2', border: '1.5px solid #EF4444', color: '#991B1B', padding: '8px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: '700' }}>
+                  🔧 Diagnóstico Recalibración: {aiRecommendation.correction_reason}
+                </div>
+              )}
 
-        <div className="bento-grid">
-          <div className="bento-widget accent"><div className="bento-header"><span>Grams</span><Scale size={16} /></div><div className="bento-value-container"><input type="number" step="0.1" value={doseInG} onChange={(e) => setDoseInG(parseFloat(e.target.value) || 0)} /><span className="unit">g</span></div><div className="bento-controls"><button type="button" className="bento-btn" onClick={() => setDoseInG(d => Math.max(0, d - 0.5))}>-</button><div className="bento-info">DOSE</div><button type="button" className="bento-btn" onClick={() => setDoseInG(d => d + 0.5)}>+</button></div></div>
-          <div className="bento-widget"><div className="bento-header"><span>{method !== 'Espresso' ? 'Ratio' : 'Yield'}</span><Droplet size={16} color="var(--color-crimson)" /></div><div className="bento-value-container">{method !== 'Espresso' ? (<><span style={{ fontSize: '28px', fontWeight: '900', fontFamily: 'var(--font-mono)' }}>1:</span><input type="number" step="0.1" style={{ textAlign: 'left', color: 'var(--color-crimson)' }} value={ratioVal} onChange={(e) => setRatioVal(parseFloat(e.target.value) || 0)} /></>) : (<><input type="number" step="0.5" style={{ color: 'var(--color-crimson)' }} value={doseOutG} onChange={(e) => setDoseOutG(parseFloat(e.target.value) || 0)} /><span className="unit" style={{ color: 'var(--color-crimson)' }}>g</span></>)}</div><div className="bento-controls"><button type="button" className="bento-btn" onClick={() => method !== 'Espresso' ? setRatioVal(r => Math.max(1, r - 0.5)) : setDoseOutG(d => Math.max(0, d - 1))}>-</button><div className="bento-info">TARGET</div><button type="button" className="bento-btn" onClick={() => method !== 'Espresso' ? setRatioVal(r => r + 0.5) : setDoseOutG(d => d + 1)}>+</button></div><div className="bento-info" style={{ marginTop: '2px', color: 'var(--color-text-muted)' }}>{method !== 'Espresso' ? `OUT: ${(doseInG * (ratioVal || 0)).toFixed(0)} g` : `1:${(doseOutG / (doseInG || 1)).toFixed(1)}`}</div></div>
-          <div className="bento-widget"><div className="bento-header"><span>Temp</span><Thermometer size={16} /></div><div className="bento-value-container"><input type="number" style={{ color: 'var(--color-crimson)' }} value={waterTemp} onChange={(e) => setWaterTemp(parseInt(e.target.value) || 93)} /><span className="unit" style={{ color: 'var(--color-crimson)' }}>°C</span></div><div className="bento-controls"><button type="button" className="bento-btn" onClick={() => setWaterTemp(t => Math.max(80, t - 1))}>-</button><div className="bento-info">WATER</div><button type="button" className="bento-btn" onClick={() => setWaterTemp(t => Math.min(100, t + 1))}>+</button></div></div>
-          {method === 'Espresso' ? (
-            <div className="bento-widget accent"><div className="bento-header"><span>Pressure</span><Gauge size={16} /></div><div className="bento-value-container"><input type="number" step="0.5" value={espressoPressure} onChange={(e) => setEspressoPressure(parseFloat(e.target.value) || 9)} /><span className="unit">bar</span></div><div className="bento-controls"><button type="button" className="bento-btn" onClick={() => setEspressoPressure(p => Math.max(0, p - 0.5))}>-</button><div className="bento-info">EXTRACT</div><button type="button" className="bento-btn" onClick={() => setEspressoPressure(p => p + 0.5)}>+</button></div></div>
-          ) : (
-            <div className="bento-widget"><div className="bento-header"><span>Timer</span><Timer size={16} /></div><div className="bento-value-container" style={{ position: 'relative' }}><input type="text" style={{ fontSize: '24px' }} value={brewTime} onChange={(e) => setBrewTime(e.target.value)} /></div><div className="bento-controls" style={{ justifyContent: 'center' }}><div className="bento-info">DURATION</div></div></div>
-          )}
-          <div className="bento-widget bento-full-row accent" style={{ padding: '14px' }}>
-            <div className="bento-header">
-              <span>Molienda 1Zpresso J-Max</span>
-              <Coffee size={16} color="var(--color-crimson)" />
-            </div>
-
-            {/* Rotations */}
-            <div style={{ marginTop: '10px' }}>
-              <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Rotación (0..4)</span>
-              <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
-                {[0, 1, 2, 3, 4].map(r => (
-                  <button key={r} type="button" className={`btn-candy ${jmaxRot === r ? 'primary' : ''}`} onClick={() => setJmaxRot(r)} style={{ flex: 1, padding: '4px', fontSize: '12px', minHeight: '30px', margin: 0 }}>
-                    {r}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Numbers */}
-            <div style={{ marginTop: '8px' }}>
-              <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Número (0..8)</span>
-              <div style={{ display: 'flex', gap: '4px', marginTop: '4px', overflowX: 'auto' }}>
-                {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(n => (
-                  <button key={n} type="button" className={`btn-candy ${jmaxNum === n ? 'primary' : ''}`} onClick={() => setJmaxNum(n)} style={{ flex: 1, padding: '4px', fontSize: '11px', minHeight: '30px', margin: 0 }}>
-                    {n}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Clicks */}
-            <div style={{ marginTop: '8px' }}>
-              <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Clic (0..9)</span>
-              <div style={{ display: 'flex', gap: '3px', marginTop: '4px', overflowX: 'auto' }}>
-                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(c => (
-                  <button key={c} type="button" className={`btn-candy ${jmaxClick === c ? 'primary' : ''}`} onClick={() => setJmaxClick(c)} style={{ flex: 1, padding: '2px', fontSize: '10px', minHeight: '28px', margin: 0 }}>
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Microns Gauge Spectrum */}
-            <div style={{ marginTop: '12px', padding: '10px', backgroundColor: 'var(--bg-canvas)', border: '2px solid var(--border-color)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontSize: '13px', fontWeight: '900', color: 'var(--color-text)' }}>~{currentMicrons} µm</div>
-                <div style={{ fontSize: '9.5px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
-                  {currentMicrons < 400 ? '☕ Espresso Fino' : currentMicrons < 850 ? '💧 Filtrado Medio (V60 / Aero)' : '🫖 Prensa Francesa Grueso'}
+              {/* Badges de Parámetros Clave */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                <div style={{ background: 'var(--bg-canvas)', padding: '8px', borderRadius: '6px', border: '1.5px solid var(--border-color)', textAlign: 'center' }}>
+                  <div style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>Ratio / Agua</div>
+                  <div style={{ fontSize: '12px', fontWeight: '900', color: 'var(--color-crimson)' }}>
+                    {aiRecommendation.ratio} ({aiRecommendation.water_total_g || Math.round(doseInG * (parseFloat(aiRecommendation.ratio?.split(':')[1]) || 15))}g)
+                  </div>
+                </div>
+                <div style={{ background: 'var(--bg-canvas)', padding: '8px', borderRadius: '6px', border: '1.5px solid var(--border-color)', textAlign: 'center' }}>
+                  <div style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>Temperatura</div>
+                  <div style={{ fontSize: '12px', fontWeight: '900' }}>{aiRecommendation.temperature}°C</div>
+                </div>
+                <div style={{ background: 'var(--bg-canvas)', padding: '8px', borderRadius: '6px', border: '1.5px solid var(--border-color)', textAlign: 'center' }}>
+                  <div style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>Tiempo Total</div>
+                  <div style={{ fontSize: '12px', fontWeight: '900' }}>{aiRecommendation.brew_time}</div>
                 </div>
               </div>
-              <span style={{ fontSize: '18px' }}>{currentMicrons < 400 ? '⚡' : currentMicrons < 850 ? '☕' : '🫖'}</span>
+
+              {/* Sección Molienda y Molinos */}
+              <div style={{ background: 'var(--bg-canvas)', padding: '10px 12px', borderRadius: '6px', border: '1.5px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', color: 'var(--color-crimson)', fontFamily: 'var(--font-heading)' }}>
+                    ⚙️ Molienda: {aiRecommendation.grind_microns || aiRecommendation.grind || 'Medio-Fino'}
+                  </span>
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', background: 'var(--color-crimson)', color: '#FFF', padding: '2px 6px', borderRadius: '4px' }}>
+                    J-Max: {aiRecommendation.jmax_rot !== undefined ? `${aiRecommendation.jmax_rot}.${aiRecommendation.jmax_num}.${aiRecommendation.jmax_click}` : (aiRecommendation.grinders?.jmax || '1.5.0')}
+                  </span>
+                </div>
+                {aiRecommendation.grinders && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', fontSize: '9.5px', marginTop: '4px', borderTop: '1px dashed var(--border-color)', paddingTop: '4px' }}>
+                    <div><strong>Comandante C40:</strong> {aiRecommendation.grinders.comandante || '22 clics'}</div>
+                    <div><strong>Timemore C2/C3:</strong> {aiRecommendation.grinders.timemore || '16 clics'}</div>
+                    <div><strong>Baratza Encore:</strong> {aiRecommendation.grinders.baratza || '14'}</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Vertidos (Pours) */}
+              {aiRecommendation.pours && aiRecommendation.pours.length > 0 && (
+                <div style={{ borderTop: '1px dashed var(--border-color)', paddingTop: '10px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', color: 'var(--color-crimson)', marginBottom: '6px', fontFamily: 'var(--font-heading)' }}>
+                    💧 Guía de Vertidos por Etapas ({doseInG}g café)
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {aiRecommendation.pours.map(p => (
+                      <div key={p.step || p.label} style={{ padding: '8px 10px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '10.5px', fontWeight: '900', color: 'var(--color-crimson)' }}>
+                            Paso {p.step}: {p.label}
+                          </span>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9.5px', fontWeight: '800', backgroundColor: '#FFFFFF', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+                            ⏱️ {p.time}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', fontSize: '10px', fontWeight: 'bold' }}>
+                          <span>Vertido: +{p.water_g || p.water}g</span>
+                          {p.total_water_g && <span>Acumulado: {p.total_water_g}g</span>}
+                        </div>
+                        {p.description && <div style={{ fontSize: '9.5px', color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{p.description}</div>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Pasos */}
+              {aiRecommendation.steps && aiRecommendation.steps.length > 0 && (
+                <div style={{ borderTop: '1px dashed var(--border-color)', paddingTop: '10px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', color: 'var(--color-text)', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>
+                    📋 Pasos de Preparación:
+                  </div>
+                  <ol style={{ margin: 0, paddingLeft: '18px', fontSize: '10.5px', color: 'var(--color-text-muted)' }}>
+                    {aiRecommendation.steps.map((st, idx) => (
+                      <li key={idx} style={{ marginBottom: '2px' }}>{st}</li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+
+              <div style={{ fontSize: '10.5px', color: 'var(--color-text)', borderTop: '1px dashed var(--border-color)', paddingTop: '8px', marginTop: '2px', lineHeight: 1.4 }}>
+                <strong>Notas Barista / Perfil:</strong> {aiRecommendation.notes}
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <button type="button" className="btn-candy primary" onClick={handleApplyAiRecipe} style={{ flex: 1, padding: '8px', fontSize: '11px', minHeight: '34px' }}>
+                  Aplicar Receta y Molienda al Formulario
+                </button>
+                <button type="button" className="btn-candy" onClick={() => setAiRecommendation(null)} style={{ padding: '6px 12px', fontSize: '11px', minHeight: '34px', margin: 0 }}>Cerrar</button>
+              </div>
             </div>
-          </div>
-          {method === 'Espresso' && (
-            <><div className="bento-widget"><div className="bento-header"><span>Pre-Inf</span><Timer size={16} /></div><div className="bento-value-container"><input type="number" value={espressoPreinfusion} onChange={(e) => setEspressoPreinfusion(parseInt(e.target.value) || 0)} /><span className="unit">sec</span></div><div className="bento-controls"><button type="button" className="bento-btn" onClick={() => setEspressoPreinfusion(p => Math.max(0, p - 1))}>-</button><div className="bento-info">BLOOM</div><button type="button" className="bento-btn" onClick={() => setEspressoPreinfusion(p => p + 1)}>+</button></div></div><div className="bento-widget"><div className="bento-header"><span>Timer</span><Timer size={16} /></div><div className="bento-value-container"><input type="text" style={{ fontSize: '24px' }} value={brewTime} onChange={(e) => setBrewTime(e.target.value)} /></div><div className="bento-controls" style={{ justifyContent: 'center' }}><div className="bento-info">DURATION</div></div></div></>
+          ) : (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button type="button" className="btn-candy" onClick={handleAiRecommend} disabled={aiLoading} style={{ flex: 1, margin: 0, padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', minHeight: '34px' }}>
+                {aiLoading ? <span>Generando... 🧠</span> : <span>Diseñar Receta IA ✨</span>}
+              </button>
+              <button type="button" className="btn-candy" onClick={handleAiTuneRecipe} disabled={aiLoading} style={{ flex: 1, margin: 0, padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', minHeight: '34px' }}>
+                {aiLoading ? <span>Recalibrando... 🔧</span> : <span>Recalibrar IA 🔧</span>}
+              </button>
+            </div>
           )}
         </div>
 
-        <div className="candy-card static" style={{ marginTop: '0' }}>
-          <div style={{ borderTop: '1.5px solid var(--border-color)', marginTop: '12px', paddingTop: '12px' }}>
-            <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', textTransform: 'uppercase', margin: '0 0 10px 0' }}>Evaluación Sensorial (Taza Perfecta)</h4>
-            <div className="form-group"><label style={{ fontSize: '9px' }}>Balance Sensorial (Predominante)</label><div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>{['Ácido', 'Dulce', 'Amargo'].map(b => (<button key={b} type="button" className="btn-candy" onClick={() => setSensoryBalance(b)} style={{ flex: 1, minHeight: '34px', fontSize: '11px', padding: '4px', margin: 0, backgroundColor: sensoryBalance === b ? 'var(--color-text)' : 'var(--bg-card)', color: sensoryBalance === b ? '#FFF' : 'var(--color-text)', boxShadow: sensoryBalance === b ? 'none' : '2px 2px 0px var(--border-color)', transform: sensoryBalance === b ? 'translate(1px, 1px)' : 'none' }}>{b}</button>))}</div></div>
-            <div className="form-group"><label style={{ fontSize: '9px' }}>Cuerpo / Textura</label><div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>{['Ligero', 'Medio', 'Sedoso'].map(b => (<button key={b} type="button" className="btn-candy" onClick={() => setSensoryBody(b)} style={{ flex: 1, minHeight: '34px', fontSize: '11px', padding: '4px', margin: 0, backgroundColor: sensoryBody === b ? 'var(--color-text)' : 'var(--bg-card)', color: sensoryBody === b ? '#FFF' : 'var(--color-text)', boxShadow: sensoryBody === b ? 'none' : '2px 2px 0px var(--border-color)', transform: sensoryBody === b ? 'translate(1px, 1px)' : 'none' }}>{b}</button>))}</div></div>
-            <div className="form-group"><label style={{ fontSize: '9px' }}>Nivel de Extracción</label><div style={{ display: 'flex', gap: '6px' }}>{['Sub', 'En Punto', 'Sobre'].map(b => (<button key={b} type="button" className="btn-candy" onClick={() => setSensoryExtraction(b)} style={{ flex: 1, minHeight: '34px', fontSize: '11px', padding: '4px', margin: 0, backgroundColor: sensoryExtraction === b ? 'var(--color-text)' : 'var(--bg-card)', color: sensoryExtraction === b ? '#FFF' : 'var(--color-text)', boxShadow: sensoryExtraction === b ? 'none' : '2px 2px 0px var(--border-color)', transform: sensoryExtraction === b ? 'translate(1px, 1px)' : 'none' }}>{b === 'Sub' ? 'Sub (Agrio)' : b === 'Sobre' ? 'Sobre (Amargo)' : 'En Punto'}</button>))}</div></div>
-            <div className="form-group" style={{ marginTop: '12px' }}><label style={{ fontSize: '9px' }}>Notas / Comentarios de Extracción</label><input className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Muy balanceado, dulzor intenso, retrogusto largo" /></div>
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
+          <details className="bento-accordion" open>
+            <summary className="bento-accordion-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Scale size={16} color="var(--color-crimson)" />
+                <span>Parámetros Base</span>
+              </div>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>▼</span>
+            </summary>
+            <div className="bento-grid" style={{ marginTop: '12px', marginBottom: 0 }}>
+              <div className="bento-widget accent"><div className="bento-header"><span>Grams</span><Scale size={16} /></div><div className="bento-value-container"><input type="number" step="0.1" value={doseInG} onChange={(e) => setDoseInG(parseFloat(e.target.value) || 0)} /><span className="unit">g</span></div><div className="bento-controls"><button type="button" className="bento-btn" onClick={() => setDoseInG(d => Math.max(0, d - 0.5))}>-</button><div className="bento-info">DOSE</div><button type="button" className="bento-btn" onClick={() => setDoseInG(d => d + 0.5)}>+</button></div></div>
+              <div className="bento-widget"><div className="bento-header"><span>{method !== 'Espresso' ? 'Ratio' : 'Yield'}</span><Droplet size={16} color="var(--color-crimson)" /></div><div className="bento-value-container">{method !== 'Espresso' ? (<><span style={{ fontSize: '28px', fontWeight: '900', fontFamily: 'var(--font-mono)' }}>1:</span><input type="number" step="0.1" style={{ textAlign: 'left', color: 'var(--color-crimson)' }} value={ratioVal} onChange={(e) => setRatioVal(parseFloat(e.target.value) || 0)} /></>) : (<><input type="number" step="0.5" style={{ color: 'var(--color-crimson)' }} value={doseOutG} onChange={(e) => setDoseOutG(parseFloat(e.target.value) || 0)} /><span className="unit" style={{ color: 'var(--color-crimson)' }}>g</span></>)}</div><div className="bento-controls"><button type="button" className="bento-btn" onClick={() => method !== 'Espresso' ? setRatioVal(r => Math.max(1, r - 0.5)) : setDoseOutG(d => Math.max(0, d - 1))}>-</button><div className="bento-info">TARGET</div><button type="button" className="bento-btn" onClick={() => method !== 'Espresso' ? setRatioVal(r => r + 0.5) : setDoseOutG(d => d + 1)}>+</button></div><div className="bento-info" style={{ marginTop: '2px', color: 'var(--color-text-muted)' }}>{method !== 'Espresso' ? `OUT: ${(doseInG * (ratioVal || 0)).toFixed(0)} g` : `1:${(doseOutG / (doseInG || 1)).toFixed(1)}`}</div></div>
+              <div className="bento-widget"><div className="bento-header"><span>Temp</span><Thermometer size={16} /></div><div className="bento-value-container"><input type="number" style={{ color: 'var(--color-crimson)' }} value={waterTemp} onChange={(e) => setWaterTemp(parseInt(e.target.value) || 93)} /><span className="unit" style={{ color: 'var(--color-crimson)' }}>°C</span></div><div className="bento-controls"><button type="button" className="bento-btn" onClick={() => setWaterTemp(t => Math.max(80, t - 1))}>-</button><div className="bento-info">WATER</div><button type="button" className="bento-btn" onClick={() => setWaterTemp(t => Math.min(100, t + 1))}>+</button></div></div>
+              {method === 'Espresso' ? (
+                <div className="bento-widget accent"><div className="bento-header"><span>Pressure</span><Gauge size={16} /></div><div className="bento-value-container"><input type="number" step="0.5" value={espressoPressure} onChange={(e) => setEspressoPressure(parseFloat(e.target.value) || 9)} /><span className="unit">bar</span></div><div className="bento-controls"><button type="button" className="bento-btn" onClick={() => setEspressoPressure(p => Math.max(0, p - 0.5))}>-</button><div className="bento-info">EXTRACT</div><button type="button" className="bento-btn" onClick={() => setEspressoPressure(p => p + 0.5)}>+</button></div></div>
+              ) : (
+                <div className="bento-widget"><div className="bento-header"><span>Timer</span><Timer size={16} /></div><div className="bento-value-container" style={{ position: 'relative' }}><input type="text" style={{ fontSize: '24px' }} value={brewTime} onChange={(e) => setBrewTime(e.target.value)} /></div><div className="bento-controls" style={{ justifyContent: 'center' }}><div className="bento-info">DURATION</div></div></div>
+              )}
+            </div>
+          </details>
+
+          {/* Section 2: J-Max Grinder */}
+          <details className="bento-accordion" open>
+            <summary className="bento-accordion-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Coffee size={16} color="var(--color-crimson)" />
+                <span>Molienda 1Zpresso J-Max</span>
+              </div>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>▼</span>
+            </summary>
+            <div style={{ marginTop: '10px' }}>
+              {/* Rotations */}
+              <div>
+                <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Rotación (0..4)</span>
+                <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                  {[0, 1, 2, 3, 4].map(r => (
+                    <button key={r} type="button" className={`btn-candy ${jmaxRot === r ? 'primary' : ''}`} onClick={() => setJmaxRot(r)} style={{ flex: 1, padding: '4px', fontSize: '12px', minHeight: '30px', margin: 0 }}>
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Numbers */}
+              <div style={{ marginTop: '8px' }}>
+                <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Número (0..8)</span>
+                <div style={{ display: 'flex', gap: '4px', marginTop: '4px', overflowX: 'auto' }}>
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(n => (
+                    <button key={n} type="button" className={`btn-candy ${jmaxNum === n ? 'primary' : ''}`} onClick={() => setJmaxNum(n)} style={{ flex: 1, padding: '4px', fontSize: '11px', minHeight: '30px', margin: 0 }}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Clicks */}
+              <div style={{ marginTop: '8px' }}>
+                <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Clic (0..9)</span>
+                <div style={{ display: 'flex', gap: '3px', marginTop: '4px', overflowX: 'auto' }}>
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(c => (
+                    <button key={c} type="button" className={`btn-candy ${jmaxClick === c ? 'primary' : ''}`} onClick={() => setJmaxClick(c)} style={{ flex: 1, padding: '2px', fontSize: '10px', minHeight: '28px', margin: 0 }}>
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Microns Gauge Spectrum */}
+              <div style={{ marginTop: '12px', padding: '10px', backgroundColor: 'var(--bg-canvas)', border: '2px solid var(--border-color)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: '900', color: 'var(--color-text)' }}>~{currentMicrons} µm</div>
+                  <div style={{ fontSize: '9.5px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
+                    {currentMicrons < 400 ? '☕ Espresso Fino' : currentMicrons < 850 ? '💧 Filtrado Medio (V60 / Aero)' : '🫖 Prensa Francesa Grueso'}
+                  </div>
+                </div>
+                <span style={{ fontSize: '18px' }}>{currentMicrons < 400 ? '⚡' : currentMicrons < 850 ? '☕' : '🫖'}</span>
+              </div>
+            </div>
+          </details>
+
+          {/* Section 3: Sensory Evaluation */}
+          <details className="bento-accordion">
+            <summary className="bento-accordion-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px' }}>🧪</span>
+                <span>Evaluación Sensorial (Taza Perfecta)</span>
+              </div>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>▼</span>
+            </summary>
+            <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className="form-group"><label style={{ fontSize: '9px' }}>Balance Sensorial (Predominante)</label><div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>{['Ácido', 'Dulce', 'Amargo'].map(b => (<button key={b} type="button" className="btn-candy" onClick={() => setSensoryBalance(b)} style={{ flex: 1, minHeight: '34px', fontSize: '11px', padding: '4px', margin: 0, backgroundColor: sensoryBalance === b ? 'var(--color-text)' : 'var(--bg-card)', color: sensoryBalance === b ? '#FFF' : 'var(--color-text)', boxShadow: sensoryBalance === b ? 'none' : '2px 2px 0px var(--border-color)', transform: sensoryBalance === b ? 'translate(1px, 1px)' : 'none' }}>{b}</button>))}</div></div>
+              <div className="form-group"><label style={{ fontSize: '9px' }}>Cuerpo / Textura</label><div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>{['Ligero', 'Medio', 'Sedoso'].map(b => (<button key={b} type="button" className="btn-candy" onClick={() => setSensoryBody(b)} style={{ flex: 1, minHeight: '34px', fontSize: '11px', padding: '4px', margin: 0, backgroundColor: sensoryBody === b ? 'var(--color-text)' : 'var(--bg-card)', color: sensoryBody === b ? '#FFF' : 'var(--color-text)', boxShadow: sensoryBody === b ? 'none' : '2px 2px 0px var(--border-color)', transform: sensoryBody === b ? 'translate(1px, 1px)' : 'none' }}>{b}</button>))}</div></div>
+              <div className="form-group"><label style={{ fontSize: '9px' }}>Nivel de Extracción</label><div style={{ display: 'flex', gap: '6px' }}>{['Sub', 'En Punto', 'Sobre'].map(b => (<button key={b} type="button" className="btn-candy" onClick={() => setSensoryExtraction(b)} style={{ flex: 1, minHeight: '34px', fontSize: '11px', padding: '4px', margin: 0, backgroundColor: sensoryExtraction === b ? 'var(--color-text)' : 'var(--bg-card)', color: sensoryExtraction === b ? '#FFF' : 'var(--color-text)', boxShadow: sensoryExtraction === b ? 'none' : '2px 2px 0px var(--border-color)', transform: sensoryExtraction === b ? 'translate(1px, 1px)' : 'none' }}>{b === 'Sub' ? 'Sub (Agrio)' : b === 'Sobre' ? 'Sobre (Amargo)' : 'En Punto'}</button>))}</div></div>
+              
+              {sensoryExtraction !== 'En Punto' && (
+                <button 
+                  type="button" 
+                  className="btn-candy primary" 
+                  onClick={handleAiTuneRecipe} 
+                  disabled={aiLoading} 
+                  style={{ width: '100%', marginTop: '6px', padding: '10px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                >
+                  {aiLoading ? <span>Recalibrando Receta... 🧠</span> : <span>🤖 Recalibrar Receta con Gemini IA (Ajustar Molienda y Vertidos)</span>}
+                </button>
+              )}
+
+              <div className="form-group" style={{ marginTop: '4px' }}><label style={{ fontSize: '9px' }}>Notas / Comentarios de Extracción</label><input className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Muy balanceado, dulzor intenso, retrogusto largo" /></div>
+            </div>
+          </details>
         </div>
 
         <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '16px', fontSize: '15px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>

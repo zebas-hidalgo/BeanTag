@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Nfc, RefreshCw, Trash2, Copy, X, CheckCircle, Smartphone, ExternalLink } from 'lucide-react';
+import { Nfc, RefreshCw, Trash2, Copy, X, CheckCircle, Smartphone, Share2, ExternalLink } from 'lucide-react';
+import { copyToClipboard } from '../utils/clipboard';
 
 export default function NfcToolsModal({ onClose, showToast }) {
   const [batches, setBatches] = useState([]);
@@ -24,17 +25,36 @@ export default function NfcToolsModal({ onClose, showToast }) {
       .catch(() => {});
   }, []);
 
-  const handleCopyUrl = (batchId) => {
-    const url = `${window.location.origin}/batch/${batchId || selectedBatchId}`;
-    navigator.clipboard.writeText(url);
-    if (showToast) {
-      showToast('📋 URL de lote copiada al portapapeles.', { type: 'success', duration: 2500 });
+  const getTargetUrl = (batchId) => {
+    const id = batchId || selectedBatchId || (batches.length > 0 ? batches[0].id : '');
+    const origin = window.location.origin;
+    return id ? `${origin}/beantag/?batch=${encodeURIComponent(id)}&action=new_brew` : `${origin}/beantag/`;
+  };
+
+  const handleCopyUrl = async (batchId) => {
+    const url = getTargetUrl(batchId);
+    const targetId = batchId || selectedBatchId || (batches.length > 0 ? batches[0].id : '');
+    if (!targetId) {
+      if (showToast) showToast('Selecciona un lote para generar su link NFC.', { type: 'error' });
+      return;
+    }
+    const success = await copyToClipboard(url);
+    if (success) {
+      setStatusMessage(`✅ Link NFC copiado: ${url}`);
+      if (showToast) {
+        showToast(`📋 Link WebNFC copiado al portapapeles.`, { type: 'success', duration: 3500 });
+      }
+    } else {
+      setStatusMessage(`⚠️ URL del Lote: ${url}`);
+      if (showToast) {
+        showToast(`URL generada: ${url}`, { type: 'info', duration: 4000 });
+      }
     }
   };
 
   const handleStartScan = async () => {
     if (!hasNfc) {
-      if (showToast) showToast('WebNFC directo no disponible en iOS Safari. Usa el modo iPhone.', { type: 'info' });
+      if (showToast) showToast('WebNFC directo no disponible en este navegador. Usa la URL del lote.', { type: 'info' });
       return;
     }
     try {
@@ -86,34 +106,40 @@ export default function NfcToolsModal({ onClose, showToast }) {
   };
 
   const handleCloneBatchTag = async () => {
-    if (!hasNfc) {
-      handleCopyUrl(selectedBatchId);
+    const targetId = selectedBatchId || (batches.length > 0 ? batches[0].id : '');
+    if (!targetId) {
+      if (showToast) showToast('Selecciona un lote para vincular.', { type: 'error' });
       return;
     }
-    if (!selectedBatchId) {
-      if (showToast) showToast('Selecciona un lote para clonar.', { type: 'error' });
+    const targetUrl = `${window.location.origin}/batch/${targetId}`;
+
+    if (!hasNfc) {
+      await handleCopyUrl(targetId);
       return;
     }
     try {
       setIsProcessing(true);
-      setStatusMessage(`Acerca la etiqueta para vincular lote ${selectedBatchId}...`);
+      setStatusMessage(`Acerca la etiqueta para vincular lote ${targetId}...`);
       const ndef = new window.NDEFReader();
       await ndef.write({
-        records: [{ recordType: 'url', data: `${window.location.origin}/batch/${selectedBatchId}` }]
+        records: [{ recordType: 'url', data: targetUrl }]
       });
-      setStatusMessage(`🎉 Tag vinculado con éxito al lote: ${selectedBatchId}`);
-      if (showToast) showToast(`Tag grabado con lote ${selectedBatchId}`, { type: 'success' });
+      setStatusMessage(`🎉 Tag vinculado con éxito al lote: ${targetId}`);
+      if (showToast) showToast(`Tag grabado con lote ${targetId}`, { type: 'success' });
       setIsProcessing(false);
     } catch (error) {
-      setStatusMessage('❌ Error al clonar: ' + error.message);
       setIsProcessing(false);
+      await handleCopyUrl(targetId);
+      setStatusMessage(`⚠️ WebNFC directo no permitido en HTTP. URL copiada al portapapeles: ${targetUrl}`);
     }
   };
 
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'rgba(26, 5, 5, 0.75)',
+      backgroundColor: 'rgba(18, 10, 8, 0.65)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
       zIndex: 120, display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '16px', boxSizing: 'border-box'
     }} onClick={onClose}>
@@ -129,7 +155,7 @@ export default function NfcToolsModal({ onClose, showToast }) {
             <Nfc size={18} color="var(--color-crimson)" />
             Herramientas NFC {isIos ? '(iPhone / iOS)' : ''}
           </h3>
-          <button type="button" className="btn-candy" style={{ padding: '4px 8px', margin: 0 }} onClick={onClose}>
+          <button type="button" className="btn-candy" style={{ padding: '4px 8px', margin: 0 }} onClick={onClose} aria-label="Cerrar modal de herramientas NFC">
             <X size={16} />
           </button>
         </div>
@@ -199,7 +225,7 @@ export default function NfcToolsModal({ onClose, showToast }) {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <label style={{ fontSize: '11px', fontWeight: 'bold', fontFamily: 'var(--font-heading)', textTransform: 'uppercase' }}>
-                Copiar URL de Lote para Grabar en iPhone:
+                Seleccionar Lote de Café:
               </label>
               <select
                 className="candy-input"
@@ -214,15 +240,55 @@ export default function NfcToolsModal({ onClose, showToast }) {
                 ))}
               </select>
 
-              <button
-                type="button"
-                className="btn-candy primary"
-                onClick={() => handleCopyUrl(selectedBatchId)}
-                style={{ padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', margin: 0 }}
-              >
-                <Copy size={14} />
-                Copiar URL del Lote ({selectedBatchId})
-              </button>
+              <label style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                URL Directa para NFC / QR (Haz clic para seleccionar todo):
+              </label>
+              <input
+                type="text"
+                readOnly
+                className="candy-input"
+                value={getTargetUrl(selectedBatchId)}
+                onClick={e => e.target.select()}
+                style={{
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '11px',
+                  backgroundColor: 'var(--bg-canvas)',
+                  cursor: 'pointer'
+                }}
+              />
+
+              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                <button
+                  type="button"
+                  className="btn-candy primary"
+                  onClick={() => handleCopyUrl(selectedBatchId)}
+                  style={{ padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: 1, margin: 0 }}
+                >
+                  <Copy size={14} />
+                  Copiar URL del Lote
+                </button>
+
+                {typeof navigator !== 'undefined' && navigator.share && (
+                  <button
+                    type="button"
+                    className="btn-candy"
+                    onClick={() => {
+                      const url = getTargetUrl(selectedBatchId);
+                      navigator.share({
+                        title: 'BeanTag Specialty Coffee',
+                        text: `Ficha de café ${selectedBatchId}`,
+                        url: url
+                      }).catch(() => {});
+                    }}
+                    style={{ padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: 1, margin: 0 }}
+                  >
+                    <Share2 size={14} />
+                    Compartir
+                  </button>
+                )}
+              </div>
             </div>
 
             <p style={{ fontSize: '10.5px', color: 'var(--color-text-muted)', margin: 0, textAlign: 'center', lineHeight: '1.3' }}>

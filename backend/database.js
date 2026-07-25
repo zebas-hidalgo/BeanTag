@@ -2,13 +2,17 @@ const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
 const path = require('path');
 
+let dbInstance = null;
+
 async function getDb() {
-  const db = await open({
-    filename: path.join(__dirname, 'database.sqlite'),
-    driver: sqlite3.Database
-  });
-  await db.run('PRAGMA foreign_keys = ON;');
-  return db;
+  if (!dbInstance) {
+    dbInstance = await open({
+      filename: path.join(__dirname, 'database.sqlite'),
+      driver: sqlite3.Database
+    });
+    await dbInstance.run('PRAGMA foreign_keys = ON;');
+  }
+  return dbInstance;
 }
 
 async function initDb() {
@@ -89,6 +93,8 @@ async function initDb() {
   try {
     await db.exec('ALTER TABLE recipes ADD COLUMN espresso_preinfusion INTEGER;');
   } catch (e) {}
+
+  await db.exec('CREATE INDEX IF NOT EXISTS idx_recipes_batch_id ON recipes(batch_id);');
   
   return db;
 }

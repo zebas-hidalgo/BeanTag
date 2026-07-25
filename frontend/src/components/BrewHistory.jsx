@@ -486,7 +486,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
   // R3: Skeleton loading state
   if (history === null) return (
-    <div style={{ padding: '14px 14px 90px 14px' }}>
+    <div style={{ padding: '12px 12px 0 12px' }}>
       <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', marginBottom: '14px' }}>
         Bitácoras
       </h2>
@@ -501,7 +501,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
   );
 
   return (
-    <div style={{ padding: '14px 14px 90px 14px' }}>
+    <div style={{ padding: '12px 12px 0 12px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', margin: 0 }}>
           Bitácoras
@@ -514,7 +514,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       </div>
 
       {history.length > 0 && (
-        <div style={{ marginBottom: '16px' }}>
+        <div style={{ marginBottom: '14px' }}>
           <div style={{ position: 'relative' }}>
             <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}>
               <Search size={16} strokeWidth={2.5} />

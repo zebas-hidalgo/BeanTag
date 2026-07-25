@@ -105,17 +105,25 @@ app.post('/api/recipes', async (req, res) => {
     const defaultDose = batch ? (parseFloat(batch.dose_weight) || 20.0) : 20.0;
     const doseInVal = dose_in_g !== undefined ? parseFloat(dose_in_g) : defaultDose;
 
-    await db.run(
-      `INSERT INTO recipes (batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, doseInVal, dose_out_g, espresso_pressure, espresso_preinfusion]
-    );
+    await db.run('BEGIN TRANSACTION;');
+    try {
+      await db.run(
+        `INSERT INTO recipes (batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, doseInVal, dose_out_g, espresso_pressure, espresso_preinfusion]
+      );
 
-    // Subtract grams from batch remaining weight
-    await db.run(
-      'UPDATE batches SET remaining_weight_g = MAX(0.0, remaining_weight_g - ?) WHERE id = ?',
-      [doseInVal, batch_id]
-    );
+      // Subtract grams from batch remaining weight
+      await db.run(
+        'UPDATE batches SET remaining_weight_g = MAX(0.0, remaining_weight_g - ?) WHERE id = ?',
+        [doseInVal, batch_id]
+      );
+
+      await db.run('COMMIT;');
+    } catch (dbErr) {
+      await db.run('ROLLBACK;');
+      throw dbErr;
+    }
 
     res.status(201).json({ success: true });
   } catch (err) {
@@ -346,7 +354,7 @@ app.get('/manifest.json', (req, res) => {
   });
 });
 
-// AI Recommendation Endpoint
+// AI Recommendation Endpoint (Structured with Pours, Steps, and Calibrated Grind Settings)
 app.post('/api/recommend-recipe', async (req, res) => {
   const apiKey = req.headers['x-gemini-key'];
   if (!apiKey) {
@@ -354,26 +362,61 @@ app.post('/api/recommend-recipe', async (req, res) => {
   }
 
   const { origin, variety, process, altitude, roast_level, roaster_notes, method, dose_in_g } = req.body;
+  const dose = parseFloat(dose_in_g) || 20.0;
+  const targetMethod = method || 'V60 (Filtrado)';
 
-  const prompt = `Eres un barista experto de café de especialidad. Analiza el siguiente lote de café:
-Origen: ${origin || 'Desconocido'}
-Variedad: ${variety || 'N/A'}
-Proceso: ${process || 'N/A'}
-Altitud: ${altitude || 'N/A'}
-Nivel de tueste: ${roast_level || 'Medio'}
-Notas de cata: ${roaster_notes || 'N/A'}
+  const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad. Analiza meticulosamente el siguiente lote de café:
+- Origen: ${origin || 'Desconocido'}
+- Variedad: ${variety || 'N/A'}
+- Proceso: ${process || 'N/A'}
+- Altitud: ${altitude || 'N/A'}
+- Tueste: ${roast_level || 'Medio'}
+- Notas del Tostador: ${roaster_notes || 'N/A'}
 
-El usuario quiere preparar este café usando específicamente el método de extracción: "${method || 'V60 (Filtrado)'}" y una dosis exacta de café de: "${dose_in_g || '20.0'} gramos".
+El usuario desea preparar este café con el método: "${targetMethod}" y una dosis de entrada de: "${dose}g".
 
-Genera una receta recomendada y adaptada estrictamente para este método ("${method || 'V60 (Filtrado)'}") y dosis ("${dose_in_g || '20.0'}g"). Sé extremadamente conciso y directo en el campo "notes", limitándolo a una sola frase de máximo 12 palabras.
-Debes responder únicamente con un objeto JSON válido con el siguiente esquema exacto (no agregues formato markdown ni bloques de código \`\`\`json, solo devuelve el string JSON crudo):
+REGLAS DE CALIBRACIÓN DE MOLIENDA PARA MOLINO 1ZPRESSO J-MAX (Rotación.Número.Clic):
+- Si el método es Espresso: El rango exacto debe estar entre 1.2.5 y 1.4.2. (Punto base del calibrado del usuario: 1.3.5 -> rot=1, num=3, click=5).
+- Si el método es AeroPress: El rango exacto debe estar entre 1.8.0 y 2.1.0 (ej. rot=1, num=9, click=0 -> 1.9.0 o rot=2, num=0, click=0).
+- Si el método es V60 / Filtrado: El rango exacto debe estar entre 2.3.0 y 2.6.0 (ej. rot=2, num=4, click=5 -> 2.4.5).
+- Si el método es Prensa Francesa: El rango exacto debe estar entre 3.0.0 y 3.5.0 (ej. rot=3, num=2, click=0 -> 3.2.0).
+
+CALCULOS OBLIGATORIOS SEGÚN EL MÉTODO:
+1. Para Espresso: Ratio típico 1:2 a 1:2.5 (ej. Dosis ${dose}g -> Salida ${Math.round(dose * 2.2)}g). Tiempo 25s-30s.
+2. Para V60 / Filtrado / AeroPress / Prensa: Ratio típico 1:15 a 1:16 (ej. Dosis ${dose}g -> Agua total ${Math.round(dose * 15)}g).
+3. Molinos alternativos equivalentes: Comandante C40, Timemore C2/C3, Baratza Encore.
+4. Secuencia detallada de vertidos (pours) o extracción.
+5. Lista de pasos de preparación.
+
+Debes responder ÚNICAMENTE con un JSON crudo (sin formato markdown ni \`\`\`json):
 {
-  "method": "${method || 'V60 (Filtrado)'}",
-  "ratio": "ratio de extracción como string (ej. 1:15 o 1:16, o 1:2 para espresso)",
-  "grind": "molienda sugerida (ej. Fino, Medio-Fino, Medio, Medio-Grueso, Grueso) para este método y gramaje",
-  "temperature": 94,
-  "brew_time": "tiempo de extracción sugerido en formato string (ej: 2:30 o 0:30)",
-  "notes": "Una sola frase barística ultra corta (máximo 12 palabras) que explique por qué funciona esta receta."
+  "method": "${targetMethod}",
+  "ratio": "${targetMethod === 'Espresso' ? '1:2.2' : '1:15'}",
+  "water_total_g": ${targetMethod === 'Espresso' ? Math.round(dose * 2.2) : Math.round(dose * 15)},
+  "grind": "${targetMethod === 'Espresso' ? 'Espresso Fino (1.3.5)' : 'Medio-Fino (2.4.5)'}",
+  "grind_microns": "${targetMethod === 'Espresso' ? '125 µm' : '550 µm'}",
+  "jmax_rot": ${targetMethod === 'Espresso' ? 1 : (targetMethod.includes('Prensa') ? 3 : (targetMethod.includes('Aero') ? 1 : 2))},
+  "jmax_num": ${targetMethod === 'Espresso' ? 3 : (targetMethod.includes('Prensa') ? 2 : (targetMethod.includes('Aero') ? 9 : 4))},
+  "jmax_click": ${targetMethod === 'Espresso' ? 5 : (targetMethod.includes('Prensa') ? 0 : (targetMethod.includes('Aero') ? 0 : 5))},
+  "grinders": {
+    "jmax": "${targetMethod === 'Espresso' ? '1.3.5 (1 Rot. 3 Núm. 5 Clics)' : '2.4.5 (2 Rot. 4 Núm. 5 Clics)'}",
+    "comandante": "${targetMethod === 'Espresso' ? '8-10 clics' : '22-24 clics'}",
+    "timemore": "${targetMethod === 'Espresso' ? '8-9 clics' : '16-18 clics'}",
+    "baratza": "${targetMethod === 'Espresso' ? 'Ajuste 4-6' : 'Ajuste 14-16'}"
+  },
+  "temperature": ${targetMethod === 'Espresso' ? 92 : 93},
+  "brew_time": "${targetMethod === 'Espresso' ? '28s' : '2:30 min'}",
+  "pours": [
+    { "step": 1, "label": "${targetMethod === 'Espresso' ? 'Pre-infusión Espresso' : 'Bloom / Pre-infusión'}", "water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 0.5) : 60}, "total_water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 0.5) : 60}, "time": "${targetMethod === 'Espresso' ? '0s - 5s' : '0:00 - 0:45'}", "description": "${targetMethod === 'Espresso' ? 'Pre-infusión a baja presión (3 bar) para humedecer la pastilla.' : 'Verter 60g de agua en espiral para desgasificar.'}" },
+    { "step": 2, "label": "${targetMethod === 'Espresso' ? 'Extracción Principal (9 bar)' : '1º Vertido Principal'}", "water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 2.2 - dose * 0.5) : Math.round(dose * 15 - 60)}, "total_water_g": ${Math.round(targetMethod === 'Espresso' ? dose * 2.2 : dose * 15)}, "time": "${targetMethod === 'Espresso' ? '5s - 28s' : '0:45 - 2:30'}", "description": "${targetMethod === 'Espresso' ? 'Rampa de presión continua a 9 bar hasta alcanzar volumen objetivo.' : 'Vertido continuo en pulso medio.'}" }
+  ],
+  "steps": [
+    "Purgar y secar el portafiltro o recipiente.",
+    "Pesar ${dose}g de café y moler en J-Max a la posición calibrada (${targetMethod === 'Espresso' ? '1.3.5' : '2.4.5'}).",
+    "${targetMethod === 'Espresso' ? 'Distribuir con WDT, nivelar y apisonar con 15kg de fuerza.' : 'Realizar vertidos según la tabla de tiempos y gramos.'}",
+    "Extraer y disfrutar."
+  ],
+  "notes": "${targetMethod === 'Espresso' ? 'Espresso denso y cremoso con crema persistente y acidez dulce muy integrada.' : 'Taza limpia, brillante y balanceada.'}"
 }`;
 
   try {
@@ -382,9 +425,7 @@ Debes responder únicamente con un objeto JSON válido con el siguiente esquema 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }]
-        }]
+        contents: [{ parts: [{ text: prompt }] }]
       })
     });
 
@@ -395,14 +436,92 @@ Debes responder únicamente con un objeto JSON válido con el siguiente esquema 
 
     const data = await response.json();
     let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    
-    // Clean up markdown block format
     text = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
     const recommendation = JSON.parse(text);
     res.json(recommendation);
   } catch (err) {
     res.status(500).json({ error: 'Error al procesar la recomendación: ' + err.message });
+  }
+});
+
+// AI Recipe Re-calibration Endpoint (Smart Tuning based on Sensory Feedback)
+app.post('/api/ai/tune-recipe', async (req, res) => {
+  const apiKey = req.headers['x-gemini-key'];
+  if (!apiKey) {
+    return res.status(400).json({ error: 'Falta la clave API de Gemini en las cabeceras' });
+  }
+
+  const { method, dose_in_g, ratio, temperature, jmax_rot, jmax_num, jmax_click, sensory_extraction, sensory_balance, sensory_body, user_notes, batch_name } = req.body;
+  const dose = parseFloat(dose_in_g) || 20.0;
+
+  const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad. El usuario preparó una receta de café "${batch_name || 'Especialidad'}" con ${method}:
+Dosis: ${dose}g, Ratio: ${ratio || '1:15'}, Temp: ${temperature || 93}°C, Molino J-Max: ${jmax_rot}.${jmax_num}.${jmax_click}.
+
+Resultado Sensorial Evaluado:
+- Extracción: ${sensory_extraction || 'Sub (Agrio)'}
+- Balance: ${sensory_balance || 'Desconocido'}
+- Cuerpo: ${sensory_body || 'Desconocido'}
+- Notas del Barista: ${user_notes || 'Ninguna'}
+
+RECALIBRA científicamente la receta para corregir los defectos (${sensory_extraction}) y alcanzar la taza perfecta.
+Explica la corrección física aplicada y devuelve todos los parámetros corregidos (J-Max rot/num/click, molinos alternativos, vertidos y pasos).
+
+Debes responder ÚNICAMENTE con un JSON crudo (sin formato markdown ni \`\`\`json):
+{
+  "correction_reason": "Explicación barística directa de la corrección (máx 25 palabras)",
+  "method": "${method}",
+  "ratio": "1:16",
+  "water_total_g": ${Math.round(dose * 16)},
+  "grind": "Medio-Fino Corregido",
+  "grind_microns": "580 µm",
+  "jmax_rot": ${jmax_rot},
+  "jmax_num": ${jmax_num + 1 > 8 ? 0 : jmax_num + 1},
+  "jmax_click": ${jmax_click},
+  "grinders": {
+    "jmax": "${jmax_rot}.${jmax_num + 1 > 8 ? 0 : jmax_num + 1}.${jmax_click}",
+    "comandante": "23 clics",
+    "timemore": "17 clics",
+    "baratza": "Ajuste 15"
+  },
+  "temperature": 94,
+  "brew_time": "2:35",
+  "pours": [
+    { "step": 1, "label": "Bloom Corregido", "water_g": 60, "total_water_g": 60, "time": "0:00 - 0:45", "description": "Bloom con agitación suave para evitar canalizaciones." },
+    { "step": 2, "label": "1º Vertido Principal", "water_g": 140, "total_water_g": 200, "time": "0:45 - 1:30", "description": "Vertido continuo para mantener temperatura constante." },
+    { "step": 3, "label": "2º Vertido Final", "water_g": 120, "total_water_g": 320, "time": "1:30 - 2:35", "description": "Finalizar extracción y asentar cama de café." }
+  ],
+  "steps": [
+    "Ajustar molino J-Max a la nueva posición corregida.",
+    "Aumentar temperatura de agua a 94°C.",
+    "Seguir la nueva secuencia de vertidos indicada."
+  ],
+  "notes": "Taza dulzona, bien balanceada con excelente extracción y claridad limpia."
+}`;
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json();
+      return res.status(response.status).json({ error: errData.error?.message || 'Error Gemini' });
+    }
+
+    const data = await response.json();
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    const tunedRecommendation = JSON.parse(text);
+    res.json(tunedRecommendation);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al recalibrar la receta: ' + err.message });
   }
 });
 
