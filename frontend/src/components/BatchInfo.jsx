@@ -142,7 +142,7 @@ export default function BatchInfo({ batch, onBack, onSubtractDose, onSaveRecipe,
             customNotes = notesStr.trim();
           }
         }
-        if (scaTags.length === 0 && !customNotes) return null;
+        if ((scaTags.length === 0 && !customNotes) || batch.freeze_date) return null;
         return (
           <div style={{ marginTop: '14px', marginBottom: '14px', padding: '12px', backgroundColor: 'var(--bg-card)', border: '2px solid #000000', borderRadius: '8px', boxShadow: '3px 3px 0px #000000' }}>
             <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 10px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>

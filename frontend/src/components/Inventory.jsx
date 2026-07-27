@@ -92,7 +92,8 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
                   )}
                 </div>
               </div>
-              <RenderScaChips notesStr={batch.roaster_notes || batch.notes} />
+              {/* Render tasting notes only if not frozen */}
+              {!batch.freeze_date && <RenderScaChips notesStr={batch.roaster_notes || batch.notes} />}
               
               {/* Liquid Weight Progress Bar */}
               <div className="weight-progress-container">
