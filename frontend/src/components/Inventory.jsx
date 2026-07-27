@@ -55,9 +55,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
 
           // Roast Freshness Peak meter calculation
           let freshnessBadge = null;
-          if (batch.freeze_date) {
-            freshnessBadge = { label: '❄️ CONGELADO', class: 'freshness-frozen' };
-          } else if (batch.roast_date) {
+          if (!batch.freeze_date && batch.roast_date) {
             const rDate = new Date(batch.roast_date);
             const today = new Date();
             const days = Math.floor((today - rDate) / (1000 * 60 * 60 * 24));
