@@ -47,19 +47,27 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
           const isLowStock = batch.remaining_doses <= 2;
           const hasRecipes = batch.recipes && batch.recipes.length > 0;
 
-          // Degas status
-          let degasBadge = null;
-          if (batch.roast_date) {
+          // Weight progress calculations
+          const currentWeight = parseFloat(batch.remaining_weight_g || 0);
+          const totalWeight = parseFloat(batch.total_weight_g || (batch.total_doses * (parseFloat(batch.dose_weight) || 20)) || 250);
+          const weightPct = Math.min(100, Math.max(0, Math.round((currentWeight / totalWeight) * 100)));
+          const fillClass = weightPct > 50 ? 'fill-high' : (weightPct > 20 ? 'fill-mid' : 'fill-low');
+
+          // Roast Freshness Peak meter calculation
+          let freshnessBadge = null;
+          if (batch.freeze_date) {
+            freshnessBadge = { label: '❄️ CONGELADO', class: 'freshness-frozen' };
+          } else if (batch.roast_date) {
             const rDate = new Date(batch.roast_date);
             const today = new Date();
             const days = Math.floor((today - rDate) / (1000 * 60 * 60 * 24));
             if (!isNaN(days) && days >= 0) {
-              if (days < 7) {
-                degasBadge = { label: `🟢 ${days}d reposo`, bg: '#FEF9C3', color: '#713F12' };
-              } else if (days <= 30) {
-                degasBadge = { label: `⚡ ${days}d óptimo`, bg: '#DCFCE7', color: '#14532D' };
+              if (days < 5) {
+                freshnessBadge = { label: `💨 REPOSO (${days}D)`, class: 'freshness-degassing' };
+              } else if (days <= 25) {
+                freshnessBadge = { label: `✨ ÓPTIMO (${days}D)`, class: 'freshness-peak' };
               } else {
-                degasBadge = { label: `⚠️ ${days}d antiguo`, bg: '#FEE2E2', color: '#7F1D1D' };
+                freshnessBadge = { label: `⚠️ MADURO (${days}D)`, class: 'freshness-madure' };
               }
             }
           }
@@ -77,18 +85,30 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                   <span className="mono-lbl-tag">{batch.origin || 'N/A'}</span>
-                  {degasBadge && (
-                    <span style={{ fontSize: '9px', fontWeight: '800', backgroundColor: degasBadge.bg, color: degasBadge.color, padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border-color)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      {degasBadge.label}
+                  {freshnessBadge && (
+                    <span className={`roast-freshness-badge ${freshnessBadge.class}`}>
+                      {freshnessBadge.label}
                     </span>
                   )}
                 </div>
               </div>
               <RenderScaChips notesStr={batch.roaster_notes || batch.notes} />
-              <div className="mono-badge-row">
-                <span className="mono-lbl-tag outline">{batch.remaining_doses} Dosis ({batch.remaining_weight_g || 0}g)</span>
+              
+              {/* Liquid Weight Progress Bar */}
+              <div className="weight-progress-container">
+                <div className="weight-progress-header">
+                  <span>PESO RESTANTE</span>
+                  <span>{currentWeight}g / {totalWeight}g ({weightPct}%)</span>
+                </div>
+                <div className="weight-progress-track">
+                  <div className={`weight-progress-fill ${fillClass}`} style={{ width: `${weightPct}%` }} />
+                </div>
+              </div>
+
+              <div className="mono-badge-row" style={{ marginTop: '8px' }}>
+                <span className="mono-lbl-tag outline">{batch.remaining_doses} Dosis</span>
                 <span className="mono-lbl-tag outline">{batch.roast_level || 'Medio'}</span>
-                {isLowStock && <span className="mono-lbl-tag low-stock">¡Últimos tubos!</span>}
+                {isLowStock && <span className="mono-lbl-tag low-stock">¡Últimas dosis!</span>}
               </div>
               {hasRecipes && (() => {
                 const r = batch.recipes[0];

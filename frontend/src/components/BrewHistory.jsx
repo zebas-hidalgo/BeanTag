@@ -770,48 +770,45 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
               flexDirection: 'column',
               gap: '6px'
             }}>
-              <span style={{ fontSize: '10px', fontWeight: '900', fontFamily: 'var(--font-heading)', textTransform: 'uppercase', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
-                Tipo de Tarjeta para Compartir
-              </span>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                <button 
-                  type="button" 
-                  className="btn-candy"
-                  onClick={() => { setShareIncludeRecipe(true); if (selectedRecipe) exportRecipeAsImage(selectedRecipe, shareTemplate, true); }}
-                  style={{ 
-                    flex: 1, 
-                    margin: 0, 
-                    fontSize: '10px', 
-                    padding: '8px 4px',
-                    border: '2px solid var(--border-color)',
-                    backgroundColor: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--bg-card)',
-                    color: shareIncludeRecipe ? '#FFFFFF' : 'var(--color-text)',
-                    boxShadow: shareIncludeRecipe ? 'none' : '3px 3px 0px var(--border-color)',
-                    transform: shareIncludeRecipe ? 'translate(2px, 2px)' : 'none',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  Grano + Receta
-                </button>
-                <button 
-                  type="button" 
-                  className="btn-candy"
-                  onClick={() => { setShareIncludeRecipe(false); if (selectedRecipe) exportRecipeAsImage(selectedRecipe, shareTemplate, false); }}
-                  style={{ 
-                    flex: 1, 
-                    margin: 0, 
-                    fontSize: '10px', 
-                    padding: '8px 4px',
-                    border: '2px solid var(--border-color)',
-                    backgroundColor: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--bg-card)',
-                    color: !shareIncludeRecipe ? '#FFFFFF' : 'var(--color-text)',
-                    boxShadow: !shareIncludeRecipe ? 'none' : '3px 3px 0px var(--border-color)',
-                    transform: !shareIncludeRecipe ? 'translate(2px, 2px)' : 'none',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  Solo Grano
-                </button>
+              {/* Formato de Plantilla UI Pro Max Tab Selector */}
+              <div style={{ marginTop: '12px' }}>
+                <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>
+                  Estilo de Tarjeta Canvas:
+                </span>
+                <div className="canvas-tab-selector">
+                  <button
+                    type="button"
+                    className={`canvas-tab-btn ${shareIncludeRecipe && shareTemplate === 'receipt' ? 'active' : ''}`}
+                    onClick={() => {
+                      setShareIncludeRecipe(true);
+                      setShareTemplate('receipt');
+                      exportRecipeAsImage(selectedRecipe, 'receipt', true);
+                    }}
+                  >
+                    🧾 Ticket POS
+                  </button>
+                  <button
+                    type="button"
+                    className={`canvas-tab-btn ${shareIncludeRecipe && shareTemplate !== 'receipt' ? 'active' : ''}`}
+                    onClick={() => {
+                      setShareIncludeRecipe(true);
+                      setShareTemplate('retro');
+                      exportRecipeAsImage(selectedRecipe, 'retro', true);
+                    }}
+                  >
+                    📜 Editorial
+                  </button>
+                  <button
+                    type="button"
+                    className={`canvas-tab-btn ${!shareIncludeRecipe ? 'active' : ''}`}
+                    onClick={() => {
+                      setShareIncludeRecipe(false);
+                      exportRecipeAsImage(selectedRecipe, shareTemplate, false);
+                    }}
+                  >
+                    🌾 Solo Grano
+                  </button>
+                </div>
               </div>
             </div>
 

@@ -396,6 +396,22 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
               <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>▼</span>
             </summary>
             <div style={{ marginTop: '10px' }}>
+              {/* Rotary Dial Visual Gauge */}
+              <div className="rotary-dial-gauge-wrapper">
+                <div className="rotary-dial-disc">
+                  <div className="rotary-dial-ticks" />
+                  <div 
+                    className="rotary-dial-needle" 
+                    style={{ transform: `rotate(${Math.round(jmaxRot * 72 + jmaxNum * 8 + jmaxClick * 0.8)}deg)` }} 
+                  />
+                  <div className="rotary-dial-center-cap" />
+                </div>
+                <div className="rotary-dial-readout">
+                  <span className="rotary-dial-chip">J-Max {jmaxRot}.{jmaxNum}.{jmaxClick}</span>
+                  <span className="rotary-dial-microns">~{currentMicrons} µm ({currentMicrons < 400 ? 'Espresso' : currentMicrons < 850 ? 'Filtrado' : 'Prensa'})</span>
+                </div>
+              </div>
+
               {/* Rotations */}
               <div>
                 <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Rotación (0..4)</span>
@@ -430,17 +446,6 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
                     </button>
                   ))}
                 </div>
-              </div>
-
-              {/* Microns Gauge Spectrum */}
-              <div style={{ marginTop: '12px', padding: '10px', backgroundColor: 'var(--bg-canvas)', border: '2px solid var(--border-color)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: '900', color: 'var(--color-text)' }}>~{currentMicrons} µm</div>
-                  <div style={{ fontSize: '9.5px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
-                    {currentMicrons < 400 ? '☕ Espresso Fino' : currentMicrons < 850 ? '💧 Filtrado Medio (V60 / Aero)' : '🫖 Prensa Francesa Grueso'}
-                  </div>
-                </div>
-                <span style={{ fontSize: '18px' }}>{currentMicrons < 400 ? '⚡' : currentMicrons < 850 ? '☕' : '🫖'}</span>
               </div>
             </div>
           </details>
