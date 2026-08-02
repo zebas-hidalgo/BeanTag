@@ -113,9 +113,9 @@ app.post('/api/recipes', async (req, res) => {
         [batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, doseInVal, dose_out_g, espresso_pressure, espresso_preinfusion]
       );
 
-      // Subtract grams from batch remaining weight
+      // Subtract 1 tube (dose) and grams from batch remaining stock
       await db.run(
-        'UPDATE batches SET remaining_weight_g = MAX(0.0, remaining_weight_g - ?) WHERE id = ?',
+        'UPDATE batches SET remaining_doses = MAX(0, remaining_doses - 1), remaining_weight_g = MAX(0.0, remaining_weight_g - ?) WHERE id = ?',
         [doseInVal, batch_id]
       );
 
@@ -125,7 +125,12 @@ app.post('/api/recipes', async (req, res) => {
       throw dbErr;
     }
 
-    res.status(201).json({ success: true });
+    const updatedBatch = await db.get('SELECT remaining_doses, remaining_weight_g FROM batches WHERE id = ?', batch_id);
+    res.status(201).json({ 
+      success: true, 
+      remaining_doses: updatedBatch ? updatedBatch.remaining_doses : 0, 
+      remaining_weight_g: updatedBatch ? updatedBatch.remaining_weight_g : 0 
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

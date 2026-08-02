@@ -65,19 +65,21 @@ export default function BatchInfo({ batch, onBack, onSubtractDose, onSaveRecipe,
 
   const handleRepeatLastRecipe = () => {
     if (!lastRecipe) return;
-    onSubtractDose(batch.id, () => {
-      onSaveRecipe({
-        batch_id: batch.id, method: lastRecipe.method, ratio: lastRecipe.ratio, grind: lastRecipe.grind,
-        temperature: lastRecipe.temperature, brew_time: lastRecipe.brew_time, notes: `${lastRecipe.notes || ''} (Repetición rápida)`.trim(),
-        sensory_balance: lastRecipe.sensory_balance || 'Dulce', sensory_body: lastRecipe.sensory_body || 'Medio', sensory_extraction: lastRecipe.sensory_extraction || 'En Punto',
-        dose_in_g: lastRecipe.dose_in_g !== null && lastRecipe.dose_in_g !== undefined ? lastRecipe.dose_in_g : doseNum,
-        dose_out_g: lastRecipe.dose_out_g !== null && lastRecipe.dose_out_g !== undefined ? lastRecipe.dose_out_g : null,
-        espresso_pressure: lastRecipe.espresso_pressure !== null && lastRecipe.espresso_pressure !== undefined ? lastRecipe.espresso_pressure : null,
-        espresso_preinfusion: lastRecipe.espresso_preinfusion !== null && lastRecipe.espresso_preinfusion !== undefined ? lastRecipe.espresso_preinfusion : null
-      });
-      const doseInVal = lastRecipe.dose_in_g !== null && lastRecipe.dose_in_g !== undefined ? lastRecipe.dose_in_g : doseNum;
-      setBatch(prev => ({ ...prev, remaining_weight_g: Math.max(0.0, prev.remaining_weight_g - doseInVal) }));
+    const doseInVal = lastRecipe.dose_in_g !== null && lastRecipe.dose_in_g !== undefined ? lastRecipe.dose_in_g : doseNum;
+    onSaveRecipe({
+      batch_id: batch.id, method: lastRecipe.method, ratio: lastRecipe.ratio, grind: lastRecipe.grind,
+      temperature: lastRecipe.temperature, brew_time: lastRecipe.brew_time, notes: `${lastRecipe.notes || ''} (Repetición rápida)`.trim(),
+      sensory_balance: lastRecipe.sensory_balance || 'Dulce', sensory_body: lastRecipe.sensory_body || 'Medio', sensory_extraction: lastRecipe.sensory_extraction || 'En Punto',
+      dose_in_g: doseInVal,
+      dose_out_g: lastRecipe.dose_out_g !== null && lastRecipe.dose_out_g !== undefined ? lastRecipe.dose_out_g : null,
+      espresso_pressure: lastRecipe.espresso_pressure !== null && lastRecipe.espresso_pressure !== undefined ? lastRecipe.espresso_pressure : null,
+      espresso_preinfusion: lastRecipe.espresso_preinfusion !== null && lastRecipe.espresso_preinfusion !== undefined ? lastRecipe.espresso_preinfusion : null
     });
+    setBatch(prev => ({ 
+      ...prev, 
+      remaining_doses: Math.max(0, prev.remaining_doses - 1),
+      remaining_weight_g: Math.max(0.0, prev.remaining_weight_g - doseInVal) 
+    }));
   };
 
   const parseGrindToMicrons = (grindStr) => {

@@ -157,7 +157,7 @@ export default function App() {
     });
   };
 
-  // R5: Save recipe with toast transition instead of alert + instant redirect
+  // R5: Save recipe with toast transition + automatic tube deduction
   const handleSaveRecipe = (recipePayload) => {
     fetch('/api/recipes', {
       method: 'POST',
@@ -167,7 +167,8 @@ export default function App() {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        showToast('Receta guardada en la bitácora.', { type: 'success', duration: 2000 });
+        showToast('Receta guardada. -1 tubo descontado del inventario. ☕', { type: 'success', duration: 2500 });
+        fetchBatches();
         setTimeout(() => {
           handleBack();
         }, 1500);
