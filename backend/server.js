@@ -365,7 +365,7 @@ app.post('/api/recommend-recipe', async (req, res) => {
   const dose = parseFloat(dose_in_g) || 20.0;
   const targetMethod = method || 'V60 (Filtrado)';
 
-  const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad. Analiza meticulosamente el siguiente lote de café:
+  const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad y experto en física de molienda. Analiza meticulosamente el siguiente lote de café:
 - Origen: ${origin || 'Desconocido'}
 - Variedad: ${variety || 'N/A'}
 - Proceso: ${process || 'N/A'}
@@ -375,18 +375,26 @@ app.post('/api/recommend-recipe', async (req, res) => {
 
 El usuario desea preparar este café con el método: "${targetMethod}" y una dosis de entrada de: "${dose}g".
 
-REGLAS DE CALIBRACIÓN DE MOLIENDA PARA MOLINO 1ZPRESSO J-MAX (Rotación.Número.Clic):
-- Si el método es Espresso: El rango exacto debe estar entre 1.2.5 y 1.4.2. (Punto base del calibrado del usuario: 1.3.5 -> rot=1, num=3, click=5).
-- Si el método es AeroPress: El rango exacto debe estar entre 1.8.0 y 2.1.0 (ej. rot=1, num=9, click=0 -> 1.9.0 o rot=2, num=0, click=0).
-- Si el método es V60 / Filtrado: El rango exacto debe estar entre 2.3.0 y 2.6.0 (ej. rot=2, num=4, click=5 -> 2.4.5).
-- Si el método es Prensa Francesa: El rango exacto debe estar entre 3.0.0 y 3.5.0 (ej. rot=3, num=2, click=0 -> 3.2.0).
+REGLAS MECÁNICAS EXACTAS PARA MOLINO 1ZPRESSO J-MAX (8.8 µm por Clic, 90 Clics/Rotación, 10 Clics/Número -> Formato: Rotación.Número.Clic):
+- Rango Base Espresso: 1.2.5 a 1.4.2 (95 a 132 clics | ~830 µm a 1160 µm). Base habitual: 1.3.5 (125 clics = 1100 µm).
+- Rango Base AeroPress / Moka: 1.8.0 a 2.1.0 (170 a 190 clics | ~1500 µm a 1670 µm).
+- Rango Base V60 / Filtrado: 2.3.0 a 2.7.0 (210 a 250 clics | ~1850 µm a 2200 µm). Base habitual: 2.4.5 (225 clics = 1980 µm).
+- Rango Base Prensa Francesa: 3.0.0 a 3.5.0 (270 a 320 clics | ~2370 µm a 2800 µm).
 
-CALCULOS OBLIGATORIOS SEGÚN EL MÉTODO:
-1. Para Espresso: Ratio típico 1:2 a 1:2.5 (ej. Dosis ${dose}g -> Salida ${Math.round(dose * 2.2)}g). Tiempo 25s-30s.
-2. Para V60 / Filtrado / AeroPress / Prensa: Ratio típico 1:15 a 1:16 (ej. Dosis ${dose}g -> Agua total ${Math.round(dose * 15)}g).
+AJUSTES CIENTÍFICOS OBLIGATORIOS SEGÚN EL GRANO (Aplica sobre el Rango Base):
+1. Según Tueste (Roast Level):
+   - Tueste Claro (Light Roast): Granos duros y poco solubles. RESTAR 3 a 5 CLICS (molienda más fina) para maximizar extracción de azúcares.
+   - Tueste Oscuro (Dark Roast): Granos porosos y muy solubles. SUMAR 4 a 6 CLICS (molienda más gruesa) para evitar amargor y fines excesivos.
+2. Según Proceso (Process):
+   - Natural / Anaeróbico / Maceración: Altamente solubles y producen más finos. SUMAR 3 a 5 CLICS (molienda más gruesa).
+   - Lavado (Washed): Taza limpia. Mantener rango estándar o RESTAR 1 a 2 CLICS si es de alta altitud.
+3. Según Altitud:
+   - >1600m (Strictly Hard Bean): RESTAR 2 a 3 CLICS (más fino).
+
+CÁLCULOS OBLIGATORIOS SEGÚN EL MÉTODO:
+1. Para Espresso: Ratio 1:2 a 1:2.5 (ej. Dosis ${dose}g -> Salida ${Math.round(dose * 2.2)}g). Tiempo 25s-30s.
+2. Para V60 / Filtrado / AeroPress / Prensa: Ratio 1:15 a 1:16 (ej. Dosis ${dose}g -> Agua total ${Math.round(dose * 15)}g).
 3. Molinos alternativos equivalentes: Comandante C40, Timemore C2/C3, Baratza Encore.
-4. Secuencia detallada de vertidos (pours) o extracción.
-5. Lista de pasos de preparación.
 
 Debes responder ÚNICAMENTE con un JSON crudo (sin formato markdown ni \`\`\`json):
 {
@@ -394,7 +402,8 @@ Debes responder ÚNICAMENTE con un JSON crudo (sin formato markdown ni \`\`\`jso
   "ratio": "${targetMethod === 'Espresso' ? '1:2.2' : '1:15'}",
   "water_total_g": ${targetMethod === 'Espresso' ? Math.round(dose * 2.2) : Math.round(dose * 15)},
   "grind": "${targetMethod === 'Espresso' ? 'Espresso Fino (1.3.5)' : 'Medio-Fino (2.4.5)'}",
-  "grind_microns": "${targetMethod === 'Espresso' ? '125 µm' : '550 µm'}",
+  "grind_microns": "${targetMethod === 'Espresso' ? '1100 µm' : '1980 µm'}",
+  "grind_adjustment_reason": "Explicación barística directa del ajuste de clics según tueste, proceso y altitud (máx 20 palabras)",
   "jmax_rot": ${targetMethod === 'Espresso' ? 1 : (targetMethod.includes('Prensa') ? 3 : (targetMethod.includes('Aero') ? 1 : 2))},
   "jmax_num": ${targetMethod === 'Espresso' ? 3 : (targetMethod.includes('Prensa') ? 2 : (targetMethod.includes('Aero') ? 9 : 4))},
   "jmax_click": ${targetMethod === 'Espresso' ? 5 : (targetMethod.includes('Prensa') ? 0 : (targetMethod.includes('Aero') ? 0 : 5))},

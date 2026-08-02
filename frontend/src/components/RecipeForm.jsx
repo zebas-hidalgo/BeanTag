@@ -292,6 +292,11 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
                     J-Max: {aiRecommendation.jmax_rot !== undefined ? `${aiRecommendation.jmax_rot}.${aiRecommendation.jmax_num}.${aiRecommendation.jmax_click}` : (aiRecommendation.grinders?.jmax || '1.5.0')}
                   </span>
                 </div>
+                {aiRecommendation.grind_adjustment_reason && (
+                  <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--color-text-muted)', fontStyle: 'italic', marginTop: '2px' }}>
+                    💡 Calibración J-Max: {aiRecommendation.grind_adjustment_reason}
+                  </div>
+                )}
                 {aiRecommendation.grinders && (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', fontSize: '9.5px', marginTop: '4px', borderTop: '1px dashed var(--border-color)', paddingTop: '4px' }}>
                     <div><strong>Comandante C40:</strong> {aiRecommendation.grinders.comandante || '22 clics'}</div>
