@@ -111,12 +111,12 @@ export default function Settings({ theme, setTheme, showToast }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
           {[
-            { id: 'default', name: '☕ Mocha Sky', colors: ['#CBE6F6', '#FFFFFF', '#F94C00'] },
-            { id: 'sakura', name: '🌸 Sakura V60', colors: ['#FCE4EC', '#FFFFFF', '#EC4899'] },
-            { id: 'matcha', name: '🌿 Matcha Tonic', colors: ['#E8F5E9', '#FFFFFF', '#2E7D32'] },
-            { id: 'cyberpunk', name: '🌌 Cyber Geisha', colors: ['#0F0C20', '#1D173B', '#00E5FF'] },
-            { id: 'miel', name: '🥐 Miel de Tueste', colors: ['#FFF3E0', '#FFFFFF', '#F59E0B'] },
-            { id: 'velvet', name: '☕ Espresso Dark', colors: ['#120A08', '#1E1412', '#FF6D00'] }
+            { id: 'default', name: '🔴 Neo Crimson', colors: ['#FEE2E2', '#FEF2F2', '#DC2626'] },
+            { id: 'matcha', name: '🌿 Organic Matcha', colors: ['#D1FAE5', '#ECFDF5', '#059669'] },
+            { id: 'cyberpunk', name: '🌌 Midnight Cyber', colors: ['#180E29', '#F5F3FF', '#7C3AED'] },
+            { id: 'sakura', name: '🌸 Geisha Floral', colors: ['#FFE4E6', '#FFF1F2', '#E11D48'] },
+            { id: 'miel', name: '🥐 Vintage Roast', colors: ['#FEF3C7', '#FFFBEB', '#92400E'] },
+            { id: 'velvet', name: '🧊 Cold Brew Ice', colors: ['#CFFAFE', '#ECFEFF', '#0891B2'] }
           ].map((t) => {
             const isActive = theme === t.id;
             return (

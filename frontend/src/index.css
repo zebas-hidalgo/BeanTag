@@ -6,16 +6,16 @@
   /* 🎨 Sistema Neo-Brutalista: Fondo Blanco + Elementos con Rotación de Color */
   --bg-canvas: #FFFFFF; /* 1. Fondo de la App SIEMPRE BLANCO */
   
-  /* Tema 1: Mocha Sky (Default) */
-  --theme-color-1: #CBE6F6; /* Color Cabecera */
-  --theme-color-2: #F8FAFC; /* Color Tarjetas / Superficies */
-  --theme-color-3: #F94C00; /* Color Acento / Crimson */
+  /* Tema 1: Neo-Brutal Crimson (Default / Barista POS) */
+  --theme-color-1: #FEE2E2; /* Cabecera Carmesí Suave */
+  --theme-color-2: #FEF2F2; /* Superficie */
+  --theme-color-3: #DC2626; /* Carmesí Barista */
 
   --bg-card: var(--theme-color-2);
   --color-crimson: var(--theme-color-3);
   --border-color: #000000;
-  --color-text: #1A0905;
-  --color-text-muted: #5C433E;
+  --color-text: #18181B;
+  --color-text-muted: #52525B;
   --bg-header: var(--theme-color-1);
   --color-header-text: var(--color-text);
   
@@ -27,42 +27,26 @@
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Tema 2: Sakura V60 */
-[data-theme="sakura"] {
-  --bg-canvas: #FFFFFF;
-  --theme-color-1: #FCE4EC;
-  --theme-color-2: #FFF5F7;
-  --theme-color-3: #EC4899;
-
-  --bg-card: var(--theme-color-2);
-  --color-crimson: var(--theme-color-3);
-  --border-color: #000000;
-  --color-text: #3A081A;
-  --color-text-muted: #731A3C;
-  --bg-header: var(--theme-color-1);
-  --color-header-text: var(--color-text);
-}
-
-/* Tema 3: Matcha Tonic */
+/* Tema 2: Organic Matcha & Caramel */
 [data-theme="matcha"] {
   --bg-canvas: #FFFFFF;
-  --theme-color-1: #E8F5E9;
-  --theme-color-2: #F4FBF7;
-  --theme-color-3: #2E7D32;
+  --theme-color-1: #D1FAE5;
+  --theme-color-2: #ECFDF5;
+  --theme-color-3: #059669;
 
   --bg-card: var(--theme-color-2);
   --color-crimson: var(--theme-color-3);
   --border-color: #000000;
-  --color-text: #0D2818;
-  --color-text-muted: #2D5A3D;
+  --color-text: #064E3B;
+  --color-text-muted: #047857;
   --bg-header: var(--theme-color-1);
   --color-header-text: var(--color-text);
 }
 
-/* Tema 4: Cyber Geisha */
+/* Tema 3: Midnight Cyber-Espresso */
 [data-theme="cyberpunk"] {
   --bg-canvas: #FFFFFF;
-  --theme-color-1: #1F173D;
+  --theme-color-1: #180E29;
   --theme-color-2: #F5F3FF;
   --theme-color-3: #7C3AED;
 
@@ -72,39 +56,55 @@
   --color-text: #1E1B4B;
   --color-text-muted: #4C1D95;
   --bg-header: var(--theme-color-1);
-  --color-header-text: #F0F6FF;
+  --color-header-text: #F3E8FF;
 }
 
-/* Tema 5: Miel de Tueste */
-[data-theme="miel"] {
+/* Tema 4: Geisha Floral & Peach */
+[data-theme="sakura"] {
   --bg-canvas: #FFFFFF;
-  --theme-color-1: #FFF3E0;
-  --theme-color-2: #FFFBEB;
-  --theme-color-3: #F59E0B;
+  --theme-color-1: #FFE4E6;
+  --theme-color-2: #FFF1F2;
+  --theme-color-3: #E11D48;
 
   --bg-card: var(--theme-color-2);
   --color-crimson: var(--theme-color-3);
   --border-color: #000000;
-  --color-text: #3E1B00;
-  --color-text-muted: #733D14;
+  --color-text: #4C0519;
+  --color-text-muted: #9F1239;
   --bg-header: var(--theme-color-1);
   --color-header-text: var(--color-text);
 }
 
-/* Tema 6: Espresso Dark Roast */
-[data-theme="velvet"] {
+/* Tema 5: Vintage Roast & Parchment */
+[data-theme="miel"] {
   --bg-canvas: #FFFFFF;
-  --theme-color-1: #2B1D19;
-  --theme-color-2: #FAF5F4;
-  --theme-color-3: #EA580C;
+  --theme-color-1: #FEF3C7;
+  --theme-color-2: #FFFBEB;
+  --theme-color-3: #92400E;
 
   --bg-card: var(--theme-color-2);
   --color-crimson: var(--theme-color-3);
   --border-color: #000000;
-  --color-text: #2B1D19;
-  --color-text-muted: #6B4E47;
+  --color-text: #451A03;
+  --color-text-muted: #78350F;
   --bg-header: var(--theme-color-1);
-  --color-header-text: #F5EBE6;
+  --color-header-text: var(--color-text);
+}
+
+/* Tema 6: Cold Brew & Ice */
+[data-theme="velvet"] {
+  --bg-canvas: #FFFFFF;
+  --theme-color-1: #CFFAFE;
+  --theme-color-2: #ECFEFF;
+  --theme-color-3: #0891B2;
+
+  --bg-card: var(--theme-color-2);
+  --color-crimson: var(--theme-color-3);
+  --border-color: #000000;
+  --color-text: #164E63;
+  --color-text-muted: #0E7490;
+  --bg-header: var(--theme-color-1);
+  --color-header-text: var(--color-text);
 }
 
 @keyframes slideUpFade {
