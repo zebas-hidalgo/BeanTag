@@ -318,33 +318,6 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       ctx.fillStyle = colorTextMuted;
       ctx.fillText(`* 0 2 9 4 - B E A N T A G - ${recipe.id || '88'} • ${grindMicronsText} *`, 50, 492);
 
-      // Sello Estampado Auténtico SCA Specialty Coffee Certified Brew
-      ctx.save();
-      ctx.translate(660, 400);
-      ctx.rotate(-0.08); // Inclinación sutil de 4.5 grados para realismo humano de timbre
-
-      // Anillos exterior e interior
-      ctx.strokeStyle = colorAccent;
-      ctx.lineWidth = 3.5;
-      ctx.beginPath(); ctx.arc(0, 0, 64, 0, Math.PI * 2); ctx.stroke();
-      ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.arc(0, 0, 58, 0, Math.PI * 2); ctx.stroke();
-
-      // Texto Sello SCA
-      ctx.font = '900 10px "Space Grotesk", sans-serif';
-      ctx.fillStyle = colorAccent;
-      ctx.textAlign = 'center';
-      ctx.fillText('★ SCA SPECIALTY ★', 0, -38);
-
-      ctx.font = '900 21px "Space Grotesk", sans-serif';
-      ctx.fillText('BEANTAG', 0, -8);
-
-      ctx.font = '800 10.5px "JetBrains Mono", monospace';
-      ctx.fillText('CERTIFIED BREW', 0, 14);
-      ctx.fillText(receiptDate.toUpperCase(), 0, 34);
-
-      ctx.restore();
-      ctx.textAlign = 'left';
       const dataUrl = canvas.toDataURL('image/png');
       setShareImage(dataUrl);
       setShareStatus('✅ Tarjeta generada con éxito');
