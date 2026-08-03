@@ -290,11 +290,19 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       if (!receiptNotes) receiptNotes = recipe.notes || 'ESPECIALIDAD';
       receiptNotes = stripEmojis(receiptNotes);
 
-      ctx.font = '800 22px "JetBrains Mono", monospace';
+      // J-Max Microns calculation
+      const micronsVal = parseGrindToMicrons(recipe.grind);
+      const grindMicronsText = micronsVal ? `J-MAX (${micronsVal} µm)` : (recipe.grind || 'MEDIO');
+
+      ctx.font = '800 20px "JetBrains Mono", monospace';
       ctx.fillStyle = colorTextDark;
-      drawTruncatedText(`NOTAS: ..... ${String(receiptNotes).toUpperCase()}`, 50, 365, 520);
+      drawTruncatedText(`NOTAS: ..... ${String(receiptNotes).toUpperCase()}`, 50, 355, 520);
+      
+      const sensorySummary = `TAZA: ...... ${recipe.sensory_balance || 'DULCE'} • ${recipe.sensory_body || 'MEDIO'} • ${recipe.sensory_extraction || 'EN PUNTO ✨'}`;
+      drawTruncatedText(sensorySummary.toUpperCase(), 50, 385, 520);
+
       const receiptDate = new Date(recipe.created_at || Date.now()).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-      drawTruncatedText(`FECHA: ..... ${receiptDate.toUpperCase()}`, 50, 400, 520);
+      drawTruncatedText(`FECHA: ..... ${receiptDate.toUpperCase()}`, 50, 415, 520);
 
       // Código de Barras Térmico Realista de Recibo POS
       ctx.fillStyle = colorTextDark;
@@ -302,28 +310,40 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       let curBarX = 50;
       barPattern.forEach((w, i) => {
         if (i % 2 === 0) {
-          ctx.fillRect(curBarX, 432, w * 2.2, 38);
+          ctx.fillRect(curBarX, 442, w * 2.2, 34);
         }
         curBarX += (w * 2.2) + 2.5;
       });
-      ctx.font = '700 14px "JetBrains Mono", monospace';
+      ctx.font = '700 13px "JetBrains Mono", monospace';
       ctx.fillStyle = colorTextMuted;
-      ctx.fillText(`* 0 2 9 4 - B E A N T A G - ${recipe.id || '88'} *`, 50, 487);
+      ctx.fillText(`* 0 2 9 4 - B E A N T A G - ${recipe.id || '88'} • ${grindMicronsText} *`, 50, 492);
 
-      // Timbre circular personalizado BEANTAG + Fecha
+      // Sello Estampado Auténtico SCA Specialty Coffee Certified Brew
+      ctx.save();
+      ctx.translate(660, 400);
+      ctx.rotate(-0.08); // Inclinación sutil de 4.5 grados para realismo humano de timbre
+
+      // Anillos exterior e interior
       ctx.strokeStyle = colorAccent;
       ctx.lineWidth = 3.5;
-      ctx.beginPath(); ctx.arc(650, 400, 62, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, 64, 0, Math.PI * 2); ctx.stroke();
       ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.arc(650, 400, 56, 0, Math.PI * 2); ctx.stroke();
-      
-      ctx.font = '900 19px "Space Grotesk", sans-serif';
+      ctx.beginPath(); ctx.arc(0, 0, 58, 0, Math.PI * 2); ctx.stroke();
+
+      // Texto Sello SCA
+      ctx.font = '900 10px "Space Grotesk", sans-serif';
       ctx.fillStyle = colorAccent;
       ctx.textAlign = 'center';
-      ctx.fillText('BEANTAG', 650, 393);
-      
-      ctx.font = '800 13px "JetBrains Mono", monospace';
-      ctx.fillText(receiptDate.toUpperCase(), 650, 417);
+      ctx.fillText('★ SCA SPECIALTY ★', 0, -38);
+
+      ctx.font = '900 21px "Space Grotesk", sans-serif';
+      ctx.fillText('BEANTAG', 0, -8);
+
+      ctx.font = '800 10.5px "JetBrains Mono", monospace';
+      ctx.fillText('CERTIFIED BREW', 0, 14);
+      ctx.fillText(receiptDate.toUpperCase(), 0, 34);
+
+      ctx.restore();
       ctx.textAlign = 'left';
       const dataUrl = canvas.toDataURL('image/png');
       setShareImage(dataUrl);
