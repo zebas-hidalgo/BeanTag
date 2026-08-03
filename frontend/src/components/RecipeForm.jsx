@@ -249,11 +249,19 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
           ))}
         </div>
 
-        <div className="candy-card static" style={{ margin: '16px 0', padding: '16px', backgroundColor: 'var(--bg-card)', border: '2px solid var(--border-color)', boxShadow: '3px 3px 0px var(--border-color)', borderRadius: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><span style={{ fontSize: '16px' }}>✨</span><span style={{ fontWeight: '900', fontSize: '12px', textTransform: 'uppercase', fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>Asistente IA Barista ({method})</span></div>
-            <span style={{ fontSize: '9px', fontWeight: '900', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{doseInG}g</span>
-          </div>
+        <details className="bento-accordion" style={{ margin: '16px 0' }}>
+          <summary className="bento-accordion-header" style={{ padding: '12px 14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>✨</span>
+              <span style={{ fontWeight: '900', fontSize: '12px', textTransform: 'uppercase', fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
+                Asistente IA Barista ({method})
+              </span>
+            </div>
+            <span style={{ fontSize: '9px', fontWeight: '900', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {doseInG}g ▼
+            </span>
+          </summary>
+          <div style={{ padding: '14px', backgroundColor: 'var(--bg-card)' }}>
           <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0', lineHeight: 1.4 }}>Diseña o recalibra una receta completa de <strong>{method}</strong> para <strong>{doseInG}g</strong> con molienda J-Max y secuencia de vertidos.</p>
           {aiError && <div style={{ color: '#E53E3E', fontSize: '10px', fontWeight: 'bold', marginBottom: '10px' }}>⚠️ Error: {aiError}</div>}
           {aiRecommendation ? (
@@ -369,6 +377,7 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
             </div>
           )}
         </div>
+      </details>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '14px' }}>
           <details className="bento-accordion" open>
