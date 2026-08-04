@@ -3,6 +3,7 @@ import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis } from '../utils/scaIcons';
 import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
+import { apiUrl } from '../utils/api';
 
 const calculateMicrons = (rot, num, click) => {
   const r = parseInt(rot) || 0;
@@ -95,7 +96,7 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
     setAiError('');
     setAiRecommendation(null);
 
-    fetch('/api/recommend-recipe', {
+    fetch(apiUrl('api/recommend-recipe'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -187,7 +188,7 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
 
   useEffect(() => {
     let active = true;
-    fetch(`/api/batches/${batchId}`)
+    fetch(apiUrl(`api/batches/${batchId}`))
       .then(res => res.json())
       .then(data => {
         if (!active) return;

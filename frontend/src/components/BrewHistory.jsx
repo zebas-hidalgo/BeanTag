@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw, Filter, Zap, Droplet, Coffee } from 'lucide-react';
 import { stripEmojis, RenderScaChips } from '../utils/scaIcons';
+import { apiUrl } from '../utils/api';
 
 const METHOD_ICONS = {
   'V60 (Filtrado)': `${import.meta.env.BASE_URL}icons/v60.jpg`,
@@ -32,7 +33,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
   useEffect(() => {
     let active = true;
-    fetch('/api/recipes')
+    fetch(apiUrl('api/recipes'))
       .then(res => res.json())
       .then(data => {
         if (active) {

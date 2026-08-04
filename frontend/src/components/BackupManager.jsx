@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { apiUrl } from '../utils/api';
 
 export default function BackupManager({ showToast }) {
   const [importing, setImporting] = useState(false);
 
   const handleExport = () => {
-    fetch('api/export/json')
+    fetch(apiUrl('api/export/json'))
       .then(res => res.json())
       .then(data => {
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -30,7 +31,7 @@ export default function BackupManager({ showToast }) {
         const json = JSON.parse(event.target.result);
         if (window.confirm("¿Seguro que deseas importar? Esto sobrescribirá todos los datos actuales.")) {
           setImporting(true);
-          fetch('api/import/json', {
+          fetch(apiUrl('api/import/json'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(json)

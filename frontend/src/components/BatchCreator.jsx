@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Save, X, ClipboardCopy } from 'lucide-react';
 import { getScaIcon, stripEmojis } from '../utils/scaIcons';
+import { apiUrl } from '../utils/api';
+
 export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, showToast }) {
   // Parse initial flavor tags and custom notes if editing
   const getInitialFlavorTags = () => {
@@ -188,7 +190,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
       origin, roast_level: roastLevel, roast_date: roastDate, freeze_date: freezeDate
     };
 
-    const url = batchToEdit ? `/api/batches/${batchToEdit.id}` : '/api/batches';
+    const url = batchToEdit ? apiUrl(`api/batches/${batchToEdit.id}`) : apiUrl('api/batches');
     const method = batchToEdit ? 'PUT' : 'POST';
 
     // If creating, send the ID in the payload

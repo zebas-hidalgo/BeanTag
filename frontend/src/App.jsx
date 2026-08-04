@@ -6,6 +6,7 @@ import BatchCreator from './components/BatchCreator';
 import BrewHistory from './components/BrewHistory';
 import Settings from './components/Settings';
 import NfcToolsModal from './components/NfcToolsModal';
+import { apiUrl } from './utils/api';
 
 const getInitialRoute = () => {
   const path = window.location.pathname;
@@ -69,7 +70,7 @@ export default function App() {
   const [deleteModal, setDeleteModal] = useState({ visible: false, batchId: null, batchName: '' });
 
   const fetchBatches = () => {
-    fetch('/api/batches')
+    fetch(apiUrl('api/batches'))
       .then(res => res.json())
       .then(data => setBatches(data));
   };
@@ -107,7 +108,7 @@ export default function App() {
   };
 
   const handleSubtractDose = (id, callback) => {
-    fetch(`/api/batches/${id}/doses`, {
+    fetch(apiUrl(`api/batches/${id}/doses`), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ change: -1 })
@@ -136,7 +137,7 @@ export default function App() {
   // R4: Undo without page reload — re-fetch batch data instead
   const handleUndo = () => {
     if (!lastSubtractedBatch) return;
-    fetch(`/api/batches/${lastSubtractedBatch}/doses`, {
+    fetch(apiUrl(`api/batches/${lastSubtractedBatch}/doses`), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ change: 1 })
@@ -159,7 +160,7 @@ export default function App() {
 
   // R5: Save recipe with toast transition + automatic tube deduction
   const handleSaveRecipe = (recipePayload) => {
-    fetch('/api/recipes', {
+    fetch(apiUrl('api/recipes'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(recipePayload)
@@ -213,7 +214,7 @@ export default function App() {
   };
 
   const confirmDeleteBatch = () => {
-    fetch(`/api/batches/${deleteModal.batchId}`, { method: 'DELETE' })
+    fetch(apiUrl(`api/batches/${deleteModal.batchId}`), { method: 'DELETE' })
       .then(res => res.json())
       .then(data => {
         if (data.success) {

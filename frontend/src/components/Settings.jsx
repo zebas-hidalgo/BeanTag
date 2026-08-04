@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet } from 'lucide-react';
 import NfcToolsModal from './NfcToolsModal';
+import { apiUrl } from '../utils/api';
 
 export default function Settings({ theme, setTheme, showToast }) {
   const [showNfcModal, setShowNfcModal] = useState(false);
@@ -18,7 +19,7 @@ export default function Settings({ theme, setTheme, showToast }) {
   };
 
   const handleExportBackup = () => {
-    fetch('/api/backup/export')
+    fetch(apiUrl('api/backup/export'))
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -44,7 +45,7 @@ export default function Settings({ theme, setTheme, showToast }) {
   };
 
   const handleExportCsv = () => {
-    window.open('/api/backup/export/csv', '_blank');
+    window.open(apiUrl('api/backup/export/csv'), '_blank');
     if (showToast) {
       showToast('Generando descarga de bitácora en CSV...', { type: 'success', duration: 2500 });
     }
@@ -73,7 +74,7 @@ export default function Settings({ theme, setTheme, showToast }) {
 
   const confirmImportWithMode = () => {
     if (!pendingImportData) return;
-    fetch('/api/backup/import', {
+    fetch(apiUrl('api/backup/import'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...pendingImportData, mode: importMode })
