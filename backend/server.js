@@ -155,6 +155,13 @@ app.get('/api/auth/me', (req, res) => {
   res.json({ user: req.user });
 });
 
+// Auth Configuration Endpoint
+app.get('/api/auth/config', (req, res) => {
+  res.json({
+    googleClientId: process.env.GOOGLE_CLIENT_ID || ''
+  });
+});
+
 // --- API ROUTES ---
 
 // Get all active batches (Filtered by user if authenticated, or public/unassigned)
