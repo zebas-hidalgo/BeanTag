@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Mail, Lock, User, LogIn, UserPlus, ShieldCheck, Snowflake, Coffee, ChevronRight } from 'lucide-react';
+import { Sparkles, Mail, Lock, User, LogIn, UserPlus, ShieldCheck, Snowflake, Coffee, ChevronRight, ReceiptText } from 'lucide-react';
 import { apiUrl } from '../utils/api';
 
 export default function AuthView({ onSuccess, showToast }) {
@@ -282,7 +282,7 @@ export default function AuthView({ onSuccess, showToast }) {
             padding: '5px 12px',
             borderRadius: '20px'
           }}>
-            <Receipt size={13} color="var(--color-crimson, #059669)" />
+            <ReceiptText size={13} color="var(--color-crimson, #059669)" />
             <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>Recibos POS</span>
           </div>
         </div>
