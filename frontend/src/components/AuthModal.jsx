@@ -18,12 +18,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
     fetch(apiUrl('api/auth/config'))
       .then(res => res.json())
       .then(data => {
-        const cId = data.googleClientId;
-        if (cId) loadAndInitGoogle(cId);
-      })
-      .catch(() => {
-        const fallbackCId = '1047124914101-u380bvt005e839e55728a34.apps.googleusercontent.com';
-        loadAndInitGoogle(fallbackCId);
+        if (data.googleClientId) loadAndInitGoogle(data.googleClientId);
       });
   }, [isOpen, mode]);
 

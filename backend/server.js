@@ -9,9 +9,10 @@ const { initDb, getDb } = require('./database');
 const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'beantag_secret_jwt_key_2026';
-const DEFAULT_GOOGLE_CLIENT_ID = '1047124914101-u380bvt005e839e55728a34.apps.googleusercontent.com';
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || DEFAULT_GOOGLE_CLIENT_ID;
-const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+try { require('dotenv').config(); } catch (e) {}
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
 
 app.use(cors());
 app.use(express.json());
