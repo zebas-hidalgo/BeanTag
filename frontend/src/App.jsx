@@ -263,9 +263,9 @@ export default function App() {
   };
   // Toast color based on type
   const toastStyles = {
-    success: { backgroundColor: '#1A0505', color: '#FFFFFF' },
-    error: { backgroundColor: '#E53E3E', color: '#FFFFFF' },
-    info: { backgroundColor: '#1A0505', color: '#FFFFFF' },
+    success: { backgroundColor: 'var(--bg-header)', color: 'var(--color-text)', border: '1.5px solid var(--border-color)' },
+    error: { backgroundColor: '#FEE2E2', color: '#991B1B', border: '1.5px solid #FECACA' },
+    info: { backgroundColor: 'var(--bg-card)', color: 'var(--color-text)', border: '1.5px solid var(--border-color)' },
   };
 
   if (!currentUser) {

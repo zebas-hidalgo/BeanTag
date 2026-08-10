@@ -544,6 +544,30 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   stroke: var(--color-header-text);
 }
 
+/* Glassmorphic Aesthetic Toast Notification */
+.toast-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 22px;
+  background: var(--bg-header, #D1FAE5);
+  color: var(--color-text, #064E3B);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid var(--border-color, #A7F3D0);
+  border-radius: 30px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.05);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 12000;
+  pointer-events: none;
+}
+
 /* Floating Pill Toast (Dynamic Island Feeling) */
 .undo-toast {
   position: absolute;
