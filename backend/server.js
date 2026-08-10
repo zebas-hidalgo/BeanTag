@@ -9,7 +9,8 @@ const { initDb, getDb } = require('./database');
 const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'beantag_secret_jwt_key_2026';
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+const DEFAULT_GOOGLE_CLIENT_ID = '1047124914101-u380bvt005e839e55728a34.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || DEFAULT_GOOGLE_CLIENT_ID;
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 app.use(cors());
@@ -158,7 +159,7 @@ app.get('/api/auth/me', (req, res) => {
 // Auth Configuration Endpoint
 app.get('/api/auth/config', (req, res) => {
   res.json({
-    googleClientId: process.env.GOOGLE_CLIENT_ID || ''
+    googleClientId: GOOGLE_CLIENT_ID
   });
 });
 

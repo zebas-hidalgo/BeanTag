@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Mail, Lock, User, LogIn, UserPlus, Sparkles, Key, CheckCircle } from 'lucide-react';
+import { X, Mail, Lock, User, LogIn, UserPlus, Sparkles } from 'lucide-react';
 import { apiUrl } from '../utils/api';
 
 export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
@@ -10,9 +10,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const [googleClientId, setGoogleClientId] = useState(() => localStorage.getItem('google-client-id') || '');
-  const [showConfigInput, setShowConfigInput] = useState(false);
-
   useEffect(() => {
     if (!isOpen) return;
     setErrorMsg('');
@@ -21,15 +18,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
     fetch(apiUrl('api/auth/config'))
       .then(res => res.json())
       .then(data => {
-        const activeClientId = data.googleClientId || localStorage.getItem('google-client-id') || '';
-        if (activeClientId) {
-          setGoogleClientId(activeClientId);
-          loadAndInitGoogle(activeClientId);
-        }
+        const cId = data.googleClientId;
+        if (cId) loadAndInitGoogle(cId);
       })
       .catch(() => {
-        const localCId = localStorage.getItem('google-client-id');
-        if (localCId) loadAndInitGoogle(localCId);
+        const fallbackCId = '1047124914101-u380bvt005e839e55728a34.apps.googleusercontent.com';
+        loadAndInitGoogle(fallbackCId);
       });
   }, [isOpen, mode]);
 
@@ -68,7 +62,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
             text: 'continue_with',
             shape: 'pill',
             locale: 'es',
-            width: 300,
+            width: 310,
             logo_alignment: 'left'
           });
         }
@@ -76,15 +70,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
         console.warn("Google Auth Init error:", e);
       }
     }
-  };
-
-  const handleSaveGoogleClientId = () => {
-    if (!googleClientId.trim()) return;
-    const cleanId = googleClientId.trim();
-    localStorage.setItem('google-client-id', cleanId);
-    setShowConfigInput(false);
-    if (showToast) showToast('Google Client ID guardado correctamente.', { type: 'success' });
-    loadAndInitGoogle(cleanId);
   };
 
   const handleGoogleCallback = (response) => {
@@ -177,59 +162,21 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
           </div>
         )}
 
-        {/* HERO: Primary Google Login Option */}
-        <div style={{ background: 'var(--color-bg, #F9FAFB)', border: '1.5px solid var(--color-border, #E5E7EB)', borderRadius: '16px', padding: '16px', textAlign: 'center', marginBottom: '18px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '10px', color: 'var(--color-text)' }}>
-            🌐 Inicio de Sesión Oficial con Google
+        {/* HERO: Direct Official Google Login */}
+        <div style={{ background: 'var(--color-bg, #F9FAFB)', border: '1.5px solid var(--color-border, #E5E7EB)', borderRadius: '16px', padding: '18px 14px', textAlign: 'center', marginBottom: '18px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '12px', color: 'var(--color-text)' }}>
+            Acceso Rápido con tu Cuenta de Google
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'center', minHeight: '44px', width: '100%' }}>
             <div id="google-btn-container" style={{ display: 'flex', justifyContent: 'center', width: '100%' }}></div>
           </div>
-
-          {!googleClientId && !showConfigInput && (
-            <div style={{ marginTop: '10px' }}>
-              <button
-                type="button"
-                className="btn-candy primary"
-                onClick={() => setShowConfigInput(true)}
-                style={{ fontSize: '11px', padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px', margin: 0 }}
-              >
-                <Key size={14} />
-                Ingresar Google Client ID
-              </button>
-            </div>
-          )}
-
-          {showConfigInput && (
-            <div style={{ marginTop: '12px', textAlign: 'left', background: '#FFF', padding: '12px', borderRadius: '12px', border: '1px solid #CBD5E1' }}>
-              <label style={{ fontSize: '10.5px', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>
-                Google OAuth Client ID:
-              </label>
-              <input
-                type="text"
-                className="candy-input"
-                placeholder="12345-abc.apps.googleusercontent.com"
-                value={googleClientId}
-                onChange={(e) => setGoogleClientId(e.target.value)}
-                style={{ fontSize: '11px', padding: '6px 8px', marginBottom: '8px' }}
-              />
-              <button
-                type="button"
-                className="btn-candy primary"
-                onClick={handleSaveGoogleClientId}
-                style={{ width: '100%', fontSize: '11px', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
-              >
-                <CheckCircle size={14} /> Guardar e Iniciar con Google
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Divider */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', color: 'var(--color-text-muted)', fontSize: '11px' }}>
           <div style={{ flex: 1, height: '1px', background: 'var(--color-border, #E5E7EB)' }}></div>
-          <span style={{ padding: '0 10px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>o con correo electrónico</span>
+          <span style={{ padding: '0 10px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>o continuar con correo</span>
           <div style={{ flex: 1, height: '1px', background: 'var(--color-border, #E5E7EB)' }}></div>
         </div>
 
