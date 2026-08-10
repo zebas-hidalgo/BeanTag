@@ -148,287 +148,291 @@ export default function AuthView({ onSuccess, showToast }) {
 
   return (
     <div style={{
-      minHeight: '100vh',
+      height: '100dvh',
+      maxHeight: '100dvh',
       width: '100%',
-      background: '#FFFFFF',
+      maxWidth: '480px',
+      margin: '0 auto',
+      background: 'var(--bg-card, #ECFDF5)',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px 16px',
       boxSizing: 'border-box',
-      fontFamily: 'var(--font-body, system-ui, sans-serif)'
+      overflowY: 'auto',
+      position: 'relative',
+      fontFamily: 'var(--font-body, system-ui, sans-serif)',
+      borderLeft: '1.5px solid var(--border-color, #A7F3D0)',
+      borderRight: '1.5px solid var(--border-color, #A7F3D0)'
     }}>
       
-      {/* Genjutsu Hero Card */}
-      <div className="candy-card animate-entrance" style={{
-        maxWidth: '460px',
+      {/* Top Decorative Header Accent */}
+      <div style={{
+        height: '6px',
         width: '100%',
-        padding: '36px 28px 32px 28px',
-        background: 'var(--bg-card, #ECFDF5)',
-        borderRadius: '24px',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.06), 0 4px 15px rgba(5,150,105,0.1)',
-        border: '1.5px solid var(--border-color, #A7F3D0)',
+        background: 'linear-gradient(90deg, var(--color-crimson, #059669) 0%, var(--color-honey, #D97706) 50%, var(--color-crimson, #059669) 100%)'
+      }} />
+
+      {/* Main Content Area */}
+      <div className="animate-entrance" style={{
+        flex: 1,
+        padding: '24px 20px 20px 20px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden'
+        boxSizing: 'border-box',
+        justifyContent: 'space-between'
       }}>
 
-        {/* Decorative Top Accent Bar */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '6px',
-          background: 'linear-gradient(90deg, #2A9D8F 0%, #E9C46A 50%, #2A9D8F 100%)'
-        }} />
+        {/* Top Header Section */}
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {/* Logo & Brand Pill */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '10px',
+            background: 'var(--bg-header, #D1FAE5)',
+            padding: '6px 14px',
+            borderRadius: '30px',
+            border: '1px solid var(--border-color, #A7F3D0)'
+          }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style={{ width: '24px', height: '24px' }}>
+              <rect x="35" y="15" width="135" height="175" rx="10" fill="#000000"/>
+              <rect x="30" y="10" width="135" height="175" rx="10" fill="var(--color-honey, #E9C46A)" stroke="#000000" strokeWidth="6"/>
+              <circle cx="97" cy="30" r="10" fill="#FFFFFF" stroke="#000000" strokeWidth="4"/>
+              <g transform="translate(68, 60)">
+                <path d="M5 5 H 35 C 50 5, 50 30, 35 30 C 50 30, 50 55, 30 55 H 5 Z" fill="none" stroke="#000000" strokeWidth="12" strokeLinejoin="round" strokeLinecap="round"/>
+                <path d="M5 5 V 55" fill="none" stroke="#000000" strokeWidth="12" strokeLinecap="round"/>
+                <path d="M55 40 C 63 40, 68 45, 68 52 C 68 60, 63 65, 55 65 C 47 65, 42 60, 55 40 Z" fill="var(--color-crimson, #059669)" stroke="#000000" strokeWidth="3"/>
+                <line x1="51" y1="61" x2="59" y2="44" stroke="#000000" strokeWidth="3"/>
+              </g>
+            </svg>
+            <span style={{
+              fontFamily: 'var(--font-heading)',
+              fontSize: '18px',
+              fontWeight: '900',
+              letterSpacing: '0.8px',
+              color: 'var(--color-text, #064E3B)'
+            }}>BeanTag</span>
+          </div>
 
-        {/* Logo & Brand Header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          marginBottom: '10px',
-          background: 'var(--color-header, #D1FAE5)',
-          padding: '8px 16px',
-          borderRadius: '30px',
-          border: '1px solid var(--border-color, #A7F3D0)'
-        }}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style={{ width: '28px', height: '28px' }}>
-            <rect x="35" y="15" width="135" height="175" rx="10" fill="#000000"/>
-            <rect x="30" y="10" width="135" height="175" rx="10" fill="var(--color-honey, #E9C46A)" stroke="#000000" strokeWidth="6"/>
-            <circle cx="97" cy="30" r="10" fill="#FFFFFF" stroke="#000000" strokeWidth="4"/>
-            <g transform="translate(68, 60)">
-              <path d="M5 5 H 35 C 50 5, 50 30, 35 30 C 50 30, 50 55, 30 55 H 5 Z" fill="none" stroke="#000000" strokeWidth="12" strokeLinejoin="round" strokeLinecap="round"/>
-              <path d="M5 5 V 55" fill="none" stroke="#000000" strokeWidth="12" strokeLinecap="round"/>
-              <path d="M55 40 C 63 40, 68 45, 68 52 C 68 60, 63 65, 55 65 C 47 65, 42 60, 55 40 Z" fill="var(--color-crimson, #059669)" stroke="#000000" strokeWidth="3"/>
-              <line x1="51" y1="61" x2="59" y2="44" stroke="#000000" strokeWidth="3"/>
-            </g>
-          </svg>
-          <span style={{
+          <h1 style={{
             fontFamily: 'var(--font-heading)',
             fontSize: '20px',
             fontWeight: '900',
-            letterSpacing: '1px',
-            color: 'var(--color-text, #064E3B)'
-          }}>BeanTag</span>
-        </div>
-
-        <h1 style={{
-          fontFamily: 'var(--font-heading)',
-          fontSize: '22px',
-          fontWeight: '900',
-          color: 'var(--color-text, #064E3B)',
-          margin: '12px 0 6px 0',
-          lineHeight: '1.2'
-        }}>
-          Tu Inventario de Café Specialty
-        </h1>
-
-        <p style={{
-          fontSize: '13px',
-          color: 'var(--color-text-muted, #047857)',
-          margin: '0 0 20px 0',
-          maxWidth: '340px',
-          lineHeight: '1.4'
-        }}>
-          Gestiona tus dosis de café congelado, sincroniza bitácoras de extracción y comparte tus recetas.
-        </p>
-
-        {/* Feature Highlights Badges */}
-        <div style={{
-          display: 'flex',
-          gap: '8px',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          marginBottom: '24px'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            background: 'var(--bg-header, #D1FAE5)',
-            border: '1px solid var(--border-color, #A7F3D0)',
-            padding: '5px 12px',
-            borderRadius: '20px'
+            color: 'var(--color-text, #064E3B)',
+            margin: '6px 0 4px 0',
+            lineHeight: '1.2'
           }}>
-            <Snowflake size={13} color="var(--color-crimson, #059669)" />
-            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>Congelados</span>
-          </div>
+            Tu Inventario de Café Specialty
+          </h1>
 
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            background: 'var(--bg-header, #D1FAE5)',
-            border: '1px solid var(--border-color, #A7F3D0)',
-            padding: '5px 12px',
-            borderRadius: '20px'
-          }}>
-            <Coffee size={13} color="var(--color-crimson, #059669)" />
-            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>Bitácoras</span>
-          </div>
-
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            background: 'var(--bg-header, #D1FAE5)',
-            border: '1px solid var(--border-color, #A7F3D0)',
-            padding: '5px 12px',
-            borderRadius: '20px'
-          }}>
-            <ReceiptText size={13} color="var(--color-crimson, #059669)" />
-            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>Recibos POS</span>
-          </div>
-        </div>
-
-        {errorMsg && (
-          <div style={{
-            background: '#FEE2E2',
-            color: '#991B1B',
-            padding: '10px 14px',
-            borderRadius: '12px',
+          <p style={{
             fontSize: '12px',
-            marginBottom: '16px',
-            fontWeight: 'bold',
-            width: '100%',
-            boxSizing: 'border-box'
-          }}>
-            ⚠️ {errorMsg}
-          </div>
-        )}
-
-        {/* Primary Hero Google Button */}
-        <div style={{
-          width: '100%',
-          background: '#FFFFFF',
-          border: '1.5px solid var(--border-color, #A7F3D0)',
-          borderRadius: '18px',
-          padding: '18px 14px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '10px',
-          marginBottom: '20px',
-          boxSizing: 'border-box'
-        }}>
-          <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>
-            Acceso Rápido Instantáneo
-          </div>
-
-          <div style={{
-            position: 'relative',
-            width: '100%',
+            color: 'var(--color-text-muted, #047857)',
+            margin: '0 0 14px 0',
             maxWidth: '320px',
-            minHeight: '44px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
+            lineHeight: '1.35'
           }}>
-            <div id="auth-view-google-container" style={{ display: 'flex', justifyContent: 'center', width: '100%' }}></div>
+            Dosis de café congelado, bitácoras de extracción y recetas de barista.
+          </p>
+
+          {/* Compact Feature Badges */}
+          <div style={{
+            display: 'flex',
+            gap: '6px',
+            justifyContent: 'center',
+            marginBottom: '16px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              background: 'var(--bg-header, #D1FAE5)',
+              border: '1px solid var(--border-color, #A7F3D0)',
+              padding: '4px 10px',
+              borderRadius: '16px'
+            }}>
+              <Snowflake size={12} color="var(--color-crimson, #059669)" />
+              <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--color-text, #064E3B)' }}>Congelados</span>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              background: 'var(--bg-header, #D1FAE5)',
+              border: '1px solid var(--border-color, #A7F3D0)',
+              padding: '4px 10px',
+              borderRadius: '16px'
+            }}>
+              <Coffee size={12} color="var(--color-crimson, #059669)" />
+              <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--color-text, #064E3B)' }}>Bitácoras</span>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              background: 'var(--bg-header, #D1FAE5)',
+              border: '1px solid var(--border-color, #A7F3D0)',
+              padding: '4px 10px',
+              borderRadius: '16px'
+            }}>
+              <ReceiptText size={12} color="var(--color-crimson, #059669)" />
+              <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--color-text, #064E3B)' }}>Recibos POS</span>
+            </div>
           </div>
         </div>
 
-        {/* Divider */}
-        <div style={{ display: 'flex', alignItems: 'center', width: '100%', marginBottom: '18px', color: 'var(--color-text-muted, #047857)', fontSize: '11px' }}>
-          <div style={{ flex: 1, height: '1px', background: 'var(--border-color, #A7F3D0)' }}></div>
-          <span style={{ padding: '0 12px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>o con correo electrónico</span>
-          <div style={{ flex: 1, height: '1px', background: 'var(--border-color, #A7F3D0)' }}></div>
-        </div>
+        {/* Center Auth Card */}
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
-        {/* Tab Switcher */}
-        <div style={{ display: 'flex', width: '100%', background: '#FFFFFF', borderRadius: '12px', padding: '4px', marginBottom: '16px', border: '1px solid var(--border-color, #A7F3D0)' }}>
-          <button
-            type="button"
-            onClick={() => { setMode('login'); setErrorMsg(''); }}
-            style={{
-              flex: 1,
-              padding: '8px',
-              border: 'none',
-              borderRadius: '8px',
-              background: mode === 'login' ? 'var(--color-crimson, #059669)' : 'transparent',
-              color: mode === 'login' ? '#FFFFFF' : 'var(--color-text-muted, #047857)',
-              fontWeight: 'bold',
-              fontSize: '12px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            Iniciar Sesión
-          </button>
-          <button
-            type="button"
-            onClick={() => { setMode('register'); setErrorMsg(''); }}
-            style={{
-              flex: 1,
-              padding: '8px',
-              border: 'none',
-              borderRadius: '8px',
-              background: mode === 'register' ? 'var(--color-crimson, #059669)' : 'transparent',
-              color: mode === 'register' ? '#FFFFFF' : 'var(--color-text-muted, #047857)',
-              fontWeight: 'bold',
-              fontSize: '12px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            Registrarse
-          </button>
-        </div>
-
-        {/* Email Form */}
-        <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left' }}>
-          {mode === 'register' && (
-            <div className="form-group" style={{ margin: 0 }}>
-              <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>Nombre Barista</label>
-              <div style={{ position: 'relative' }}>
-                <User size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted, #047857)' }} />
-                <input
-                  type="text" className="candy-input" placeholder="Tu Nombre"
-                  style={{ paddingLeft: '36px', fontSize: '13px' }} value={name} onChange={(e) => setName(e.target.value)}
-                />
-              </div>
+          {errorMsg && (
+            <div style={{
+              background: '#FEE2E2',
+              color: '#991B1B',
+              padding: '8px 12px',
+              borderRadius: '10px',
+              fontSize: '11.5px',
+              marginBottom: '12px',
+              fontWeight: '700',
+              width: '100%',
+              boxSizing: 'border-box'
+            }}>
+              ⚠️ {errorMsg}
             </div>
           )}
 
-          <div className="form-group" style={{ margin: 0 }}>
-            <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>Correo Electrónico</label>
-            <div style={{ position: 'relative' }}>
-              <Mail size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted, #047857)' }} />
-              <input
-                type="email" className="candy-input" placeholder="barista@ejemplo.com" required
-                style={{ paddingLeft: '36px', fontSize: '13px' }} value={email} onChange={(e) => setEmail(e.target.value)}
-              />
+          {/* Primary Hero Google Button Box */}
+          <div style={{
+            width: '100%',
+            background: '#FFFFFF',
+            border: '1.5px solid var(--border-color, #A7F3D0)',
+            borderRadius: '16px',
+            padding: '14px 12px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '14px',
+            boxSizing: 'border-box',
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.04)'
+          }}>
+            <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--color-text, #064E3B)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              Acceso Rápido Instantáneo
+            </div>
+
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: '290px',
+              minHeight: '44px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <div id="auth-view-google-container" style={{ display: 'flex', justifyContent: 'center', width: '100%' }}></div>
             </div>
           </div>
 
-          <div className="form-group" style={{ margin: 0 }}>
-            <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>Contraseña</label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted, #047857)' }} />
-              <input
-                type="password" className="candy-input" placeholder="••••••••" required
-                style={{ paddingLeft: '36px', fontSize: '13px' }} value={password} onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+          {/* Divider */}
+          <div style={{ display: 'flex', alignItems: 'center', width: '100%', marginBottom: '14px', color: 'var(--color-text-muted, #047857)', fontSize: '10px' }}>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border-color, #A7F3D0)' }}></div>
+            <span style={{ padding: '0 10px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '800' }}>o con correo electrónico</span>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border-color, #A7F3D0)' }}></div>
           </div>
 
-          <button
-            type="submit" className="btn-candy primary" disabled={loading}
-            style={{ width: '100%', marginTop: '6px', padding: '12px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--color-crimson, #059669)', color: '#FFFFFF', border: '1.5px solid var(--color-crimson, #059669)' }}
-          >
-            {mode === 'login' ? <LogIn size={18} /> : <UserPlus size={18} />}
-            {loading ? 'Procesando...' : (mode === 'login' ? 'Entrar con Correo' : 'Crear mi Cuenta Gratis')}
-          </button>
-        </form>
+          {/* Tab Switcher */}
+          <div style={{ display: 'flex', width: '100%', background: '#FFFFFF', borderRadius: '12px', padding: '3px', marginBottom: '12px', border: '1.5px solid var(--border-color, #A7F3D0)' }}>
+            <button
+              type="button"
+              onClick={() => { setMode('login'); setErrorMsg(''); }}
+              style={{
+                flex: 1,
+                padding: '7px',
+                border: 'none',
+                borderRadius: '9px',
+                background: mode === 'login' ? 'var(--color-crimson, #059669)' : 'transparent',
+                color: mode === 'login' ? '#FFFFFF' : 'var(--color-text-muted, #047857)',
+                fontWeight: '800',
+                fontSize: '11.5px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Iniciar Sesión
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMode('register'); setErrorMsg(''); }}
+              style={{
+                flex: 1,
+                padding: '7px',
+                border: 'none',
+                borderRadius: '9px',
+                background: mode === 'register' ? 'var(--color-crimson, #059669)' : 'transparent',
+                color: mode === 'register' ? '#FFFFFF' : 'var(--color-text-muted, #047857)',
+                fontWeight: '800',
+                fontSize: '11.5px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Registrarse
+            </button>
+          </div>
 
-        <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--color-text-muted, #047857)' }}>
-          <ShieldCheck size={14} color="var(--color-crimson, #059669)" />
+          {/* Form */}
+          <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left' }}>
+            {mode === 'register' && (
+              <div className="form-group" style={{ margin: 0 }}>
+                <label style={{ fontSize: '10px', fontWeight: '800', color: 'var(--color-text, #064E3B)' }}>Nombre Barista</label>
+                <div style={{ position: 'relative' }}>
+                  <User size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted, #047857)' }} />
+                  <input
+                    type="text" className="candy-input" placeholder="Tu Nombre"
+                    style={{ paddingLeft: '34px', fontSize: '13px', padding: '10px 10px 10px 34px' }} value={name} onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="form-group" style={{ margin: 0 }}>
+              <label style={{ fontSize: '10px', fontWeight: '800', color: 'var(--color-text, #064E3B)' }}>Correo Electrónico</label>
+              <div style={{ position: 'relative' }}>
+                <Mail size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted, #047857)' }} />
+                <input
+                  type="email" className="candy-input" placeholder="barista@ejemplo.com" required
+                  style={{ paddingLeft: '34px', fontSize: '13px', padding: '10px 10px 10px 34px' }} value={email} onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="form-group" style={{ margin: 0 }}>
+              <label style={{ fontSize: '10px', fontWeight: '800', color: 'var(--color-text, #064E3B)' }}>Contraseña</label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted, #047857)' }} />
+                <input
+                  type="password" className="candy-input" placeholder="••••••••" required
+                  style={{ paddingLeft: '34px', fontSize: '13px', padding: '10px 10px 10px 34px' }} value={password} onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit" className="btn-candy primary" disabled={loading}
+              style={{ width: '100%', marginTop: '4px', padding: '11px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'var(--color-crimson, #059669)', color: '#FFFFFF', border: '1.5px solid var(--color-crimson, #059669)' }}
+            >
+              {mode === 'login' ? <LogIn size={16} /> : <UserPlus size={16} />}
+              {loading ? 'Procesando...' : (mode === 'login' ? 'Entrar con Correo' : 'Crear mi Cuenta Gratis')}
+            </button>
+          </form>
+        </div>
+
+        {/* Security Footer */}
+        <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10.5px', color: 'var(--color-text-muted, #047857)' }}>
+          <ShieldCheck size={13} color="var(--color-crimson, #059669)" />
           <span>Tus datos de recetas y dosis están protegidos</span>
         </div>
 
