@@ -109,6 +109,10 @@ export default function App() {
   useEffect(() => {
     fetchBatches();
     
+    if (!currentUser) {
+      setShowAuthModal(true);
+    }
+
     const route = getInitialRoute();
     if (route.view === 'detail' && route.batchId) {
       setSelectedBatchId(route.batchId);

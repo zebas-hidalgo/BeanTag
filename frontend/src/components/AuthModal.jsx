@@ -10,32 +10,36 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  const [googleClientId, setGoogleClientId] = useState(() => localStorage.getItem('google-client-id') || '');
+  const [showGoogleConfig, setShowGoogleConfig] = useState(false);
+
   useEffect(() => {
     if (!isOpen) return;
     setErrorMsg('');
 
-    // Load Google Identity Services script if not loaded
-    if (!window.google && !document.getElementById('google-gsi-script')) {
+    const savedClientId = localStorage.getItem('google-client-id');
+    if (savedClientId && window.google) {
+      initGoogleAuth(savedClientId);
+    } else if (savedClientId && !window.google && !document.getElementById('google-gsi-script')) {
       const script = document.createElement('script');
       script.id = 'google-gsi-script';
       script.src = 'https://accounts.google.com/gsi/client';
       script.async = true;
       script.defer = true;
-      script.onload = () => initGoogleAuth();
+      script.onload = () => initGoogleAuth(savedClientId);
       document.body.appendChild(script);
-    } else if (window.google) {
-      initGoogleAuth();
     }
   }, [isOpen, mode]);
 
-  const initGoogleAuth = () => {
-    const clientId = localStorage.getItem('google-client-id') || '1047124914101-dummy.apps.googleusercontent.com';
+  const initGoogleAuth = (cId) => {
+    if (!cId) return;
     if (window.google && window.google.accounts && window.google.accounts.id) {
       try {
         window.google.accounts.id.initialize({
-          client_id: clientId,
+          client_id: cId,
           callback: handleGoogleCallback,
-          auto_select: false
+          auto_select: false,
+          ux_mode: 'popup'
         });
 
         const btnContainer = document.getElementById('google-btn-container');
@@ -54,6 +58,14 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
         console.warn("Google Auth Init error:", e);
       }
     }
+  };
+
+  const handleSaveGoogleClientId = () => {
+    if (!googleClientId.trim()) return;
+    localStorage.setItem('google-client-id', googleClientId.trim());
+    setShowGoogleConfig(false);
+    if (showToast) showToast('Google Client ID guardado.', { type: 'success' });
+    initGoogleAuth(googleClientId.trim());
   };
 
   const handleGoogleCallback = (response) => {
@@ -222,8 +234,36 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
         </div>
 
         {/* Google Auth Container */}
-        <div style={{ display: 'flex', justifyContent: 'center', minHeight: '44px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '44px', gap: '8px' }}>
           <div id="google-btn-container"></div>
+          
+          {!localStorage.getItem('google-client-id') && (
+            <div style={{ fontSize: '11px', textAlign: 'center', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+              {!showGoogleConfig ? (
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleConfig(true)}
+                  style={{ background: 'none', border: 'none', color: 'var(--color-crimson, #E53E3E)', cursor: 'pointer', textDecoration: 'underline', fontSize: '11px', fontWeight: 'bold' }}
+                >
+                  ⚙️ Configurar Google Client ID para inicio con Google
+                </button>
+              ) : (
+                <div style={{ display: 'flex', gap: '6px', width: '100%', marginTop: '6px' }}>
+                  <input
+                    type="text"
+                    className="candy-input"
+                    placeholder="Tu Client ID (ej. 123...apps.googleusercontent.com)"
+                    value={googleClientId}
+                    onChange={(e) => setGoogleClientId(e.target.value)}
+                    style={{ fontSize: '10.5px', flex: 1, padding: '6px' }}
+                  />
+                  <button type="button" className="btn-candy primary" onClick={handleSaveGoogleClientId} style={{ fontSize: '10.5px', padding: '6px 10px', margin: 0 }}>
+                    Guardar
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
       </div>
