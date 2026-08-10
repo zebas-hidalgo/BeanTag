@@ -785,7 +785,7 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
             </div>
           )}
 
-          {batch.recipes && batch.recipes.length > 0 ? (
+          {Array.isArray(batch?.recipes) && batch.recipes.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {batch.recipes.map(r => (
                 <div key={r.id} className="candy-card static" style={{ padding: '12px', fontSize: '11px' }}>

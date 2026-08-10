@@ -233,7 +233,7 @@ export default function NfcToolsModal({ onClose, showToast }) {
                 onChange={e => setSelectedBatchId(e.target.value)}
                 style={{ width: '100%', boxSizing: 'border-box' }}
               >
-                {batches.map(b => (
+                {(Array.isArray(batches) ? batches : []).map(b => (
                   <option key={b.id} value={b.id}>
                     {b.name || b.coffee_name} ({b.roaster}) - ID: {b.id}
                   </option>
@@ -340,7 +340,7 @@ export default function NfcToolsModal({ onClose, showToast }) {
               onChange={e => setSelectedBatchId(e.target.value)}
               style={{ width: '100%', boxSizing: 'border-box' }}
             >
-              {batches.map(b => (
+              {(Array.isArray(batches) ? batches : []).map(b => (
                 <option key={b.id} value={b.id}>
                   {b.name || b.coffee_name} ({b.roaster}) - ID: {b.id}
                 </option>

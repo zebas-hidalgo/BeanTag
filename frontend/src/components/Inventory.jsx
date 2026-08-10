@@ -5,18 +5,21 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFinished, setShowFinished] = useState(false);
 
+  const safeBatches = Array.isArray(batches) ? batches : [];
+
   // Filter available vs finished batches
-  const availableBatches = (batches || []).filter(b => b && (b.remaining_doses || 0) > 0);
-  const finishedBatches = (batches || []).filter(b => b && (b.remaining_doses || 0) <= 0);
+  const availableBatches = safeBatches.filter(b => b && (b.remaining_doses || 0) > 0);
+  const finishedBatches = safeBatches.filter(b => b && (b.remaining_doses || 0) <= 0);
 
   const currentList = showFinished ? finishedBatches : availableBatches;
 
   // Search filter
-  const filteredBatches = currentList.filter(batch => {
+  const filteredBatches = (Array.isArray(currentList) ? currentList : []).filter(batch => {
+    if (!batch) return false;
     const name = batch.name || '';
     const producer = batch.producer || '';
     const origin = batch.origin || '';
-    const q = searchQuery.toLowerCase();
+    const q = (searchQuery || '').toLowerCase();
     return name.toLowerCase().includes(q) || producer.toLowerCase().includes(q) || origin.toLowerCase().includes(q);
   });
 

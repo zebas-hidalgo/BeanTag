@@ -318,7 +318,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
                   Seleccionados ({selectedFlavorTags.length}):
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                  {selectedFlavorTags.map((tag, i) => (
+                  {(Array.isArray(selectedFlavorTags) ? selectedFlavorTags : []).map((tag, i) => (
                     <span key={i} style={{
                       display: 'inline-flex',
                       alignItems: 'center',
