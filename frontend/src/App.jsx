@@ -7,6 +7,8 @@ import BrewHistory from './components/BrewHistory';
 import Settings from './components/Settings';
 import NfcToolsModal from './components/NfcToolsModal';
 import AuthModal from './components/AuthModal';
+import AuthView from './components/AuthView';
+import BottomNav from './components/BottomNav';
 import { apiUrl } from './utils/api';
 import { User, LogIn, LogOut } from 'lucide-react';
 
@@ -259,7 +261,6 @@ export default function App() {
         }
       });
   };
-
   // Toast color based on type
   const toastStyles = {
     success: { backgroundColor: '#1A0505', color: '#FFFFFF' },
@@ -267,20 +268,33 @@ export default function App() {
     info: { backgroundColor: '#1A0505', color: '#FFFFFF' },
   };
 
+  if (!currentUser) {
+    return (
+      <>
+        {toast.visible && (
+          <div className="toast-notification animate-entrance" style={{ ...toastStyles[toast.type], zIndex: 12000 }}>
+            {toast.message}
+          </div>
+        )}
+        <AuthView onSuccess={handleAuthSuccess} showToast={showToast} />
+      </>
+    );
+  }
+
   return (
-    <div className="app-container">
+    <div className="app-container" style={{ paddingBottom: '90px' }}>
       <header className="app-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {/* Tiny Variant 3 Logo */}
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style={{ width: '24px', height: '24px' }}>
             <rect x="35" y="15" width="135" height="175" rx="10" fill="#000000"/>
-            <rect x="30" y="10" width="135" height="175" rx="10" fill="#F4A261" stroke="#000000" stroke-width="6"/>
-            <circle cx="97" cy="30" r="10" fill="#FFF5F5" stroke="#000000" stroke-width="4"/>
+            <rect x="30" y="10" width="135" height="175" rx="10" fill="#F4A261" stroke="#000000" strokeWidth="6"/>
+            <circle cx="97" cy="30" r="10" fill="#FFF5F5" stroke="#000000" strokeWidth="4"/>
             <g transform="translate(68, 60)">
-              <path d="M5 5 H 35 C 50 5, 50 30, 35 30 C 50 30, 50 55, 30 55 H 5 Z" fill="none" stroke="#000000" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/>
-              <path d="M5 5 V 55" fill="none" stroke="#000000" stroke-width="12" stroke-linecap="round"/>
-              <path d="M55 40 C 63 40, 68 45, 68 52 C 68 60, 63 65, 55 65 C 47 65, 42 60, 42 52 C 42 45, 47 40, 55 40 Z" fill="#E76F51" stroke="#000000" stroke-width="3"/>
-              <line x1="51" y1="61" x2="59" y2="44" stroke="#000000" stroke-width="3"/>
+              <path d="M5 5 H 35 C 50 5, 50 30, 35 30 C 50 30, 50 55, 30 55 H 5 Z" fill="none" stroke="#000000" strokeWidth="12" strokeLinejoin="round" strokeLinecap="round"/>
+              <path d="M5 5 V 55" fill="none" stroke="#000000" strokeWidth="12" strokeLinecap="round"/>
+              <path d="M55 40 C 63 40, 68 45, 68 52 C 68 60, 63 65, 55 65 C 47 65, 42 60, 55 40 Z" fill="#E76F51" stroke="#000000" strokeWidth="3"/>
+              <line x1="51" y1="61" x2="59" y2="44" stroke="#000000" strokeWidth="3"/>
             </g>
           </svg>
           <span style={{
@@ -294,35 +308,25 @@ export default function App() {
           }}>BeanTag</span>
         </div>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-          {currentUser ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-surface, #FFF)', border: '1.5px solid var(--color-border, #E5E7EB)', borderRadius: '20px', padding: '3px 8px 3px 4px' }}>
-              {currentUser.picture ? (
-                <img src={currentUser.picture} alt="Avatar" style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }} />
-              ) : (
-                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--color-crimson, #E53E3E)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '900' }}>
-                  {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
-                </div>
-              )}
-              <span style={{ fontSize: '11px', fontWeight: 'bold', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {currentUser.name}
-              </span>
-              <button onClick={handleLogout} title="Cerrar Sesión" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}>
-                <LogOut size={13} color="var(--color-text-muted)" />
-              </button>
-            </div>
-          ) : (
-            <button className="app-bar-btn" onClick={() => setShowAuthModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--color-crimson, #E53E3E)', color: '#FFF', border: 'none' }}>
-              <LogIn size={13} strokeWidth={2.5} />
-              Acceder
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-surface, #FFF)', border: '1.5px solid var(--color-border, #E5E7EB)', borderRadius: '20px', padding: '3px 8px 3px 4px' }}>
+            {currentUser.picture ? (
+              <img src={currentUser.picture} alt="Avatar" style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }} />
+            ) : (
+              <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--color-crimson, #E53E3E)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '900' }}>
+                {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+            )}
+            <span style={{ fontSize: '11px', fontWeight: 'bold', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {currentUser.name}
+            </span>
+            <button onClick={handleLogout} title="Cerrar Sesión" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}>
+              <LogOut size={13} color="var(--color-text-muted)" />
             </button>
-          )}
+          </div>
 
-          {currentView === 'inventory' && (
-            <button className="app-bar-btn" onClick={() => setCurrentView('creator')} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Plus size={14} strokeWidth={2.5} />
-              Registrar
-            </button>
-          )}
+          <button className="app-bar-btn" onClick={() => setShowNfcTools(true)} title="Herramientas NFC" style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1.5px solid var(--color-border, #E5E7EB)' }}>
+            <Nfc size={14} strokeWidth={2} />
+          </button>
         </div>
       </header>
 
@@ -363,58 +367,45 @@ export default function App() {
                 setCurrentView('inventory');
               }
             }} 
-            onBack={handleBack}
+            onCancel={handleBack}
             showToast={showToast}
           />
         )}
 
-        {currentView === 'history' && (
+        {currentView === 'brews' && (
           <BrewHistory 
-            onNavigateToInventory={() => { setCurrentView('inventory'); setSelectedBatchId(null); }} 
-            onSelectBatch={(id) => { setSelectedBatchId(id); setCurrentView('detail'); }}
+            batches={batches}
+            onSelectBatch={handleSelectBatch}
+            showToast={showToast}
           />
         )}
 
         {currentView === 'settings' && (
-          <Settings theme={theme} setTheme={setTheme} showToast={showToast} />
+          <Settings 
+            currentUser={currentUser}
+            onLogout={handleLogout}
+            showToast={showToast}
+          />
         )}
       </main>
 
-      {/* R1: Generalized Toast — replaces all alert() calls */}
-      <div 
-        className={`undo-toast ${toast.visible ? 'show' : ''}`}
-        style={toast.visible ? toastStyles[toast.type] : {}}
-      >
-        <span>{toast.message}</span>
-        {toast.showUndo && (
-          <button className="undo-btn" onClick={handleUndo}>Deshacer</button>
-        )}
-      </div>
+      {toast.visible && (
+        <div className="toast-notification animate-entrance" style={toastStyles[toast.type]}>
+          {toast.message}
+        </div>
+      )}
 
-      {/* R10: Delete Confirmation Modal */}
       {deleteModal.visible && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 100,
-          backgroundColor: 'rgba(18, 10, 8, 0.65)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '24px', boxSizing: 'border-box'
-        }}>
-          <div className="candy-card static" style={{
-            maxWidth: '340px', width: '100%',
-            textAlign: 'center', padding: '24px'
-          }}>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', textTransform: 'uppercase', margin: '0 0 8px 0' }}>
-              Eliminar Lote
-            </h3>
-            <p style={{ fontSize: '13px', margin: '0 0 16px 0', color: 'var(--color-text-muted)' }}>
-              ¿Estás seguro de eliminar <strong>{deleteModal.batchName}</strong>? Esta acción no se puede deshacer.
+        <div className="bento-modal-overlay" style={{ zIndex: 11000 }}>
+          <div className="candy-card animate-entrance" style={{ maxWidth: '340px', padding: '20px', margin: 'auto', textAlign: 'center' }}>
+            <h4 style={{ margin: '0 0 8px 0', fontFamily: 'var(--font-heading)' }}>¿Eliminar este Lote?</h4>
+            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+              Se eliminará "{deleteModal.batchName}" y todo su historial de tubos. Esta acción no se puede deshacer.
             </p>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button 
-                className="btn-candy" 
-                style={{ flex: 1 }} 
+                className="candy-input" 
+                style={{ flex: 1, margin: 0, textAlign: 'center' }} 
                 onClick={() => setDeleteModal({ visible: false, batchId: null, batchName: '' })}
               >
                 Cancelar
@@ -435,29 +426,8 @@ export default function App() {
         <NfcToolsModal onClose={() => setShowNfcTools(false)} showToast={showToast} />
       )}
 
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={handleAuthSuccess}
-        showToast={showToast}
-      />
-
-      <nav className="nb-tabbar">
-        <button className={`tab-item ${currentView === 'inventory' ? 'active' : ''}`} onClick={() => { setCurrentView('inventory'); setSelectedBatchId(null); }}>
-          <Package size={22} strokeWidth={2.5} />
-          <span>Congelador</span>
-        </button>
-        
-        <button className={`tab-item ${currentView === 'history' ? 'active' : ''}`} onClick={() => { setCurrentView('history'); setSelectedBatchId(null); }}>
-          <BookOpen size={22} strokeWidth={2.5} />
-          <span>Bitácoras</span>
-        </button>
-
-        <button className={`tab-item ${currentView === 'settings' ? 'active' : ''}`} onClick={() => { setCurrentView('settings'); setSelectedBatchId(null); }}>
-          <SettingsIcon size={22} strokeWidth={2.5} />
-          <span>Ajustes</span>
-        </button>
-      </nav>
+      {/* Genjutsu Floating Bottom Navigation Bar */}
+      <BottomNav currentView={currentView} setCurrentView={setCurrentView} />
     </div>
   );
 }

@@ -27,6 +27,32 @@
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Genjutsu Motion Principles & Animations */
+.animate-entrance {
+  animation: genjutsuSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes genjutsuSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.genjutsu-pulse {
+  animation: genjutsuPulse 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes genjutsuPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
 /* Tema 2: Organic Matcha & Caramel */
 [data-theme="matcha"] {
   --bg-canvas: #FFFFFF;
