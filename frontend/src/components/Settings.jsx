@@ -110,49 +110,56 @@ export default function Settings({ theme, setTheme, showToast }) {
             Elige una paleta Neobrutalista inspirada en el café de especialidad
           </p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
           {[
-            { id: 'default', name: '🔴 Neo Crimson', colors: ['#FEE2E2', '#FEF2F2', '#DC2626'] },
-            { id: 'matcha', name: '🌿 Organic Matcha', colors: ['#D1FAE5', '#ECFDF5', '#059669'] },
-            { id: 'cyberpunk', name: '🌌 Midnight Cyber', colors: ['#180E29', '#F5F3FF', '#7C3AED'] },
-            { id: 'sakura', name: '🌸 Geisha Floral', colors: ['#FFE4E6', '#FFF1F2', '#E11D48'] },
-            { id: 'miel', name: '🥐 Vintage Roast', colors: ['#FEF3C7', '#FFFBEB', '#92400E'] },
-            { id: 'velvet', name: '🧊 Cold Brew Ice', colors: ['#CFFAFE', '#ECFEFF', '#0891B2'] }
+            { id: 'matcha', name: '🌿 Organic Matcha', desc: 'Botanical & Honey', colors: ['#0F1715', '#182623', '#2A9D8F', '#E9C46A'] },
+            { id: 'espresso', name: '☕ Espresso Noir', desc: 'Terracotta Luxury', colors: ['#0D0B0A', '#1A1614', '#E76F51', '#F4A261'] },
+            { id: 'cyber', name: '⚡ Cyber Kinetic', desc: 'Brix Lab & TDS', colors: ['#121214', '#1E1E24', '#FF5E36', '#3B82F6'] },
+            { id: 'sakura', name: '🌸 Sakura Cryo', desc: 'Cold Brew & Floral', colors: ['#171216', '#241B22', '#EC4899', '#F472B6'] },
+            { id: 'caramel', name: '🍯 Amber Caramel', desc: 'Roasted & Cream', colors: ['#1C1917', '#292524', '#D97706', '#F59E0B'] },
+            { id: 'frost', name: '🧊 Nordic Frost', desc: 'Cryo Ice -20°C', colors: ['#0F172A', '#1E293B', '#38BDF8', '#818CF8'] }
           ].map((t) => {
-            const isActive = theme === t.id;
+            const isActive = (theme || 'matcha') === t.id;
             return (
               <button 
                 key={t.id}
                 type="button"
-                onClick={() => { setTheme(t.id); if (showToast) showToast(`Tema ${t.name} aplicado (3 Colores).`, { type: 'success', duration: 2000 }); }} 
-                className="btn-candy"
+                onClick={() => {
+                  setTheme(t.id);
+                  localStorage.setItem('beantag-theme', t.id);
+                  document.documentElement.setAttribute('data-theme', t.id);
+                  if (showToast) showToast(`Tema ${t.name} aplicado.`, { type: 'success', duration: 2000 });
+                }} 
                 style={{ 
                   margin: 0, 
                   fontSize: '11px', 
-                  padding: '8px 6px', 
-                  border: '2px solid var(--border-color)',
-                  backgroundColor: isActive ? 'var(--color-crimson)' : 'var(--bg-card)',
-                  color: isActive ? '#FFFFFF' : 'var(--color-text)',
-                  boxShadow: isActive ? 'none' : '3px 3px 0px var(--border-color)',
-                  transform: isActive ? 'translate(2px, 2px)' : 'none',
+                  padding: '10px 8px', 
+                  borderRadius: '14px',
+                  border: isActive ? '1.5px solid #2A9D8F' : '1.5px solid var(--border-color)',
+                  backgroundColor: isActive ? 'rgba(42, 157, 143, 0.15)' : 'var(--bg-card)',
+                  color: isActive ? '#ECFDF5' : 'var(--color-text)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  transform: isActive ? 'scale(1.03)' : 'scale(1)',
                   fontWeight: 'bold',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '4px'
+                  gap: '6px'
                 }}
               >
-                <span>{t.name}</span>
-                <div style={{ display: 'flex', gap: '3px' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 'bold' }}>{t.name}</span>
+                <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>{t.desc}</span>
+                <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
                   {t.colors.map((c, idx) => (
                     <span 
                       key={idx} 
                       style={{ 
-                        width: '10px', 
-                        height: '10px', 
+                        width: '12px', 
+                        height: '12px', 
                         borderRadius: '50%', 
                         backgroundColor: c, 
-                        border: '1.5px solid var(--border-color)',
+                        border: '1px solid rgba(255,255,255,0.2)',
                         display: 'inline-block'
                       }} 
                     />

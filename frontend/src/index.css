@@ -49,84 +49,90 @@
   100% { transform: scale(1); }
 }
 
-/* Tema 2: Organic Matcha & Caramel */
-[data-theme="matcha"] {
-  --bg-canvas: #FFFFFF;
-  --theme-color-1: #D1FAE5;
-  --theme-color-2: #ECFDF5;
-  --theme-color-3: #059669;
+/* 🎨 6 Aesthetic Specialty Coffee Themes (UI/UX Pro Max 2026) */
 
-  --bg-card: var(--theme-color-2);
-  --color-crimson: var(--theme-color-3);
-  --border-color: #000000;
-  --color-text: #064E3B;
-  --color-text-muted: #047857;
-  --bg-header: var(--theme-color-1);
-  --color-header-text: var(--color-text);
+/* 1. Organic Matcha & Honey (Default) */
+[data-theme="matcha"], :root {
+  --bg-canvas: #0F1715;
+  --bg-card: #182623;
+  --color-crimson: #2A9D8F;
+  --color-honey: #E9C46A;
+  --color-emerald-light: #D1FAE5;
+  --border-color: #243530;
+  --color-text: #ECFDF5;
+  --color-text-muted: #94A3B8;
+  --bg-header: #121E1B;
+  --color-header-text: #ECFDF5;
 }
 
-/* Tema 3: Midnight Cyber-Espresso */
-[data-theme="cyberpunk"] {
-  --bg-canvas: #FFFFFF;
-  --theme-color-1: #180E29;
-  --theme-color-2: #F5F3FF;
-  --theme-color-3: #7C3AED;
-
-  --bg-card: var(--theme-color-2);
-  --color-crimson: var(--theme-color-3);
-  --border-color: #000000;
-  --color-text: #1E1B4B;
-  --color-text-muted: #4C1D95;
-  --bg-header: var(--theme-color-1);
-  --color-header-text: #F3E8FF;
+/* 2. Espresso Noir & Terracotta */
+[data-theme="espresso"] {
+  --bg-canvas: #0D0B0A;
+  --bg-card: #1A1614;
+  --color-crimson: #E76F51;
+  --color-honey: #F4A261;
+  --color-emerald-light: #FCE7D4;
+  --border-color: #2A2421;
+  --color-text: #F9FAFB;
+  --color-text-muted: #9CA3AF;
+  --bg-header: #141110;
+  --color-header-text: #F9FAFB;
 }
 
-/* Tema 4: Geisha Floral & Peach */
+/* 3. Cyber Kinetic Brix Lab */
+[data-theme="cyber"] {
+  --bg-canvas: #121214;
+  --bg-card: #1E1E24;
+  --color-crimson: #FF5E36;
+  --color-honey: #3B82F6;
+  --color-emerald-light: #DBEAFE;
+  --border-color: #2E2E38;
+  --color-text: #FAFAFA;
+  --color-text-muted: #A1A1AA;
+  --bg-header: #18181C;
+  --color-header-text: #FAFAFA;
+}
+
+/* 4. Sakura Cold Brew & Cryo */
 [data-theme="sakura"] {
-  --bg-canvas: #FFFFFF;
-  --theme-color-1: #FFE4E6;
-  --theme-color-2: #FFF1F2;
-  --theme-color-3: #E11D48;
-
-  --bg-card: var(--theme-color-2);
-  --color-crimson: var(--theme-color-3);
-  --border-color: #000000;
-  --color-text: #4C0519;
-  --color-text-muted: #9F1239;
-  --bg-header: var(--theme-color-1);
-  --color-header-text: var(--color-text);
+  --bg-canvas: #171216;
+  --bg-card: #241B22;
+  --color-crimson: #EC4899;
+  --color-honey: #F472B6;
+  --color-emerald-light: #FCE7F3;
+  --border-color: #382A35;
+  --color-text: #FDF2F8;
+  --color-text-muted: #A8A29E;
+  --bg-header: #1C151B;
+  --color-header-text: #FDF2F8;
 }
 
-/* Tema 5: Vintage Roast & Parchment */
-[data-theme="miel"] {
-  --bg-canvas: #FFFFFF;
-  --theme-color-1: #FEF3C7;
-  --theme-color-2: #FFFBEB;
-  --theme-color-3: #92400E;
-
-  --bg-card: var(--theme-color-2);
-  --color-crimson: var(--theme-color-3);
-  --border-color: #000000;
-  --color-text: #451A03;
-  --color-text-muted: #78350F;
-  --bg-header: var(--theme-color-1);
-  --color-header-text: var(--color-text);
+/* 5. Amber Caramel & Cream */
+[data-theme="caramel"] {
+  --bg-canvas: #1C1917;
+  --bg-card: #292524;
+  --color-crimson: #D97706;
+  --color-honey: #F59E0B;
+  --color-emerald-light: #FEF3C7;
+  --border-color: #44403C;
+  --color-text: #F5F5F4;
+  --color-text-muted: #A8A29E;
+  --bg-header: #211E1C;
+  --color-header-text: #F5F5F4;
 }
 
-/* Tema 6: Cold Brew & Ice */
-[data-theme="velvet"] {
-  --bg-canvas: #FFFFFF;
-  --theme-color-1: #CFFAFE;
-  --theme-color-2: #ECFEFF;
-  --theme-color-3: #0891B2;
-
-  --bg-card: var(--theme-color-2);
-  --color-crimson: var(--theme-color-3);
-  --border-color: #000000;
-  --color-text: #164E63;
-  --color-text-muted: #0E7490;
-  --bg-header: var(--theme-color-1);
-  --color-header-text: var(--color-text);
+/* 6. Nordic Frost & Minimal Ice */
+[data-theme="frost"] {
+  --bg-canvas: #0F172A;
+  --bg-card: #1E293B;
+  --color-crimson: #38BDF8;
+  --color-honey: #818CF8;
+  --color-emerald-light: #E0F2FE;
+  --border-color: #334155;
+  --color-text: #F8FAFC;
+  --color-text-muted: #94A3B8;
+  --bg-header: #141E33;
+  --color-header-text: #F8FAFC;
 }
 
 @keyframes slideUpFade {

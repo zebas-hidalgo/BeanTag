@@ -382,6 +382,8 @@ export default function App() {
 
         {currentView === 'settings' && (
           <Settings 
+            theme={theme}
+            setTheme={setTheme}
             currentUser={currentUser}
             onLogout={handleLogout}
             showToast={showToast}
