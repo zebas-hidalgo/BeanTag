@@ -76,6 +76,9 @@ export default function App() {
     setToast(prev => ({ ...prev, visible: false }));
   }, []);
 
+  // Delete confirmation modal
+  const [deleteModal, setDeleteModal] = useState({ visible: false, batchId: null, batchName: '' });
+
   // Auth Handlers
   const handleAuthSuccess = (data) => {
     setToken(data.token);
