@@ -94,6 +94,26 @@ async function initDb() {
     await db.exec('ALTER TABLE recipes ADD COLUMN espresso_preinfusion INTEGER;');
   } catch (e) {}
 
+  // Create users table
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT,
+      name TEXT,
+      picture TEXT,
+      google_id TEXT UNIQUE,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  try {
+    await db.exec('ALTER TABLE batches ADD COLUMN user_id INTEGER;');
+  } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE recipes ADD COLUMN user_id INTEGER;');
+  } catch (e) {}
+
   await db.exec('CREATE INDEX IF NOT EXISTS idx_recipes_batch_id ON recipes(batch_id);');
   
   return db;

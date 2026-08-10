@@ -6,7 +6,9 @@ import BatchCreator from './components/BatchCreator';
 import BrewHistory from './components/BrewHistory';
 import Settings from './components/Settings';
 import NfcToolsModal from './components/NfcToolsModal';
+import AuthModal from './components/AuthModal';
 import { apiUrl } from './utils/api';
+import { User, LogIn, LogOut } from 'lucide-react';
 
 const getInitialRoute = () => {
   const path = window.location.pathname;
@@ -38,6 +40,14 @@ export default function App() {
   const [lastSubtractedBatch, setLastSubtractedBatch] = useState(null);
   const [batchToEdit, setBatchToEdit] = useState(null);
   const [showNfcTools, setShowNfcTools] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  
+  // User Authentication State
+  const [currentUser, setCurrentUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('beantag-user')); } catch (e) { return null; }
+  });
+  const [token, setToken] = useState(() => localStorage.getItem('beantag-token') || '');
+
   const [theme, setTheme] = useState(() => localStorage.getItem('beantag-theme') || 'default');
 
   useEffect(() => {
@@ -66,13 +76,31 @@ export default function App() {
     setToast(prev => ({ ...prev, visible: false }));
   }, []);
 
-  // R10: Delete confirmation modal
-  const [deleteModal, setDeleteModal] = useState({ visible: false, batchId: null, batchName: '' });
+  // Auth Handlers
+  const handleAuthSuccess = (data) => {
+    setToken(data.token);
+    setCurrentUser(data.user);
+    localStorage.setItem('beantag-token', data.token);
+    localStorage.setItem('beantag-user', JSON.stringify(data.user));
+    fetchBatches(data.token);
+  };
 
-  const fetchBatches = () => {
-    fetch(apiUrl('api/batches'))
+  const handleLogout = () => {
+    setToken('');
+    setCurrentUser(null);
+    localStorage.removeItem('beantag-token');
+    localStorage.removeItem('beantag-user');
+    showToast('Has cerrado sesión.', { type: 'info', duration: 2000 });
+    fetchBatches('');
+  };
+
+  const fetchBatches = (authToken = token) => {
+    const headers = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+    fetch(apiUrl('api/batches'), { headers })
       .then(res => res.json())
-      .then(data => setBatches(data));
+      .then(data => {
+        if (Array.isArray(data)) setBatches(data);
+      });
   };
 
   useEffect(() => {
@@ -259,6 +287,29 @@ export default function App() {
           }}>BeanTag</span>
         </div>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          {currentUser ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-surface, #FFF)', border: '1.5px solid var(--color-border, #E5E7EB)', borderRadius: '20px', padding: '3px 8px 3px 4px' }}>
+              {currentUser.picture ? (
+                <img src={currentUser.picture} alt="Avatar" style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--color-crimson, #E53E3E)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '900' }}>
+                  {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+                </div>
+              )}
+              <span style={{ fontSize: '11px', fontWeight: 'bold', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {currentUser.name}
+              </span>
+              <button onClick={handleLogout} title="Cerrar Sesión" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}>
+                <LogOut size={13} color="var(--color-text-muted)" />
+              </button>
+            </div>
+          ) : (
+            <button className="app-bar-btn" onClick={() => setShowAuthModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--color-crimson, #E53E3E)', color: '#FFF', border: 'none' }}>
+              <LogIn size={13} strokeWidth={2.5} />
+              Acceder
+            </button>
+          )}
+
           {currentView === 'inventory' && (
             <button className="app-bar-btn" onClick={() => setCurrentView('creator')} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Plus size={14} strokeWidth={2.5} />
@@ -376,6 +427,13 @@ export default function App() {
       {showNfcTools && (
         <NfcToolsModal onClose={() => setShowNfcTools(false)} showToast={showToast} />
       )}
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+        showToast={showToast}
+      />
 
       <nav className="nb-tabbar">
         <button className={`tab-item ${currentView === 'inventory' ? 'active' : ''}`} onClick={() => { setCurrentView('inventory'); setSelectedBatchId(null); }}>

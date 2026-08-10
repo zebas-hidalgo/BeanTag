@@ -1,10 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const { OAuth2Client } = require('google-auth-library');
 const { initDb, getDb } = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const JWT_SECRET = process.env.JWT_SECRET || 'beantag_secret_jwt_key_2026';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 app.use(cors());
 app.use(express.json());
@@ -12,13 +18,155 @@ app.use(express.json());
 // Serve static files from compiled React app
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Authentication Middleware
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      req.user = null;
+    } else {
+      req.user = user;
+    }
+    next();
+  });
+}
+
+app.use(authenticateToken);
+
+// --- AUTHENTICATION ENDPOINTS ---
+
+// Register with Email & Password
+app.post('/api/auth/register', async (req, res) => {
+  const { email, password, name } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Correo y contraseña son obligatorios.' });
+  }
+  try {
+    const db = await getDb();
+    const existing = await db.get('SELECT id FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+    if (existing) {
+      return res.status(400).json({ error: 'Ya existe una cuenta con este correo electrónico.' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const userName = name || email.split('@')[0];
+
+    const result = await db.run(
+      'INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)',
+      [email.toLowerCase().trim(), passwordHash, userName]
+    );
+
+    const user = { id: result.lastID, email: email.toLowerCase().trim(), name: userName, picture: null };
+    const token = jwt.sign(user, JWT_SECRET, { expiresIn: '30d' });
+
+    res.status(201).json({ success: true, token, user });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Login with Email & Password
+app.post('/api/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Ingresa tu correo y contraseña.' });
+  }
+  try {
+    const db = await getDb();
+    const user = await db.get('SELECT * FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+    if (!user || !user.password_hash) {
+      return res.status(401).json({ error: 'Credenciales inválidas o cuenta de Google.' });
+    }
+
+    const valid = await bcrypt.compare(password, user.password_hash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Contraseña incorrecta.' });
+    }
+
+    const userData = { id: user.id, email: user.email, name: user.name, picture: user.picture };
+    const token = jwt.sign(userData, JWT_SECRET, { expiresIn: '30d' });
+
+    res.json({ success: true, token, user: userData });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Google OAuth Login / Register
+app.post('/api/auth/google', async (req, res) => {
+  const { credential } = req.body;
+  if (!credential) {
+    return res.status(400).json({ error: 'Token de Google no proporcionado.' });
+  }
+  try {
+    let payload;
+    try {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: GOOGLE_CLIENT_ID || undefined
+      });
+      payload = ticket.getPayload();
+    } catch (e) {
+      // Fallback: Verify token directly with Google tokeninfo endpoint
+      const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
+      if (!response.ok) throw new Error('Token de Google no válido.');
+      payload = await response.json();
+    }
+
+    const { email, name, picture, sub: googleId } = payload;
+    if (!email) {
+      return res.status(400).json({ error: 'No se pudo obtener el correo de Google.' });
+    }
+
+    const db = await getDb();
+    let user = await db.get('SELECT * FROM users WHERE google_id = ? OR email = ?', [googleId, email.toLowerCase().trim()]);
+
+    if (!user) {
+      const result = await db.run(
+        'INSERT INTO users (email, name, picture, google_id) VALUES (?, ?, ?, ?)',
+        [email.toLowerCase().trim(), name || 'Usuario de Google', picture || null, googleId]
+      );
+      user = { id: result.lastID, email: email.toLowerCase().trim(), name: name || 'Usuario de Google', picture: picture || null };
+    } else if (!user.google_id) {
+      await db.run('UPDATE users SET google_id = ?, picture = COALESCE(picture, ?) WHERE id = ?', [googleId, picture, user.id]);
+      user.picture = user.picture || picture;
+    }
+
+    const userData = { id: user.id, email: user.email, name: user.name, picture: user.picture };
+    const token = jwt.sign(userData, JWT_SECRET, { expiresIn: '30d' });
+
+    res.json({ success: true, token, user: userData });
+  } catch (err) {
+    console.error("Google Auth error:", err);
+    res.status(401).json({ error: 'Autenticación con Google fallida: ' + err.message });
+  }
+});
+
+// Current User Profile
+app.get('/api/auth/me', (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'No autenticado.' });
+  }
+  res.json({ user: req.user });
+});
+
 // --- API ROUTES ---
 
-// Get all active batches
+// Get all active batches (Filtered by user if authenticated, or public/unassigned)
 app.get('/api/batches', async (req, res) => {
   try {
     const db = await getDb();
-    const batches = await db.all('SELECT * FROM batches ORDER BY created_at DESC');
+    let batches;
+    if (req.user && req.user.id) {
+      batches = await db.all('SELECT * FROM batches WHERE user_id = ? OR user_id IS NULL ORDER BY created_at DESC', [req.user.id]);
+    } else {
+      batches = await db.all('SELECT * FROM batches ORDER BY created_at DESC');
+    }
     res.json(batches);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -50,11 +198,12 @@ app.post('/api/batches', async (req, res) => {
     const db = await getDb();
     const doseWeightNum = parseFloat(dose_weight) || 20.0;
     const totalWeightG = doseWeightNum * parseInt(total_doses);
+    const userId = req.user ? req.user.id : null;
 
     await db.run(
-      `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )`,
-      [id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, total_doses, origin, roast_level, roast_date, freeze_date, totalWeightG, totalWeightG]
+      `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, user_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, total_doses, origin, roast_level, roast_date, freeze_date, totalWeightG, totalWeightG, userId]
     );
     res.status(201).json({ success: true, id });
   } catch (err) {
