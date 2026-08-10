@@ -37,8 +37,11 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
       .then(res => res.json())
       .then(data => {
         if (active) {
-          setHistory(data);
+          setHistory(Array.isArray(data) ? data : []);
         }
+      })
+      .catch(() => {
+        if (active) setHistory([]);
       });
       
     const img = new Image();
@@ -462,9 +465,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
           }
         });
     }
-  };
+  const safeHistory = Array.isArray(history) ? history : [];
 
-  const filteredHistory = (history || []).filter(recipe => {
+  const filteredHistory = safeHistory.filter(recipe => {
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       const batchName = (recipe.batch_name || '').toLowerCase();
@@ -500,14 +503,14 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', margin: 0 }}>
           Bitácoras
         </h2>
-        {history.length > 0 && (
+        {safeHistory.length > 0 && (
           <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>
             {filteredHistory.length} {filteredHistory.length === 1 ? 'receta' : 'recetas'}
           </span>
         )}
       </div>
 
-      {history.length > 0 && (
+      {safeHistory.length > 0 && (
         <div style={{ marginBottom: '14px' }}>
           <div style={{ position: 'relative' }}>
             <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}>
@@ -525,7 +528,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         </div>
       )}
 
-      {history.length === 0 ? (
+      {safeHistory.length === 0 ? (
         /* R8: Empty state CTA with guidance */
         <div className="candy-card static" style={{ textAlign: 'center', padding: '30px' }}>
           <div style={{ fontSize: '32px', marginBottom: '12px' }}>☕</div>
