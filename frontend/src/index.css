@@ -230,84 +230,82 @@ main {
 /* Bento Buttons */
 .btn-candy {
   background-color: var(--bg-card);
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  padding: 8px 16px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px 18px;
+  min-height: 42px;
   font-family: var(--font-heading);
-  font-weight: bold;
+  font-weight: 700;
   font-size: 13px;
   cursor: pointer;
   text-transform: uppercase;
-  color: var(--border-color);
+  color: var(--color-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  transition: transform 100ms, box-shadow 100ms, background-color 100ms;
-  box-shadow: 3px 3px 0px var(--border-color);
+  transition: transform 150ms var(--transition-spring), box-shadow 150ms ease, background-color 150ms ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .btn-candy:hover {
-  background-color: #FAF5FF;
+  background-color: var(--bg-header);
 }
 
 .btn-candy:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px var(--border-color);
-  background-color: #EDF2F7;
+  transform: scale(0.97);
 }
 
 .btn-candy.primary {
   background-color: var(--color-crimson);
   color: #FFFFFF;
+  border-color: var(--color-crimson);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .btn-candy.primary:hover {
-  background-color: #E2431C;
+  filter: brightness(1.08);
 }
 
 .btn-candy.primary:active {
-  background-color: #C03B00;
+  transform: scale(0.97);
 }
 
 .btn-candy.accent {
-  background-color: var(--bg-card);
+  background-color: var(--bg-header);
   color: var(--color-crimson);
   border-color: var(--color-crimson);
 }
 
 .btn-candy.accent:hover {
-  background-color: #FAF5F4;
+  filter: brightness(0.95);
 }
 
 .app-bar-btn {
-  border: 2px solid var(--border-color);
+  border: 1.5px solid var(--border-color);
   background-color: var(--bg-card);
-  padding: 4px 10px;
-  min-height: 32px;
+  padding: 6px 12px;
+  min-height: 36px;
   font-family: var(--font-heading);
-  font-weight: bold;
-  font-size: 10px;
+  font-weight: 700;
+  font-size: 11px;
   cursor: pointer;
   text-transform: uppercase;
-  color: var(--border-color);
+  color: var(--color-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  transition: transform 100ms, box-shadow 100ms, background-color 100ms;
-  box-shadow: 1.5px 1.5px 0px var(--border-color);
-  border-radius: 6px;
+  transition: transform 100ms, background-color 100ms;
+  border-radius: 10px;
 }
 
 .app-bar-btn:hover {
-  background-color: #FAF5FF;
+  background-color: var(--bg-header);
 }
 
 .app-bar-btn:active {
-  transform: translate(1px, 1px);
-  box-shadow: 0.5px 0.5px 0px var(--border-color);
-  background-color: #EDF2F7;
+  transform: scale(0.96);
 }
 
 /* Inputs */
@@ -320,30 +318,31 @@ main {
 .form-group label {
   display: block;
   font-family: var(--font-heading);
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
   margin-bottom: 6px;
-  font-weight: bold;
-  color: var(--border-color);
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 0.3px;
 }
 
 .candy-input {
   width: 100%;
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-color);
-  border-radius: 6px;
-  padding: 9px 12px;
+  background-color: #FFFFFF;
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  padding: 11px 14px;
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 14px; /* 14-16px prevents iOS Safari auto-zoom */
   box-sizing: border-box;
-  color: var(--color-text);
-  transition: background-color 0.2s, box-shadow 0.2s;
+  color: #0F172A;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .candy-input:focus {
   outline: none;
-  background-color: #FAF5FF;
-  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.15);
+  border-color: var(--color-crimson);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
 }
 
 /* Custom styling for date inputs to look clean and uniform across all browsers (including iOS Safari standalone PWA) */
