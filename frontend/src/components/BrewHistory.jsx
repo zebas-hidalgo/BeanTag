@@ -465,6 +465,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
           }
         });
     }
+  };
+
   const safeHistory = Array.isArray(history) ? history : [];
 
   const filteredHistory = safeHistory.filter(recipe => {
