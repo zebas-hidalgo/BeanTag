@@ -112,12 +112,12 @@ export default function Settings({ theme, setTheme, showToast }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
           {[
-            { id: 'matcha', name: '🌿 Organic Matcha', desc: 'Botanical & Honey', colors: ['#0F1715', '#182623', '#2A9D8F', '#E9C46A'] },
-            { id: 'espresso', name: '☕ Espresso Noir', desc: 'Terracotta Luxury', colors: ['#0D0B0A', '#1A1614', '#E76F51', '#F4A261'] },
-            { id: 'cyber', name: '⚡ Cyber Kinetic', desc: 'Brix Lab & TDS', colors: ['#121214', '#1E1E24', '#FF5E36', '#3B82F6'] },
-            { id: 'sakura', name: '🌸 Sakura Cryo', desc: 'Cold Brew & Floral', colors: ['#171216', '#241B22', '#EC4899', '#F472B6'] },
-            { id: 'caramel', name: '🍯 Amber Caramel', desc: 'Roasted & Cream', colors: ['#1C1917', '#292524', '#D97706', '#F59E0B'] },
-            { id: 'frost', name: '🧊 Nordic Frost', desc: 'Cryo Ice -20°C', colors: ['#0F172A', '#1E293B', '#38BDF8', '#818CF8'] }
+            { id: 'matcha', name: '🌿 Organic Matcha', desc: 'Menta & Miel', colors: ['#FFFFFF', '#ECFDF5', '#059669', '#D97706'] },
+            { id: 'espresso', name: '☕ Espresso Terracotta', desc: 'Terracotta & Caramelo', colors: ['#FFFFFF', '#FFF5F5', '#E76F51', '#F4A261'] },
+            { id: 'cyber', name: '⚡ Cyber Kinetic', desc: 'Azul Lab & Cinabrio', colors: ['#FFFFFF', '#EFF6FF', '#2563EB', '#FF5E36'] },
+            { id: 'sakura', name: '🌸 Sakura Cold Brew', desc: 'Rosa Cryo & Floral', colors: ['#FFFFFF', '#FDF2F8', '#EC4899', '#D946EF'] },
+            { id: 'caramel', name: '🍯 Amber Caramel', desc: 'Ámbar & Avellana', colors: ['#FFFFFF', '#FFFBEB', '#D97706', '#B45309'] },
+            { id: 'frost', name: '🧊 Nordic Frost', desc: 'Hielo Ártico & Púrpura', colors: ['#FFFFFF', '#F0F9FF', '#0284C7', '#6366F1'] }
           ].map((t) => {
             const isActive = (theme || 'matcha') === t.id;
             return (
@@ -135,9 +135,9 @@ export default function Settings({ theme, setTheme, showToast }) {
                   fontSize: '11px', 
                   padding: '10px 8px', 
                   borderRadius: '14px',
-                  border: isActive ? '1.5px solid #2A9D8F' : '1.5px solid var(--border-color)',
-                  backgroundColor: isActive ? 'rgba(42, 157, 143, 0.15)' : 'var(--bg-card)',
-                  color: isActive ? '#ECFDF5' : 'var(--color-text)',
+                  border: isActive ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
+                  backgroundColor: isActive ? 'var(--bg-header)' : 'var(--bg-card)',
+                  color: 'var(--color-text)',
                   cursor: 'pointer',
                   transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
                   transform: isActive ? 'scale(1.03)' : 'scale(1)',
@@ -159,7 +159,7 @@ export default function Settings({ theme, setTheme, showToast }) {
                         height: '12px', 
                         borderRadius: '50%', 
                         backgroundColor: c, 
-                        border: '1px solid rgba(255,255,255,0.2)',
+                        border: '1px solid var(--border-color)',
                         display: 'inline-block'
                       }} 
                     />

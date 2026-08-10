@@ -150,7 +150,7 @@ export default function AuthView({ onSuccess, showToast }) {
     <div style={{
       minHeight: '100vh',
       width: '100%',
-      background: 'linear-gradient(145deg, #0F1715 0%, #14221F 50%, #0B1210 100%)',
+      background: '#FFFFFF',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -165,10 +165,10 @@ export default function AuthView({ onSuccess, showToast }) {
         maxWidth: '460px',
         width: '100%',
         padding: '36px 28px 32px 28px',
-        background: '#182623',
+        background: 'var(--bg-card, #ECFDF5)',
         borderRadius: '24px',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 4px 15px rgba(42,157,143,0.15)',
-        border: '1.5px solid rgba(42, 157, 143, 0.35)',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.06), 0 4px 15px rgba(5,150,105,0.1)',
+        border: '1.5px solid var(--border-color, #A7F3D0)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -193,19 +193,19 @@ export default function AuthView({ onSuccess, showToast }) {
           alignItems: 'center',
           gap: '10px',
           marginBottom: '10px',
-          background: 'rgba(42, 157, 143, 0.15)',
+          background: 'var(--color-header, #D1FAE5)',
           padding: '8px 16px',
           borderRadius: '30px',
-          border: '1px solid rgba(42, 157, 143, 0.3)'
+          border: '1px solid var(--border-color, #A7F3D0)'
         }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style={{ width: '28px', height: '28px' }}>
             <rect x="35" y="15" width="135" height="175" rx="10" fill="#000000"/>
-            <rect x="30" y="10" width="135" height="175" rx="10" fill="#E9C46A" stroke="#000000" strokeWidth="6"/>
-            <circle cx="97" cy="30" r="10" fill="#ECFDF5" stroke="#000000" strokeWidth="4"/>
+            <rect x="30" y="10" width="135" height="175" rx="10" fill="var(--color-honey, #E9C46A)" stroke="#000000" strokeWidth="6"/>
+            <circle cx="97" cy="30" r="10" fill="#FFFFFF" stroke="#000000" strokeWidth="4"/>
             <g transform="translate(68, 60)">
               <path d="M5 5 H 35 C 50 5, 50 30, 35 30 C 50 30, 50 55, 30 55 H 5 Z" fill="none" stroke="#000000" strokeWidth="12" strokeLinejoin="round" strokeLinecap="round"/>
               <path d="M5 5 V 55" fill="none" stroke="#000000" strokeWidth="12" strokeLinecap="round"/>
-              <path d="M55 40 C 63 40, 68 45, 68 52 C 68 60, 63 65, 55 65 C 47 65, 42 60, 55 40 Z" fill="#2A9D8F" stroke="#000000" strokeWidth="3"/>
+              <path d="M55 40 C 63 40, 68 45, 68 52 C 68 60, 63 65, 55 65 C 47 65, 42 60, 55 40 Z" fill="var(--color-crimson, #059669)" stroke="#000000" strokeWidth="3"/>
               <line x1="51" y1="61" x2="59" y2="44" stroke="#000000" strokeWidth="3"/>
             </g>
           </svg>
@@ -214,7 +214,7 @@ export default function AuthView({ onSuccess, showToast }) {
             fontSize: '20px',
             fontWeight: '900',
             letterSpacing: '1px',
-            color: '#ECFDF5'
+            color: 'var(--color-text, #064E3B)'
           }}>BeanTag</span>
         </div>
 
@@ -222,7 +222,7 @@ export default function AuthView({ onSuccess, showToast }) {
           fontFamily: 'var(--font-heading)',
           fontSize: '22px',
           fontWeight: '900',
-          color: '#ECFDF5',
+          color: 'var(--color-text, #064E3B)',
           margin: '12px 0 6px 0',
           lineHeight: '1.2'
         }}>
@@ -231,7 +231,7 @@ export default function AuthView({ onSuccess, showToast }) {
 
         <p style={{
           fontSize: '13px',
-          color: '#94A3B8',
+          color: 'var(--color-text-muted, #047857)',
           margin: '0 0 20px 0',
           maxWidth: '340px',
           lineHeight: '1.4'
@@ -251,39 +251,39 @@ export default function AuthView({ onSuccess, showToast }) {
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            background: 'rgba(233, 196, 106, 0.12)',
-            border: '1px solid rgba(233, 196, 106, 0.3)',
-            padding: '5px 10px',
+            background: 'var(--bg-header, #D1FAE5)',
+            border: '1px solid var(--border-color, #A7F3D0)',
+            padding: '5px 12px',
             borderRadius: '20px'
           }}>
-            <Snowflake size={13} color="#E9C46A" />
-            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#E9C46A' }}>Congelados</span>
+            <Snowflake size={13} color="var(--color-crimson, #059669)" />
+            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>Congelados</span>
           </div>
 
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            background: 'rgba(42, 157, 143, 0.15)',
-            border: '1px solid rgba(42, 157, 143, 0.3)',
-            padding: '5px 10px',
+            background: 'var(--bg-header, #D1FAE5)',
+            border: '1px solid var(--border-color, #A7F3D0)',
+            padding: '5px 12px',
             borderRadius: '20px'
           }}>
-            <Coffee size={13} color="#2A9D8F" />
-            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#D1FAE5' }}>Bitácoras</span>
+            <Coffee size={13} color="var(--color-crimson, #059669)" />
+            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>Bitácoras</span>
           </div>
 
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            background: 'rgba(233, 196, 106, 0.12)',
-            border: '1px solid rgba(233, 196, 106, 0.3)',
-            padding: '5px 10px',
+            background: 'var(--bg-header, #D1FAE5)',
+            border: '1px solid var(--border-color, #A7F3D0)',
+            padding: '5px 12px',
             borderRadius: '20px'
           }}>
-            <Receipt size={13} color="#E9C46A" />
-            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#E9C46A' }}>Recibos POS</span>
+            <Receipt size={13} color="var(--color-crimson, #059669)" />
+            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>Recibos POS</span>
           </div>
         </div>
 
@@ -306,8 +306,8 @@ export default function AuthView({ onSuccess, showToast }) {
         {/* Primary Hero Google Button */}
         <div style={{
           width: '100%',
-          background: 'rgba(15, 23, 21, 0.6)',
-          border: '1.5px solid rgba(42, 157, 143, 0.3)',
+          background: '#FFFFFF',
+          border: '1.5px solid var(--border-color, #A7F3D0)',
           borderRadius: '18px',
           padding: '18px 14px',
           display: 'flex',
@@ -317,7 +317,7 @@ export default function AuthView({ onSuccess, showToast }) {
           marginBottom: '20px',
           boxSizing: 'border-box'
         }}>
-          <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#D1FAE5' }}>
+          <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>
             Acceso Rápido Instantáneo
           </div>
 
@@ -335,14 +335,14 @@ export default function AuthView({ onSuccess, showToast }) {
         </div>
 
         {/* Divider */}
-        <div style={{ display: 'flex', alignItems: 'center', width: '100%', marginBottom: '18px', color: '#94A3B8', fontSize: '11px' }}>
-          <div style={{ flex: 1, height: '1px', background: 'rgba(42, 157, 143, 0.25)' }}></div>
+        <div style={{ display: 'flex', alignItems: 'center', width: '100%', marginBottom: '18px', color: 'var(--color-text-muted, #047857)', fontSize: '11px' }}>
+          <div style={{ flex: 1, height: '1px', background: 'var(--border-color, #A7F3D0)' }}></div>
           <span style={{ padding: '0 12px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>o con correo electrónico</span>
-          <div style={{ flex: 1, height: '1px', background: 'rgba(42, 157, 143, 0.25)' }}></div>
+          <div style={{ flex: 1, height: '1px', background: 'var(--border-color, #A7F3D0)' }}></div>
         </div>
 
         {/* Tab Switcher */}
-        <div style={{ display: 'flex', width: '100%', background: 'rgba(15, 23, 21, 0.7)', borderRadius: '12px', padding: '4px', marginBottom: '16px', border: '1px solid rgba(42, 157, 143, 0.2)' }}>
+        <div style={{ display: 'flex', width: '100%', background: '#FFFFFF', borderRadius: '12px', padding: '4px', marginBottom: '16px', border: '1px solid var(--border-color, #A7F3D0)' }}>
           <button
             type="button"
             onClick={() => { setMode('login'); setErrorMsg(''); }}
@@ -351,8 +351,8 @@ export default function AuthView({ onSuccess, showToast }) {
               padding: '8px',
               border: 'none',
               borderRadius: '8px',
-              background: mode === 'login' ? '#2A9D8F' : 'transparent',
-              color: mode === 'login' ? '#FFFFFF' : '#94A3B8',
+              background: mode === 'login' ? 'var(--color-crimson, #059669)' : 'transparent',
+              color: mode === 'login' ? '#FFFFFF' : 'var(--color-text-muted, #047857)',
               fontWeight: 'bold',
               fontSize: '12px',
               cursor: 'pointer',
@@ -369,8 +369,8 @@ export default function AuthView({ onSuccess, showToast }) {
               padding: '8px',
               border: 'none',
               borderRadius: '8px',
-              background: mode === 'register' ? '#2A9D8F' : 'transparent',
-              color: mode === 'register' ? '#FFFFFF' : '#94A3B8',
+              background: mode === 'register' ? 'var(--color-crimson, #059669)' : 'transparent',
+              color: mode === 'register' ? '#FFFFFF' : 'var(--color-text-muted, #047857)',
               fontWeight: 'bold',
               fontSize: '12px',
               cursor: 'pointer',
@@ -385,9 +385,9 @@ export default function AuthView({ onSuccess, showToast }) {
         <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left' }}>
           {mode === 'register' && (
             <div className="form-group" style={{ margin: 0 }}>
-              <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#D1FAE5' }}>Nombre Barista</label>
+              <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>Nombre Barista</label>
               <div style={{ position: 'relative' }}>
-                <User size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                <User size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted, #047857)' }} />
                 <input
                   type="text" className="candy-input" placeholder="Tu Nombre"
                   style={{ paddingLeft: '36px', fontSize: '13px' }} value={name} onChange={(e) => setName(e.target.value)}
@@ -397,9 +397,9 @@ export default function AuthView({ onSuccess, showToast }) {
           )}
 
           <div className="form-group" style={{ margin: 0 }}>
-            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#D1FAE5' }}>Correo Electrónico</label>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>Correo Electrónico</label>
             <div style={{ position: 'relative' }}>
-              <Mail size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+              <Mail size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted, #047857)' }} />
               <input
                 type="email" className="candy-input" placeholder="barista@ejemplo.com" required
                 style={{ paddingLeft: '36px', fontSize: '13px' }} value={email} onChange={(e) => setEmail(e.target.value)}
@@ -408,9 +408,9 @@ export default function AuthView({ onSuccess, showToast }) {
           </div>
 
           <div className="form-group" style={{ margin: 0 }}>
-            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#D1FAE5' }}>Contraseña</label>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text, #064E3B)' }}>Contraseña</label>
             <div style={{ position: 'relative' }}>
-              <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+              <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted, #047857)' }} />
               <input
                 type="password" className="candy-input" placeholder="••••••••" required
                 style={{ paddingLeft: '36px', fontSize: '13px' }} value={password} onChange={(e) => setPassword(e.target.value)}
@@ -420,15 +420,15 @@ export default function AuthView({ onSuccess, showToast }) {
 
           <button
             type="submit" className="btn-candy primary" disabled={loading}
-            style={{ width: '100%', marginTop: '6px', padding: '12px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#2A9D8F', color: '#FFFFFF', border: '1.5px solid #2A9D8F' }}
+            style={{ width: '100%', marginTop: '6px', padding: '12px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--color-crimson, #059669)', color: '#FFFFFF', border: '1.5px solid var(--color-crimson, #059669)' }}
           >
             {mode === 'login' ? <LogIn size={18} /> : <UserPlus size={18} />}
             {loading ? 'Procesando...' : (mode === 'login' ? 'Entrar con Correo' : 'Crear mi Cuenta Gratis')}
           </button>
         </form>
 
-        <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#94A3B8' }}>
-          <ShieldCheck size={14} color="#2A9D8F" />
+        <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--color-text-muted, #047857)' }}>
+          <ShieldCheck size={14} color="var(--color-crimson, #059669)" />
           <span>Tus datos de recetas y dosis están protegidos</span>
         </div>
 
