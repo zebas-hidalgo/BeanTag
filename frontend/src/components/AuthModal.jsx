@@ -16,17 +16,17 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
     if (!isOpen) return;
     setErrorMsg('');
 
-    // Fetch Google Client ID configuration from backend
+    const defaultCId = '167578250344-6e3dbkah789lpad56abbijv4j6vcb9jt.apps.googleusercontent.com';
+    loadAndInitGoogle(defaultCId);
+
     fetch(apiUrl('api/auth/config'))
       .then(res => res.json())
       .then(data => {
-        if (data.googleClientId) {
+        if (data.googleClientId && data.googleClientId !== defaultCId) {
           loadAndInitGoogle(data.googleClientId);
         }
       })
-      .catch(err => {
-        console.warn("Error fetching auth config:", err);
-      });
+      .catch(() => {});
   }, [isOpen, mode]);
 
   const loadAndInitGoogle = (cId) => {
