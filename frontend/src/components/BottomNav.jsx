@@ -17,12 +17,12 @@ export default function BottomNav({ currentView, setCurrentView }) {
       transform: 'translateX(-50%)',
       width: 'calc(100% - 32px)',
       maxWidth: '460px',
-      background: 'rgba(255, 255, 255, 0.92)',
+      background: 'rgba(24, 38, 35, 0.92)',
       backdropFilter: 'blur(16px)',
       WebkitBackdropFilter: 'blur(16px)',
       borderRadius: '24px',
-      border: '1.5px solid rgba(229, 231, 235, 0.8)',
-      boxShadow: '0 12px 30px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(231, 111, 81, 0.05)',
+      border: '1.5px solid rgba(42, 157, 143, 0.35)',
+      boxShadow: '0 12px 30px rgba(0, 0, 0, 0.45), 0 4px 15px rgba(42, 157, 143, 0.15)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-around',
@@ -44,20 +44,20 @@ export default function BottomNav({ currentView, setCurrentView }) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '3px',
-              padding: '6px 12px',
+              padding: '6px 14px',
               borderRadius: '16px',
-              border: 'none',
-              background: isActive ? 'var(--color-surface-soft, #FFF0ED)' : 'transparent',
-              color: isActive ? 'var(--color-crimson, #E76F51)' : '#718096',
+              border: isActive ? '1px solid rgba(233, 196, 106, 0.4)' : '1px solid transparent',
+              background: isActive ? 'rgba(233, 196, 106, 0.15)' : 'transparent',
+              color: isActive ? '#E9C46A' : '#94A3B8',
               cursor: 'pointer',
               transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
               transform: isActive ? 'scale(1.05)' : 'scale(1)'
             }}
           >
-            <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+            <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
             <span style={{
               fontSize: '10px',
-              fontWeight: isActive ? '900' : '600',
+              fontWeight: isActive ? '800' : '500',
               lineHeight: 1
             }}>
               {item.label}

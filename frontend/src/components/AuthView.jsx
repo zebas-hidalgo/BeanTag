@@ -150,7 +150,7 @@ export default function AuthView({ onSuccess, showToast }) {
     <div style={{
       minHeight: '100vh',
       width: '100%',
-      background: 'linear-gradient(145deg, #FFF5F5 0%, #FDFBF7 50%, #FAF0E6 100%)',
+      background: 'linear-gradient(145deg, #0F1715 0%, #14221F 50%, #0B1210 100%)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -165,10 +165,10 @@ export default function AuthView({ onSuccess, showToast }) {
         maxWidth: '460px',
         width: '100%',
         padding: '36px 28px 32px 28px',
-        background: '#FFFFFF',
+        background: '#182623',
         borderRadius: '24px',
-        boxShadow: '0 20px 40px rgba(231,111,81,0.08), 0 4px 12px rgba(0,0,0,0.04)',
-        border: '1.5px solid var(--color-border, #E5E7EB)',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 4px 15px rgba(42,157,143,0.15)',
+        border: '1.5px solid rgba(42, 157, 143, 0.35)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -184,7 +184,7 @@ export default function AuthView({ onSuccess, showToast }) {
           left: 0,
           right: 0,
           height: '6px',
-          background: 'linear-gradient(90deg, #E76F51 0%, #F4A261 50%, #E53E3E 100%)'
+          background: 'linear-gradient(90deg, #2A9D8F 0%, #E9C46A 50%, #2A9D8F 100%)'
         }} />
 
         {/* Logo & Brand Header */}
@@ -193,19 +193,19 @@ export default function AuthView({ onSuccess, showToast }) {
           alignItems: 'center',
           gap: '10px',
           marginBottom: '10px',
-          background: 'var(--color-surface-soft, #FFF0ED)',
+          background: 'rgba(42, 157, 143, 0.15)',
           padding: '8px 16px',
           borderRadius: '30px',
-          border: '1px solid rgba(231,111,81,0.2)'
+          border: '1px solid rgba(42, 157, 143, 0.3)'
         }}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style={{ width: '28px', height: '28px' }}>
             <rect x="35" y="15" width="135" height="175" rx="10" fill="#000000"/>
-            <rect x="30" y="10" width="135" height="175" rx="10" fill="#F4A261" stroke="#000000" strokeWidth="6"/>
-            <circle cx="97" cy="30" r="10" fill="#FFF5F5" stroke="#000000" strokeWidth="4"/>
+            <rect x="30" y="10" width="135" height="175" rx="10" fill="#E9C46A" stroke="#000000" strokeWidth="6"/>
+            <circle cx="97" cy="30" r="10" fill="#ECFDF5" stroke="#000000" strokeWidth="4"/>
             <g transform="translate(68, 60)">
               <path d="M5 5 H 35 C 50 5, 50 30, 35 30 C 50 30, 50 55, 30 55 H 5 Z" fill="none" stroke="#000000" strokeWidth="12" strokeLinejoin="round" strokeLinecap="round"/>
               <path d="M5 5 V 55" fill="none" stroke="#000000" strokeWidth="12" strokeLinecap="round"/>
-              <path d="M55 40 C 63 40, 68 45, 68 52 C 68 60, 63 65, 55 65 C 47 65, 42 60, 55 40 Z" fill="#E76F51" stroke="#000000" strokeWidth="3"/>
+              <path d="M55 40 C 63 40, 68 45, 68 52 C 68 60, 63 65, 55 65 C 47 65, 42 60, 55 40 Z" fill="#2A9D8F" stroke="#000000" strokeWidth="3"/>
               <line x1="51" y1="61" x2="59" y2="44" stroke="#000000" strokeWidth="3"/>
             </g>
           </svg>
@@ -214,7 +214,7 @@ export default function AuthView({ onSuccess, showToast }) {
             fontSize: '20px',
             fontWeight: '900',
             letterSpacing: '1px',
-            color: '#1A202C'
+            color: '#ECFDF5'
           }}>BeanTag</span>
         </div>
 
@@ -222,7 +222,7 @@ export default function AuthView({ onSuccess, showToast }) {
           fontFamily: 'var(--font-heading)',
           fontSize: '22px',
           fontWeight: '900',
-          color: '#2D3748',
+          color: '#ECFDF5',
           margin: '12px 0 6px 0',
           lineHeight: '1.2'
         }}>
@@ -231,7 +231,7 @@ export default function AuthView({ onSuccess, showToast }) {
 
         <p style={{
           fontSize: '13px',
-          color: '#718096',
+          color: '#94A3B8',
           margin: '0 0 20px 0',
           maxWidth: '340px',
           lineHeight: '1.4'
@@ -239,25 +239,51 @@ export default function AuthView({ onSuccess, showToast }) {
           Gestiona tus dosis de café congelado, sincroniza bitácoras de extracción y comparte tus recetas.
         </p>
 
-        {/* Feature Badges Grid */}
+        {/* Feature Highlights Badges */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
+          display: 'flex',
           gap: '8px',
-          width: '100%',
-          marginBottom: '22px'
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          marginBottom: '24px'
         }}>
-          <div style={{ background: '#FAF5F0', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-            <Snowflake size={18} color="#319795" />
-            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#2D3748' }}>Congelados</span>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'rgba(233, 196, 106, 0.12)',
+            border: '1px solid rgba(233, 196, 106, 0.3)',
+            padding: '5px 10px',
+            borderRadius: '20px'
+          }}>
+            <Snowflake size={13} color="#E9C46A" />
+            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#E9C46A' }}>Congelados</span>
           </div>
-          <div style={{ background: '#FAF5F0', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-            <Coffee size={18} color="#E76F51" />
-            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#2D3748' }}>Bitácoras</span>
+
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'rgba(42, 157, 143, 0.15)',
+            border: '1px solid rgba(42, 157, 143, 0.3)',
+            padding: '5px 10px',
+            borderRadius: '20px'
+          }}>
+            <Coffee size={13} color="#2A9D8F" />
+            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#D1FAE5' }}>Bitácoras</span>
           </div>
-          <div style={{ background: '#FAF5F0', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-            <Sparkles size={18} color="#D69E2E" />
-            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#2D3748' }}>Recibos POS</span>
+
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'rgba(233, 196, 106, 0.12)',
+            border: '1px solid rgba(233, 196, 106, 0.3)',
+            padding: '5px 10px',
+            borderRadius: '20px'
+          }}>
+            <Receipt size={13} color="#E9C46A" />
+            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#E9C46A' }}>Recibos POS</span>
           </div>
         </div>
 
@@ -280,8 +306,8 @@ export default function AuthView({ onSuccess, showToast }) {
         {/* Primary Hero Google Button */}
         <div style={{
           width: '100%',
-          background: 'var(--color-bg, #F8FAFC)',
-          border: '1.5px solid var(--color-border, #E2E8F0)',
+          background: 'rgba(15, 23, 21, 0.6)',
+          border: '1.5px solid rgba(42, 157, 143, 0.3)',
           borderRadius: '18px',
           padding: '18px 14px',
           display: 'flex',
@@ -291,7 +317,7 @@ export default function AuthView({ onSuccess, showToast }) {
           marginBottom: '20px',
           boxSizing: 'border-box'
         }}>
-          <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#4A5568' }}>
+          <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#D1FAE5' }}>
             Acceso Rápido Instantáneo
           </div>
 
@@ -309,22 +335,28 @@ export default function AuthView({ onSuccess, showToast }) {
         </div>
 
         {/* Divider */}
-        <div style={{ display: 'flex', alignItems: 'center', width: '100%', marginBottom: '18px', color: '#A0AEC0', fontSize: '11px' }}>
-          <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }}></div>
+        <div style={{ display: 'flex', alignItems: 'center', width: '100%', marginBottom: '18px', color: '#94A3B8', fontSize: '11px' }}>
+          <div style={{ flex: 1, height: '1px', background: 'rgba(42, 157, 143, 0.25)' }}></div>
           <span style={{ padding: '0 12px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>o con correo electrónico</span>
-          <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }}></div>
+          <div style={{ flex: 1, height: '1px', background: 'rgba(42, 157, 143, 0.25)' }}></div>
         </div>
 
         {/* Tab Switcher */}
-        <div style={{ display: 'flex', width: '100%', background: '#EDF2F7', borderRadius: '12px', padding: '4px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', width: '100%', background: 'rgba(15, 23, 21, 0.7)', borderRadius: '12px', padding: '4px', marginBottom: '16px', border: '1px solid rgba(42, 157, 143, 0.2)' }}>
           <button
             type="button"
             onClick={() => { setMode('login'); setErrorMsg(''); }}
             style={{
-              flex: 1, padding: '8px', borderRadius: '8px', border: 'none', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer',
-              background: mode === 'login' ? '#FFFFFF' : 'transparent',
-              color: mode === 'login' ? '#E76F51' : '#718096',
-              boxShadow: mode === 'login' ? '0 2px 4px rgba(0,0,0,0.06)' : 'none'
+              flex: 1,
+              padding: '8px',
+              border: 'none',
+              borderRadius: '8px',
+              background: mode === 'login' ? '#2A9D8F' : 'transparent',
+              color: mode === 'login' ? '#FFFFFF' : '#94A3B8',
+              fontWeight: 'bold',
+              fontSize: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
             }}
           >
             Iniciar Sesión
@@ -333,13 +365,19 @@ export default function AuthView({ onSuccess, showToast }) {
             type="button"
             onClick={() => { setMode('register'); setErrorMsg(''); }}
             style={{
-              flex: 1, padding: '8px', borderRadius: '8px', border: 'none', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer',
-              background: mode === 'register' ? '#FFFFFF' : 'transparent',
-              color: mode === 'register' ? '#E76F51' : '#718096',
-              boxShadow: mode === 'register' ? '0 2px 4px rgba(0,0,0,0.06)' : 'none'
+              flex: 1,
+              padding: '8px',
+              border: 'none',
+              borderRadius: '8px',
+              background: mode === 'register' ? '#2A9D8F' : 'transparent',
+              color: mode === 'register' ? '#FFFFFF' : '#94A3B8',
+              fontWeight: 'bold',
+              fontSize: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
             }}
           >
-            Crear Cuenta
+            Registrarse
           </button>
         </div>
 
@@ -347,9 +385,9 @@ export default function AuthView({ onSuccess, showToast }) {
         <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left' }}>
           {mode === 'register' && (
             <div className="form-group" style={{ margin: 0 }}>
-              <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#4A5568' }}>Nombre Barista</label>
+              <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#D1FAE5' }}>Nombre Barista</label>
               <div style={{ position: 'relative' }}>
-                <User size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#A0AEC0' }} />
+                <User size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
                 <input
                   type="text" className="candy-input" placeholder="Tu Nombre"
                   style={{ paddingLeft: '36px', fontSize: '13px' }} value={name} onChange={(e) => setName(e.target.value)}
@@ -359,9 +397,9 @@ export default function AuthView({ onSuccess, showToast }) {
           )}
 
           <div className="form-group" style={{ margin: 0 }}>
-            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#4A5568' }}>Correo Electrónico</label>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#D1FAE5' }}>Correo Electrónico</label>
             <div style={{ position: 'relative' }}>
-              <Mail size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#A0AEC0' }} />
+              <Mail size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
               <input
                 type="email" className="candy-input" placeholder="barista@ejemplo.com" required
                 style={{ paddingLeft: '36px', fontSize: '13px' }} value={email} onChange={(e) => setEmail(e.target.value)}
@@ -370,9 +408,9 @@ export default function AuthView({ onSuccess, showToast }) {
           </div>
 
           <div className="form-group" style={{ margin: 0 }}>
-            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#4A5568' }}>Contraseña</label>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#D1FAE5' }}>Contraseña</label>
             <div style={{ position: 'relative' }}>
-              <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#A0AEC0' }} />
+              <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
               <input
                 type="password" className="candy-input" placeholder="••••••••" required
                 style={{ paddingLeft: '36px', fontSize: '13px' }} value={password} onChange={(e) => setPassword(e.target.value)}
@@ -382,15 +420,15 @@ export default function AuthView({ onSuccess, showToast }) {
 
           <button
             type="submit" className="btn-candy primary" disabled={loading}
-            style={{ width: '100%', marginTop: '6px', padding: '12px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            style={{ width: '100%', marginTop: '6px', padding: '12px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#2A9D8F', color: '#FFFFFF', border: '1.5px solid #2A9D8F' }}
           >
             {mode === 'login' ? <LogIn size={18} /> : <UserPlus size={18} />}
             {loading ? 'Procesando...' : (mode === 'login' ? 'Entrar con Correo' : 'Crear mi Cuenta Gratis')}
           </button>
         </form>
 
-        <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#718096' }}>
-          <ShieldCheck size={14} color="#38A169" />
+        <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#94A3B8' }}>
+          <ShieldCheck size={14} color="#2A9D8F" />
           <span>Tus datos de recetas y dosis están protegidos</span>
         </div>
 

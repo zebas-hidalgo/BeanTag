@@ -3,23 +3,19 @@
 
 
 :root {
-  /* 🎨 Sistema Neo-Brutalista: Fondo Blanco + Elementos con Rotación de Color */
-  --bg-canvas: #FFFFFF; /* 1. Fondo de la App SIEMPRE BLANCO */
+  /* 🎨 Organic Matcha & Honey Process Design Tokens (UI/UX Pro Max 2026) */
+  --bg-canvas: #0F1715;
+  --bg-card: #182623;
+  --color-crimson: #2A9D8F;
+  --color-honey: #E9C46A;
+  --color-emerald-light: #D1FAE5;
+  --border-color: #243530;
+  --color-text: #ECFDF5;
+  --color-text-muted: #94A3B8;
+  --bg-header: #121E1B;
+  --color-header-text: #ECFDF5;
   
-  /* Tema 1: Neo-Brutal Crimson (Default / Barista POS) */
-  --theme-color-1: #FEE2E2; /* Cabecera Carmesí Suave */
-  --theme-color-2: #FEF2F2; /* Superficie */
-  --theme-color-3: #DC2626; /* Carmesí Barista */
-
-  --bg-card: var(--theme-color-2);
-  --color-crimson: var(--theme-color-3);
-  --border-color: #000000;
-  --color-text: #18181B;
-  --color-text-muted: #52525B;
-  --bg-header: var(--theme-color-1);
-  --color-header-text: var(--color-text);
-  
-  --font-heading: 'Comfortaa', cursive;
+  --font-heading: 'Outfit', 'Comfortaa', sans-serif;
   --font-body: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
