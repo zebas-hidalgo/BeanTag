@@ -46,18 +46,18 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
   const [selectedFlavorTags, setSelectedFlavorTags] = useState(getInitialFlavorTags());
   const [activeTab, setActiveTab] = useState('Floral');
 
-  // Organized SCA Flavor Wheel Structure (Category -> Subcategory -> Descriptors)
+  // Organized Official SCA / World Coffee Research (WCR) Flavor Wheel Structure (9 Main Categories)
   const scaFlavorStructure = [
     {
       category: 'Floral',
       subcategories: [
         {
           name: 'Flores',
-          tags: ['Manzanilla', 'Rosa', 'Jazmín', 'Flor de café']
+          tags: ['Manzanilla', 'Rosa', 'Jazmín', 'Flor de café', 'Lavanda', 'Hibisco']
         },
         {
           name: 'Té',
-          tags: ['Té negro', 'Té verde', 'Té de manzanilla']
+          tags: ['Té negro', 'Té verde', 'Té de manzanilla', 'Bergamota / Earl Grey']
         }
       ]
     },
@@ -66,19 +66,27 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
       subcategories: [
         {
           name: 'Bayas / Frutos rojos',
-          tags: ['Mora', 'Frambuesa', 'Arándano', 'Fresa (Frutilla)']
+          tags: ['Mora', 'Frambuesa', 'Arándano', 'Fresa (Frutilla)', 'Grosella negra', 'Cereza silvestre']
         },
         {
           name: 'Cítricos',
-          tags: ['Limón', 'Lima', 'Naranja', 'Pomelo (Toronja)']
+          tags: ['Limón', 'Lima', 'Naranja', 'Mandarina', 'Pomelo (Toronja)', 'Bergamota']
         },
         {
           name: 'Fruta deshidratada',
-          tags: ['Uvas pasas', 'Ciruela pasa', 'Higo seco']
+          tags: ['Uvas pasas', 'Ciruela pasa', 'Higo seco', 'Dátil']
         },
         {
-          name: 'Otras frutas (Hueso/Tropical)',
-          tags: ['Cereza', 'Manzana', 'Melocotón (Durazno)', 'Pera', 'Uva', 'Piña', 'Coco', 'Granada']
+          name: 'Frutas de Hueso (Carozo)',
+          tags: ['Melocotón (Durazno)', 'Albaricoque (Damasco)', 'Ciruela', 'Cereza']
+        },
+        {
+          name: 'Frutas Tropicales',
+          tags: ['Mango', 'Maracuyá (Parchita)', 'Papaya', 'Piña', 'Guayaba', 'Lichi', 'Coco']
+        },
+        {
+          name: 'Otras Frutas',
+          tags: ['Manzana roja', 'Manzana verde', 'Pera', 'Uva verde', 'Uva negra', 'Granada']
         }
       ]
     },
@@ -87,11 +95,11 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
       subcategories: [
         {
           name: 'Azúcares integrales',
-          tags: ['Melaza', 'Jarabe de arce', 'Caramelo', 'Miel', 'Panela']
+          tags: ['Melaza', 'Jarabe de arce (Maple)', 'Caramelo', 'Miel de abejas', 'Panela / Chancaca', 'Azúcar moreno', 'Mascabado']
         },
         {
-          name: 'Aromas dulces',
-          tags: ['Vainilla', 'Algodón de azúcar', 'Malvavisco']
+          name: 'Aromas dulces & Confitería',
+          tags: ['Vainilla', 'Algodón de azúcar', 'Malvavisco (Marshmallow)', 'Dulce de leche (Arequipe)', 'Turrón']
         }
       ]
     },
@@ -100,11 +108,11 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
       subcategories: [
         {
           name: 'Frutos secos',
-          tags: ['Almendra', 'Avellana', 'Nuez', 'Nuez pecana', 'Maní (Cacahuate)']
+          tags: ['Almendra', 'Avellana', 'Nuez', 'Nuez pecana', 'Anacardo (Castaña de cajú)', 'Pistacho', 'Macadamia', 'Maní (Cacahuate)']
         },
         {
-          name: 'Cacao',
-          tags: ['Chocolate con leche', 'Chocolate negro', 'Cacao en polvo', 'Nibs de cacao']
+          name: 'Cacao & Chocolate',
+          tags: ['Chocolate con leche', 'Chocolate negro (70%+)', 'Cacao en polvo', 'Nibs de cacao', 'Licor de cacao', 'Manteca de cacao']
         }
       ]
     },
@@ -113,11 +121,11 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
       subcategories: [
         {
           name: 'Especias dulces',
-          tags: ['Canela', 'Clavo de olor', 'Nuez moscada', 'Anís']
+          tags: ['Canela', 'Clavo de olor', 'Nuez moscada', 'Anís estrellado', 'Cardamomo']
         },
         {
-          name: 'Picantes / Salados',
-          tags: ['Pimienta negra', 'Pimienta blanca', 'Curri']
+          name: 'Picantes / Aromáticos',
+          tags: ['Pimienta negra', 'Pimienta blanca', 'Jengibre', 'Curri']
         }
       ]
     },
@@ -126,15 +134,15 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
       subcategories: [
         {
           name: 'Cereales',
-          tags: ['Malta', 'Cebada', 'Avena', 'Grano tostado']
+          tags: ['Malta', 'Cebada', 'Avena', 'Pan tostado', 'Grano tostado', 'Galleta graham']
         },
         {
           name: 'Ahumado / Quemado',
-          tags: ['Humo', 'Ceniza', 'Madera quemada', 'Acre']
+          tags: ['Humo de leña', 'Ceniza', 'Madera quemada', 'Carbón', 'Acre']
         },
         {
-          name: 'Tabaco',
-          tags: ['Tabaco de pipa', 'Hojas secas de tabaco']
+          name: 'Tabaco & Cuero',
+          tags: ['Tabaco de pipa', 'Hojas secas de tabaco', 'Cuero']
         }
       ]
     },
@@ -142,12 +150,16 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
       category: 'Verde / Vegetal',
       subcategories: [
         {
-          name: 'Hierbas',
-          tags: ['Hierba fresca', 'Heno', 'Menta', 'Romero']
+          name: 'Hierbas & Botánicos',
+          tags: ['Hierba fresca cortada', 'Heno', 'Menta', 'Eucalipto', 'Romero', 'Salvia', 'Lúpulo']
         },
         {
-          name: 'Vegetales / Crudos',
-          tags: ['Vaina de guisante', 'Aceite de oliva', 'Tierra húmeda', 'Madera fresca']
+          name: 'Vegetales',
+          tags: ['Vaina de guisante (Arveja)', 'Aceite de oliva', 'Alcachofa']
+        },
+        {
+          name: 'Tierra & Madera',
+          tags: ['Tierra húmeda', 'Madera fresca', 'Cedro', 'Musgo']
         }
       ]
     },
@@ -155,12 +167,29 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
       category: 'Ácido / Fermentado',
       subcategories: [
         {
-          name: 'Alcohol / Fermentado',
-          tags: ['Vino tinto', 'Whiskey', 'Fruta sobremadurada (licorosa)']
+          name: 'Alcohol & Fermentaciones',
+          tags: ['Vino tinto', 'Vino blanco', 'Champagne', 'Whiskey / Bourbon', 'Ron', 'Kombucha', 'Fruta licorosa (Sobremadurada)']
         },
         {
-          name: 'Ácidos (Aromáticos)',
-          tags: ['Ácido cítrico', 'Ácido málico (manzana verde)', 'Ácido acético (ligero toque a vinagre)']
+          name: 'Ácidos Aromáticos',
+          tags: ['Ácido cítrico', 'Ácido málico (Manzana verde)', 'Ácido acético (Vinagre)', 'Ácido láctico (Yogur / Queso suave)', 'Ácido fosfórico']
+        }
+      ]
+    },
+    {
+      category: 'Defectos / Desviaciones SCA',
+      subcategories: [
+        {
+          name: 'Papel & Madera Rancia',
+          tags: ['Cartón húmedo', 'Papel de filtro', 'Madera rancia']
+        },
+        {
+          name: 'Químico & Medicamento',
+          tags: ['Medicamento / Fenol', 'Caucho / Goma quemada', 'Petróleo / Queroseno']
+        },
+        {
+          name: 'Humos & Mohos',
+          tags: ['Moho / Enmohecido', 'Sucio / Polvo', 'Tierra seca']
         }
       ]
     }
