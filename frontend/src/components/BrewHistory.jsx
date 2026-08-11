@@ -514,7 +514,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
       {safeHistory.length > 0 && (
         <div style={{ marginBottom: '14px' }}>
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', marginBottom: '10px' }}>
             <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}>
               <Search size={16} strokeWidth={2.5} />
             </div>
@@ -526,6 +526,33 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
               className="candy-input"
               style={{ width: '100%', paddingLeft: '38px', boxSizing: 'border-box' }}
             />
+          </div>
+
+          {/* Quick Method Filters */}
+          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }} className="hide-scrollbar">
+            {['Todos', 'V60', 'Espresso', 'AeroPress', 'Kalita', 'Chemex', 'Prensa'].map((m) => {
+              const isSelected = (m === 'Todos' && !searchTerm) || (searchTerm.toLowerCase() === m.toLowerCase());
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setSearchTerm(m === 'Todos' ? '' : m)}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '12px',
+                    border: isSelected ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                    background: isSelected ? 'var(--bg-header)' : '#FFFFFF',
+                    color: 'var(--color-text)',
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {m}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

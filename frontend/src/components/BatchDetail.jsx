@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis } from '../utils/scaIcons';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
+import ScaRadarChart from './ScaRadarChart';
+import DialInAssistant from './DialInAssistant';
+import BaristaDisplayModal from './BaristaDisplayModal';
 
 const calculateMicrons = (rot, num, click) => {
   const r = parseInt(rot) || 0;
@@ -61,6 +64,7 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
 
   // Form input state for brew time
   const [brewTime, setBrewTime] = useState('2:30 min');
+  const [showBaristaDisplay, setShowBaristaDisplay] = useState(false);
 
   // Sensory Evaluation States (Improvement 5)
   const [sensoryBalance, setSensoryBalance] = useState('Dulce');
@@ -440,18 +444,28 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
 
   return (
     <div style={{ padding: '12px 12px 24px 12px' }}>
+      <BaristaDisplayModal
+        isOpen={showBaristaDisplay}
+        onClose={() => setShowBaristaDisplay(false)}
+        batch={batch}
+        recipe={lastRecipe}
+      />
+
       {/* Top Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
         <button className="btn-candy" onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <ArrowLeft size={16} strokeWidth={3} />
           Volver
         </button>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <button className="btn-candy" onClick={() => onEditBatch(batch)} style={{ padding: '6px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button className="btn-candy primary" onClick={() => setShowBaristaDisplay(true)} style={{ padding: '6px 12px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', margin: 0 }}>
+            <Play size={13} /> Barista Standby
+          </button>
+          <button className="btn-candy" onClick={() => onEditBatch(batch)} style={{ padding: '6px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', margin: 0 }}>
             <Edit2 size={13} />
             Editar
           </button>
-          <button className="btn-candy" onClick={() => onDeleteBatch(batch.id, batch.name)} style={{ padding: '6px 10px', fontSize: '11px', color: 'var(--color-crimson)', borderColor: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <button className="btn-candy" onClick={() => onDeleteBatch(batch.id, batch.name)} style={{ padding: '6px 10px', fontSize: '11px', color: 'var(--color-crimson)', borderColor: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '4px', margin: 0 }}>
             <Trash2 size={13} />
           </button>
           {isLowStock && <span className="mono-lbl-tag" style={{ background: '#E53E3E' }}>¡ÚLTIMOS!</span>}
@@ -460,13 +474,20 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
 
       {/* Hero Ficha del Café */}
       <div className="candy-card static" style={{ marginBottom: '14px', padding: '14px', backgroundColor: 'var(--bg-card)' }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 6px 0', textTransform: 'uppercase', fontSize: '18px' }}>{batch.name}</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <h2 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 6px 0', textTransform: 'uppercase', fontSize: '18px' }}>{batch.name}</h2>
+          {batch.altitude && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-header)', border: '1px solid var(--border-color)', padding: '3px 8px', borderRadius: '12px', fontSize: '10.5px', fontWeight: 'bold', color: 'var(--color-crimson)' }}>
+              <Mountain size={12} />
+              <span>{batch.altitude}</span>
+            </div>
+          )}
+        </div>
         
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '11.5px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>
           <span><strong>Productor:</strong> {batch.producer}</span> •
           <span><strong>Origen:</strong> {batch.origin || 'N/A'}</span> •
-          <span><strong>Proceso:</strong> {batch.process || 'N/A'}</span> •
-          <span><strong>Altitud:</strong> {batch.altitude || 'N/A'}</span>
+          <span><strong>Proceso:</strong> {batch.process || 'N/A'}</span>
         </div>
 
         {/* Tubos & Congelador Bar */}
@@ -481,7 +502,7 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
           )}
         </div>
 
-        {/* Tags de Cata */}
+        {/* Color-coded SCA Tags */}
         {(() => {
           let scaTags = [];
           if (batch.roaster_notes && batch.roaster_notes.includes('[Notas: ')) {
@@ -491,14 +512,26 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
           if (scaTags.length === 0) return null;
           return (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '10px' }}>
-              {scaTags.map((tag, i) => (
-                <span key={i} style={{ padding: '2px 6px', backgroundColor: 'var(--bg-canvas)', border: '1px solid var(--border-color)', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>
-                  {getScaIcon(tag, 11)} {stripEmojis(tag)}
-                </span>
-              ))}
+              {scaTags.map((tag, i) => {
+                const colors = getScaColorForNote(tag);
+                return (
+                  <span key={i} style={{ padding: '3px 8px', backgroundColor: colors.bg, border: `1.5px solid ${colors.border}`, color: colors.text, borderRadius: '6px', fontSize: '10.5px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    {getScaIcon(tag, 12)} {stripEmojis(tag)}
+                  </span>
+                );
+              })}
             </div>
           );
         })()}
+
+        {/* Sensory Radar Spider Chart */}
+        <ScaRadarChart
+          sweetness={8}
+          acidity={lastRecipe ? 8 : 7}
+          body={lastRecipe ? 7 : 6}
+          aroma={9}
+          balance={lastRecipe ? 8 : 7}
+        />
       </div>
 
       {/* PESTAÑAS PRINCIPALES (Main Tabs) */}
@@ -763,6 +796,9 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
               Guardar Bitácora
             </button>
           </form>
+
+          {/* Dial-in Calibration Assistant */}
+          <DialInAssistant />
         </div>
       )}
 

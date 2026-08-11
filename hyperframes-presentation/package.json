@@ -9,5 +9,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "gsap": "^3.15.0",
+    "hyperframes": "^0.7.104"
+  }
 }

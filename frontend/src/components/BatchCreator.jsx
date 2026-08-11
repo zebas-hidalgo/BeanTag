@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Save, X, ClipboardCopy } from 'lucide-react';
-import { getScaIcon, stripEmojis } from '../utils/scaIcons';
+import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 
 export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, showToast }) {
@@ -347,30 +347,33 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
                   Seleccionados ({selectedFlavorTags.length}):
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                  {(Array.isArray(selectedFlavorTags) ? selectedFlavorTags : []).map((tag, i) => (
-                    <span key={i} style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      padding: '3px 6px',
-                      backgroundColor: 'var(--color-crimson)',
-                      color: '#FFFFFF',
-                      border: '2px solid #000000',
-                      borderRadius: '4px',
-                      fontSize: '10px',
-                      fontWeight: 'bold'
-                    }}>
-                      {getScaIcon(tag, 10, 2.5)}
-                      {stripEmojis(tag)}
-                      <button 
-                        type="button" 
-                        onClick={() => toggleFlavorTag(tag)}
-                        style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer', padding: '0 0 0 4px', fontWeight: '900', fontSize: '10px', display: 'flex', alignItems: 'center' }}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
+                  {(Array.isArray(selectedFlavorTags) ? selectedFlavorTags : []).map((tag, i) => {
+                    const colors = getScaColorForNote(tag);
+                    return (
+                      <span key={i} style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '4px 8px',
+                        backgroundColor: colors.bg,
+                        color: colors.text,
+                        border: `1.5px solid ${colors.border}`,
+                        borderRadius: '6px',
+                        fontSize: '10.5px',
+                        fontWeight: '800'
+                      }}>
+                        {getScaIcon(tag, 11, 2.5)}
+                        {stripEmojis(tag)}
+                        <button 
+                          type="button" 
+                          onClick={() => toggleFlavorTag(tag)}
+                          style={{ background: 'none', border: 'none', color: colors.text, cursor: 'pointer', padding: '0 0 0 4px', fontWeight: '900', fontSize: '12px', display: 'flex', alignItems: 'center' }}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -397,12 +400,11 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
                       fontFamily: 'var(--font-heading)',
                       fontSize: '11px',
                       fontWeight: 'bold',
-                      border: '2px solid #000000',
-                      borderRadius: '6px',
+                      border: '1.5px solid var(--border-color)',
+                      borderRadius: '8px',
                       whiteSpace: 'nowrap',
-                      backgroundColor: isActive ? 'var(--color-crimson)' : '#FFFFFF',
-                      color: isActive ? '#FFFFFF' : 'var(--color-text)',
-                      boxShadow: isActive ? 'none' : '2px 2px 0px #000000',
+                      backgroundColor: isActive ? 'var(--bg-header)' : '#FFFFFF',
+                      color: 'var(--color-text)',
                       cursor: 'pointer',
                       transition: 'all 0.1s ease',
                       display: 'flex',
@@ -410,7 +412,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
                       gap: '4px'
                     }}
                   >
-                    {getScaIcon(catGroup.category, 11, 2.5)}
+                    {getScaIcon(catGroup.category, 12, 2.5)}
                     {catGroup.category}
                   </button>
                 );
@@ -425,9 +427,8 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
                 <div style={{
                   padding: '12px',
                   backgroundColor: '#FFFFFF',
-                  border: '2px solid #000000',
-                  borderRadius: '6px',
-                  boxShadow: '3px 3px 0px #000000'
+                  border: '1.5px solid var(--border-color)',
+                  borderRadius: '12px'
                 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {activeCatGroup.subcategories.map((sub, sIdx) => (
@@ -444,22 +445,22 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                           {sub.tags.map((tag, tIdx) => {
                             const isSelected = selectedFlavorTags.some(t => stripEmojis(t) === tag);
+                            const colors = getScaColorForNote(tag);
                             return (
                               <button
                                 key={tIdx}
                                 type="button"
                                 style={{
-                                  padding: '5px 8px',
+                                  padding: '5px 9px',
                                   fontFamily: 'var(--font-heading)',
                                   fontSize: '11px',
-                                  border: '2px solid #000000',
-                                  borderRadius: '4px',
+                                  border: isSelected ? `2px solid ${colors.border}` : '1px solid var(--border-color)',
+                                  borderRadius: '6px',
                                   cursor: 'pointer',
-                                  backgroundColor: isSelected ? 'var(--color-crimson)' : '#FFFFFF',
-                                  color: isSelected ? '#FFFFFF' : 'var(--color-text)',
-                                  boxShadow: isSelected ? 'none' : '1.5px 1.5px 0px #000000',
+                                  backgroundColor: isSelected ? colors.bg : '#FFFFFF',
+                                  color: isSelected ? colors.text : 'var(--color-text)',
                                   transition: 'all 0.1s ease',
-                                  fontWeight: 'bold',
+                                  fontWeight: '800',
                                   display: 'flex',
                                   alignItems: 'center',
                                   gap: '4px'

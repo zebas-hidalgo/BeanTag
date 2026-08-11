@@ -118,26 +118,57 @@ export function getScaColorForNote(note) {
   const n = String(note || '').toLowerCase().trim();
   if (!n) return { bg: 'var(--bg-canvas)', border: 'var(--border-color)', text: 'var(--color-text)' };
 
-  if (/fresa|cereza|mora|frambuesa|arándano|berry|frutos rojos|ciruela/i.test(n)) {
-    return { bg: '#FFF5F5', border: '#E53E3E', text: '#C53030' };
-  }
-  if (/limón|naranja|cítrico|citrico|bergamota|pomelo|mandarina|manzana/i.test(n)) {
-    return { bg: '#FFFAF0', border: '#DD6B20', text: '#C05621' };
-  }
-  if (/jazmín|jazmin|flor|rosa|lavanda|violeta|floral/i.test(n)) {
-    return { bg: '#FAF5FF', border: '#805AD5', text: '#6B46C1' };
-  }
-  if (/chocolate|cacao|caramelo|miel|panela|vainilla|dulce/i.test(n)) {
-    return { bg: '#FDF6E2', border: '#795548', text: '#4E342E' };
-  }
-  if (/avellana|nuez|almendra|frutos secos|canela|especias|clavo/i.test(n)) {
-    return { bg: '#FEFCBF', border: '#D69E2E', text: '#B7791F' };
-  }
-  if (/vino|ron|anaeróbico|anaerobico|maceración|maceracion|fermentado/i.test(n)) {
-    return { bg: '#FFF5F7', border: '#9B2C2C', text: '#742A2A' };
+  // 1. Floral (Purple / Violet)
+  if (/jazmín|jazmin|flor|rosa|lavanda|hibisco|violeta|manzanilla|té|te|floral/i.test(n)) {
+    return { bg: '#FAF5FF', border: '#9333EA', text: '#6B21A8' };
   }
 
-  return { bg: '#F7FAFC', border: 'var(--border-color)', text: 'var(--color-text)' };
+  // 2. Afrutado - Bayas & Frutos Rojos (Carmesí / Magenta)
+  if (/fresa|frutilla|mora|frambuesa|arándano|berry|frutos rojos|cereza|grosella/i.test(n)) {
+    return { bg: '#FFF1F2', border: '#E11D48', text: '#9F1239' };
+  }
+
+  // 3. Afrutado - Cítricos & Frutas Frescas (Naranja / Amarillo Dorado)
+  if (/limón|limon|lima|naranja|mandarina|pomelo|toronja|bergamota|cítrico|citrico|manzana|pera|uva/i.test(n)) {
+    return { bg: '#FFFBEB', border: '#D97706', text: '#92400E' };
+  }
+
+  // 4. Afrutado - Frutas Tropicales & Deshidratadas (Coral / Maracuyá)
+  if (/mango|maracuyá|maracuya|parchita|papaya|piña|pina|guayaba|lichi|coco|higo|dátil|datil|pasa|durazno|melocotón|albaricoque/i.test(n)) {
+    return { bg: '#FFF7ED', border: '#EA580C', text: '#C2410C' };
+  }
+
+  // 5. Dulce - Azúcares & Confitería (Ámbar / Miel)
+  if (/melaza|arce|maple|caramelo|miel|panela|chancaca|azúcar|azucar|vainilla|malvavisco|arequipe|dulce/i.test(n)) {
+    return { bg: '#FEF3C7', border: '#B45309', text: '#78350F' };
+  }
+
+  // 6. Frutos Secos & Cacao (Marrón Cacao / Nutty)
+  if (/chocolate|cacao|nibs|almendra|avellana|nuez|pecana|anacardo|pistacho|macadamia|maní|cacahuate/i.test(n)) {
+    return { bg: '#FDF6E2', border: '#78350F', text: '#451A03' };
+  }
+
+  // 7. Especias (Rojo Canela / Dorado)
+  if (/canela|clavo|moscada|anís|anis|cardamomo|pimienta|jengibre|curri|especias/i.test(n)) {
+    return { bg: '#FEF2F2', border: '#DC2626', text: '#991B1B' };
+  }
+
+  // 8. Tostado & Cereales (Tostado / Tabaco)
+  if (/malta|cebada|avena|pan|tostado|humo|ceniza|tabaco|cuero|graham/i.test(n)) {
+    return { bg: '#F5F5F4', border: '#78716C', text: '#292524' };
+  }
+
+  // 9. Verde / Vegetal & Hierbas (Verde Menta / Botánico)
+  if (/hierba|heno|menta|eucalipto|romero|salvia|lúpulo|lupulo|guisante|aceite|oliva|tierra|madera|cedro|musgo/i.test(n)) {
+    return { bg: '#ECFDF5', border: '#059669', text: '#064E3B' };
+  }
+
+  // 10. Ácido / Fermentado (Vino / Borgoña)
+  if (/vino|champagne|whiskey|bourbon|ron|kombucha|licorosa|anaeróbico|anaerobico|maceración|maceracion|fermentado|vinagre/i.test(n)) {
+    return { bg: '#FFF5F7', border: '#BE123C', text: '#881337' };
+  }
+
+  return { bg: '#F1F5F9', border: '#64748B', text: '#0F172A' };
 }
 
 export function RenderScaChips({ notesStr, maxChips = 4 }) {

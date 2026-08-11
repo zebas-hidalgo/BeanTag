@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Zap, Snowflake, CheckCircle2 } from 'lucide-react';
+import { Plus, Zap, Snowflake, CheckCircle2, Mountain } from 'lucide-react';
+import { RenderScaChips } from '../utils/scaIcons';
 
 export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -100,14 +101,20 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
                   <h3 className="card-title" style={{ margin: '0 0 2px 0', fontSize: '15px', wordBreak: 'break-word' }}>
                     {batch.name}
                   </h3>
-                  <p className="card-sub" style={{ margin: 0, fontSize: '11px' }}>
+                  <p className="card-sub" style={{ margin: '0 0 4px 0', fontSize: '11px' }}>
                     {batch.producer} {batch.variety ? `• ${batch.variety}` : ''}
                   </p>
+                  <RenderScaChips notesStr={batch.roaster_notes} maxChips={3} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
                   <span className="mono-lbl-tag" style={{ fontSize: '10.5px' }}>
                     {batch.origin || 'N/A'}
                   </span>
+                  {batch.altitude && (
+                    <span style={{ fontSize: '9.5px', color: 'var(--color-crimson)', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      <Mountain size={10} /> {batch.altitude}
+                    </span>
+                  )}
                   {isLowStock && (
                     <span className="mono-lbl-tag low-stock" style={{ fontSize: '9px', padding: '2px 5px' }}>
                       ¡Últimos tubos!

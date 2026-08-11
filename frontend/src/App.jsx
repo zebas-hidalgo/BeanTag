@@ -392,8 +392,34 @@ export default function App() {
       </main>
 
       {toast.visible && (
-        <div className="toast-notification animate-entrance" style={toastStyles[toast.type]}>
-          {toast.message}
+        <div className="toast-notification animate-entrance" style={{
+          ...toastStyles[toast.type],
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px'
+        }}>
+          <span>{toast.message}</span>
+          {toast.showUndo && (
+            <button
+              type="button"
+              onClick={handleUndo}
+              style={{
+                background: 'var(--color-crimson, #059669)',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: '900',
+                cursor: 'pointer',
+                letterSpacing: '0.5px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+              }}
+            >
+              DESHACER
+            </button>
+          )}
         </div>
       )}
 
