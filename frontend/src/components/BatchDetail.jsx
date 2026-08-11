@@ -6,7 +6,6 @@ import { copyToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
 import ScaRadarChart from './ScaRadarChart';
 import DialInAssistant from './DialInAssistant';
-import BaristaDisplayModal from './BaristaDisplayModal';
 
 const calculateMicrons = (rot, num, click) => {
   const r = parseInt(rot) || 0;
@@ -64,7 +63,6 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
 
   // Form input state for brew time
   const [brewTime, setBrewTime] = useState('2:30 min');
-  const [showBaristaDisplay, setShowBaristaDisplay] = useState(false);
 
   // Sensory Evaluation States (Improvement 5)
   const [sensoryBalance, setSensoryBalance] = useState('Dulce');
@@ -444,13 +442,6 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
 
   return (
     <div style={{ padding: '12px 12px 24px 12px' }}>
-      <BaristaDisplayModal
-        isOpen={showBaristaDisplay}
-        onClose={() => setShowBaristaDisplay(false)}
-        batch={batch}
-        recipe={lastRecipe}
-      />
-
       {/* Top Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
         <button className="btn-candy" onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -458,9 +449,6 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
           Volver
         </button>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <button className="btn-candy primary" onClick={() => setShowBaristaDisplay(true)} style={{ padding: '6px 12px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', margin: 0 }}>
-            <Play size={13} /> Barista Standby
-          </button>
           <button className="btn-candy" onClick={() => onEditBatch(batch)} style={{ padding: '6px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', margin: 0 }}>
             <Edit2 size={13} />
             Editar
