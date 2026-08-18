@@ -13,16 +13,17 @@ export default function Settings({ theme, setTheme, showToast }) {
   const [selectedModel, setSelectedModel] = useState(() => {
     return localStorage.getItem('gemini-model') || 'gemini-3.7-flash';
   });
-  const [isThinkingEnabled, setIsThinkingEnabled] = useState(() => {
-    return localStorage.getItem('gemini-thinking') === 'true';
+  const [defaultGrinder, setDefaultGrinder] = useState(() => {
+    return localStorage.getItem('default-grinder') || 'jmax';
   });
 
   const handleSaveKey = () => {
     localStorage.setItem('gemini-api-key', apiKey);
     localStorage.setItem('gemini-model', selectedModel);
     localStorage.setItem('gemini-thinking', isThinkingEnabled ? 'true' : 'false');
+    localStorage.setItem('default-grinder', defaultGrinder);
     if (showToast) {
-      showToast('Configuración de Gemini guardada correctamente.', { type: 'success', duration: 2500 });
+      showToast('Configuración guardada correctamente.', { type: 'success', duration: 2500 });
     }
   };
 
@@ -283,6 +284,78 @@ export default function Settings({ theme, setTheme, showToast }) {
           >
             Obtener clave API gratuita en Google AI Studio →
           </a>
+        </div>
+      </div>
+
+      {/* Preferencia de Molino Predeterminado */}
+      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
+        <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+          Molino Predeterminado
+        </h4>
+        <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
+          Selecciona tu molino principal para precargar sus diales y física en cada nueva receta.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+          <button
+            type="button"
+            onClick={() => { setDefaultGrinder('jmax'); localStorage.setItem('default-grinder', 'jmax'); if (showToast) showToast('Molino predeterminado: 1Zpresso J-Max', { type: 'info', duration: 2000 }); }}
+            style={{
+              padding: '10px 8px',
+              borderRadius: '8px',
+              border: defaultGrinder === 'jmax' ? '2px solid var(--color-crimson)' : '1px solid var(--border-color)',
+              backgroundColor: defaultGrinder === 'jmax' ? 'var(--bg-header)' : '#FFFFFF',
+              color: 'var(--color-text)',
+              cursor: 'pointer',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '2px'
+            }}
+          >
+            <strong style={{ fontSize: '11px' }}>1Zpresso J-Max</strong>
+            <span style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>8.8 µm / clic</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setDefaultGrinder('femobook'); localStorage.setItem('default-grinder', 'femobook'); if (showToast) showToast('Molino predeterminado: Femobook A2', { type: 'info', duration: 2000 }); }}
+            style={{
+              padding: '10px 8px',
+              borderRadius: '8px',
+              border: defaultGrinder === 'femobook' ? '2px solid var(--color-crimson)' : '1px solid var(--border-color)',
+              backgroundColor: defaultGrinder === 'femobook' ? 'var(--bg-header)' : '#FFFFFF',
+              color: 'var(--color-text)',
+              cursor: 'pointer',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '2px'
+            }}
+          >
+            <strong style={{ fontSize: '11px' }}>Femobook A2</strong>
+            <span style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>18 µm • 40 c/rot</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setDefaultGrinder('comandante'); localStorage.setItem('default-grinder', 'comandante'); if (showToast) showToast('Molino predeterminado: Comandante C40', { type: 'info', duration: 2000 }); }}
+            style={{
+              padding: '10px 8px',
+              borderRadius: '8px',
+              border: defaultGrinder === 'comandante' ? '2px solid var(--color-crimson)' : '1px solid var(--border-color)',
+              backgroundColor: defaultGrinder === 'comandante' ? 'var(--bg-header)' : '#FFFFFF',
+              color: 'var(--color-text)',
+              cursor: 'pointer',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '2px'
+            }}
+          >
+            <strong style={{ fontSize: '11px' }}>Comandante C40</strong>
+            <span style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>30 µm / clic</span>
+          </button>
         </div>
       </div>
 
