@@ -13,6 +13,9 @@ export default function Settings({ theme, setTheme, showToast }) {
   const [selectedModel, setSelectedModel] = useState(() => {
     return localStorage.getItem('gemini-model') || 'gemini-3.7-flash';
   });
+  const [isThinkingEnabled, setIsThinkingEnabled] = useState(() => {
+    return localStorage.getItem('gemini-thinking') === 'true';
+  });
   const [defaultGrinder, setDefaultGrinder] = useState(() => {
     return localStorage.getItem('default-grinder') || 'jmax';
   });
