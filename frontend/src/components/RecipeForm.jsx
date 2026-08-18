@@ -322,10 +322,11 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
                   </div>
                 )}
                 {aiRecommendation.grinders && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', fontSize: '9.5px', marginTop: '4px', borderTop: '1px dashed var(--border-color)', paddingTop: '4px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', fontSize: '9.5px', marginTop: '4px', borderTop: '1px dashed var(--border-color)', paddingTop: '4px' }}>
+                    <div><strong>Femobook A2:</strong> {aiRecommendation.grinders.femobook_a2 || '60 clics (1.5 Rot.)'}</div>
                     <div><strong>Comandante C40:</strong> {aiRecommendation.grinders.comandante || '22 clics'}</div>
                     <div><strong>Timemore C2/C3:</strong> {aiRecommendation.grinders.timemore || '16 clics'}</div>
-                    <div><strong>Baratza Encore:</strong> {aiRecommendation.grinders.baratza || '14'}</div>
+                    <div><strong>Baratza Encore:</strong> {aiRecommendation.grinders.baratza || 'Ajuste 14'}</div>
                   </div>
                 )}
               </div>

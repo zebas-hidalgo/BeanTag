@@ -652,13 +652,30 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
 
                   {/* Sub-Contenido: Molinos */}
                   {aiSubTab === 'grinders' && (
-                    <div style={{ fontSize: '10px', display: 'flex', flexDirection: 'column', gap: '4px', background: 'var(--bg-card)', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-                      <div><strong style={{ color: 'var(--color-crimson)' }}>1Zpresso J-Max:</strong> {aiRecommendation.jmax_rot !== undefined ? `${aiRecommendation.jmax_rot}.${aiRecommendation.jmax_num}.${aiRecommendation.jmax_click}` : (aiRecommendation.grinders?.jmax || '1.3.5')} ({aiRecommendation.grind_microns || 'Molienda Fina'})</div>
+                    <div style={{ fontSize: '10px', display: 'flex', flexDirection: 'column', gap: '6px', background: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                        <div style={{ padding: '4px 6px', background: 'var(--bg-header)', borderRadius: '4px' }}>
+                          <strong style={{ color: 'var(--color-crimson)', display: 'block' }}>1Zpresso J-Max:</strong>
+                          <span style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                            {aiRecommendation.jmax_rot !== undefined ? `${aiRecommendation.jmax_rot}.${aiRecommendation.jmax_num}.${aiRecommendation.jmax_click}` : (aiRecommendation.grinders?.jmax || '1.3.5')}
+                          </span>
+                          <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>8.8 µm/clic • 90 clics/rot</div>
+                        </div>
+
+                        <div style={{ padding: '4px 6px', background: 'var(--bg-header)', borderRadius: '4px' }}>
+                          <strong style={{ color: 'var(--color-crimson)', display: 'block' }}>Femobook A2:</strong>
+                          <span style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                            {aiRecommendation.grinders?.femobook_a2 || '60 clics (1.5 Rot.)'}
+                          </span>
+                          <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>18 µm/clic • 40 clics/rot</div>
+                        </div>
+                      </div>
+
                       {aiRecommendation.grinders && (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', marginTop: '4px', paddingTop: '4px', borderTop: '1px dashed var(--border-color)', fontSize: '9px' }}>
-                          <div><strong>Comandante:</strong> {aiRecommendation.grinders.comandante}</div>
-                          <div><strong>Timemore:</strong> {aiRecommendation.grinders.timemore}</div>
-                          <div><strong>Baratza:</strong> {aiRecommendation.grinders.baratza}</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', marginTop: '2px', paddingTop: '6px', borderTop: '1px dashed var(--border-color)', fontSize: '9px' }}>
+                          <div><strong>Comandante:</strong><br/>{aiRecommendation.grinders.comandante}</div>
+                          <div><strong>Timemore:</strong><br/>{aiRecommendation.grinders.timemore}</div>
+                          <div><strong>Baratza:</strong><br/>{aiRecommendation.grinders.baratza}</div>
                         </div>
                       )}
                     </div>
@@ -865,6 +882,54 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
             <button type="button" className="btn-candy accent" style={{ width: '100%', marginTop: '10px', padding: '6px', fontSize: '10.5px' }} onClick={() => { setDoseInG(calcDose); setRatioVal(calcRatio); setActiveTab('brew'); if (showToast) showToast('Valores transferidos a la pestaña de preparación.', { type: 'success' }); }}>
               Transferir a mi receta
             </button>
+          </div>
+
+          {/* Tabla de Equivalencias de Molinos (J-Max vs Femobook A2 vs Comandante) */}
+          <div className="candy-card static" style={{ padding: '14px' }}>
+            <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '8px', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              ⚙️ Equivalencias de Molienda
+            </div>
+            <p style={{ fontSize: '10.5px', color: 'var(--color-text-muted)', margin: '0 0 10px 0' }}>
+              Comparativa física entre molinos manuales y eléctricos de precisión:
+            </p>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', fontSize: '9.5px', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--color-text-muted)' }}>
+                    <th style={{ padding: '4px 6px' }}>Método</th>
+                    <th style={{ padding: '4px 6px' }}>1Zpresso J-Max<br/><span style={{ fontWeight: 'normal', fontSize: '8px' }}>(8.8µm)</span></th>
+                    <th style={{ padding: '4px 6px' }}>Femobook A2<br/><span style={{ fontWeight: 'normal', fontSize: '8px' }}>(18µm • 40c/r)</span></th>
+                    <th style={{ padding: '4px 6px' }}>Comandante C40<br/><span style={{ fontWeight: 'normal', fontSize: '8px' }}>(30µm)</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={{ borderBottom: '1px dashed var(--border-color)' }}>
+                    <td style={{ padding: '6px', fontWeight: 'bold' }}>Espresso</td>
+                    <td style={{ padding: '6px' }}>1.2.5 – 1.4.2</td>
+                    <td style={{ padding: '6px', color: 'var(--color-crimson)', fontWeight: 'bold' }}>3 – 10 clics</td>
+                    <td style={{ padding: '6px' }}>8 – 12 clics</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px dashed var(--border-color)' }}>
+                    <td style={{ padding: '6px', fontWeight: 'bold' }}>Moka / AeroPress</td>
+                    <td style={{ padding: '6px' }}>1.8.0 – 2.1.0</td>
+                    <td style={{ padding: '6px', color: 'var(--color-crimson)', fontWeight: 'bold' }}>18 – 45 clics</td>
+                    <td style={{ padding: '6px' }}>14 – 18 clics</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px dashed var(--border-color)' }}>
+                    <td style={{ padding: '6px', fontWeight: 'bold' }}>V60 / Filtrado</td>
+                    <td style={{ padding: '6px' }}>2.3.0 – 2.7.0</td>
+                    <td style={{ padding: '6px', color: 'var(--color-crimson)', fontWeight: 'bold' }}>50 – 75 clics (1.5R)</td>
+                    <td style={{ padding: '6px' }}>22 – 26 clics</td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: '6px', fontWeight: 'bold' }}>Prensa / Cupping</td>
+                    <td style={{ padding: '6px' }}>3.0.0 – 3.5.0</td>
+                    <td style={{ padding: '6px', color: 'var(--color-crimson)', fontWeight: 'bold' }}>85 – 110 clics</td>
+                    <td style={{ padding: '6px' }}>28 – 34 clics</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Semáforo Desgasificación */}

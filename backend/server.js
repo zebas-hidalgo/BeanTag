@@ -564,17 +564,26 @@ Analiza meticulosamente este lote de café de especialidad:
 
 El usuario desea preparar este café con el método: "${targetMethod}" y una dosis de entrada de: "${dose}g".
 
-REGLAS MECÁNICAS EXACTAS PARA MOLINO 1ZPRESSO J-MAX (8.8 µm por Clic, 90 Clics/Rotación, 10 Clics/Número -> Formato: Rotación.Número.Clic):
-- Rango Base Espresso: 1.2.5 a 1.4.2 (95 a 132 clics | ~830 µm a 1160 µm). Base habitual: 1.3.5 (125 clics = 1100 µm).
-- Rango Base AeroPress / Moka: 1.8.0 a 2.1.0 (170 a 190 clics | ~1500 µm a 1670 µm).
-- Rango Base V60 / Filtrado: 2.3.0 a 2.7.0 (210 a 250 clics | ~1850 µm a 2200 µm). Base habitual: 2.4.5 (225 clics = 1980 µm).
-- Rango Base Prensa Francesa: 3.0.0 a 3.5.0 (270 a 320 clics | ~2370 µm a 2800 µm).
+REGLAS MECÁNICAS EXACTAS PARA MOLINOS PRINCIPALES:
+1. 1ZPRESSO J-MAX (8.8 µm/clic, 90 clics/rotación, 10 clics/número -> Formato: Rotación.Número.Clic):
+   - Espresso: 1.2.5 a 1.4.2 (~830-1160 µm). Base habitual: 1.3.5.
+   - AeroPress/Moka: 1.8.0 a 2.1.0 (~1500-1670 µm).
+   - V60/Filtrado: 2.3.0 a 2.7.0 (~1850-2200 µm). Base habitual: 2.4.5.
+   - Prensa Francesa: 3.0.0 a 3.5.0 (~2370-2800 µm).
+2. FEMOBOOK A2 (18 µm/clic, 40 clics/rotación, muelas cónicas heptagonales 38mm, motor a bajas RPM):
+   - Espresso: 3 a 10 clics desde cero (Base: 5 a 8 clics).
+   - Moka Pot: 12 a 18 clics.
+   - AeroPress: 25 a 45 clics.
+   - Pour-Over / V60: 50 a 75 clics (~1.25 a 1.85 rotaciones, Base habitual: 58-62 clics = 1.5 rotaciones).
+   - Kalita / Chemex: 65 a 85 clics.
+   - Prensa Francesa / Cold Brew: 85 a 110 clics.
+3. Otros molinos equivalentes: Comandante C40 (30 µm/clic), Timemore C2/C3, Baratza Encore.
 
 AJUSTES FÍSICOS CIENTÍFICOS OBLIGATORIOS:
-1. Tueste Claro: Granos densos. Restar 3-5 clics (más fino).
-2. Tueste Oscuro: Granos porosos. Sumar 4-6 clics (más grueso).
-3. Proceso Natural/Anaeróbico/Maceración: Muy solubles, producen más finos. Sumar 3-5 clics (más grueso).
-4. Altitud >1600m: Restar 2-3 clics (más fino).
+1. Tueste Claro: Granos densos. Restar clics (J-Max: -3 a -5 | Femobook A2: -2 a -4 | más fino).
+2. Tueste Oscuro: Granos porosos. Sumar clics (J-Max: +4 a +6 | Femobook A2: +3 a +5 | más grueso).
+3. Proceso Natural/Anaeróbico/Maceración: Muy solubles, producen más finos. Sumar clics (J-Max: +3 a +5 | Femobook A2: +2 a +4 | más grueso).
+4. Altitud >1600m: Restar clics (más fino).
 
 Genera un JSON con esta estructura exacta:
 {
@@ -589,6 +598,7 @@ Genera un JSON con esta estructura exacta:
   "jmax_click": ${targetMethod === 'Espresso' ? 5 : (targetMethod.includes('Prensa') ? 0 : (targetMethod.includes('Aero') ? 0 : 5))},
   "grinders": {
     "jmax": "${targetMethod === 'Espresso' ? '1.3.5 (1 Rot. 3 Núm. 5 Clics)' : '2.4.5 (2 Rot. 4 Núm. 5 Clics)'}",
+    "femobook_a2": "${targetMethod === 'Espresso' ? '7 clics' : (targetMethod.includes('Prensa') ? '95 clics (2.3 Rot.)' : (targetMethod.includes('Aero') ? '35 clics' : '60 clics (1.5 Rot.)'))}",
     "comandante": "${targetMethod === 'Espresso' ? '8-10 clics' : '22-24 clics'}",
     "timemore": "${targetMethod === 'Espresso' ? '8-9 clics' : '16-18 clics'}",
     "baratza": "${targetMethod === 'Espresso' ? 'Ajuste 4-6' : 'Ajuste 14-16'}"
@@ -601,7 +611,7 @@ Genera un JSON con esta estructura exacta:
   ],
   "steps": [
     "Purgar y secar el portafiltro o recipiente.",
-    "Pesar ${dose}g de café y moler en J-Max.",
+    "Pesar ${dose}g de café y calibrar tu 1Zpresso J-Max o Femobook A2.",
     "Realizar vertidos según cronograma.",
     "Servir y evaluar perfil de cata."
   ],
@@ -666,6 +676,7 @@ RECALIBRA científicamente la receta para corregir los defectos (${sensory_extra
   "jmax_click": ${jmax_click},
   "grinders": {
     "jmax": "${jmax_rot}.${jmax_num + 1 > 8 ? 0 : jmax_num + 1}.${jmax_click}",
+    "femobook_a2": "62 clics (1.55 Rot.)",
     "comandante": "23 clics",
     "timemore": "17 clics",
     "baratza": "Ajuste 15"
