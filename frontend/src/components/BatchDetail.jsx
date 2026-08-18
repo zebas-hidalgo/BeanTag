@@ -94,6 +94,9 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
       return;
     }
 
+    const model = localStorage.getItem('gemini-model') || 'gemini-3.7-flash';
+    const isThinking = localStorage.getItem('gemini-thinking') === 'true';
+
     setAiLoading(true);
     setAiError('');
     setAiRecommendation(null);
@@ -102,7 +105,9 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-gemini-key': apiKey
+        'x-gemini-key': apiKey,
+        'x-gemini-model': model,
+        'x-gemini-thinking': isThinking ? 'true' : 'false'
       },
       body: JSON.stringify({
         origin: batch.origin,

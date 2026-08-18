@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Save, X, ClipboardCopy } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Save, X, ClipboardCopy, Camera, Sparkles, Loader2 } from 'lucide-react';
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 
@@ -247,6 +247,78 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
     });
   };
 
+  const fileInputRef = useRef(null);
+  const [isScanning, setIsScanning] = useState(false);
+
+  const handleImageSelected = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const apiKey = localStorage.getItem('gemini-api-key');
+    if (!apiKey) {
+      if (showToast) showToast('Configura tu clave API de Gemini en Ajustes para usar el escáner.', { type: 'error', duration: 4000 });
+      return;
+    }
+
+    const model = localStorage.getItem('gemini-model') || 'gemini-3.7-flash';
+    const isThinking = localStorage.getItem('gemini-thinking') === 'true';
+
+    setIsScanning(true);
+    if (showToast) showToast('Analizando bolsa de café con Gemini 3.7 Vision...', { type: 'info', duration: 3000 });
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64Data = reader.result;
+        try {
+          const res = await fetch(apiUrl('api/ai/scan-bag'), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-gemini-key': apiKey,
+              'x-gemini-model': model,
+              'x-gemini-thinking': isThinking ? 'true' : 'false'
+            },
+            body: JSON.stringify({
+              imageBase64: base64Data,
+              mimeType: file.type || 'image/jpeg'
+            })
+          });
+
+          const data = await res.json();
+          if (data.error) {
+            if (showToast) showToast(`Error al escanear: ${data.error}`, { type: 'error', duration: 4000 });
+            return;
+          }
+
+          // Autopopulate fields from Gemini 3.7 Vision
+          if (data.name) setName(data.name);
+          if (data.producer) setProducer(data.producer);
+          if (data.origin) setOrigin(data.origin);
+          if (data.altitude) setAltitude(data.altitude);
+          if (data.variety) setVariety(data.variety);
+          if (data.process) setProcess(data.process);
+          if (data.roaster) setRoaster(data.roaster);
+          if (data.roast_level) setRoastLevel(data.roast_level);
+          if (data.roast_date) setRoastDate(data.roast_date);
+          if (data.roaster_notes) setNotes(data.roaster_notes);
+          if (data.sca_flavor_tags && Array.isArray(data.sca_flavor_tags)) {
+            setSelectedFlavorTags(data.sca_flavor_tags);
+          }
+
+          if (showToast) showToast('¡Bolsa escaneada y datos extraídos con éxito! ☕📸', { type: 'success', duration: 3500 });
+        } catch (err) {
+          if (showToast) showToast('Error al conectar con Gemini 3.7.', { type: 'error', duration: 3500 });
+        } finally {
+          setIsScanning(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      setIsScanning(false);
+    }
+  };
+
   const copyUrl = () => {
     navigator.clipboard.writeText(generatedUrl);
     showToast('Enlace copiado al portapapeles.', { type: 'success', duration: 2000 });
@@ -254,11 +326,43 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
 
   return (
     <div style={{ padding: '12px 12px 0 12px' }}>
+      {/* Hidden File/Camera Input */}
+      <input 
+        type="file" 
+        accept="image/*" 
+        capture="environment" 
+        ref={fileInputRef} 
+        onChange={handleImageSelected} 
+        style={{ display: 'none' }} 
+      />
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
         <button className="btn-candy" onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <X size={16} strokeWidth={2.5} />
           Cancelar
         </button>
+
+        {/* Gemini 3.7 Camera Scan Trigger */}
+        {!batchToEdit && (
+          <button 
+            type="button" 
+            className="btn-candy primary" 
+            disabled={isScanning}
+            onClick={() => fileInputRef.current && fileInputRef.current.click()} 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px', 
+              margin: 0, 
+              fontSize: '11px', 
+              padding: '6px 12px',
+              backgroundColor: 'var(--color-crimson)'
+            }}
+          >
+            {isScanning ? <Loader2 size={14} className="spin" /> : <Camera size={14} />}
+            <span>{isScanning ? 'Escaneando...' : '📸 Escanear Bolsa (IA)'}</span>
+          </button>
+        )}
       </div>
 
       <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 14px 0', fontSize: '16px' }}>
@@ -268,9 +372,14 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
       <form onSubmit={handleSubmit}>
         {/* Sección 1 — Identidad del Café */}
         <div className="candy-card static" style={{ cursor: 'default' }}>
-          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 12px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
-            Identidad del Café
-          </h4>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: 0, color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
+              Identidad del Café
+            </h4>
+            <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
+              Gemini 3.7 Vision OCR
+            </span>
+          </div>
           <div className="form-group">
             <label>Nombre del Café</label>
             <input className="candy-input" value={name} onChange={(e) => setName(e.target.value)} type="text" required placeholder="Ej. Pink Bourbon" />

@@ -10,11 +10,36 @@ export default function Settings({ theme, setTheme, showToast }) {
   const [apiKey, setApiKey] = React.useState(() => {
     return localStorage.getItem('gemini-api-key') || '';
   });
+  const [selectedModel, setSelectedModel] = useState(() => {
+    return localStorage.getItem('gemini-model') || 'gemini-3.7-flash';
+  });
+  const [isThinkingEnabled, setIsThinkingEnabled] = useState(() => {
+    return localStorage.getItem('gemini-thinking') === 'true';
+  });
 
   const handleSaveKey = () => {
     localStorage.setItem('gemini-api-key', apiKey);
+    localStorage.setItem('gemini-model', selectedModel);
+    localStorage.setItem('gemini-thinking', isThinkingEnabled ? 'true' : 'false');
     if (showToast) {
-      showToast('Clave API de Gemini guardada correctamente.', { type: 'success', duration: 2500 });
+      showToast('Configuración de Gemini guardada correctamente.', { type: 'success', duration: 2500 });
+    }
+  };
+
+  const handleModelChange = (newModel) => {
+    setSelectedModel(newModel);
+    localStorage.setItem('gemini-model', newModel);
+    if (showToast) {
+      showToast(`Modelo cambiado a ${newModel}.`, { type: 'info', duration: 2000 });
+    }
+  };
+
+  const handleToggleThinking = () => {
+    const newVal = !isThinkingEnabled;
+    setIsThinkingEnabled(newVal);
+    localStorage.setItem('gemini-thinking', newVal ? 'true' : 'false');
+    if (showToast) {
+      showToast(newVal ? 'Modo Pensamiento (Thinking) Activado.' : 'Modo Rápido Activado.', { type: 'info', duration: 2000 });
     }
   };
 
@@ -171,20 +196,27 @@ export default function Settings({ theme, setTheme, showToast }) {
         </div>
       </div>
 
-      {/* Inteligencia Artificial (Gemini) */}
+      {/* Inteligencia Artificial (Gemini 3.7 Core) */}
       <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
         <div>
-          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
-            Inteligencia Artificial (Gemini)
-          </h4>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: 0, color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+              Inteligencia Artificial (Gemini 3.7 Core)
+            </h4>
+            <span style={{ fontSize: '9px', background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: '900' }}>
+              v3.7 FLASH & PRO
+            </span>
+          </div>
           <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
-            Añade tu clave API para habilitar recomendaciones de recetas personalizadas basadas en el origen, variedad y proceso del café.
+            Potencia el escaneo de bolsas por foto (OCR), el sommelier de inventario y la calibración profunda con Thinking Mode.
           </p>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* API Key Input */}
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <input 
-              type="text" 
+              type="password" 
               className="candy-input" 
               value={apiKey} 
               onChange={(e) => setApiKey(e.target.value)} 
@@ -199,6 +231,50 @@ export default function Settings({ theme, setTheme, showToast }) {
               Guardar
             </button>
           </div>
+
+          {/* Model Selector & Thinking Config */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <div>
+              <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px' }}>
+                Modelo Gemini
+              </label>
+              <select 
+                className="candy-input" 
+                value={selectedModel} 
+                onChange={(e) => handleModelChange(e.target.value)}
+                style={{ fontSize: '11px', padding: '6px 8px' }}
+              >
+                <option value="gemini-3.7-flash">Gemini 3.7 Flash (Recomendado)</option>
+                <option value="gemini-3.7-pro">Gemini 3.7 Pro (Máximo Razonamiento)</option>
+                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Legacy)</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px' }}>
+                Thinking Mode (Razonamiento)
+              </label>
+              <button
+                type="button"
+                onClick={handleToggleThinking}
+                style={{
+                  width: '100%',
+                  padding: '7px 8px',
+                  borderRadius: '6px',
+                  border: isThinkingEnabled ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                  backgroundColor: isThinkingEnabled ? 'var(--bg-header)' : '#FFFFFF',
+                  color: 'var(--color-text)',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  textAlign: 'center'
+                }}
+              >
+                {isThinkingEnabled ? '🧠 Modo Pensamiento: ACTIVO' : '⚡ Modo Rápido (Off)'}
+              </button>
+            </div>
+          </div>
+
           <a 
             href="https://aistudio.google.com/app/apikey" 
             target="_blank" 

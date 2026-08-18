@@ -518,9 +518,33 @@ app.get('/manifest.json', (req, res) => {
   });
 });
 
-// AI Recommendation Endpoint (Structured with Pours, Steps, and Calibrated Grind Settings)
-app.post('/api/recommend-recipe', async (req, res) => {
+// --- GEMINI 3.7 AI CORE ENGINE ---
+
+function getGeminiConfig(req) {
   const apiKey = req.headers['x-gemini-key'];
+  const requestedModel = req.headers['x-gemini-model'] || 'gemini-3.7-flash';
+  const enableThinking = req.headers['x-gemini-thinking'] === 'true' || req.headers['x-gemini-thinking'] === true;
+
+  // Ensure model is a valid Gemini model
+  const model = requestedModel.includes('gemini') ? requestedModel : 'gemini-3.7-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+  const generationConfig = {
+    responseMimeType: 'application/json'
+  };
+
+  if (enableThinking && model.includes('3.7')) {
+    generationConfig.thinkingConfig = {
+      thinkingBudget: 2048
+    };
+  }
+
+  return { apiKey, model, url, generationConfig };
+}
+
+// 1. AI Recommendation Endpoint (Gemini 3.7 Thinking & Physics of Grinding)
+app.post('/api/recommend-recipe', async (req, res) => {
+  const { apiKey, model, url, generationConfig } = getGeminiConfig(req);
   if (!apiKey) {
     return res.status(400).json({ error: 'Falta la clave API de Gemini en las cabeceras' });
   }
@@ -529,7 +553,8 @@ app.post('/api/recommend-recipe', async (req, res) => {
   const dose = parseFloat(dose_in_g) || 20.0;
   const targetMethod = method || 'V60 (Filtrado)';
 
-  const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad y experto en física de molienda. Analiza meticulosamente el siguiente lote de café:
+  const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad y experto en física de molienda e hidrodinámica de extracción.
+Analiza meticulosamente este lote de café de especialidad:
 - Origen: ${origin || 'Desconocido'}
 - Variedad: ${variety || 'N/A'}
 - Proceso: ${process || 'N/A'}
@@ -545,29 +570,20 @@ REGLAS MECÁNICAS EXACTAS PARA MOLINO 1ZPRESSO J-MAX (8.8 µm por Clic, 90 Clics
 - Rango Base V60 / Filtrado: 2.3.0 a 2.7.0 (210 a 250 clics | ~1850 µm a 2200 µm). Base habitual: 2.4.5 (225 clics = 1980 µm).
 - Rango Base Prensa Francesa: 3.0.0 a 3.5.0 (270 a 320 clics | ~2370 µm a 2800 µm).
 
-AJUSTES CIENTÍFICOS OBLIGATORIOS SEGÚN EL GRANO (Aplica sobre el Rango Base):
-1. Según Tueste (Roast Level):
-   - Tueste Claro (Light Roast): Granos duros y poco solubles. RESTAR 3 a 5 CLICS (molienda más fina) para maximizar extracción de azúcares.
-   - Tueste Oscuro (Dark Roast): Granos porosos y muy solubles. SUMAR 4 a 6 CLICS (molienda más gruesa) para evitar amargor y fines excesivos.
-2. Según Proceso (Process):
-   - Natural / Anaeróbico / Maceración: Altamente solubles y producen más finos. SUMAR 3 a 5 CLICS (molienda más gruesa).
-   - Lavado (Washed): Taza limpia. Mantener rango estándar o RESTAR 1 a 2 CLICS si es de alta altitud.
-3. Según Altitud:
-   - >1600m (Strictly Hard Bean): RESTAR 2 a 3 CLICS (más fino).
+AJUSTES FÍSICOS CIENTÍFICOS OBLIGATORIOS:
+1. Tueste Claro: Granos densos. Restar 3-5 clics (más fino).
+2. Tueste Oscuro: Granos porosos. Sumar 4-6 clics (más grueso).
+3. Proceso Natural/Anaeróbico/Maceración: Muy solubles, producen más finos. Sumar 3-5 clics (más grueso).
+4. Altitud >1600m: Restar 2-3 clics (más fino).
 
-CÁLCULOS OBLIGATORIOS SEGÚN EL MÉTODO:
-1. Para Espresso: Ratio 1:2 a 1:2.5 (ej. Dosis ${dose}g -> Salida ${Math.round(dose * 2.2)}g). Tiempo 25s-30s.
-2. Para V60 / Filtrado / AeroPress / Prensa: Ratio 1:15 a 1:16 (ej. Dosis ${dose}g -> Agua total ${Math.round(dose * 15)}g).
-3. Molinos alternativos equivalentes: Comandante C40, Timemore C2/C3, Baratza Encore.
-
-Debes responder ÚNICAMENTE con un JSON crudo (sin formato markdown ni \`\`\`json):
+Genera un JSON con esta estructura exacta:
 {
   "method": "${targetMethod}",
   "ratio": "${targetMethod === 'Espresso' ? '1:2.2' : '1:15'}",
   "water_total_g": ${targetMethod === 'Espresso' ? Math.round(dose * 2.2) : Math.round(dose * 15)},
   "grind": "${targetMethod === 'Espresso' ? 'Espresso Fino (1.3.5)' : 'Medio-Fino (2.4.5)'}",
   "grind_microns": "${targetMethod === 'Espresso' ? '1100 µm' : '1980 µm'}",
-  "grind_adjustment_reason": "Explicación barística directa del ajuste de clics según tueste, proceso y altitud (máx 20 palabras)",
+  "grind_adjustment_reason": "Explicación física concisa del ajuste según tueste, proceso y altitud (máx 20 palabras)",
   "jmax_rot": ${targetMethod === 'Espresso' ? 1 : (targetMethod.includes('Prensa') ? 3 : (targetMethod.includes('Aero') ? 1 : 2))},
   "jmax_num": ${targetMethod === 'Espresso' ? 3 : (targetMethod.includes('Prensa') ? 2 : (targetMethod.includes('Aero') ? 9 : 4))},
   "jmax_click": ${targetMethod === 'Espresso' ? 5 : (targetMethod.includes('Prensa') ? 0 : (targetMethod.includes('Aero') ? 0 : 5))},
@@ -580,35 +596,35 @@ Debes responder ÚNICAMENTE con un JSON crudo (sin formato markdown ni \`\`\`jso
   "temperature": ${targetMethod === 'Espresso' ? 92 : 93},
   "brew_time": "${targetMethod === 'Espresso' ? '28s' : '2:30 min'}",
   "pours": [
-    { "step": 1, "label": "${targetMethod === 'Espresso' ? 'Pre-infusión Espresso' : 'Bloom / Pre-infusión'}", "water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 0.5) : 60}, "total_water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 0.5) : 60}, "time": "${targetMethod === 'Espresso' ? '0s - 5s' : '0:00 - 0:45'}", "description": "${targetMethod === 'Espresso' ? 'Pre-infusión a baja presión (3 bar) para humedecer la pastilla.' : 'Verter 60g de agua en espiral para desgasificar.'}" },
-    { "step": 2, "label": "${targetMethod === 'Espresso' ? 'Extracción Principal (9 bar)' : '1º Vertido Principal'}", "water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 2.2 - dose * 0.5) : Math.round(dose * 15 - 60)}, "total_water_g": ${Math.round(targetMethod === 'Espresso' ? dose * 2.2 : dose * 15)}, "time": "${targetMethod === 'Espresso' ? '5s - 28s' : '0:45 - 2:30'}", "description": "${targetMethod === 'Espresso' ? 'Rampa de presión continua a 9 bar hasta alcanzar volumen objetivo.' : 'Vertido continuo en pulso medio.'}" }
+    { "step": 1, "label": "${targetMethod === 'Espresso' ? 'Pre-infusión Espresso' : 'Bloom / Pre-infusión'}", "water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 0.5) : 60}, "total_water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 0.5) : 60}, "time": "${targetMethod === 'Espresso' ? '0s - 5s' : '0:00 - 0:45'}", "description": "${targetMethod === 'Espresso' ? 'Pre-infusión a baja presión.' : 'Verter en espiral para desgasificar.'}" },
+    { "step": 2, "label": "${targetMethod === 'Espresso' ? 'Extracción Principal' : '1º Vertido Principal'}", "water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 2.2 - dose * 0.5) : Math.round(dose * 15 - 60)}, "total_water_g": ${Math.round(targetMethod === 'Espresso' ? dose * 2.2 : dose * 15)}, "time": "${targetMethod === 'Espresso' ? '5s - 28s' : '0:45 - 2:30'}", "description": "${targetMethod === 'Espresso' ? 'Rampa continua a 9 bar.' : 'Vertido continuo en pulso medio.'}" }
   ],
   "steps": [
     "Purgar y secar el portafiltro o recipiente.",
-    "Pesar ${dose}g de café y moler en J-Max a la posición calibrada (${targetMethod === 'Espresso' ? '1.3.5' : '2.4.5'}).",
-    "${targetMethod === 'Espresso' ? 'Distribuir con WDT, nivelar y apisonar con 15kg de fuerza.' : 'Realizar vertidos según la tabla de tiempos y gramos.'}",
-    "Extraer y disfrutar."
+    "Pesar ${dose}g de café y moler en J-Max.",
+    "Realizar vertidos según cronograma.",
+    "Servir y evaluar perfil de cata."
   ],
-  "notes": "${targetMethod === 'Espresso' ? 'Espresso denso y cremoso con crema persistente y acidez dulce muy integrada.' : 'Taza limpia, brillante y balanceada.'}"
+  "notes": "Taza dulce, limpia y balanceada."
 }`;
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig
       })
     });
 
     if (!response.ok) {
       const errData = await response.json();
-      return res.status(response.status).json({ error: errData.error?.message || 'Error con la API de Gemini' });
+      return res.status(response.status).json({ error: errData.error?.message || `Error con Gemini (${model})` });
     }
 
     const data = await response.json();
-    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
     text = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
     const recommendation = JSON.parse(text);
@@ -618,9 +634,9 @@ Debes responder ÚNICAMENTE con un JSON crudo (sin formato markdown ni \`\`\`jso
   }
 });
 
-// AI Recipe Re-calibration Endpoint (Smart Tuning based on Sensory Feedback)
+// 2. AI Recipe Re-calibration Endpoint (Smart Tuning based on Sensory Feedback)
 app.post('/api/ai/tune-recipe', async (req, res) => {
-  const apiKey = req.headers['x-gemini-key'];
+  const { apiKey, model, url, generationConfig } = getGeminiConfig(req);
   if (!apiKey) {
     return res.status(400).json({ error: 'Falta la clave API de Gemini en las cabeceras' });
   }
@@ -628,7 +644,7 @@ app.post('/api/ai/tune-recipe', async (req, res) => {
   const { method, dose_in_g, ratio, temperature, jmax_rot, jmax_num, jmax_click, sensory_extraction, sensory_balance, sensory_body, user_notes, batch_name } = req.body;
   const dose = parseFloat(dose_in_g) || 20.0;
 
-  const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad. El usuario preparó una receta de café "${batch_name || 'Especialidad'}" con ${method}:
+  const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad. El usuario preparó una receta de "${batch_name || 'Especialidad'}" con ${method}:
 Dosis: ${dose}g, Ratio: ${ratio || '1:15'}, Temp: ${temperature || 93}°C, Molino J-Max: ${jmax_rot}.${jmax_num}.${jmax_click}.
 
 Resultado Sensorial Evaluado:
@@ -637,10 +653,7 @@ Resultado Sensorial Evaluado:
 - Cuerpo: ${sensory_body || 'Desconocido'}
 - Notas del Barista: ${user_notes || 'Ninguna'}
 
-RECALIBRA científicamente la receta para corregir los defectos (${sensory_extraction}) y alcanzar la taza perfecta.
-Explica la corrección física aplicada y devuelve todos los parámetros corregidos (J-Max rot/num/click, molinos alternativos, vertidos y pasos).
-
-Debes responder ÚNICAMENTE con un JSON crudo (sin formato markdown ni \`\`\`json):
+RECALIBRA científicamente la receta para corregir los defectos (${sensory_extraction}) y devolver el ajuste perfecto en formato JSON:
 {
   "correction_reason": "Explicación barística directa de la corrección (máx 25 palabras)",
   "method": "${method}",
@@ -660,8 +673,8 @@ Debes responder ÚNICAMENTE con un JSON crudo (sin formato markdown ni \`\`\`jso
   "temperature": 94,
   "brew_time": "2:35",
   "pours": [
-    { "step": 1, "label": "Bloom Corregido", "water_g": 60, "total_water_g": 60, "time": "0:00 - 0:45", "description": "Bloom con agitación suave para evitar canalizaciones." },
-    { "step": 2, "label": "1º Vertido Principal", "water_g": 140, "total_water_g": 200, "time": "0:45 - 1:30", "description": "Vertido continuo para mantener temperatura constante." },
+    { "step": 1, "label": "Bloom Corregido", "water_g": 60, "total_water_g": 60, "time": "0:00 - 0:45", "description": "Bloom con agitación suave." },
+    { "step": 2, "label": "1º Vertido Principal", "water_g": 140, "total_water_g": 200, "time": "0:45 - 1:30", "description": "Vertido continuo." },
     { "step": 3, "label": "2º Vertido Final", "water_g": 120, "total_water_g": 320, "time": "1:30 - 2:35", "description": "Finalizar extracción y asentar cama de café." }
   ],
   "steps": [
@@ -673,28 +686,180 @@ Debes responder ÚNICAMENTE con un JSON crudo (sin formato markdown ni \`\`\`jso
 }`;
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig
       })
     });
 
     if (!response.ok) {
       const errData = await response.json();
-      return res.status(response.status).json({ error: errData.error?.message || 'Error Gemini' });
+      return res.status(response.status).json({ error: errData.error?.message || `Error con Gemini (${model})` });
     }
 
     const data = await response.json();
-    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
     text = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
     const tunedRecommendation = JSON.parse(text);
     res.json(tunedRecommendation);
   } catch (err) {
     res.status(500).json({ error: 'Error al recalibrar la receta: ' + err.message });
+  }
+});
+
+// 3. AI Multimodal Coffee Bag / Receipt Scanner (Gemini 3.7 Vision OCR)
+app.post('/api/ai/scan-bag', async (req, res) => {
+  const { apiKey, model, url, generationConfig } = getGeminiConfig(req);
+  if (!apiKey) {
+    return res.status(400).json({ error: 'Falta la clave API de Gemini en las cabeceras' });
+  }
+
+  const { imageBase64, mimeType = 'image/jpeg' } = req.body;
+  if (!imageBase64) {
+    return res.status(400).json({ error: 'Falta la imagen de la bolsa de café en base64' });
+  }
+
+  // Clean base64 string
+  const cleanBase64 = imageBase64.replace(/^data:image\/[a-z]+;base64,/, '');
+
+  const prompt = `Eres un sommelier y catador Q-Grader experto en café de especialidad con visión OCR de precisión.
+Analiza detenidamente la imagen adjunta de la bolsa, tarjeta o recibo de café de especialidad.
+Extrae con la máxima precisión todos los datos técnicos disponibles:
+- Nombre del café o lote (name)
+- Productor / Finca / Cooperativa (producer)
+- Origen (País, Región / Departamento / Municipio) (origin)
+- Altitud en msnm con formato 'X,XXX msnm' si está presente (altitude)
+- Variedad botánica (Geisha, Caturra, Castillo, Bourbon, Typica, SL28, Heirloom, etc.) (variety)
+- Proceso de beneficio (Lavado, Natural, Honey, Anaeróbico, Maceración, Thermal Shock, etc.) (process)
+- Tostador o marca de café (roaster)
+- Nivel de tueste (Claro, Medio, Oscuro) (roast_level)
+- Fecha de tueste en formato AAAA-MM-DD si es legible (roast_date)
+- Notas de cata descriptivas del tostador (roaster_notes)
+- Lista de descriptores individuales clasificados según la Rueda de Sabores SCA oficial (sca_flavor_tags: string[])
+
+Devuelve OBLIGATORIAMENTE un JSON estructurado con estas claves:
+{
+  "name": "Nombre extraído del café",
+  "producer": "Productor o Finca",
+  "origin": "País, Región",
+  "altitude": "1,900 msnm",
+  "variety": "Variedad botánica",
+  "process": "Proceso de beneficio",
+  "roaster": "Nombre del Tostador",
+  "roast_level": "Claro / Medio / Oscuro",
+  "roast_date": "AAAA-MM-DD",
+  "roaster_notes": "Notas completas del tostador",
+  "sca_flavor_tags": ["Nota 1", "Nota 2", "Nota 3"]
+}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: prompt },
+              {
+                inlineData: {
+                  mimeType: mimeType,
+                  data: cleanBase64
+                }
+              }
+            ]
+          }
+        ],
+        generationConfig
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json();
+      return res.status(response.status).json({ error: errData.error?.message || `Error con Gemini Vision (${model})` });
+    }
+
+    const data = await response.json();
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    const bagData = JSON.parse(text);
+    res.json(bagData);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al escanear la bolsa de café: ' + err.message });
+  }
+});
+
+// 4. AI Inventory Sommelier Endpoint (Recommends Peak Coffee from Freezer Tubes)
+app.post('/api/ai/sommelier', async (req, res) => {
+  const { apiKey, model, url, generationConfig } = getGeminiConfig(req);
+  if (!apiKey) {
+    return res.status(400).json({ error: 'Falta la clave API de Gemini en las cabeceras' });
+  }
+
+  const { batches, timeOfDay = 'mañana' } = req.body;
+  if (!batches || !Array.isArray(batches) || batches.length === 0) {
+    return res.status(400).json({ error: 'No hay lotes disponibles en el inventario para evaluar' });
+  }
+
+  const prompt = `Eres el Sommelier de Café de Especialidad personal de BeanTag.
+El usuario tiene estos lotes de café con dosis congeladas al vacío en su inventario:
+${JSON.stringify(batches.map(b => ({
+  id: b.id,
+  name: b.name,
+  producer: b.producer,
+  origin: b.origin,
+  variety: b.variety,
+  process: b.process,
+  altitude: b.altitude,
+  roast_level: b.roast_level,
+  roast_date: b.roast_date,
+  freeze_date: b.freeze_date,
+  remaining_doses: b.remaining_doses,
+  roaster_notes: b.roaster_notes
+})), null, 2)}
+
+Momento del día para la preparación: "${timeOfDay}".
+
+Analiza los días de reposo (degas), notas de cata y perfil aromático.
+Selecciona el mejor lote para preparar ahora mismo y genera un JSON con esta estructura:
+{
+  "recommended_batch_id": "ID del lote elegido",
+  "recommended_batch_name": "Nombre del lote elegido",
+  "badge": "Badge corto llamativo (ej: En Pico de Sabor / Día 14)",
+  "headline": "Titular barístico cautivador (máx 8 palabras)",
+  "reason": "Explicación del sommelier de por qué es el momento perfecto para este café (máx 35 palabras)",
+  "suggested_method": "V60 (Filtrado) / Espresso / AeroPress",
+  "flavor_highlight": "Perfil de sabor destacado en taza"
+}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json();
+      return res.status(response.status).json({ error: errData.error?.message || `Error con Gemini (${model})` });
+    }
+
+    const data = await response.json();
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    const sommelierResult = JSON.parse(text);
+    res.json(sommelierResult);
+  } catch (err) {
+    res.status(500).json({ error: 'Error en el sommelier IA: ' + err.message });
   }
 });
 

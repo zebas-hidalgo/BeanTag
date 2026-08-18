@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Plus, Zap, Snowflake, CheckCircle2, Mountain } from 'lucide-react';
+import { Plus, Zap, Snowflake, CheckCircle2, Mountain, Sparkles, Loader2, Compass } from 'lucide-react';
 import { RenderScaChips } from '../utils/scaIcons';
+import { apiUrl } from '../utils/api';
 
-export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
+export default function Inventory({ batches, onSelectBatch, onCreateTrigger, showToast }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFinished, setShowFinished] = useState(false);
+  const [sommelierLoading, setSommelierLoading] = useState(false);
+  const [sommelierResult, setSommelierResult] = useState(null);
 
   const safeBatches = Array.isArray(batches) ? batches : [];
 
@@ -24,10 +27,60 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
     return name.toLowerCase().includes(q) || producer.toLowerCase().includes(q) || origin.toLowerCase().includes(q);
   });
 
+  const handleAskSommelier = async () => {
+    const apiKey = localStorage.getItem('gemini-api-key');
+    if (!apiKey) {
+      if (showToast) showToast('Configura tu clave API de Gemini en Ajustes para consultar al Sommelier.', { type: 'error', duration: 4000 });
+      return;
+    }
+    if (availableBatches.length === 0) {
+      if (showToast) showToast('No hay lotes con dosis en el congelador para evaluar.', { type: 'info', duration: 3000 });
+      return;
+    }
+
+    const model = localStorage.getItem('gemini-model') || 'gemini-3.7-flash';
+    const isThinking = localStorage.getItem('gemini-thinking') === 'true';
+
+    setSommelierLoading(true);
+    setSommelierResult(null);
+
+    const now = new Date();
+    const hour = now.getHours();
+    const timeOfDay = hour < 12 ? 'mañana (buscando acidez brillante y claridad)' : (hour < 18 ? 'tarde (buscando dulzor y balance)' : 'noche (buscando cuerpo suave y relajante)');
+
+    try {
+      const res = await fetch(apiUrl('api/ai/sommelier'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-gemini-key': apiKey,
+          'x-gemini-model': model,
+          'x-gemini-thinking': isThinking ? 'true' : 'false'
+        },
+        body: JSON.stringify({
+          batches: availableBatches,
+          timeOfDay
+        })
+      });
+
+      const data = await res.json();
+      if (data.error) {
+        if (showToast) showToast(`Error del sommelier: ${data.error}`, { type: 'error', duration: 4000 });
+        return;
+      }
+      setSommelierResult(data);
+      if (showToast) showToast('¡Recomendación del Sommelier lista! ☕✨', { type: 'success', duration: 2500 });
+    } catch (err) {
+      if (showToast) showToast('Error al conectar con Gemini 3.7.', { type: 'error', duration: 3000 });
+    } finally {
+      setSommelierLoading(false);
+    }
+  };
+
   return (
     <div style={{ padding: '12px 12px 0 12px' }}>
       
-      {/* 1. Search Bar + Filter Toggle */}
+      {/* 1. Search Bar + Sommelier Button */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
         <input 
           className="candy-input" 
@@ -36,7 +89,65 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger }) {
           onChange={(e) => setSearchQuery(e.target.value)}
           style={{ flex: 1, margin: 0 }}
         />
+        {availableBatches.length > 0 && !showFinished && (
+          <button
+            type="button"
+            className="btn-candy primary"
+            onClick={handleAskSommelier}
+            disabled={sommelierLoading}
+            style={{ margin: 0, padding: '8px 12px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}
+          >
+            {sommelierLoading ? <Loader2 size={14} className="spin" /> : <Sparkles size={14} />}
+            <span>Sommelier IA</span>
+          </button>
+        )}
       </div>
+
+      {/* Sommelier Recommendation Card */}
+      {sommelierResult && !showFinished && (
+        <div className="candy-card animate-entrance" style={{ 
+          background: 'var(--bg-card)', 
+          border: '2px solid var(--color-crimson)', 
+          padding: '14px', 
+          marginBottom: '14px',
+          borderRadius: '16px',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '900', color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
+              <Compass size={14} />
+              <span>Recomendación Sommelier (Gemini 3.7)</span>
+            </div>
+            {sommelierResult.badge && (
+              <span style={{ fontSize: '9px', background: 'var(--bg-header)', border: '1px solid var(--border-color)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '6px', fontWeight: 'bold' }}>
+                {sommelierResult.badge}
+              </span>
+            )}
+          </div>
+
+          <h4 style={{ margin: '4px 0', fontSize: '14px', fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
+            ☕ {sommelierResult.recommended_batch_name}
+          </h4>
+
+          <p style={{ fontSize: '11.5px', color: 'var(--color-text-muted)', margin: '0 0 10px 0', lineHeight: 1.35 }}>
+            {sommelierResult.reason}
+          </p>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '10.5px', fontWeight: 'bold', color: 'var(--color-text)' }}>
+              Método sugerido: <strong>{sommelierResult.suggested_method}</strong>
+            </span>
+            <button
+              type="button"
+              className="btn-candy primary"
+              style={{ margin: 0, padding: '5px 10px', fontSize: '10.5px' }}
+              onClick={() => onSelectBatch(sommelierResult.recommended_batch_id)}
+            >
+              Preparar Ahora →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 2. Simple & Clean Status Tabs */}
       <div className="canvas-tab-selector" style={{ marginBottom: '14px' }}>

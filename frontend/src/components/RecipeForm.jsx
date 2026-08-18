@@ -66,10 +66,18 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
       if (showToast) showToast('Configura tu clave API de Gemini en Ajustes para usar la IA.', { type: 'error', duration: 4000 });
       return;
     }
+    const model = localStorage.getItem('gemini-model') || 'gemini-3.7-flash';
+    const isThinking = localStorage.getItem('gemini-thinking') === 'true';
+
     setAiLoading(true); setAiError(''); setAiRecommendation(null);
     fetch('api/recommend-recipe', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-gemini-key': apiKey },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-gemini-key': apiKey,
+        'x-gemini-model': model,
+        'x-gemini-thinking': isThinking ? 'true' : 'false'
+      },
       body: JSON.stringify({ origin: batch.origin, variety: batch.variety, process: batch.process, altitude: batch.altitude, roast_level: batch.roast_level, roaster_notes: batch.roaster_notes, method: method, dose_in_g: doseInG })
     }).then(async (res) => {
       if (!res.ok) throw new Error((await res.json()).error || 'Error');
@@ -89,10 +97,18 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
       if (showToast) showToast('Configura tu clave API de Gemini en Ajustes para recalibrar.', { type: 'error', duration: 4000 });
       return;
     }
+    const model = localStorage.getItem('gemini-model') || 'gemini-3.7-flash';
+    const isThinking = localStorage.getItem('gemini-thinking') === 'true';
+
     setAiLoading(true); setAiError('');
     fetch('api/ai/tune-recipe', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-gemini-key': apiKey },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-gemini-key': apiKey,
+        'x-gemini-model': model,
+        'x-gemini-thinking': isThinking ? 'true' : 'false'
+      },
       body: JSON.stringify({
         method, dose_in_g: doseInG, ratio: `1:${ratioVal}`, temperature: waterTemp,
         jmax_rot: jmaxRot, jmax_num: jmaxNum, jmax_click: jmaxClick,
