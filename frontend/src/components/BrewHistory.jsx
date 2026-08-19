@@ -3,6 +3,7 @@ import { formatLocalDateStr } from '../utils/date';
 import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw, Filter, Zap, Droplet, Coffee } from 'lucide-react';
 import { stripEmojis, RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
+import { generateRecipeCardImage } from '../utils/cardGenerator';
 
 const METHOD_ICONS = {
   'V60 (Filtrado)': `${import.meta.env.BASE_URL}icons/v60.jpg`,
@@ -87,242 +88,14 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
   };
 
   const exportRecipeAsImage = (recipe, templateOverride, includeRecipeOverride) => {
-    const currentTpl = templateOverride || shareTemplate || 'retro';
+    const currentTpl = templateOverride || shareTemplate || 'story';
     const incRecipe = includeRecipeOverride !== undefined ? includeRecipeOverride : shareIncludeRecipe;
-    setShareStatus('Generando vista previa...');
+    setShareStatus('Generando tarjeta en Ultra-HD...');
     setShareImage(null);
 
     try {
-      const canvas = document.createElement('canvas');
-      // Render at 2x resolution for ultra-sharp typography on high-DPI screens and chat apps
-      const scaleFactor = 2;
-      canvas.width = 840 * scaleFactor;
-      canvas.height = 540 * scaleFactor;
-      const ctx = canvas.getContext('2d');
-      ctx.scale(scaleFactor, scaleFactor);
-
-      const style = getComputedStyle(document.documentElement);
-      const colorAccent = style.getPropertyValue('--color-crimson').trim() || '#F94C00';
-      const colorTextDark = '#0F172A'; // High-contrast charcoal black
-      const colorTextMuted = '#334155'; // High-contrast slate
-
-      // Helpers para prevenir colisión y permitir salto de línea
-      const drawTruncatedText = (text, x, y, maxWidth) => {
-        const str = String(text || '');
-        if (!maxWidth || ctx.measureText(str).width <= maxWidth) {
-          ctx.fillText(str, x, y);
-          return;
-        }
-        let truncated = str;
-        while (truncated.length > 0 && ctx.measureText(truncated + '…').width > maxWidth) {
-          truncated = truncated.slice(0, -1);
-        }
-        ctx.fillText(truncated + '…', x, y);
-      };
-
-      const drawFittedText = (text, x, y, maxWidth, initialSize, fontName = 'Outfit', weight = '800') => {
-        const str = String(text || '');
-        let size = initialSize;
-        ctx.font = `${weight} ${size}px ${fontName}, sans-serif`;
-        while (size > 14 && ctx.measureText(str).width > maxWidth) {
-          size -= 1;
-          ctx.font = `${weight} ${size}px ${fontName}, sans-serif`;
-        }
-        if (ctx.measureText(str).width > maxWidth) {
-          drawWrappedText(str, x, y, maxWidth, size * 1.2, 2);
-        } else {
-          ctx.fillText(str, x, y);
-        }
-      };
-
-      const drawWrappedText = (text, x, y, maxWidth, lineHeight = 22, maxLines = 3) => {
-        const str = String(text || '');
-        if (!str) return 0;
-        const words = str.split(' ');
-        let line = '';
-        let currentY = y;
-        let lineCount = 0;
-
-        for (let n = 0; n < words.length; n++) {
-          const testLine = line + words[n] + ' ';
-          if (ctx.measureText(testLine).width > maxWidth && n > 0) {
-            ctx.fillText(line.trim(), x, currentY);
-            line = words[n] + ' ';
-            currentY += lineHeight;
-            lineCount++;
-            if (lineCount >= maxLines - 1) {
-              const remaining = words.slice(n).join(' ');
-              drawTruncatedText(remaining, x, currentY, maxWidth);
-              return lineCount + 1;
-            }
-          } else {
-            line = testLine;
-          }
-        }
-        ctx.fillText(line.trim(), x, currentY);
-        return lineCount + 1;
-      };
-
-      // --- PLANTILLA: TICKET DE BARISTA AUTÉNTICO (THERMAL RECEIPT - HIGH DPI) ---
-      ctx.clearRect(0, 0, 840, 540);
-
-      // Dibujar cuerpo de recibo a ancho completo (0 a 840) con cortes zig-zag superior e inferior
-      const tLeft = 0;
-      const tRight = 840;
-      const toothW = 14;
-      const toothH = 10;
-      const topY = 0;
-      const bottomY = 540;
-
-      ctx.beginPath();
-      ctx.moveTo(tLeft, topY + toothH);
-
-      // Corte zig-zag superior
-      for (let x = tLeft; x < tRight; x += toothW) {
-        ctx.lineTo(x + toothW / 2, topY);
-        ctx.lineTo(Math.min(tRight, x + toothW), topY + toothH);
-      }
-
-      // Borde derecho
-      ctx.lineTo(tRight, bottomY - toothH);
-
-      // Corte zig-zag inferior
-      for (let x = tRight; x > tLeft; x -= toothW) {
-        ctx.lineTo(x - toothW / 2, bottomY);
-        ctx.lineTo(Math.max(tLeft, x - toothW), bottomY - toothH);
-      }
-
-      // Borde izquierdo
-      ctx.lineTo(tLeft, topY + toothH);
-      ctx.closePath();
-
-      // Rellenar recibo en papel térmico cremoso
-      ctx.fillStyle = '#FAF8F5';
-      ctx.fill();
-
-      // Delinear silueta del papel cortado
-      ctx.strokeStyle = '#D1D5DB';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      // Central paper fold crease
-      ctx.save();
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(420, 15);
-      ctx.lineTo(420, 525);
-      ctx.stroke();
-      ctx.restore();
-
-      ctx.fillStyle = colorTextDark;
-      ctx.font = '800 29px "Space Grotesk", sans-serif';
-      drawTruncatedText(`RECIBO #0${recipe.id || '294'} | ${incRecipe ? 'REGISTRO DE EXTRACCIÓN' : 'FICHA TÉCNICA DE LOTE'}`, 50, 68, 740);
-
-      ctx.strokeStyle = '#94A3B8';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(50, 95); ctx.lineTo(790, 95); ctx.stroke();
-
-      // Header Table Columns
-      ctx.font = '800 18.5px "JetBrains Mono", monospace';
-      ctx.fillStyle = colorTextMuted;
-      drawTruncatedText('CANT.', 50, 125, 180);
-      drawTruncatedText('DESCRIPCIÓN', 235, 125, 350);
-      drawTruncatedText('VALOR', 595, 125, 195);
-
-      ctx.strokeStyle = '#CBD5E1';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(50, 138); ctx.lineTo(790, 138); ctx.stroke();
-
-      // Table Rows
-      ctx.font = '800 22px "JetBrains Mono", monospace';
-      ctx.fillStyle = colorTextDark;
-
-      if (incRecipe) {
-        drawTruncatedText('1x  GRANO', 50, 172, 180);
-        drawFittedText(String(recipe.batch_name || 'N/A').toUpperCase(), 235, 172, 350, 22, 'JetBrains Mono', '800');
-        drawTruncatedText(recipe.batch_roaster ? String(recipe.batch_roaster).toUpperCase() : 'SPECIALTY', 595, 172, 195);
-
-        drawTruncatedText('1x  MÉTODO', 50, 212, 180);
-        drawFittedText(String(recipe.method || 'N/A').toUpperCase(), 235, 212, 350, 22, 'JetBrains Mono', '800');
-        drawTruncatedText(`${recipe.dose_in_g ? recipe.dose_in_g + 'G' : '20G'}`, 595, 212, 195);
-
-        drawTruncatedText('1x  MOLIENDA', 50, 252, 180);
-        drawFittedText(String(recipe.grind || 'N/A').toUpperCase(), 235, 252, 350, 22, 'JetBrains Mono', '800');
-        drawTruncatedText(recipe.temperature ? String(recipe.temperature).toUpperCase() : '93°C', 595, 252, 195);
-
-        drawTruncatedText('1x  RATIO', 50, 292, 180);
-        drawFittedText(String(recipe.ratio || '1:15').toUpperCase(), 235, 292, 350, 22, 'JetBrains Mono', '800');
-        drawTruncatedText(recipe.brew_time ? String(recipe.brew_time).toUpperCase() : '2:30 MIN', 595, 292, 195);
-      } else {
-        drawTruncatedText('1x  GRANO', 50, 172, 180);
-        drawFittedText(String(recipe.batch_name || 'N/A').toUpperCase(), 235, 172, 350, 22, 'JetBrains Mono', '800');
-        drawTruncatedText(recipe.batch_roaster ? String(recipe.batch_roaster).toUpperCase() : 'TOSTADOR', 595, 172, 195);
-
-        drawTruncatedText('1x  ORIGEN', 50, 212, 180);
-        drawFittedText(String(recipe.batch_origin || 'N/A').toUpperCase(), 235, 212, 350, 22, 'JetBrains Mono', '800');
-        drawTruncatedText(recipe.batch_altitude ? String(recipe.batch_altitude).toUpperCase() : 'ALTITUD', 595, 212, 195);
-
-        drawTruncatedText('1x  PRODUCTOR', 50, 252, 180);
-        drawFittedText(String(recipe.batch_producer || 'N/A').toUpperCase(), 235, 252, 350, 22, 'JetBrains Mono', '800');
-        drawTruncatedText(recipe.batch_variety ? String(recipe.batch_variety).toUpperCase() : 'VARIEDAD', 595, 252, 195);
-
-        drawTruncatedText('1x  PROCESO', 50, 292, 180);
-        drawFittedText(String(recipe.batch_process || 'N/A').toUpperCase(), 235, 292, 350, 22, 'JetBrains Mono', '800');
-        drawTruncatedText(recipe.batch_roast_date ? String(recipe.batch_roast_date).toUpperCase() : 'TUESTE', 595, 292, 195);
-      }
-
-      ctx.strokeStyle = '#94A3B8';
-      ctx.lineWidth = 1.5;
-      ctx.save();
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath(); ctx.moveTo(50, 330); ctx.lineTo(790, 330); ctx.stroke();
-      ctx.restore();
-
-      let receiptNotes = '';
-      if (recipe.batch_roaster_notes) {
-        const notesStr = String(recipe.batch_roaster_notes);
-        if (notesStr.includes('[Notas: ') && notesStr.includes(']')) {
-          const match = notesStr.match(/\[Notas: (.*?)\]/);
-          if (match) receiptNotes = match[1].trim();
-        } else if (notesStr.includes(' | ')) {
-          receiptNotes = notesStr.split(' | ')[0].trim();
-        } else {
-          receiptNotes = notesStr.trim();
-        }
-      }
-      if (!receiptNotes) receiptNotes = recipe.notes || 'ESPECIALIDAD';
-      receiptNotes = stripEmojis(receiptNotes);
-
-      // J-Max Microns calculation
-      const micronsVal = parseGrindToMicrons(recipe.grind);
-      const grindMicronsText = micronsVal ? `J-MAX (${micronsVal} µm)` : (recipe.grind || 'MEDIO');
-
-      ctx.font = '800 20px "JetBrains Mono", monospace';
-      ctx.fillStyle = colorTextDark;
-      drawTruncatedText(`NOTAS: ..... ${String(receiptNotes).toUpperCase()}`, 50, 355, 520);
-      
-      const sensorySummary = `TAZA: ...... ${recipe.sensory_balance || 'DULCE'} • ${recipe.sensory_body || 'MEDIO'} • ${recipe.sensory_extraction || 'EN PUNTO ✨'}`;
-      drawTruncatedText(sensorySummary.toUpperCase(), 50, 385, 520);
-
-      const receiptDate = new Date(recipe.created_at || Date.now()).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-      drawTruncatedText(`FECHA: ..... ${receiptDate.toUpperCase()}`, 50, 415, 520);
-
-      // Código de Barras Térmico Realista de Recibo POS
-      ctx.fillStyle = colorTextDark;
-      const barPattern = [3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 4, 1, 2, 3, 1, 4, 2, 1, 3, 2, 4, 1, 3, 1, 2, 4, 2, 3, 1, 4];
-      let curBarX = 50;
-      barPattern.forEach((w, i) => {
-        if (i % 2 === 0) {
-          ctx.fillRect(curBarX, 442, w * 2.2, 34);
-        }
-        curBarX += (w * 2.2) + 2.5;
-      });
-      ctx.font = '700 13px "JetBrains Mono", monospace';
-      ctx.fillStyle = colorTextMuted;
-      ctx.fillText(`* 0 2 9 4 - B E A N T A G - ${recipe.id || '88'} • ${grindMicronsText} *`, 50, 492);
-
-      const dataUrl = canvas.toDataURL('image/png');
+      // Use Ultra-HD canvas engine
+      const dataUrl = generateRecipeCardImage(recipe, currentTpl, incRecipe);
       setShareImage(dataUrl);
       setShareStatus('✅ Tarjeta generada con éxito');
     } catch (err) {
@@ -796,43 +569,41 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
               flexDirection: 'column',
               gap: '6px'
             }}>
-              {/* Formato de Plantilla UI Pro Max Tab Selector */}
+              {/* Formato de Plantilla Canvas Ultra-HD */}
               <div style={{ marginTop: '12px' }}>
                 <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>
-                  Estilo de Tarjeta Canvas:
+                  Formato de Exportación Ultra-HD:
                 </span>
                 <div className="canvas-tab-selector">
                   <button
                     type="button"
-                    className={`canvas-tab-btn ${shareIncludeRecipe && shareTemplate === 'receipt' ? 'active' : ''}`}
+                    className={`canvas-tab-btn ${shareTemplate === 'story' ? 'active' : ''}`}
                     onClick={() => {
-                      setShareIncludeRecipe(true);
-                      setShareTemplate('receipt');
-                      exportRecipeAsImage(selectedRecipe, 'receipt', true);
+                      setShareTemplate('story');
+                      exportRecipeAsImage(selectedRecipe, 'story', true);
+                    }}
+                  >
+                    📱 Story (9:16)
+                  </button>
+                  <button
+                    type="button"
+                    className={`canvas-tab-btn ${shareTemplate === 'ticket' ? 'active' : ''}`}
+                    onClick={() => {
+                      setShareTemplate('ticket');
+                      exportRecipeAsImage(selectedRecipe, 'ticket', true);
                     }}
                   >
                     🧾 Ticket POS
                   </button>
                   <button
                     type="button"
-                    className={`canvas-tab-btn ${shareIncludeRecipe && shareTemplate !== 'receipt' ? 'active' : ''}`}
+                    className={`canvas-tab-btn ${shareTemplate === 'bento' ? 'active' : ''}`}
                     onClick={() => {
-                      setShareIncludeRecipe(true);
-                      setShareTemplate('retro');
-                      exportRecipeAsImage(selectedRecipe, 'retro', true);
+                      setShareTemplate('bento');
+                      exportRecipeAsImage(selectedRecipe, 'bento', true);
                     }}
                   >
-                    📜 Editorial
-                  </button>
-                  <button
-                    type="button"
-                    className={`canvas-tab-btn ${!shareIncludeRecipe ? 'active' : ''}`}
-                    onClick={() => {
-                      setShareIncludeRecipe(false);
-                      exportRecipeAsImage(selectedRecipe, shareTemplate, false);
-                    }}
-                  >
-                    🌾 Solo Grano
+                    🏷️ Bento (1:1)
                   </button>
                 </div>
               </div>
@@ -844,9 +615,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
                   <Trash2 size={12} strokeWidth={2.5} />
                   Eliminar
                 </button>
-                <button type="button" className="btn-candy" style={{ padding: '8px 10px', margin: 0, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => exportRecipeAsImage(selectedRecipe)}>
+                <button type="button" className="btn-candy" style={{ padding: '8px 10px', margin: 0, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => exportRecipeAsImage(selectedRecipe, shareTemplate)}>
                   <ImageIcon size={12} strokeWidth={2.5} />
-                  Compartir (IG)
+                  Exportar Tarjeta
                 </button>
                 <button type="button" className="btn-candy primary" style={{ padding: '8px 10px', margin: 0, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => setSelectedRecipe(null)}>
                   Cerrar
@@ -857,79 +628,99 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         </div>
       )}
 
-      {/* Vista Previa de Compartir Imagen */}
+      {/* Vista Previa de Compartir Imagen Ultra-HD */}
       {shareImage && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(26, 5, 5, 0.7)',
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
           zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '16px', boxSizing: 'border-box'
+          padding: '12px', boxSizing: 'border-box'
         }} onClick={() => { setShareImage(null); setShareStatus(''); }}>
           <div className="candy-card static" style={{
-            maxWidth: '380px', width: '100%',
-            padding: '18px', boxSizing: 'border-box',
-            boxShadow: '8px 8px 0px var(--border-color)',
+            maxWidth: '440px', width: '100%',
+            padding: '16px', boxSizing: 'border-box',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
             animation: 'soft-pop 250ms var(--transition-spring)',
-            display: 'flex', flexDirection: 'column', gap: '12px'
+            display: 'flex', flexDirection: 'column', gap: '10px',
+            maxHeight: '94vh', overflowY: 'auto'
           }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', textTransform: 'uppercase', margin: 0 }}>
-              📸 Tarjeta Lista para Compartir
-            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0 }}>
+                📸 Tarjeta Ultra-HD Lista
+              </h3>
+              {/* Quick Format Switcher in Modal */}
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button 
+                  type="button" 
+                  onClick={() => { setShareTemplate('story'); exportRecipeAsImage(selectedRecipe, 'story'); }}
+                  style={{ padding: '3px 6px', fontSize: '9.5px', borderRadius: '4px', border: shareTemplate === 'story' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareTemplate === 'story' ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  9:16
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => { setShareTemplate('ticket'); exportRecipeAsImage(selectedRecipe, 'ticket'); }}
+                  style={{ padding: '3px 6px', fontSize: '9.5px', borderRadius: '4px', border: shareTemplate === 'ticket' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareTemplate === 'ticket' ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Ticket
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => { setShareTemplate('bento'); exportRecipeAsImage(selectedRecipe, 'bento'); }}
+                  style={{ padding: '3px 6px', fontSize: '9.5px', borderRadius: '4px', border: shareTemplate === 'bento' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareTemplate === 'bento' ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  1:1
+                </button>
+              </div>
+            </div>
 
-            <img 
-              src={shareImage} 
-              alt="Receta de café" 
-              style={{
-                width: '100%', 
-                border: '3px solid #000000', 
-                borderRadius: '4px', 
-                boxShadow: '4px 4px 0px #000000',
-                display: 'block'
-              }} 
-            />
+            <div style={{ textAlign: 'center', backgroundColor: '#000000', borderRadius: '8px', padding: '4px', overflow: 'hidden' }}>
+              <img 
+                src={shareImage} 
+                alt="Receta de café Ultra-HD" 
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '58vh',
+                  objectFit: 'contain',
+                  borderRadius: '4px', 
+                  display: 'inline-block'
+                }} 
+              />
+            </div>
             
             {shareStatus && (
               <div style={{
                 background: shareStatus.includes('❌') ? '#FED7D7' : (shareStatus.includes('✅') || shareStatus.includes('📋') || shareStatus.includes('📥')) ? '#C6F6D5' : '#FEFCBF',
                 color: shareStatus.includes('❌') ? '#9B2C2C' : (shareStatus.includes('✅') || shareStatus.includes('📋') || shareStatus.includes('📥')) ? '#22543D' : '#744210',
-                border: '3px solid #000000',
-                borderRadius: '4px',
-                padding: '10px',
-                fontSize: '12px',
+                border: '1.5px solid var(--border-color)',
+                borderRadius: '6px',
+                padding: '6px 10px',
+                fontSize: '11px',
                 fontWeight: 'bold',
                 textAlign: 'center',
-                boxShadow: '3px 3px 0px #000000',
-                margin: '8px 0',
-                fontFamily: 'var(--font-heading)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px'
+                fontFamily: 'var(--font-heading)'
               }}>
                 {shareStatus}
               </div>
             )}
 
-            <p style={{ fontSize: '11px', margin: 0, lineHeight: '1.4', color: 'var(--color-text-muted)', textAlign: 'center' }}>
-              💡 <strong>Celular:</strong> Si el botón de abajo no responde, mantén presionada la imagen para guardarla en Fotos.<br/>
-              💻 <strong>PC:</strong> Clic derecho y "Guardar imagen como...".
-            </p>
-
-            <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
               <button 
                 type="button" 
                 className="btn-candy primary" 
-                style={{ flex: 1, padding: '10px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} 
+                style={{ flex: 1, padding: '9px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px' }} 
                 onClick={handleNativeShare}
               >
-                <Share2 size={16} strokeWidth={2.5} />
-                Compartir / Descargar
+                <Share2 size={15} strokeWidth={2.5} />
+                Compartir / Guardar PNG
               </button>
               <button 
                 type="button" 
                 className="btn-candy" 
-                style={{ padding: '10px 16px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} 
+                style={{ padding: '9px 14px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px' }} 
                 onClick={() => setShareImage(null)}
               >
-                <X size={16} strokeWidth={2.5} />
+                <X size={15} strokeWidth={2.5} />
                 Cerrar
               </button>
             </div>

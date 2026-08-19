@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
+import { generateRecipeCardImage } from '../utils/cardGenerator';
 import ScaRadarChart from './ScaRadarChart';
 import DialInAssistant from './DialInAssistant';
 
@@ -88,6 +89,90 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
   const [calcDose, setCalcDose] = useState(15.0);
   const [calcRatio, setCalcRatio] = useState(16.0);
   const [calcWater, setCalcWater] = useState(240);
+
+  // Share / Export Card States
+  const [shareImage, setShareImage] = useState(null);
+  const [shareTemplate, setShareTemplate] = useState('story');
+  const [shareStatus, setShareStatus] = useState('');
+
+  const handleShareBatchCard = (templateOverride) => {
+    if (!batch) return;
+    const tpl = templateOverride || shareTemplate || 'story';
+    setShareStatus('Generando tarjeta en Ultra-HD...');
+    
+    // Construct fake/latest recipe object from batch info and current form state
+    const syntheticRecipe = {
+      id: batch.id,
+      batch_name: batch.name,
+      batch_roaster: batch.roaster,
+      batch_producer: batch.producer,
+      batch_origin: batch.origin,
+      batch_altitude: batch.altitude,
+      batch_variety: batch.variety,
+      batch_process: batch.process,
+      batch_roaster_notes: batch.roaster_notes,
+      method: method || 'V60 (Filtrado)',
+      dose_in_g: doseIn,
+      ratio: `1:${ratioVal}`,
+      grind: getGrindString(),
+      temperature: `${temperature}°C`,
+      brew_time: brewTime || '2:30 min',
+      sensory_balance: sensoryBalance,
+      sensory_body: sensoryBody,
+      sensory_extraction: sensoryExtraction,
+      notes: notes,
+      created_at: new Date().toISOString()
+    };
+
+    try {
+      const dataUrl = generateRecipeCardImage(syntheticRecipe, tpl, true);
+      setShareImage(dataUrl);
+      setShareStatus('✅ Tarjeta generada con éxito');
+    } catch (err) {
+      console.error("Card generation error:", err);
+      setShareStatus('❌ Error: ' + err.message);
+    }
+  };
+
+  const handleNativeShare = async () => {
+    if (!shareImage || !batch) return;
+    setShareStatus('Compartiendo...');
+
+    try {
+      const byteCharacters = atob(shareImage.split(',')[1]);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'image/png' });
+      const filename = `${batch.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}_ficha.png`;
+      const file = new File([blob], filename, { type: 'image/png' });
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `Ficha de ${batch.name}`,
+          text: `Ficha de café de especialidad BeanTag: ${batch.name}`
+        });
+        setShareStatus('✅ Compartido con éxito');
+      } else {
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = shareImage;
+        link.click();
+        setShareStatus('📥 Imagen descargada');
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        const link = document.createElement('a');
+        link.download = `${batch.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}_ficha.png`;
+        link.href = shareImage;
+        link.click();
+        setShareStatus('📥 Imagen descargada');
+      }
+    }
+  };
 
   // AI Recommendation States
   const [aiLoading, setAiLoading] = useState(false);
@@ -491,6 +576,10 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
           Volver
         </button>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button className="btn-candy" onClick={() => handleShareBatchCard('story')} style={{ padding: '6px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', margin: 0 }}>
+            <Share2 size={13} strokeWidth={2.5} />
+            Compartir Ficha
+          </button>
           <button className="btn-candy" onClick={() => onEditBatch(batch)} style={{ padding: '6px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', margin: 0 }}>
             <Edit2 size={13} />
             Editar
@@ -1176,6 +1265,106 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
                 onClick={handleWriteNfc}
               >
                 Copiar URL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Compartir Ficha Ultra-HD */}
+      {shareImage && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '12px', boxSizing: 'border-box'
+        }} onClick={() => { setShareImage(null); setShareStatus(''); }}>
+          <div className="candy-card static" style={{
+            maxWidth: '440px', width: '100%',
+            padding: '16px', boxSizing: 'border-box',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
+            animation: 'soft-pop 250ms var(--transition-spring)',
+            display: 'flex', flexDirection: 'column', gap: '10px',
+            maxHeight: '94vh', overflowY: 'auto'
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0 }}>
+                📸 Ficha Ultra-HD de {batch?.name}
+              </h3>
+              {/* Quick Format Switcher */}
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button 
+                  type="button" 
+                  onClick={() => { setShareTemplate('story'); handleShareBatchCard('story'); }}
+                  style={{ padding: '3px 6px', fontSize: '9.5px', borderRadius: '4px', border: shareTemplate === 'story' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareTemplate === 'story' ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  9:16
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => { setShareTemplate('ticket'); handleShareBatchCard('ticket'); }}
+                  style={{ padding: '3px 6px', fontSize: '9.5px', borderRadius: '4px', border: shareTemplate === 'ticket' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareTemplate === 'ticket' ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Ticket
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => { setShareTemplate('bento'); handleShareBatchCard('bento'); }}
+                  style={{ padding: '3px 6px', fontSize: '9.5px', borderRadius: '4px', border: shareTemplate === 'bento' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareTemplate === 'bento' ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  1:1
+                </button>
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'center', backgroundColor: '#000000', borderRadius: '8px', padding: '4px', overflow: 'hidden' }}>
+              <img 
+                src={shareImage} 
+                alt="Ficha de café Ultra-HD" 
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '58vh',
+                  objectFit: 'contain',
+                  borderRadius: '4px', 
+                  display: 'inline-block'
+                }} 
+              />
+            </div>
+            
+            {shareStatus && (
+              <div style={{
+                background: shareStatus.includes('❌') ? '#FED7D7' : (shareStatus.includes('✅') || shareStatus.includes('📋') || shareStatus.includes('📥')) ? '#C6F6D5' : '#FEFCBF',
+                color: shareStatus.includes('❌') ? '#9B2C2C' : (shareStatus.includes('✅') || shareStatus.includes('📋') || shareStatus.includes('📥')) ? '#22543D' : '#744210',
+                border: '1.5px solid var(--border-color)',
+                borderRadius: '6px',
+                padding: '6px 10px',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                fontFamily: 'var(--font-heading)'
+              }}>
+                {shareStatus}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
+              <button 
+                type="button" 
+                className="btn-candy primary" 
+                style={{ flex: 1, padding: '9px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px' }} 
+                onClick={handleNativeShare}
+              >
+                <Share2 size={15} strokeWidth={2.5} />
+                Compartir / Guardar PNG
+              </button>
+              <button 
+                type="button" 
+                className="btn-candy" 
+                style={{ padding: '9px 14px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px' }} 
+                onClick={() => setShareImage(null)}
+              >
+                <X size={15} strokeWidth={2.5} />
+                Cerrar
               </button>
             </div>
           </div>
