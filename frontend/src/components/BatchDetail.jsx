@@ -92,15 +92,14 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
 
   // Share / Export Card States
   const [shareImage, setShareImage] = useState(null);
-  const [shareTemplate, setShareTemplate] = useState('story');
+  const [shareIncludeRecipe, setShareIncludeRecipe] = useState(false); // Default to bean-only for batch detail
   const [shareStatus, setShareStatus] = useState('');
 
-  const handleShareBatchCard = (templateOverride) => {
+  const handleShareBatchCard = (incRecipe = shareIncludeRecipe) => {
     if (!batch) return;
-    const tpl = templateOverride || shareTemplate || 'story';
-    setShareStatus('Generando tarjeta en Ultra-HD...');
+    setShareStatus('Generando ticket POS...');
     
-    // Construct fake/latest recipe object from batch info and current form state
+    // Construct recipe/batch object
     const syntheticRecipe = {
       id: batch.id,
       batch_name: batch.name,
@@ -110,6 +109,7 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
       batch_altitude: batch.altitude,
       batch_variety: batch.variety,
       batch_process: batch.process,
+      batch_roast_date: batch.roast_date,
       batch_roaster_notes: batch.roaster_notes,
       method: method || 'V60 (Filtrado)',
       dose_in_g: doseIn,
@@ -125,9 +125,9 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
     };
 
     try {
-      const dataUrl = generateRecipeCardImage(syntheticRecipe, tpl, true);
+      const dataUrl = generateRecipeCardImage(syntheticRecipe, 'receipt', incRecipe);
       setShareImage(dataUrl);
-      setShareStatus('✅ Tarjeta generada con éxito');
+      setShareStatus('✅ Ticket generado con éxito');
     } catch (err) {
       console.error("Card generation error:", err);
       setShareStatus('❌ Error: ' + err.message);
@@ -1271,7 +1271,7 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
         </div>
       )}
 
-      {/* Modal de Compartir Ficha Ultra-HD */}
+      {/* Modal de Compartir Ticket POS */}
       {shareImage && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -1280,53 +1280,45 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
           padding: '12px', boxSizing: 'border-box'
         }} onClick={() => { setShareImage(null); setShareStatus(''); }}>
           <div className="candy-card static" style={{
-            maxWidth: '440px', width: '100%',
+            maxWidth: '480px', width: '100%',
             padding: '16px', boxSizing: 'border-box',
             boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
             animation: 'soft-pop 250ms var(--transition-spring)',
-            display: 'flex', flexDirection: 'column', gap: '10px',
-            maxHeight: '94vh', overflowY: 'auto'
+            display: 'flex', flexDirection: 'column', gap: '10px'
           }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0 }}>
-                📸 Ficha Ultra-HD de {batch?.name}
+                🧾 Ticket POS • {batch?.name}
               </h3>
-              {/* Quick Format Switcher */}
+              {/* Quick Toggle in Modal */}
               <div style={{ display: 'flex', gap: '4px' }}>
                 <button 
                   type="button" 
-                  onClick={() => { setShareTemplate('story'); handleShareBatchCard('story'); }}
-                  style={{ padding: '3px 6px', fontSize: '9.5px', borderRadius: '4px', border: shareTemplate === 'story' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareTemplate === 'story' ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                  onClick={() => { setShareIncludeRecipe(false); handleShareBatchCard(false); }}
+                  style={{ padding: '3px 7px', fontSize: '10px', borderRadius: '4px', border: !shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
                 >
-                  9:16
+                  Solo Grano
                 </button>
                 <button 
                   type="button" 
-                  onClick={() => { setShareTemplate('ticket'); handleShareBatchCard('ticket'); }}
-                  style={{ padding: '3px 6px', fontSize: '9.5px', borderRadius: '4px', border: shareTemplate === 'ticket' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareTemplate === 'ticket' ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                  onClick={() => { setShareIncludeRecipe(true); handleShareBatchCard(true); }}
+                  style={{ padding: '3px 7px', fontSize: '10px', borderRadius: '4px', border: shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
                 >
-                  Ticket
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => { setShareTemplate('bento'); handleShareBatchCard('bento'); }}
-                  style={{ padding: '3px 6px', fontSize: '9.5px', borderRadius: '4px', border: shareTemplate === 'bento' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareTemplate === 'bento' ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
-                >
-                  1:1
+                  Con Receta
                 </button>
               </div>
             </div>
 
-            <div style={{ textAlign: 'center', backgroundColor: '#000000', borderRadius: '8px', padding: '4px', overflow: 'hidden' }}>
+            <div style={{ textAlign: 'center', backgroundColor: '#E2E8F0', borderRadius: '8px', padding: '6px', overflow: 'hidden' }}>
               <img 
                 src={shareImage} 
-                alt="Ficha de café Ultra-HD" 
+                alt="Ticket de café POS" 
                 style={{
                   maxWidth: '100%',
-                  maxHeight: '58vh',
-                  objectFit: 'contain',
-                  borderRadius: '4px', 
-                  display: 'inline-block'
+                  height: 'auto',
+                  borderRadius: '2px', 
+                  display: 'block',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
                 }} 
               />
             </div>

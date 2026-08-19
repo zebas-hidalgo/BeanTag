@@ -569,41 +569,31 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
               flexDirection: 'column',
               gap: '6px'
             }}>
-              {/* Formato de Plantilla Canvas Ultra-HD */}
+              {/* Opciones del Ticket POS */}
               <div style={{ marginTop: '12px' }}>
                 <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>
-                  Formato de Exportación Ultra-HD:
+                  Contenido del Ticket POS:
                 </span>
                 <div className="canvas-tab-selector">
                   <button
                     type="button"
-                    className={`canvas-tab-btn ${shareTemplate === 'story' ? 'active' : ''}`}
+                    className={`canvas-tab-btn ${shareIncludeRecipe ? 'active' : ''}`}
                     onClick={() => {
-                      setShareTemplate('story');
-                      exportRecipeAsImage(selectedRecipe, 'story', true);
+                      setShareIncludeRecipe(true);
+                      exportRecipeAsImage(selectedRecipe, 'receipt', true);
                     }}
                   >
-                    📱 Story (9:16)
+                    🧾 Con Receta (Extracción)
                   </button>
                   <button
                     type="button"
-                    className={`canvas-tab-btn ${shareTemplate === 'ticket' ? 'active' : ''}`}
+                    className={`canvas-tab-btn ${!shareIncludeRecipe ? 'active' : ''}`}
                     onClick={() => {
-                      setShareTemplate('ticket');
-                      exportRecipeAsImage(selectedRecipe, 'ticket', true);
+                      setShareIncludeRecipe(false);
+                      exportRecipeAsImage(selectedRecipe, 'receipt', false);
                     }}
                   >
-                    🧾 Ticket POS
-                  </button>
-                  <button
-                    type="button"
-                    className={`canvas-tab-btn ${shareTemplate === 'bento' ? 'active' : ''}`}
-                    onClick={() => {
-                      setShareTemplate('bento');
-                      exportRecipeAsImage(selectedRecipe, 'bento', true);
-                    }}
-                  >
-                    🏷️ Bento (1:1)
+                    🌾 Solo Grano (Ficha Café)
                   </button>
                 </div>
               </div>
@@ -615,9 +605,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
                   <Trash2 size={12} strokeWidth={2.5} />
                   Eliminar
                 </button>
-                <button type="button" className="btn-candy" style={{ padding: '8px 10px', margin: 0, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => exportRecipeAsImage(selectedRecipe, shareTemplate)}>
+                <button type="button" className="btn-candy" style={{ padding: '8px 10px', margin: 0, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => exportRecipeAsImage(selectedRecipe, 'receipt', shareIncludeRecipe)}>
                   <ImageIcon size={12} strokeWidth={2.5} />
-                  Exportar Tarjeta
+                  Exportar Ticket
                 </button>
                 <button type="button" className="btn-candy primary" style={{ padding: '8px 10px', margin: 0, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => setSelectedRecipe(null)}>
                   Cerrar
@@ -628,7 +618,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         </div>
       )}
 
-      {/* Vista Previa de Compartir Imagen Ultra-HD */}
+      {/* Vista Previa de Compartir Ticket POS */}
       {shareImage && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -637,53 +627,45 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
           padding: '12px', boxSizing: 'border-box'
         }} onClick={() => { setShareImage(null); setShareStatus(''); }}>
           <div className="candy-card static" style={{
-            maxWidth: '440px', width: '100%',
+            maxWidth: '480px', width: '100%',
             padding: '16px', boxSizing: 'border-box',
             boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
             animation: 'soft-pop 250ms var(--transition-spring)',
-            display: 'flex', flexDirection: 'column', gap: '10px',
-            maxHeight: '94vh', overflowY: 'auto'
+            display: 'flex', flexDirection: 'column', gap: '10px'
           }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0 }}>
-                📸 Tarjeta Ultra-HD Lista
+                🧾 Ticket POS Barista
               </h3>
-              {/* Quick Format Switcher in Modal */}
+              {/* Quick Toggle in Modal */}
               <div style={{ display: 'flex', gap: '4px' }}>
                 <button 
                   type="button" 
-                  onClick={() => { setShareTemplate('story'); exportRecipeAsImage(selectedRecipe, 'story'); }}
-                  style={{ padding: '3px 6px', fontSize: '9.5px', borderRadius: '4px', border: shareTemplate === 'story' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareTemplate === 'story' ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                  onClick={() => { setShareIncludeRecipe(true); exportRecipeAsImage(selectedRecipe, 'receipt', true); }}
+                  style={{ padding: '3px 7px', fontSize: '10px', borderRadius: '4px', border: shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
                 >
-                  9:16
+                  Con Receta
                 </button>
                 <button 
                   type="button" 
-                  onClick={() => { setShareTemplate('ticket'); exportRecipeAsImage(selectedRecipe, 'ticket'); }}
-                  style={{ padding: '3px 6px', fontSize: '9.5px', borderRadius: '4px', border: shareTemplate === 'ticket' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareTemplate === 'ticket' ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                  onClick={() => { setShareIncludeRecipe(false); exportRecipeAsImage(selectedRecipe, 'receipt', false); }}
+                  style={{ padding: '3px 7px', fontSize: '10px', borderRadius: '4px', border: !shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
                 >
-                  Ticket
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => { setShareTemplate('bento'); exportRecipeAsImage(selectedRecipe, 'bento'); }}
-                  style={{ padding: '3px 6px', fontSize: '9.5px', borderRadius: '4px', border: shareTemplate === 'bento' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareTemplate === 'bento' ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
-                >
-                  1:1
+                  Solo Grano
                 </button>
               </div>
             </div>
 
-            <div style={{ textAlign: 'center', backgroundColor: '#000000', borderRadius: '8px', padding: '4px', overflow: 'hidden' }}>
+            <div style={{ textAlign: 'center', backgroundColor: '#E2E8F0', borderRadius: '8px', padding: '6px', overflow: 'hidden' }}>
               <img 
                 src={shareImage} 
-                alt="Receta de café Ultra-HD" 
+                alt="Ticket de café POS" 
                 style={{
                   maxWidth: '100%',
-                  maxHeight: '58vh',
-                  objectFit: 'contain',
-                  borderRadius: '4px', 
-                  display: 'inline-block'
+                  height: 'auto',
+                  borderRadius: '2px', 
+                  display: 'block',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
                 }} 
               />
             </div>
