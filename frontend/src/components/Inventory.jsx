@@ -207,7 +207,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, sho
         </div>
       ) : (
 
-        /* 4. PERFECTLY ALIGNED BENTO CARDS LIST */
+        /* 4. PERFECTLY ALIGNED UNIFORM BENTO CARDS LIST */
         filteredBatches.map(batch => {
           const isLowStock = batch.remaining_doses <= 2 && batch.remaining_doses > 0;
           const hasRecipes = batch.recipes && batch.recipes.length > 0;
@@ -223,80 +223,126 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, sho
               key={batch.id} 
               className={`candy-card ${isLowStock ? 'low-stock' : ''}`}
               onClick={() => onSelectBatch(batch.id)}
-              style={{ marginBottom: '14px', padding: '16px', borderRadius: '14px' }}
+              style={{ 
+                marginBottom: '14px', 
+                padding: '16px', 
+                borderRadius: '14px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                minHeight: '215px',
+                boxSizing: 'border-box'
+              }}
             >
-              {/* Perfectly Aligned Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', marginBottom: '10px' }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <h3 className="card-title" style={{ margin: '0 0 4px 0', fontSize: '16px', lineHeight: 1.25, wordBreak: 'break-word' }}>
+              {/* Top Segment: Title, Origin, Producer, Altitude */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '4px' }}>
+                  <h3 className="card-title" style={{ margin: 0, fontSize: '16px', lineHeight: 1.25, flex: 1, wordBreak: 'break-word' }}>
                     {batch.name}
                   </h3>
-                  <p className="card-sub" style={{ margin: '0 0 6px 0', fontSize: '12px' }}>
-                    {batch.producer} {batch.variety ? `• ${batch.variety}` : ''}
-                  </p>
-                  <RenderScaChips notesStr={batch.roaster_notes} maxChips={3} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
-                  <span className="mono-lbl-tag" style={{ fontSize: '11px', padding: '3px 7px' }}>
+                  <span className="mono-lbl-tag" style={{ fontSize: '10.5px', padding: '3px 7px', flexShrink: 0 }}>
                     {batch.origin || 'N/A'}
                   </span>
-                  {batch.altitude && (
-                    <span style={{ fontSize: '10.5px', color: 'var(--color-crimson)', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <p className="card-sub" style={{ margin: 0, fontSize: '11.5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                    {batch.producer || 'Origen Finca'} {batch.variety ? `• ${batch.variety}` : ''}
+                  </p>
+                  {batch.altitude ? (
+                    <span style={{ fontSize: '10.5px', color: 'var(--color-crimson)', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
                       <Mountain size={11} /> {batch.altitude}
                     </span>
-                  )}
-                  {isLowStock && (
-                    <span className="mono-lbl-tag low-stock" style={{ fontSize: '9.5px', padding: '2px 6px' }}>
+                  ) : isLowStock ? (
+                    <span className="mono-lbl-tag low-stock" style={{ fontSize: '9px', padding: '2px 5px', flexShrink: 0 }}>
                       ¡Últimos tubos!
                     </span>
+                  ) : null}
+                </div>
+
+                {/* Flavor Notes Slot (Standardized height) */}
+                <div style={{ minHeight: '26px', display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                  {batch.roaster_notes ? (
+                    <RenderScaChips notesStr={batch.roaster_notes} maxChips={3} />
+                  ) : (
+                    <span style={{ fontSize: '10.5px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
+                      Café de Especialidad
+                    </span>
                   )}
-                </div>
-              </div>
-              
-              {/* Liquid Weight Progress Bar */}
-              <div className="weight-progress-container" style={{ margin: '10px 0 8px 0' }}>
-                <div className="weight-progress-header" style={{ marginBottom: '4px' }}>
-                  <span style={{ fontSize: '10px', fontWeight: '800' }}>STOCK CONGELADOR</span>
-                  <span style={{ fontSize: '10.5px', fontWeight: '800', fontFamily: 'var(--font-mono)' }}>
-                    {batch.remaining_doses} Tubos ({currentWeight}g / {totalWeight}g)
-                  </span>
-                </div>
-                <div className="weight-progress-track">
-                  <div className={`weight-progress-fill ${fillClass}`} style={{ width: `${weightPct}%` }} />
                 </div>
               </div>
 
-              {/* Quick Repeat Recipe Button */}
-              {hasRecipes && (() => {
-                const r = batch.recipes[0];
-                const methodLabel = (r.method || 'V60').replace(' (Filtrado)', '');
-                const doseLabel = (r.dose_in_g !== null && r.dose_in_g !== undefined) ? r.dose_in_g : (parseFloat(batch.dose_weight) || 18);
-                const ratioLabel = r.ratio ? r.ratio.split(' ')[0] : '1:15';
-                return (
+              {/* Bottom Segment: Stock Bar + Unified Action Button */}
+              <div>
+                {/* Liquid Weight Progress Bar */}
+                <div className="weight-progress-container" style={{ margin: '0 0 10px 0' }}>
+                  <div className="weight-progress-header" style={{ marginBottom: '4px' }}>
+                    <span style={{ fontSize: '9.5px', fontWeight: '800' }}>STOCK CONGELADOR</span>
+                    <span style={{ fontSize: '10.5px', fontWeight: '800', fontFamily: 'var(--font-mono)' }}>
+                      {batch.remaining_doses} Tubos ({currentWeight}g / {totalWeight}g)
+                    </span>
+                  </div>
+                  <div className="weight-progress-track">
+                    <div className={`weight-progress-fill ${fillClass}`} style={{ width: `${weightPct}%` }} />
+                  </div>
+                </div>
+
+                {/* Unified Action Button - Every card has an identical height action button */}
+                {hasRecipes ? (() => {
+                  const r = batch.recipes[0];
+                  const methodLabel = (r.method || 'V60').replace(' (Filtrado)', '');
+                  const doseLabel = (r.dose_in_g !== null && r.dose_in_g !== undefined) ? r.dose_in_g : (parseFloat(batch.dose_weight) || 18);
+                  const ratioLabel = r.ratio ? r.ratio.split(' ')[0] : '1:15';
+                  return (
+                    <button 
+                      type="button" 
+                      className="btn-candy primary" 
+                      style={{ 
+                        width: '100%', 
+                        minHeight: '38px',
+                        fontSize: '11.5px', 
+                        padding: '9px 12px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        gap: '6px',
+                        fontWeight: '800',
+                        margin: 0
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectBatch(batch, { prefillRecipe: r });
+                      }}
+                    >
+                      <Zap size={14} strokeWidth={2.5} />
+                      <span>⚡ Repetir Receta ({methodLabel} • {doseLabel}g • {ratioLabel})</span>
+                    </button>
+                  );
+                })() : (
                   <button 
                     type="button" 
-                    className="btn-candy primary" 
+                    className="btn-candy" 
                     style={{ 
-                      marginTop: '10px', 
                       width: '100%', 
+                      minHeight: '38px',
                       fontSize: '11.5px', 
                       padding: '9px 12px', 
                       display: 'flex', 
                       alignItems: 'center', 
                       justifyContent: 'center', 
                       gap: '6px',
-                      fontWeight: '800'
+                      fontWeight: '700',
+                      margin: 0
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onSelectBatch(batch, { prefillRecipe: r });
+                      onSelectBatch(batch.id);
                     }}
                   >
-                    <Zap size={14} strokeWidth={2.5} />
-                    <span>⚡ Repetir Receta ({methodLabel} • {doseLabel}g • {ratioLabel})</span>
+                    <span>☕ Ver Ficha & Preparar →</span>
                   </button>
-                );
-              })()}
+                )}
+              </div>
             </div>
           );
         })
