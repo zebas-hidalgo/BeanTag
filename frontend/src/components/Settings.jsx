@@ -313,11 +313,11 @@ export default function Settings({ theme, setTheme, showToast }) {
               textAlign: 'center',
               display: 'flex',
               flexDirection: 'column',
-              gap: '2px'
+              gap: '3px'
             }}
           >
-            <strong style={{ fontSize: '11px' }}>1Zpresso J-Max</strong>
-            <span style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>8.8 µm / clic</span>
+            <strong style={{ fontSize: '11.5px' }}>1Zpresso J-Max</strong>
+            <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>8.8 µm / clic</span>
           </button>
 
           <button
@@ -333,11 +333,11 @@ export default function Settings({ theme, setTheme, showToast }) {
               textAlign: 'center',
               display: 'flex',
               flexDirection: 'column',
-              gap: '2px'
+              gap: '3px'
             }}
           >
-            <strong style={{ fontSize: '11px' }}>Femobook A2</strong>
-            <span style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>18 µm • 40 c/rot</span>
+            <strong style={{ fontSize: '11.5px' }}>Femobook A2</strong>
+            <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>18 µm • 40 c/rot</span>
           </button>
 
           <button
@@ -353,11 +353,11 @@ export default function Settings({ theme, setTheme, showToast }) {
               textAlign: 'center',
               display: 'flex',
               flexDirection: 'column',
-              gap: '2px'
+              gap: '3px'
             }}
           >
-            <strong style={{ fontSize: '11px' }}>Comandante C40</strong>
-            <span style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>30 µm / clic</span>
+            <strong style={{ fontSize: '11.5px' }}>Comandante C40</strong>
+            <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>30 µm / clic</span>
           </button>
         </div>
       </div>

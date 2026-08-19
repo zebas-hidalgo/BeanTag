@@ -568,54 +568,81 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
     : (grinderType === 'comandante' ? Math.round(comandanteClicks * 30) : calculateMicrons(jmaxRot, jmaxNum, jmaxClick));
 
   return (
-    <div style={{ padding: '12px 12px 24px 12px' }}>
-      {/* Top Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <button className="btn-candy" onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <ArrowLeft size={16} strokeWidth={3} />
-          Volver
+    <div style={{ padding: '14px 14px 28px 14px' }}>
+      {/* Top Header - Row 1: Back Navigation + Status Badge */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <button 
+          className="btn-candy" 
+          onClick={onBack} 
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', margin: 0, fontSize: '12px' }}
+        >
+          <ArrowLeft size={16} strokeWidth={2.5} />
+          <span>Volver</span>
         </button>
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <button className="btn-candy" onClick={() => handleShareBatchCard('story')} style={{ padding: '6px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', margin: 0 }}>
-            <Share2 size={13} strokeWidth={2.5} />
-            Compartir Ficha
-          </button>
-          <button className="btn-candy" onClick={() => onEditBatch(batch)} style={{ padding: '6px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', margin: 0 }}>
-            <Edit2 size={13} />
-            Editar
-          </button>
-          <button className="btn-candy" onClick={() => onDeleteBatch(batch.id, batch.name)} style={{ padding: '6px 10px', fontSize: '11px', color: 'var(--color-crimson)', borderColor: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '4px', margin: 0 }}>
-            <Trash2 size={13} />
-          </button>
-          {isLowStock && <span className="mono-lbl-tag" style={{ background: '#E53E3E' }}>¡ÚLTIMOS!</span>}
-        </div>
-      </div>
 
-      {/* Hero Ficha del Café */}
-      <div className="candy-card static" style={{ marginBottom: '14px', padding: '14px', backgroundColor: 'var(--bg-card)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 6px 0', textTransform: 'uppercase', fontSize: '18px' }}>{batch.name}</h2>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           {batch.altitude && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-header)', border: '1px solid var(--border-color)', padding: '3px 8px', borderRadius: '12px', fontSize: '10.5px', fontWeight: 'bold', color: 'var(--color-crimson)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-header)', border: '1px solid var(--border-color)', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '800', color: 'var(--color-crimson)' }}>
               <Mountain size={12} />
               <span>{batch.altitude}</span>
             </div>
           )}
+          {isLowStock && <span className="mono-lbl-tag" style={{ background: '#E53E3E', fontSize: '10px', padding: '3px 8px' }}>¡ÚLTIMOS!</span>}
+        </div>
+      </div>
+
+      {/* Top Header - Row 2: Spacious Action Toolbar */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '8px', marginBottom: '14px' }}>
+        <button 
+          className="btn-candy primary" 
+          onClick={() => handleShareBatchCard(false)} 
+          style={{ padding: '8px 12px', fontSize: '11.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', margin: 0 }}
+        >
+          <Share2 size={14} strokeWidth={2.5} />
+          <span>Compartir Ticket</span>
+        </button>
+
+        <button 
+          className="btn-candy" 
+          onClick={() => onEditBatch(batch)} 
+          style={{ padding: '8px 12px', fontSize: '11.5px', display: 'flex', alignItems: 'center', gap: '5px', margin: 0 }}
+        >
+          <Edit2 size={13} strokeWidth={2.5} />
+          <span>Editar</span>
+        </button>
+
+        <button 
+          className="btn-candy" 
+          onClick={() => onDeleteBatch(batch.id, batch.name)} 
+          style={{ padding: '8px 12px', fontSize: '11.5px', color: 'var(--color-crimson)', borderColor: 'var(--color-crimson)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: 0 }}
+          title="Eliminar lote"
+        >
+          <Trash2 size={14} strokeWidth={2.5} />
+        </button>
+      </div>
+
+      {/* Hero Ficha del Café */}
+      <div className="candy-card static" style={{ marginBottom: '14px', padding: '16px', backgroundColor: 'var(--bg-card)' }}>
+        <div style={{ marginBottom: '6px' }}>
+          <h2 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 4px 0', textTransform: 'uppercase', fontSize: '19px', lineHeight: 1.2 }}>{batch.name}</h2>
+          <div style={{ fontSize: '11.5px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
+            {batch.roaster || 'Tostador Especialidad'}
+          </div>
         </div>
         
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '11.5px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '12px' }}>
           <span><strong>Productor:</strong> {batch.producer}</span> •
           <span><strong>Origen:</strong> {batch.origin || 'N/A'}</span> •
           <span><strong>Proceso:</strong> {batch.process || 'N/A'}</span>
         </div>
 
         {/* Tubos & Congelador Bar */}
-        <div style={{ background: 'var(--bg-canvas)', padding: '8px 10px', borderRadius: '6px', border: '1.5px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px' }}>
+        <div style={{ background: 'var(--bg-canvas)', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
           <div>
             <strong>Tubos:</strong> <span style={{ color: 'var(--color-crimson)', fontWeight: '900' }}>{batch.remaining_doses} / {batch.total_doses}</span> ({batch.remaining_weight_g || 0}g rest.)
           </div>
           {batch.remaining_doses > 0 && (
-            <button className="btn-candy primary" onClick={handleDoseDeduction} style={{ margin: 0, padding: '4px 8px', fontSize: '10.5px' }}>
+            <button className="btn-candy primary" onClick={handleDoseDeduction} style={{ margin: 0, padding: '6px 10px', fontSize: '11px', fontWeight: 'bold' }}>
               - Restar 1 Tubo
             </button>
           )}
@@ -688,89 +715,96 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
       {activeTab === 'brew' && (
         <div ref={brewFormRef} className="animate-entrance">
           <form onSubmit={handleRecipeSubmit}>
-            {/* Method Icon Selector */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+            {/* Method Icon Selector with Comfortable Tap Targets */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '16px' }}>
               {[
-                { id: 'V60 (Filtrado)', lucide: <Filter size={20} />, label: 'V60' },
-                { id: 'Espresso', lucide: <Zap size={20} />, label: 'Espresso' },
-                { id: 'AeroPress', lucide: <Droplet size={20} />, label: 'AeroPress' },
-                { id: 'Prensa Francesa', lucide: <Coffee size={20} />, label: 'Prensa' }
+                { id: 'V60 (Filtrado)', lucide: <Filter size={20} strokeWidth={2.5} />, label: 'V60' },
+                { id: 'Espresso', lucide: <Zap size={20} strokeWidth={2.5} />, label: 'Espresso' },
+                { id: 'AeroPress', lucide: <Droplet size={20} strokeWidth={2.5} />, label: 'AeroPress' },
+                { id: 'Prensa Francesa', lucide: <Coffee size={20} strokeWidth={2.5} />, label: 'Prensa' }
               ].map(m => (
                 <button
                   type="button"
                   key={m.id}
                   onClick={() => setMethod(m.id)}
                   style={{
-                    flex: 1, padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
-                    borderRadius: '6px', border: '2px solid var(--border-color)',
+                    padding: '10px 6px',
+                    minHeight: '64px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    borderRadius: '8px',
+                    border: method === m.id ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
                     backgroundColor: method === m.id ? 'var(--color-crimson)' : 'var(--bg-card)',
-                    color: method === m.id ? '#FFF' : 'var(--color-text)',
-                    boxShadow: method === m.id ? 'none' : '2px 2px 0px var(--border-color)',
-                    transform: method === m.id ? 'translate(1px, 1px)' : 'none',
-                    cursor: 'pointer'
+                    color: method === m.id ? '#FFFFFF' : 'var(--color-text)',
+                    boxShadow: method === m.id ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
+                    cursor: 'pointer',
+                    transition: 'all 150ms ease'
                   }}
                 >
                   {m.lucide}
-                  <span style={{ fontSize: '10px', fontWeight: 'bold' }}>{m.label}</span>
+                  <span style={{ fontSize: '11px', fontWeight: '800' }}>{m.label}</span>
                 </button>
               ))}
             </div>
 
-            {/* Receta Recomendada por IA (Bloque estético e interactivo) */}
-            <div className="candy-card static" style={{ marginBottom: '14px', padding: '12px', backgroundColor: 'var(--bg-card)' }}>
+            {/* Receta Recomendada por IA */}
+            <div className="candy-card static" style={{ marginBottom: '16px', padding: '14px', backgroundColor: 'var(--bg-card)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '14px' }}>✨</span>
-                  <span style={{ fontWeight: '900', fontSize: '11px', textTransform: 'uppercase', fontFamily: 'var(--font-heading)' }}>
+                  <span style={{ fontSize: '15px' }}>✨</span>
+                  <span style={{ fontWeight: '900', fontSize: '12px', textTransform: 'uppercase', fontFamily: 'var(--font-heading)' }}>
                     Asistencia IA Barista ({method})
                   </span>
                 </div>
-                <span style={{ fontSize: '9px', fontWeight: '900', color: 'var(--color-crimson)' }}>{doseInG}g</span>
+                <span style={{ fontSize: '11px', fontWeight: '900', color: 'var(--color-crimson)', background: 'var(--bg-header)', padding: '2px 8px', borderRadius: '6px' }}>{doseInG}g</span>
               </div>
 
-              {aiError && <div style={{ color: '#E53E3E', fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>⚠️ {aiError}</div>}
+              {aiError && <div style={{ color: '#E53E3E', fontSize: '11px', fontWeight: 'bold', marginTop: '8px' }}>⚠️ {aiError}</div>}
 
               {aiRecommendation ? (
-                <div style={{ marginTop: '10px', padding: '10px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ marginTop: '12px', padding: '12px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {/* Badges de Parámetros Clave */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', textAlign: 'center', fontSize: '10px' }}>
-                    <div style={{ background: 'var(--bg-card)', padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-                      <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>Ratio / Agua</div>
-                      <strong style={{ color: 'var(--color-crimson)' }}>{aiRecommendation.ratio} ({aiRecommendation.water_total_g || Math.round(doseInG * 15)}g)</strong>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', textAlign: 'center' }}>
+                    <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                      <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>Ratio / Agua</div>
+                      <strong style={{ fontSize: '12px', color: 'var(--color-crimson)' }}>{aiRecommendation.ratio} ({aiRecommendation.water_total_g || Math.round(doseInG * 15)}g)</strong>
                     </div>
-                    <div style={{ background: 'var(--bg-card)', padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-                      <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>Temp</div>
-                      <strong>{aiRecommendation.temperature}°C</strong>
+                    <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                      <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>Temp</div>
+                      <strong style={{ fontSize: '12px' }}>{aiRecommendation.temperature}°C</strong>
                     </div>
-                    <div style={{ background: 'var(--bg-card)', padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-                      <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>Tiempo</div>
-                      <strong>{aiRecommendation.brew_time}</strong>
+                    <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                      <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>Tiempo</div>
+                      <strong style={{ fontSize: '12px' }}>{aiRecommendation.brew_time}</strong>
                     </div>
                   </div>
 
                   {/* Sub-pestañas para organizar Vertidos, Molinos y Pasos */}
-                  <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid var(--border-color)', paddingBottom: '4px', marginTop: '4px' }}>
-                    <button type="button" className={`filter-chip ${aiSubTab === 'pours' ? 'active' : ''}`} onClick={() => setAiSubTab('pours')} style={{ padding: '2px 8px', fontSize: '9.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Droplet size={10} /> Vertidos
+                  <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginTop: '4px' }}>
+                    <button type="button" className={`filter-chip ${aiSubTab === 'pours' ? 'active' : ''}`} onClick={() => setAiSubTab('pours')} style={{ padding: '4px 10px', fontSize: '10.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Droplet size={12} /> Vertidos
                     </button>
-                    <button type="button" className={`filter-chip ${aiSubTab === 'grinders' ? 'active' : ''}`} onClick={() => setAiSubTab('grinders')} style={{ padding: '2px 8px', fontSize: '9.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Settings2 size={10} /> Molino J-Max
+                    <button type="button" className={`filter-chip ${aiSubTab === 'grinders' ? 'active' : ''}`} onClick={() => setAiSubTab('grinders')} style={{ padding: '4px 10px', fontSize: '10.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Settings2 size={12} /> Molinos
                     </button>
-                    <button type="button" className={`filter-chip ${aiSubTab === 'steps' ? 'active' : ''}`} onClick={() => setAiSubTab('steps')} style={{ padding: '2px 8px', fontSize: '9.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <ListOrdered size={10} /> Pasos
+                    <button type="button" className={`filter-chip ${aiSubTab === 'steps' ? 'active' : ''}`} onClick={() => setAiSubTab('steps')} style={{ padding: '4px 10px', fontSize: '10.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <ListOrdered size={12} /> Pasos
                     </button>
                   </div>
 
                   {/* Sub-Contenido: Vertidos */}
                   {aiSubTab === 'pours' && aiRecommendation.pours && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {aiRecommendation.pours.map((p, idx) => (
-                        <div key={idx} style={{ padding: '6px 8px', background: 'var(--bg-card)', borderRadius: '4px', border: '1px solid var(--border-color)', fontSize: '10px' }}>
+                        <div key={idx} style={{ padding: '8px 10px', background: 'var(--bg-card)', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '11px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: 'var(--color-crimson)' }}>
                             <span>{p.step}. {p.label} (+{p.water_g || p.water}g)</span>
                             <span style={{ fontFamily: 'var(--font-mono)' }}>⏱️ {p.time}</span>
                           </div>
-                          {p.description && <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', marginTop: '2px' }}>{p.description}</div>}
+                          {p.description && <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>{p.description}</div>}
                         </div>
                       ))}
                     </div>
@@ -778,27 +812,27 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
 
                   {/* Sub-Contenido: Molinos */}
                   {aiSubTab === 'grinders' && (
-                    <div style={{ fontSize: '10px', display: 'flex', flexDirection: 'column', gap: '6px', background: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-                        <div style={{ padding: '4px 6px', background: 'var(--bg-header)', borderRadius: '4px' }}>
-                          <strong style={{ color: 'var(--color-crimson)', display: 'block' }}>1Zpresso J-Max:</strong>
-                          <span style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                    <div style={{ fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div style={{ padding: '6px 8px', background: 'var(--bg-header)', borderRadius: '6px' }}>
+                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '10.5px' }}>1Zpresso J-Max:</strong>
+                          <span style={{ fontSize: '12px', fontWeight: 'bold' }}>
                             {aiRecommendation.jmax_rot !== undefined ? `${aiRecommendation.jmax_rot}.${aiRecommendation.jmax_num}.${aiRecommendation.jmax_click}` : (aiRecommendation.grinders?.jmax || '1.3.5')}
                           </span>
-                          <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>8.8 µm/clic • 90 clics/rot</div>
+                          <div style={{ fontSize: '9px', color: 'var(--color-text-muted)' }}>8.8 µm/clic • 90 c/rot</div>
                         </div>
 
-                        <div style={{ padding: '4px 6px', background: 'var(--bg-header)', borderRadius: '4px' }}>
-                          <strong style={{ color: 'var(--color-crimson)', display: 'block' }}>Femobook A2:</strong>
-                          <span style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                        <div style={{ padding: '6px 8px', background: 'var(--bg-header)', borderRadius: '6px' }}>
+                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '10.5px' }}>Femobook A2:</strong>
+                          <span style={{ fontSize: '12px', fontWeight: 'bold' }}>
                             {aiRecommendation.grinders?.femobook_a2 || '60 clics (1.5 Rot.)'}
                           </span>
-                          <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>18 µm/clic • 40 clics/rot</div>
+                          <div style={{ fontSize: '9px', color: 'var(--color-text-muted)' }}>18 µm/clic • 40 c/rot</div>
                         </div>
                       </div>
 
                       {aiRecommendation.grinders && (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', marginTop: '2px', paddingTop: '6px', borderTop: '1px dashed var(--border-color)', fontSize: '9px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginTop: '2px', paddingTop: '6px', borderTop: '1px dashed var(--border-color)', fontSize: '9.5px' }}>
                           <div><strong>Comandante:</strong><br/>{aiRecommendation.grinders.comandante}</div>
                           <div><strong>Timemore:</strong><br/>{aiRecommendation.grinders.timemore}</div>
                           <div><strong>Baratza:</strong><br/>{aiRecommendation.grinders.baratza}</div>
@@ -809,29 +843,29 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
 
                   {/* Sub-Contenido: Pasos */}
                   {aiSubTab === 'steps' && aiRecommendation.steps && (
-                    <ol style={{ margin: 0, paddingLeft: '16px', fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                      {aiRecommendation.steps.map((st, i) => <li key={i}>{st}</li>)}
+                    <ol style={{ margin: 0, paddingLeft: '18px', fontSize: '11px', color: 'var(--color-text-muted)', lineHeight: '1.4' }}>
+                      {aiRecommendation.steps.map((st, i) => <li key={i} style={{ marginBottom: '4px' }}>{st}</li>)}
                     </ol>
                   )}
 
-                  <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
-                    <button type="button" className="btn-candy primary" onClick={handleApplyAiRecipe} style={{ flex: 1, padding: '6px', fontSize: '10px', minHeight: '30px' }}>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                    <button type="button" className="btn-candy primary" onClick={handleApplyAiRecipe} style={{ flex: 1, padding: '8px', fontSize: '11px', minHeight: '36px' }}>
                       Aplicar al Formulario
                     </button>
-                    <button type="button" className="btn-candy" onClick={() => setAiRecommendation(null)} style={{ padding: '6px 10px', fontSize: '10px', minHeight: '30px', margin: 0 }}>
+                    <button type="button" className="btn-candy" onClick={() => setAiRecommendation(null)} style={{ padding: '8px 12px', fontSize: '11px', minHeight: '36px', margin: 0 }}>
                       Cerrar
                     </button>
                   </div>
                 </div>
               ) : (
-                <button type="button" className="btn-candy" onClick={handleAiRecommend} disabled={aiLoading} style={{ width: '100%', marginTop: '8px', padding: '6px', fontSize: '10.5px', minHeight: '32px' }}>
-                  {aiLoading ? 'Generando receta... 🧠' : 'Diseñar Receta IA ✨'}
+                <button type="button" className="btn-candy" onClick={handleAiRecommend} disabled={aiLoading} style={{ width: '100%', marginTop: '10px', padding: '8px', fontSize: '11.5px', minHeight: '38px' }}>
+                  {aiLoading ? 'Generando receta con Thinking Mode... 🧠' : 'Diseñar Receta IA ✨'}
                 </button>
               )}
             </div>
 
             {/* Formulario Bento Grid */}
-            <div className="bento-grid">
+            <div className="bento-grid" style={{ gap: '10px', marginBottom: '16px' }}>
               <div className="bento-widget accent">
                 <div className="bento-header"><span>Grams</span><Scale size={14} /></div>
                 <div className="bento-value-container">
@@ -875,10 +909,10 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
 
               {/* Manual Grinder Selector & Dedicated Controls */}
               <div className="bento-widget bento-full-row accent">
-                <div className="bento-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Coffee size={14} />
-                    <span>Molino</span>
+                <div className="bento-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <Coffee size={15} />
+                    <span style={{ fontWeight: '800' }}>Molino</span>
                   </div>
                   {/* Selector Pills */}
                   <div style={{ display: 'flex', gap: '4px' }}>
@@ -886,11 +920,11 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
                       type="button"
                       onClick={() => setGrinderType('jmax')}
                       style={{
-                        padding: '2px 6px',
-                        fontSize: '9px',
-                        fontWeight: 'bold',
-                        borderRadius: '4px',
-                        border: grinderType === 'jmax' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        padding: '4px 10px',
+                        fontSize: '10.5px',
+                        fontWeight: '800',
+                        borderRadius: '6px',
+                        border: grinderType === 'jmax' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: grinderType === 'jmax' ? 'var(--color-crimson)' : 'var(--bg-canvas)',
                         color: grinderType === 'jmax' ? '#FFFFFF' : 'var(--color-text)',
                         cursor: 'pointer'
@@ -902,11 +936,11 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
                       type="button"
                       onClick={() => setGrinderType('femobook')}
                       style={{
-                        padding: '2px 6px',
-                        fontSize: '9px',
-                        fontWeight: 'bold',
-                        borderRadius: '4px',
-                        border: grinderType === 'femobook' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        padding: '4px 10px',
+                        fontSize: '10.5px',
+                        fontWeight: '800',
+                        borderRadius: '6px',
+                        border: grinderType === 'femobook' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: grinderType === 'femobook' ? 'var(--color-crimson)' : 'var(--bg-canvas)',
                         color: grinderType === 'femobook' ? '#FFFFFF' : 'var(--color-text)',
                         cursor: 'pointer'
@@ -918,11 +952,11 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
                       type="button"
                       onClick={() => setGrinderType('comandante')}
                       style={{
-                        padding: '2px 6px',
-                        fontSize: '9px',
-                        fontWeight: 'bold',
-                        borderRadius: '4px',
-                        border: grinderType === 'comandante' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        padding: '4px 10px',
+                        fontSize: '10.5px',
+                        fontWeight: '800',
+                        borderRadius: '6px',
+                        border: grinderType === 'comandante' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: grinderType === 'comandante' ? 'var(--color-crimson)' : 'var(--bg-canvas)',
                         color: grinderType === 'comandante' ? '#FFFFFF' : 'var(--color-text)',
                         cursor: 'pointer'
@@ -936,29 +970,29 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
                 {/* 1Zpresso J-Max Controls */}
                 {grinderType === 'jmax' && (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 0' }}>
-                      <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '6px' }} value={jmaxRot} onChange={(e) => setJmaxRot(parseInt(e.target.value) || 0)}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0' }}>
+                      <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxRot} onChange={(e) => setJmaxRot(parseInt(e.target.value) || 0)}>
                         {[0, 1, 2, 3, 4].map(v => <option key={v} value={v}>Rot: {v}</option>)}
                       </select>
-                      <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '6px' }} value={jmaxNum} onChange={(e) => setJmaxNum(parseInt(e.target.value) || 0)}>
+                      <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxNum} onChange={(e) => setJmaxNum(parseInt(e.target.value) || 0)}>
                         {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(v => <option key={v} value={v}>Num: {v}</option>)}
                       </select>
-                      <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '6px' }} value={jmaxClick} onChange={(e) => setJmaxClick(parseInt(e.target.value) || 0)}>
+                      <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxClick} onChange={(e) => setJmaxClick(parseInt(e.target.value) || 0)}>
                         {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(v => <option key={v} value={v}>Clic: {v}</option>)}
                       </select>
                     </div>
-                    <div className="bento-info">1Zpresso J-Max: {jmaxRot}.{jmaxNum}.{jmaxClick} (~{currentMicrons} µm)</div>
+                    <div className="bento-info" style={{ marginTop: '4px', fontSize: '10.5px' }}>1Zpresso J-Max: {jmaxRot}.{jmaxNum}.{jmaxClick} (~{currentMicrons} µm)</div>
                   </>
                 )}
 
                 {/* Femobook A2 Controls */}
                 {grinderType === 'femobook' && (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0' }}>
                       <button 
                         type="button" 
                         className="btn-candy" 
-                        style={{ padding: '6px 10px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
+                        style={{ minWidth: '40px', minHeight: '38px', padding: '6px 10px', margin: 0, fontSize: '12px', fontWeight: 'bold' }} 
                         onClick={() => setFemobookClicks(prev => Math.max(0, prev - 5))}
                       >
                         -5
@@ -966,7 +1000,7 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
                       <button 
                         type="button" 
                         className="btn-candy" 
-                        style={{ padding: '6px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
+                        style={{ minWidth: '38px', minHeight: '38px', padding: '6px 8px', margin: 0, fontSize: '12px', fontWeight: 'bold' }} 
                         onClick={() => setFemobookClicks(prev => Math.max(0, prev - 1))}
                       >
                         -1
@@ -975,7 +1009,7 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
                         <input 
                           type="number" 
                           className="candy-input" 
-                          style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px', fontSize: '14px', fontWeight: 'bold' }}
+                          style={{ width: '100%', textAlign: 'center', margin: 0, padding: '8px', fontSize: '16px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}
                           value={femobookClicks}
                           min="0"
                           max="120"
@@ -985,7 +1019,7 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
                       <button 
                         type="button" 
                         className="btn-candy" 
-                        style={{ padding: '6px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
+                        style={{ minWidth: '38px', minHeight: '38px', padding: '6px 8px', margin: 0, fontSize: '12px', fontWeight: 'bold' }} 
                         onClick={() => setFemobookClicks(prev => Math.min(120, prev + 1))}
                       >
                         +1
@@ -993,14 +1027,14 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
                       <button 
                         type="button" 
                         className="btn-candy" 
-                        style={{ padding: '6px 10px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
+                        style={{ minWidth: '40px', minHeight: '38px', padding: '6px 10px', margin: 0, fontSize: '12px', fontWeight: 'bold' }} 
                         onClick={() => setFemobookClicks(prev => Math.min(120, prev + 5))}
                       >
                         +5
                       </button>
                     </div>
-                    <div className="bento-info">
-                      Femobook A2: {femobookClicks} Clics ({(femobookClicks / 40).toFixed(2)} Rot. • ~{currentMicrons} µm)
+                    <div className="bento-info" style={{ marginTop: '4px', fontSize: '10.5px' }}>
+                      Femobook A2: {femobookClicks} clics ({(femobookClicks / 40).toFixed(2)} Rot.) • ~{currentMicrons} µm
                     </div>
                   </>
                 )}
@@ -1008,19 +1042,11 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
                 {/* Comandante C40 Controls */}
                 {grinderType === 'comandante' && (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0' }}>
                       <button 
                         type="button" 
                         className="btn-candy" 
-                        style={{ padding: '6px 10px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
-                        onClick={() => setComandanteClicks(prev => Math.max(0, prev - 2))}
-                      >
-                        -2
-                      </button>
-                      <button 
-                        type="button" 
-                        className="btn-candy" 
-                        style={{ padding: '6px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
+                        style={{ minWidth: '40px', minHeight: '38px', padding: '6px 10px', margin: 0, fontSize: '12px', fontWeight: 'bold' }} 
                         onClick={() => setComandanteClicks(prev => Math.max(0, prev - 1))}
                       >
                         -1
@@ -1029,7 +1055,7 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
                         <input 
                           type="number" 
                           className="candy-input" 
-                          style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px', fontSize: '14px', fontWeight: 'bold' }}
+                          style={{ width: '100%', textAlign: 'center', margin: 0, padding: '8px', fontSize: '16px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}
                           value={comandanteClicks}
                           min="0"
                           max="45"
@@ -1039,22 +1065,14 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
                       <button 
                         type="button" 
                         className="btn-candy" 
-                        style={{ padding: '6px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
+                        style={{ minWidth: '40px', minHeight: '38px', padding: '6px 10px', margin: 0, fontSize: '12px', fontWeight: 'bold' }} 
                         onClick={() => setComandanteClicks(prev => Math.min(45, prev + 1))}
                       >
                         +1
                       </button>
-                      <button 
-                        type="button" 
-                        className="btn-candy" 
-                        style={{ padding: '6px 10px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
-                        onClick={() => setComandanteClicks(prev => Math.min(45, prev + 2))}
-                      >
-                        +2
-                      </button>
                     </div>
-                    <div className="bento-info">
-                      Comandante C40: {comandanteClicks} Clics (~{currentMicrons} µm)
+                    <div className="bento-info" style={{ marginTop: '4px', fontSize: '10.5px' }}>
+                      Comandante C40: {comandanteClicks} clics • ~{currentMicrons} µm
                     </div>
                   </>
                 )}
