@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage } from '../utils/cardGenerator';
+import { FAMOUS_RECIPES } from '../utils/famousRecipes';
 import ScaRadarChart from './ScaRadarChart';
 import DialInAssistant from './DialInAssistant';
 
@@ -301,6 +302,61 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
 
     if (showToast) showToast('Receta sugerida por IA aplicada al formulario.', { type: 'success', duration: 3000 });
     setAiRecommendation(null);
+  };
+
+  const [selectedFamousRecipe, setSelectedFamousRecipe] = useState(null);
+
+  const handleApplyFamousRecipe = (famous) => {
+    setMethod(famous.method);
+    if (famous.ratioVal) setRatioVal(famous.ratioVal);
+    if (famous.temperature) setWaterTemp(famous.temperature);
+    if (famous.brewTime) setBrewTime(famous.brewTime);
+    if (famous.grinderSettings?.jmax) {
+      setJmaxRot(famous.grinderSettings.jmax.rot);
+      setJmaxNum(famous.grinderSettings.jmax.num);
+      setJmaxClick(famous.grinderSettings.jmax.click);
+    }
+    if (famous.grinderSettings?.femobook) {
+      setFemobookClicks(famous.grinderSettings.femobook.clicks);
+    }
+    if (famous.grinderSettings?.comandante) {
+      setComandanteClicks(famous.grinderSettings.comandante.clicks);
+    }
+
+    const calculatedPours = famous.calculatePours ? famous.calculatePours(doseInG) : [];
+    const pourSummary = calculatedPours.length > 0 
+      ? ` | Vertidos: ${calculatedPours.map(p => `${p.label} (${p.water_g}g)`).join(' → ')}`
+      : '';
+    
+    setNotes(prev => {
+      const clean = prev.replace(/\[Receta.*?:.*?\]/g, '').trim();
+      return `[${famous.name} (${famous.author}): ${famous.notes}${pourSummary}] ${clean}`.trim();
+    });
+
+    // Populate interactive assistance card so barista can follow live timings, pours and grind
+    setAiRecommendation({
+      method: famous.method,
+      ratio: famous.ratio,
+      water_total_g: Math.round(doseInG * (famous.ratioVal || 15)),
+      temperature: famous.temperature,
+      brew_time: famous.brewTime,
+      grind: famous.grind,
+      grind_microns: `${famous.grindMicrons} µm`,
+      jmax_rot: famous.grinderSettings?.jmax?.rot,
+      jmax_num: famous.grinderSettings?.jmax?.num,
+      jmax_click: famous.grinderSettings?.jmax?.click,
+      grinders: {
+        jmax: famous.grinderSettings?.jmax?.text,
+        femobook_a2: famous.grinderSettings?.femobook?.text,
+        comandante: famous.grinderSettings?.comandante?.text
+      },
+      pours: calculatedPours,
+      steps: famous.steps,
+      notes: famous.notes
+    });
+
+    setSelectedFamousRecipe(famous.id);
+    if (showToast) showToast(`🏆 Receta "${famous.name}" aplicada al formulario.`, { type: 'success', duration: 3000 });
   };
 
   useEffect(() => {
@@ -748,6 +804,58 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
                   <span style={{ fontSize: '11px', fontWeight: '800' }}>{m.label}</span>
                 </button>
               ))}
+            </div>
+
+            {/* 🌟 Recetas Legendarias & Técnicas de Baristas Famosos */}
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11.5px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--color-text)' }}>
+                  <Award size={14} style={{ color: 'var(--color-crimson)' }} />
+                  <span>Recetas Legendarias de Baristas</span>
+                </div>
+                <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>Carga rápida</span>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none' }}>
+                {FAMOUS_RECIPES.map((famous) => {
+                  const isSelected = selectedFamousRecipe === famous.id;
+                  return (
+                    <button
+                      key={famous.id}
+                      type="button"
+                      onClick={() => handleApplyFamousRecipe(famous)}
+                      style={{
+                        flexShrink: 0,
+                        padding: '8px 12px',
+                        borderRadius: '10px',
+                        border: isSelected ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
+                        backgroundColor: isSelected ? 'var(--bg-header)' : 'var(--bg-card)',
+                        color: 'var(--color-text)',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '2px',
+                        transition: 'all 150ms var(--transition-spring)',
+                        minWidth: '135px',
+                        boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.06)' : 'none'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: '900', color: isSelected ? 'var(--color-crimson)' : 'inherit' }}>
+                          {famous.name}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
+                        {famous.badge}
+                      </span>
+                      <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                        {famous.ratio} • {famous.temperature}°C
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Receta Recomendada por IA */}

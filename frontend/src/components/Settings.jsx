@@ -248,9 +248,11 @@ export default function Settings({ theme, setTheme, showToast }) {
                 onChange={(e) => handleModelChange(e.target.value)}
                 style={{ fontSize: '11px', padding: '6px 8px' }}
               >
-                <option value="gemini-3.7-flash">Gemini 3.7 Flash (Recomendado)</option>
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Super Rápido & Estable)</option>
+                <option value="gemini-1.5-pro">Gemini 1.5 Pro (Alta Precisión)</option>
+                <option value="gemini-3.7-flash">Gemini 3.7 Flash (Thinking Mode)</option>
                 <option value="gemini-3.7-pro">Gemini 3.7 Pro (Máximo Razonamiento)</option>
-                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Legacy)</option>
+                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
               </select>
             </div>
 
