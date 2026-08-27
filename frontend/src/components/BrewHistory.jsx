@@ -633,26 +633,57 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
             animation: 'soft-pop 250ms var(--transition-spring)',
             display: 'flex', flexDirection: 'column', gap: '10px'
           }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0 }}>
-                🧾 Ticket POS Barista
-              </h3>
-              {/* Quick Toggle in Modal */}
-              <div style={{ display: 'flex', gap: '4px' }}>
-                <button 
-                  type="button" 
-                  onClick={() => { setShareIncludeRecipe(true); exportRecipeAsImage(selectedRecipe, 'receipt', true); }}
-                  style={{ padding: '3px 7px', fontSize: '10px', borderRadius: '4px', border: shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
-                >
-                  Con Receta
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => { setShareIncludeRecipe(false); exportRecipeAsImage(selectedRecipe, 'receipt', false); }}
-                  style={{ padding: '3px 7px', fontSize: '10px', borderRadius: '4px', border: !shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
-                >
-                  Solo Grano
-                </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0 }}>
+                  🧾 Ticket Barista • {selectedRecipe?.batch_name}
+                </h3>
+                {/* Content Toggle */}
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  <button 
+                    type="button" 
+                    onClick={() => { setShareIncludeRecipe(true); exportRecipeAsImage(selectedRecipe, shareTemplate || 'craft', true); }}
+                    style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    🧾 Con Receta
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => { setShareIncludeRecipe(false); exportRecipeAsImage(selectedRecipe, shareTemplate || 'craft', false); }}
+                    style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: !shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                  >
+                    🌾 Solo Grano
+                  </button>
+                </div>
+              </div>
+
+              {/* Aesthetic Template Selector */}
+              <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
+                {[
+                  { id: 'craft', label: '☕ Artesanal' },
+                  { id: 'minimal', label: '🏷️ Nórdico' },
+                  { id: 'dark', label: '🌑 Tokyo Dark' }
+                ].map(t => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => { setShareTemplate(t.id); exportRecipeAsImage(selectedRecipe, t.id, shareIncludeRecipe); }}
+                    style={{
+                      flex: 1,
+                      padding: '4px 6px',
+                      fontSize: '9.5px',
+                      borderRadius: '4px',
+                      border: (shareTemplate || 'craft') === t.id ? '1.5px solid var(--color-crimson)' : 'none',
+                      backgroundColor: (shareTemplate || 'craft') === t.id ? 'var(--bg-header)' : 'transparent',
+                      fontWeight: (shareTemplate || 'craft') === t.id ? '900' : 'normal',
+                      color: 'var(--color-text)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {t.label}
+                  </button>
+                ))}
               </div>
             </div>
 
