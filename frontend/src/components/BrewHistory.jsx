@@ -21,7 +21,7 @@ const getMethodLucideIcon = (methodName, size = 18) => {
   return <Coffee size={size} color="var(--color-crimson)" />;
 };
 
-export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
+export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batches, showToast }) {
   const [history, setHistory] = useState(null); // null = loading, [] = empty
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [shareImage, setShareImage] = useState(null);
@@ -163,7 +163,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
         try {
           console.log("[BeanTag] Attempting Clipboard copy (direct blob)...");
           await navigator.clipboard.write([
-            new ClipboardItem({
+            new window.ClipboardItem({
               [blob.type]: blob
             })
           ]);
@@ -174,7 +174,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
           try {
             console.log("[BeanTag] Attempting Clipboard copy (promise wrapped)...");
             await navigator.clipboard.write([
-              new ClipboardItem({
+              new window.ClipboardItem({
                 [blob.type]: Promise.resolve(blob)
               })
             ]);

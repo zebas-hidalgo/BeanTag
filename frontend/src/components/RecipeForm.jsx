@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Filter, Zap } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Filter, Zap, X } from 'lucide-react';
 
-export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, prefillRecipe }) {
+export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, prefillRecipe, onBack }) {
   const [method, setMethod] = useState('V60 (Filtrado)');
   const [jmaxRot, setJmaxRot] = useState(1);
   const [jmaxNum, setJmaxNum] = useState(5);

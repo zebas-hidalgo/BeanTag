@@ -3,7 +3,8 @@ import { Save, X, ClipboardCopy, Camera, Sparkles, Loader2 } from 'lucide-react'
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 
-export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, showToast }) {
+export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCancel, showToast }) {
+  const handleCancel = onBack || onCancel;
   // Parse initial flavor tags and custom notes if editing
   const getInitialFlavorTags = () => {
     if (!batchToEdit || !batchToEdit.roaster_notes) return [];
@@ -352,7 +353,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
       />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <button className="btn-candy" onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <button className="btn-candy" onClick={handleCancel} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <X size={16} strokeWidth={2.5} />
           Cancelar
         </button>

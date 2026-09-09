@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Moon, Sun, Plus, ScanLine, Package, BookOpen, Settings as SettingsIcon, Nfc } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Nfc, LogOut } from 'lucide-react';
 import Inventory from './components/Inventory';
 import BatchDetail from './components/BatchDetail';
 import BatchCreator from './components/BatchCreator';
@@ -10,7 +10,6 @@ import AuthModal from './components/AuthModal';
 import AuthView from './components/AuthView';
 import BottomNav from './components/BottomNav';
 import { apiUrl } from './utils/api';
-import { User, LogIn, LogOut } from 'lucide-react';
 
 const getInitialRoute = () => {
   const path = window.location.pathname;
@@ -447,6 +446,7 @@ export default function App() {
                 setCurrentView('inventory');
               }
             }} 
+            onBack={handleBack}
             onCancel={handleBack}
             showToast={showToast}
           />
@@ -456,6 +456,7 @@ export default function App() {
           <BrewHistory 
             batches={batches}
             onSelectBatch={handleSelectBatch}
+            onNavigateToInventory={() => setCurrentView('inventory')}
             showToast={showToast}
           />
         )}

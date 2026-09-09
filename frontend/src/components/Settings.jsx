@@ -7,7 +7,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   const [showNfcModal, setShowNfcModal] = useState(false);
   const [pendingImportData, setPendingImportData] = useState(null);
   const [importMode, setImportMode] = useState('merge');
-  const [apiKey, setApiKey] = React.useState(() => {
+  const [apiKey, setApiKey] = useState(() => {
     return localStorage.getItem('gemini-api-key') || '';
   });
   const [selectedModel, setSelectedModel] = useState(() => {
