@@ -3,35 +3,35 @@
 
 
 :root {
-  /* 🎨 Neo-Brutal White Canvas + Rich Element Color Themes (UI/UX Pro Max 2026) */
-  --bg-canvas: #FFFFFF; /* FONDO SIEMPRE BLANCO PURO */
-  --bg-card: #ECFDF5;
-  --color-crimson: #059669;
+  /* 🎨 Ultra-Modern Clean & Minimal Specialty Coffee Design Tokens (2026 Edition) */
+  --bg-canvas: #F8F9FA;
+  --bg-card: #FFFFFF;
+  --color-crimson: #BC5449; /* Artisan Terracotta */
   --color-honey: #D97706;
-  --color-emerald-light: #D1FAE5;
-  --border-color: #A7F3D0;
-  --color-text: #064E3B;
-  --color-text-muted: #047857;
-  --bg-header: #D1FAE5;
-  --color-header-text: #064E3B;
+  --color-emerald-light: #F0FDF4;
+  --border-color: #E2E8F0;
+  --color-text: #0F172A;
+  --color-text-muted: #64748B;
+  --bg-header: rgba(255, 255, 255, 0.90);
+  --color-header-text: #0F172A;
   
-  --font-heading: 'Outfit', 'Comfortaa', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-heading: 'Outfit', 'Space Grotesk', -apple-system, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --transition-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --transition-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Genjutsu Motion Principles & Animations */
 .animate-entrance {
-  animation: genjutsuSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: modernFadeSlide 0.28s var(--transition-spring) forwards;
 }
 
-@keyframes genjutsuSlideUp {
+@keyframes modernFadeSlide {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.98);
+    transform: translateY(12px) scale(0.99);
   }
   to {
     opacity: 1;
@@ -40,102 +40,93 @@
 }
 
 .genjutsu-pulse {
-  animation: genjutsuPulse 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: modernPulse 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes genjutsuPulse {
+@keyframes modernPulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.08); }
+  50% { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
 
-/* 🎨 6 Aesthetic Themes: Pure White Canvas (#FFFFFF) + Vibrant Elements */
+/* 🎨 6 Refined Editorial Specialty Themes */
 
-/* 1. Organic Matcha & Honey (Default) */
-[data-theme="matcha"], :root {
-  --bg-canvas: #FFFFFF;
-  --bg-card: #ECFDF5;
-  --bg-header: #D1FAE5;
+/* 1. Espresso Terracotta & Clean Ivory (Default) */
+[data-theme="espresso"], :root {
+  --bg-canvas: #F9FAFB;
+  --bg-card: #FFFFFF;
+  --bg-header: rgba(255, 255, 255, 0.92);
+  --color-crimson: #BC5449;
+  --color-honey: #D97706;
+  --border-color: #E5E7EB;
+  --color-text: #111827;
+  --color-text-muted: #6B7280;
+  --color-header-text: #111827;
+}
+
+/* 2. Organic Matcha Sage */
+[data-theme="matcha"] {
+  --bg-canvas: #F8FAF7;
+  --bg-card: #FFFFFF;
+  --bg-header: rgba(255, 255, 255, 0.92);
   --color-crimson: #059669;
   --color-honey: #D97706;
-  --border-color: #A7F3D0;
-  --color-text: #064E3B;
-  --color-text-muted: #047857;
-  --color-header-text: #064E3B;
+  --border-color: #E2E8F0;
+  --color-text: #0F172A;
+  --color-text-muted: #64748B;
+  --color-header-text: #0F172A;
 }
 
-/* 2. Espresso Noir & Terracotta */
-[data-theme="espresso"] {
-  --bg-canvas: #FFFFFF;
-  --bg-card: #FFF5F5;
-  --bg-header: #FEE2E2;
-  --color-crimson: #E76F51;
-  --color-honey: #F4A261;
-  --border-color: #FECACA;
-  --color-text: #7F1D1D;
-  --color-text-muted: #991B1B;
-  --color-header-text: #7F1D1D;
-}
-
-/* 3. Cyber Kinetic Brix Lab */
+/* 3. Cyber Indigo Lab */
 [data-theme="cyber"] {
-  --bg-canvas: #FFFFFF;
-  --bg-card: #EFF6FF;
-  --bg-header: #DBEAFE;
+  --bg-canvas: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --bg-header: rgba(255, 255, 255, 0.92);
   --color-crimson: #2563EB;
-  --color-honey: #FF5E36;
-  --border-color: #BFDBFE;
-  --color-text: #1E3A8A;
-  --color-text-muted: #1E40AF;
-  --color-header-text: #1E3A8A;
+  --color-honey: #EA580C;
+  --border-color: #E2E8F0;
+  --color-text: #0F172A;
+  --color-text-muted: #64748B;
+  --color-header-text: #0F172A;
 }
 
-/* 4. Sakura Cold Brew & Cryo */
+/* 4. Sakura Rose & Cold Brew */
 [data-theme="sakura"] {
-  --bg-canvas: #FFFFFF;
-  --bg-card: #FDF2F8;
-  --bg-header: #FCE7F3;
-  --color-crimson: #EC4899;
-  --color-honey: #D946EF;
-  --border-color: #FBCFE8;
-  --color-text: #831843;
-  --color-text-muted: #9D174D;
-  --color-header-text: #831843;
+  --bg-canvas: #FAF8F9;
+  --bg-card: #FFFFFF;
+  --bg-header: rgba(255, 255, 255, 0.92);
+  --color-crimson: #DB2777;
+  --color-honey: #C026D3;
+  --border-color: #F1E5EC;
+  --color-text: #1E1B24;
+  --color-text-muted: #736B7E;
+  --color-header-text: #1E1B24;
 }
 
-/* 5. Amber Caramel & Cream */
+/* 5. Golden Amber & Honey */
 [data-theme="caramel"] {
-  --bg-canvas: #FFFFFF;
-  --bg-card: #FFFBEB;
-  --bg-header: #FEF3C7;
+  --bg-canvas: #FAF9F6;
+  --bg-card: #FFFFFF;
+  --bg-header: rgba(255, 255, 255, 0.92);
   --color-crimson: #D97706;
   --color-honey: #B45309;
-  --border-color: #FDE68A;
-  --color-text: #78350F;
-  --color-text-muted: #92400E;
-  --color-header-text: #78350F;
+  --border-color: #EBE5DA;
+  --color-text: #1C1917;
+  --color-text-muted: #78716C;
+  --color-header-text: #1C1917;
 }
 
-/* 6. Nordic Frost & Minimal Ice */
+/* 6. Nordic Arctic Frost */
 [data-theme="frost"] {
-  --bg-canvas: #FFFFFF;
-  --bg-card: #F0F9FF;
-  --bg-header: #E0F2FE;
+  --bg-canvas: #F6F9FB;
+  --bg-card: #FFFFFF;
+  --bg-header: rgba(255, 255, 255, 0.92);
   --color-crimson: #0284C7;
-  --color-honey: #6366F1;
-  --border-color: #BAE6FD;
-  --color-text: #0C4A6E;
-  --color-text-muted: #0369A1;
-  --color-header-text: #0C4A6E;
-}
-
-@keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-entrance {
-  animation: slideUpFade 0.4s var(--transition-spring) forwards;
+  --color-honey: #4F46E5;
+  --border-color: #E0E7EC;
+  --color-text: #0B192C;
+  --color-text-muted: #5B6B7C;
+  --color-header-text: #0B192C;
 }
 
 body {
@@ -145,70 +136,73 @@ body {
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
   touch-action: manipulation;
-  overflow: hidden; /* Lock scroll on page body */
-  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .app-container {
   max-width: 480px;
   margin: 0 auto;
   background-color: var(--bg-canvas);
-  height: 100dvh; /* Altura fija al 100% de la pantalla */
+  height: 100dvh;
   max-height: 100dvh;
   position: relative;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  overflow: hidden; /* Previene scroll general del contenedor */
-  border-left: 2px solid var(--border-color);
-  border-right: 2px solid var(--border-color);
+  overflow: hidden;
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
 }
 
 main {
   flex: 1;
-  overflow-y: auto; /* Solo el contenido interno se desplaza */
+  overflow-y: auto;
   position: relative;
   box-sizing: border-box;
   width: 100%;
   padding-bottom: calc(78px + env(safe-area-inset-bottom));
 }
 
-/* Neo-Brutalist Bento Card */
+/* Modern Clean Specialty Coffee Card */
 .candy-card {
   background-color: var(--bg-card);
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 14px;
   margin-bottom: 12px;
   position: relative;
   cursor: pointer;
-  box-shadow: 3px 3px 0px var(--border-color);
-  transition: transform 200ms var(--transition-spring), box-shadow 200ms var(--transition-spring), background-color 150ms ease;
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.04), 0 1px 3px -1px rgba(0, 0, 0, 0.02);
+  transition: transform 180ms var(--transition-spring), box-shadow 180ms ease, border-color 150ms ease;
   box-sizing: border-box;
   overflow: hidden;
 }
 
 .candy-card:not(.static):hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px var(--border-color);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.07), 0 3px 8px -2px rgba(0, 0, 0, 0.03);
+  border-color: rgba(188, 84, 73, 0.35);
 }
 
 .candy-card:not(.static):active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px var(--border-color);
+  transform: scale(0.985);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
-/* Alerta de Stock Bajo (Borde Punteado) */
+/* Low Stock Card */
 .candy-card.low-stock {
-  border-style: dashed;
-  border-color: var(--color-crimson);
+  border-color: #EF4444;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FEF2F2 100%);
 }
 
-/* Header */
+/* Header with Frosted Glass */
 .app-header {
   background-color: var(--bg-header);
-  border-bottom: 2px solid var(--border-color);
-  padding: 8px 14px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-color);
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -220,129 +214,134 @@ main {
 
 .app-header h1 {
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 800;
   margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: -0.01em;
   color: var(--color-header-text);
 }
 
-/* Bento Buttons */
+/* Modern Sleek Buttons */
 .btn-candy {
-  background-color: var(--bg-card);
-  border: 1.5px solid var(--border-color);
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 10px 18px;
   min-height: 42px;
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12.5px;
   cursor: pointer;
-  text-transform: uppercase;
   color: var(--color-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  transition: transform 150ms var(--transition-spring), box-shadow 150ms ease, background-color 150ms ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 160ms var(--transition-spring);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .btn-candy:hover {
-  background-color: var(--bg-header);
+  background-color: var(--bg-canvas);
+  border-color: #CBD5E1;
+  transform: translateY(-1px);
 }
 
 .btn-candy:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .btn-candy.primary {
   background-color: var(--color-crimson);
   color: #FFFFFF;
-  border-color: var(--color-crimson);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border: none;
+  box-shadow: 0 4px 14px rgba(188, 84, 73, 0.28);
 }
 
 .btn-candy.primary:hover {
-  filter: brightness(1.08);
+  filter: brightness(1.05);
+  box-shadow: 0 6px 18px rgba(188, 84, 73, 0.36);
+  transform: translateY(-1px);
 }
 
 .btn-candy.primary:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .btn-candy.accent {
-  background-color: var(--bg-header);
+  background-color: rgba(188, 84, 73, 0.08);
   color: var(--color-crimson);
-  border-color: var(--color-crimson);
+  border: 1px solid rgba(188, 84, 73, 0.25);
 }
 
 .btn-candy.accent:hover {
-  filter: brightness(0.95);
+  background-color: rgba(188, 84, 73, 0.14);
 }
 
 .app-bar-btn {
-  border: 1.5px solid var(--border-color);
-  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  background-color: #FFFFFF;
   padding: 6px 12px;
   min-height: 36px;
   font-family: var(--font-heading);
   font-weight: 700;
   font-size: 11px;
   cursor: pointer;
-  text-transform: uppercase;
   color: var(--color-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  transition: transform 100ms, background-color 100ms;
+  transition: all 150ms ease;
   border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .app-bar-btn:hover {
-  background-color: var(--bg-header);
+  background-color: var(--bg-canvas);
+  border-color: #CBD5E1;
 }
 
 .app-bar-btn:active {
   transform: scale(0.96);
 }
 
-/* Inputs */
+/* Modern Inputs & Form Controls */
 .form-group {
   margin-bottom: 14px;
   box-sizing: border-box;
-  min-width: 0; /* Prevents flex overflow */
+  min-width: 0;
 }
 
 .form-group label {
   display: block;
   font-family: var(--font-heading);
   font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
   margin-bottom: 6px;
-  font-weight: 700;
-  color: var(--color-text);
-  letter-spacing: 0.3px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
 }
 
 .candy-input {
   width: 100%;
   background-color: #FFFFFF;
-  border: 1.5px solid var(--border-color);
-  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
   padding: 11px 14px;
   font-family: var(--font-body);
-  font-size: 14px; /* 14-16px prevents iOS Safari auto-zoom */
+  font-size: 14px;
   box-sizing: border-box;
   color: #0F172A;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: all 180ms ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .candy-input:focus {
   outline: none;
   border-color: var(--color-crimson);
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+  box-shadow: 0 0 0 3px rgba(188, 84, 73, 0.12);
 }
 
 /* Custom styling for date inputs to look clean and uniform across all browsers (including iOS Safari standalone PWA) */
@@ -399,20 +398,23 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .jmax-hdr-lbl {
-  font-size: 9px;
-  font-weight: 900;
+  font-size: 10px;
+  font-weight: 700;
   margin-bottom: 4px;
   text-transform: uppercase;
+  color: var(--color-text-muted);
 }
 
 .mono-stepper {
   display: flex;
-  border: 2px solid var(--border-color);
-  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  background-color: #FFFFFF;
   width: 100%;
   align-items: center;
   box-sizing: border-box;
-  border-radius: 6px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
 }
 
 /* Compact stepper modifiers */
@@ -423,53 +425,57 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 .mono-stepper.compact .stepper-btn {
   flex: none;
   width: 32px;
-  height: 30px;
+  height: 32px;
   font-size: 14px;
 }
 
 .mono-stepper.compact .stepper-value {
   width: 38px;
-  height: 30px;
-  line-height: 30px;
+  height: 32px;
+  line-height: 32px;
   flex: none;
 }
 
 .stepper-btn {
   flex: 1;
   height: 38px;
-  background: var(--bg-card);
+  background: #FFFFFF;
   border: none;
   font-weight: bold;
   cursor: pointer;
   font-size: 16px;
-  color: var(--border-color);
+  color: var(--color-text);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.1s;
+  transition: background-color 0.15s ease;
 }
 
 .stepper-btn:first-child {
-  border-right: 2px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
 }
 
 .stepper-btn:last-child {
-  border-left: 2px solid var(--border-color);
+  border-left: 1px solid var(--border-color);
+}
+
+.stepper-btn:hover {
+  background-color: var(--bg-canvas);
 }
 
 .stepper-btn:active {
-  background-color: #EDF2F7;
+  background-color: #E2E8F0;
 }
 
 .stepper-value {
-  width: 32px;
+  width: 34px;
   height: 38px;
   line-height: 38px;
   text-align: center;
   border: none;
   background: transparent;
   font-family: var(--font-mono);
-  font-weight: bold;
+  font-weight: 800;
   font-size: 13px;
   color: var(--color-text);
 }
@@ -549,22 +555,22 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 10px 22px;
-  background: var(--bg-header, #D1FAE5);
-  color: var(--color-text, #064E3B);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1.5px solid var(--border-color, #A7F3D0);
-  border-radius: 30px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.05);
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--color-text);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.04);
   font-family: var(--font-body);
-  font-size: 12.5px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   z-index: 12000;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 /* Floating Pill Toast (Dynamic Island Feeling) */
@@ -577,7 +583,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   max-width: calc(100% - 32px);
   background-color: var(--color-text);
   color: #FFFFFF;
-  border: 2px solid var(--border-color);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   padding: 10px 20px;
   display: flex;
   justify-content: space-between;
@@ -587,11 +593,11 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   visibility: hidden;
   opacity: 0;
   transition: transform 0.3s var(--transition-spring), opacity 0.3s ease, visibility 0.3s;
-  font-weight: 700;
+  font-weight: 600;
   box-sizing: border-box;
-  font-size: 12px;
+  font-size: 12.5px;
   border-radius: 999px;
-  box-shadow: 4px 4px 0px var(--border-color);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
 .undo-toast.show {
@@ -601,24 +607,23 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .undo-btn {
-  background-color: var(--bg-card);
-  color: var(--border-color);
-  border: 2px solid var(--border-color);
-  padding: 4px 10px;
+  background-color: rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
+  border: none;
+  padding: 5px 12px;
   font-family: var(--font-heading);
-  font-weight: bold;
-  font-size: 10px;
+  font-weight: 700;
+  font-size: 11px;
   cursor: pointer;
   text-transform: uppercase;
-  border-radius: 6px;
-  box-shadow: 1px 1px 0px var(--border-color);
+  border-radius: 999px;
 }
 
 .undo-btn:active {
-  background-color: #EDF2F7;
+  background-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Bento Badges & Tags */
+/* Refined Badges & Tags */
 .mono-badge-row {
   display: flex;
   flex-wrap: wrap;
@@ -630,57 +635,60 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   background: var(--color-crimson);
   color: #FFFFFF;
   padding: 4px 10px;
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-radius: 6px;
-  border: 1.5px solid var(--border-color);
+  letter-spacing: 0.04em;
+  border-radius: 8px;
+  border: none;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .mono-lbl-tag.outline {
-  background: var(--bg-card);
-  color: var(--border-color);
-  border: 1.5px solid var(--border-color);
+  background: var(--bg-canvas);
+  color: var(--color-text-muted);
+  border: 1px solid var(--border-color);
+  box-shadow: none;
 }
 
 .mono-lbl-tag.low-stock {
-  background: #E53E3E;
+  background: #EF4444;
   color: #FFFFFF;
   animation: pulse-danger 2s infinite;
 }
 
 @keyframes pulse-danger {
-  0% { box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.4); }
-  70% { box-shadow: 0 0 0 6px rgba(229, 62, 62, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(229, 62, 62, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
-/* Bento Accordion System for Recipe Forms */
+/* Modern Accordion System for Recipe Forms */
 .bento-accordion {
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  padding: 12px;
-  box-shadow: 3px 3px 0px var(--border-color);
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
   margin-bottom: 12px;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .bento-accordion[open] {
   padding-bottom: 16px;
+  border-color: #CBD5E1;
 }
 
 .bento-accordion-header {
   font-family: var(--font-heading);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   cursor: pointer;
   list-style: none;
   display: flex;
@@ -696,31 +704,32 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 
 /* Banner de Referencia de Receta */
 .recipe-target-banner {
-  background-color: var(--bg-card);
-  border: 2px solid var(--border-color);
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-color);
   padding: 14px;
   margin-bottom: 16px;
-  border-radius: 12px;
-  box-shadow: 4px 4px 0px var(--border-color);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 /* Cronómetro de Extracción */
 .timer-container {
-  border: 2px solid var(--border-color);
-  background-color: var(--bg-card);
-  padding: 16px;
+  border: 1px solid var(--border-color);
+  background-color: #FFFFFF;
+  padding: 18px;
   text-align: center;
   margin-bottom: 16px;
-  border-radius: 12px;
-  box-shadow: 4px 4px 0px var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.05);
 }
 
 .timer-display {
   font-family: var(--font-mono);
-  font-size: 36px;
-  font-weight: 900;
+  font-size: 38px;
+  font-weight: 800;
   margin: 10px 0;
-  color: var(--border-color);
+  color: var(--color-text);
+  letter-spacing: -0.02em;
 }
 
 .timer-controls {
@@ -738,17 +747,18 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .grain-details-compact strong {
-  color: var(--border-color);
+  color: var(--color-text);
 }
 
 .instr-box {
-  border: 2px solid var(--border-color);
-  background-color: #FEF3C7;
-  padding: 12px;
-  font-size: 11px;
+  border: 1px solid #FDE68A;
+  background-color: #FFFBEB;
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 1.5;
   margin-top: 14px;
-  color: #000000;
-  border-radius: 8px;
+  color: #92400E;
+  border-radius: 10px;
 }
 
 .nb-action-wrap {

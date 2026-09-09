@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
-import { Plus, Zap, Snowflake, CheckCircle2, Mountain, Sparkles, Loader2, Compass } from 'lucide-react';
+import { Plus, Zap, Snowflake, CheckCircle2, Mountain, Sparkles, Loader2, Compass, Share2, ClipboardCopy, X, Layers, FileText } from 'lucide-react';
 import { RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
+import { generateCoffeeMenuCardImage, generateCoffeeMenuText } from '../utils/cardGenerator';
+import { copyToClipboard } from '../utils/clipboard';
 
 export default function Inventory({ batches, onSelectBatch, onCreateTrigger, showToast }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFinished, setShowFinished] = useState(false);
   const [sommelierLoading, setSommelierLoading] = useState(false);
   const [sommelierResult, setSommelierResult] = useState(null);
+
+  // Menu Share State
+  const [showMenuShareModal, setShowMenuShareModal] = useState(false);
+  const [menuShareImage, setMenuShareImage] = useState(null);
+  const [menuShareTemplate, setMenuShareTemplate] = useState('craft');
+  const [menuShareStatus, setMenuShareStatus] = useState('');
 
   const safeBatches = Array.isArray(batches) ? batches : [];
 
@@ -26,6 +34,77 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, sho
     const q = (searchQuery || '').toLowerCase();
     return name.toLowerCase().includes(q) || producer.toLowerCase().includes(q) || origin.toLowerCase().includes(q);
   });
+
+  const handleOpenMenuShare = (template = menuShareTemplate) => {
+    const targetList = availableBatches.length > 0 ? availableBatches : safeBatches;
+    if (targetList.length === 0) {
+      if (showToast) showToast('No hay cafés en el inventario para generar la carta.', { type: 'info' });
+      return;
+    }
+    const imgData = generateCoffeeMenuCardImage(targetList, template);
+    setMenuShareImage(imgData);
+    setMenuShareTemplate(template);
+    setShowMenuShareModal(true);
+    setMenuShareStatus('');
+  };
+
+  const handleCopyMenuText = async () => {
+    const targetList = availableBatches.length > 0 ? availableBatches : safeBatches;
+    const text = generateCoffeeMenuText(targetList);
+    const success = await copyToClipboard(text);
+    if (success) {
+      setMenuShareStatus('📋 ¡Carta de cafés copiada al portapapeles!');
+      if (showToast) showToast('📋 Carta de cafés copiada en formato texto.', { type: 'success' });
+    } else {
+      setMenuShareStatus('⚠️ No se pudo copiar automáticamente.');
+    }
+  };
+
+  const handleNativeMenuShare = async () => {
+    if (!menuShareImage) return;
+    const targetList = availableBatches.length > 0 ? availableBatches : safeBatches;
+    const text = generateCoffeeMenuText(targetList);
+
+    try {
+      const blob = await (await fetch(menuShareImage)).blob();
+      const file = new File([blob], `Carta_Cafes_BeanTag_${Date.now()}.png`, { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Carta de Cafés de Especialidad • BeanTag',
+          text: `☕ Menú de Cafés congelados en cava (${targetList.length} variedades disponibles)`,
+          files: [file]
+        });
+        setMenuShareStatus('✅ Compartido con éxito');
+        return;
+      }
+
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Carta de Cafés • BeanTag',
+          text: text,
+          url: window.location.href
+        });
+        setMenuShareStatus('✅ Carta compartida');
+        return;
+      }
+
+      // Download Fallback
+      const a = document.createElement('a');
+      a.href = menuShareImage;
+      a.download = `Carta_Cafes_BeanTag_${Date.now()}.png`;
+      a.click();
+      setMenuShareStatus('📥 Imagen de la carta descargada');
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        const a = document.createElement('a');
+        a.href = menuShareImage;
+        a.download = `Carta_Cafes_BeanTag_${Date.now()}.png`;
+        a.click();
+        setMenuShareStatus('📥 Imagen descargada');
+      }
+    }
+  };
 
   const handleAskSommelier = async () => {
     const apiKey = localStorage.getItem('gemini-api-key');
@@ -78,65 +157,86 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, sho
   };
 
   return (
-    <div style={{ padding: '14px 14px 24px 14px' }}>
+    <div style={{ padding: '16px 14px 28px 14px' }}>
       
       {/* 1. Search Bar */}
       <div style={{ marginBottom: '10px' }}>
         <input 
           className="candy-input" 
-          placeholder="🔍 Buscar café, origen o productor..." 
+          placeholder="🔍 Buscar café, origen, productor o variedad..." 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ width: '100%', boxSizing: 'border-box', margin: 0, padding: '10px 14px', fontSize: '12px' }}
+          style={{ width: '100%', boxSizing: 'border-box', margin: 0, padding: '11px 14px', fontSize: '13px' }}
         />
       </div>
 
-      {/* Sommelier Quick Action Banner */}
-      {availableBatches.length > 0 && !showFinished && (
-        <div style={{ marginBottom: '14px' }}>
-          <button
-            type="button"
-            className="btn-candy"
-            onClick={handleAskSommelier}
-            disabled={sommelierLoading}
-            style={{
-              width: '100%',
-              margin: 0,
-              padding: '9px 14px',
-              fontSize: '11.5px',
-              fontWeight: '800',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              backgroundColor: 'var(--bg-header)',
-              borderColor: 'var(--color-crimson)',
-              color: 'var(--color-crimson)'
-            }}
-          >
-            {sommelierLoading ? <Loader2 size={15} className="spin" /> : <Sparkles size={15} />}
-            <span>{sommelierLoading ? 'Consultando al Sommelier IA...' : '✨ ¿Qué café preparar hoy? Preguntar al Sommelier'}</span>
-          </button>
-        </div>
-      )}
+      {/* 2. Top Modern Action Toolbar: Sommelier + Share Full Coffee Menu */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
+        <button
+          type="button"
+          className="btn-candy"
+          onClick={handleAskSommelier}
+          disabled={sommelierLoading}
+          style={{
+            margin: 0,
+            padding: '9px 10px',
+            fontSize: '11.5px',
+            fontWeight: '700',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+            background: '#FFFFFF',
+            border: '1px solid var(--border-color)',
+            color: 'var(--color-crimson)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+          }}
+        >
+          {sommelierLoading ? <Loader2 size={15} className="spin" /> : <Sparkles size={15} />}
+          <span>{sommelierLoading ? 'Pensando...' : '✨ Sommelier IA'}</span>
+        </button>
+
+        <button
+          type="button"
+          className="btn-candy"
+          onClick={() => handleOpenMenuShare(menuShareTemplate)}
+          style={{
+            margin: 0,
+            padding: '9px 10px',
+            fontSize: '11.5px',
+            fontWeight: '700',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+            background: '#FFFFFF',
+            border: '1px solid var(--border-color)',
+            color: 'var(--color-text)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+          }}
+        >
+          <Share2 size={15} color="var(--color-crimson)" strokeWidth={2.2} />
+          <span>📋 Compartir Carta ({availableBatches.length})</span>
+        </button>
+      </div>
 
       {/* Sommelier Recommendation Card */}
       {sommelierResult && !showFinished && (
         <div className="candy-card animate-entrance" style={{ 
-          background: 'var(--bg-card)', 
-          border: '2px solid var(--color-crimson)', 
+          background: '#FFFFFF', 
+          border: '1px solid var(--color-crimson)', 
           padding: '16px', 
           marginBottom: '16px',
-          borderRadius: '14px',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.06)'
+          borderRadius: '16px',
+          boxShadow: '0 4px 20px rgba(188, 84, 73, 0.08)'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '900', color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '800', color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
               <Compass size={15} />
               <span>Recomendación Sommelier (Gemini 3.7)</span>
             </div>
             {sommelierResult.badge && (
-              <span style={{ fontSize: '10px', background: 'var(--bg-header)', border: '1px solid var(--border-color)', color: 'var(--color-crimson)', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
+              <span style={{ fontSize: '10px', background: 'rgba(188, 84, 73, 0.08)', border: '1px solid rgba(188, 84, 73, 0.2)', color: 'var(--color-crimson)', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
                 {sommelierResult.badge}
               </span>
             )}
@@ -146,18 +246,18 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, sho
             ☕ {sommelierResult.recommended_batch_name}
           </h4>
 
-          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 12px 0', lineHeight: 1.4 }}>
+          <p style={{ fontSize: '12.5px', color: 'var(--color-text-muted)', margin: '0 0 12px 0', lineHeight: 1.45 }}>
             {sommelierResult.reason}
           </p>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-            <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text)' }}>
+            <span style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--color-text)' }}>
               Método: <strong style={{ color: 'var(--color-crimson)' }}>{sommelierResult.suggested_method}</strong>
             </span>
             <button
               type="button"
               className="btn-candy primary"
-              style={{ margin: 0, padding: '7px 14px', fontSize: '11.5px', fontWeight: '800' }}
+              style={{ margin: 0, padding: '7px 14px', fontSize: '11.5px', fontWeight: '700' }}
               onClick={() => onSelectBatch(sommelierResult.recommended_batch_id)}
             >
               Preparar Ahora →
@@ -346,6 +446,134 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, sho
             </div>
           );
         })
+      )}
+
+      {/* MODAL DE COMPARTIR CARTA DE CAFÉS (FREEZER MENU) */}
+      {showMenuShareModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          zIndex: 11000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '12px', boxSizing: 'border-box'
+        }} onClick={() => { setShowMenuShareModal(false); setMenuShareStatus(''); }}>
+          <div className="candy-card static animate-entrance" style={{
+            maxWidth: '480px', width: '100%',
+            maxHeight: '92vh',
+            padding: '16px', boxSizing: 'border-box',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+            display: 'flex', flexDirection: 'column', gap: '10px',
+            overflowY: 'auto'
+          }} onClick={(e) => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: 0, fontWeight: '800', color: 'var(--color-text)' }}>
+                  📋 Carta de Cafés • Menú en Cava
+                </h3>
+                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  {availableBatches.length > 0 ? availableBatches.length : safeBatches.length} lotes de especialidad disponibles
+                </span>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setShowMenuShareModal(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--color-text-muted)' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Template Selector */}
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
+              {[
+                { id: 'craft', label: '☕ Artesanal' },
+                { id: 'minimal', label: '🏷️ Nórdico' },
+                { id: 'dark', label: '🌑 Tokyo Dark' }
+              ].map(t => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => handleOpenMenuShare(t.id)}
+                  style={{
+                    flex: 1,
+                    padding: '5px 8px',
+                    fontSize: '10px',
+                    borderRadius: '6px',
+                    border: menuShareTemplate === t.id ? '1px solid var(--color-crimson)' : 'none',
+                    backgroundColor: menuShareTemplate === t.id ? '#FFFFFF' : 'transparent',
+                    fontWeight: menuShareTemplate === t.id ? '800' : '500',
+                    color: menuShareTemplate === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
+                    boxShadow: menuShareTemplate === t.id ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Live Image Preview */}
+            <div style={{ textAlign: 'center', backgroundColor: '#F1F5F9', borderRadius: '10px', padding: '6px', overflow: 'hidden', maxHeight: '52vh', overflowY: 'auto' }}>
+              {menuShareImage && (
+                <img 
+                  src={menuShareImage} 
+                  alt="Carta de cafés de especialidad" 
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                    borderRadius: '4px', 
+                    display: 'block',
+                    margin: '0 auto',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.12)'
+                  }} 
+                />
+              )}
+            </div>
+
+            {/* Status Message */}
+            {menuShareStatus && (
+              <div style={{
+                background: menuShareStatus.includes('❌') ? '#FEE2E2' : '#ECFDF5',
+                color: menuShareStatus.includes('❌') ? '#991B1B' : '#065F46',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                padding: '6px 12px',
+                fontSize: '11.5px',
+                fontWeight: '600',
+                textAlign: 'center'
+              }}>
+                {menuShareStatus}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '4px' }}>
+              <button 
+                type="button" 
+                className="btn-candy" 
+                style={{ padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', fontWeight: '700' }} 
+                onClick={handleCopyMenuText}
+              >
+                <ClipboardCopy size={15} strokeWidth={2.2} />
+                Copiar Texto (WhatsApp)
+              </button>
+
+              <button 
+                type="button" 
+                className="btn-candy primary" 
+                style={{ padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', fontWeight: '700' }} 
+                onClick={handleNativeMenuShare}
+              >
+                <Share2 size={15} strokeWidth={2.2} />
+                Compartir PNG (2x)
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

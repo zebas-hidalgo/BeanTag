@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
-import { generateRecipeCardImage } from '../utils/cardGenerator';
+import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText } from '../utils/cardGenerator';
 import { FAMOUS_RECIPES } from '../utils/famousRecipes';
 import ScaRadarChart from './ScaRadarChart';
 import DialInAssistant from './DialInAssistant';
@@ -30,9 +30,7 @@ const parseGrindToMicrons = (grindStr) => {
   return null;
 };
 
-
-
-export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtractDose, onSaveRecipe, onDeleteBatch, onEditBatch, showToast }) {
+export default function BatchDetail({ batchId, batches = [], prefillRecipe, onBack, onSubtractDose, onSaveRecipe, onDeleteBatch, onEditBatch, showToast }) {
   const [batch, setBatch] = useState(null);
   const brewFormRef = useRef(null);
 
@@ -93,13 +91,29 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
 
   // Share / Export Card States
   const [shareImage, setShareImage] = useState(null);
+  const [shareScope, setShareScope] = useState('single'); // 'single' | 'menu'
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(false); // Default to bean-only for batch detail
   const [shareTemplate, setShareTemplate] = useState('craft'); // 'craft' | 'minimal' | 'dark'
   const [shareStatus, setShareStatus] = useState('');
 
-  const handleShareBatchCard = (incRecipe = shareIncludeRecipe, templ = shareTemplate) => {
+  const handleShareBatchCard = (incRecipe = shareIncludeRecipe, templ = shareTemplate, scope = shareScope) => {
     if (!batch) return;
-    setShareStatus('Generando ticket POS...');
+    setShareScope(scope);
+    setShareStatus('Generando imagen...');
+
+    if (scope === 'menu') {
+      const targetList = Array.isArray(batches) && batches.length > 0 ? batches : [batch];
+      try {
+        const dataUrl = generateCoffeeMenuCardImage(targetList, templ);
+        setShareImage(dataUrl);
+        setShareTemplate(templ);
+        setShareStatus('✅ Carta de cafés generada con éxito');
+      } catch (err) {
+        console.error("Menu card generation error:", err);
+        setShareStatus('❌ Error: ' + err.message);
+      }
+      return;
+    }
     
     // Construct recipe/batch object
     const syntheticRecipe = {
@@ -129,10 +143,35 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
     try {
       const dataUrl = generateRecipeCardImage(syntheticRecipe, templ, incRecipe);
       setShareImage(dataUrl);
+      setShareTemplate(templ);
+      setShareIncludeRecipe(incRecipe);
       setShareStatus('✅ Ticket generado con éxito');
     } catch (err) {
       console.error("Card generation error:", err);
       setShareStatus('❌ Error: ' + err.message);
+    }
+  };
+
+  const handleCopyShareText = async () => {
+    if (shareScope === 'menu') {
+      const targetList = Array.isArray(batches) && batches.length > 0 ? batches : [batch];
+      const text = generateCoffeeMenuText(targetList);
+      const success = await copyToClipboard(text);
+      if (success) {
+        setShareStatus('📋 ¡Carta de cafés copiada al portapapeles!');
+        if (showToast) showToast('📋 Carta de cafés copiada en formato texto.', { type: 'success' });
+      }
+    } else {
+      const text = `☕ *${batch.name}* (${batch.roaster || 'Specialty'})\n` +
+        `🌍 ${batch.origin || 'Origen'} • ${batch.altitude || ''}\n` +
+        `🌾 ${batch.variety || ''} • Proceso: ${batch.process || 'Lavado'}\n` +
+        `✨ Notas: ${batch.roaster_notes || 'Café de Especialidad'}\n` +
+        (shareIncludeRecipe ? `\n🧾 *Receta:* ${method} • Dosis: ${doseInG}g • Ratio 1:${ratioVal} • Molienda: ${getGrindString()} • Temp: ${waterTemp}°C` : '');
+      const success = await copyToClipboard(text);
+      if (success) {
+        setShareStatus('📋 Ficha copiada al portapapeles');
+        if (showToast) showToast('📋 Ficha copiada.', { type: 'success' });
+      }
     }
   };
 
@@ -148,14 +187,16 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
       }
       const byteArray = new Uint8Array(byteNumbers);
       const blob = new Blob([byteArray], { type: 'image/png' });
-      const filename = `${batch.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}_ficha.png`;
+      const filename = shareScope === 'menu'
+        ? `Carta_Cafes_BeanTag_${Date.now()}.png`
+        : `${batch.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}_ficha.png`;
       const file = new File([blob], filename, { type: 'image/png' });
 
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: `Ficha de ${batch.name}`,
-          text: `Ficha de café de especialidad BeanTag: ${batch.name}`
+          title: shareScope === 'menu' ? 'Carta de Cafés • BeanTag' : `Ficha de ${batch.name}`,
+          text: shareScope === 'menu' ? 'Carta de cafés de especialidad disponibles en cava' : `Ficha de café de especialidad: ${batch.name}`
         });
         setShareStatus('✅ Compartido con éxito');
       } else {
@@ -168,7 +209,7 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
     } catch (err) {
       if (err.name !== 'AbortError') {
         const link = document.createElement('a');
-        link.download = `${batch.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}_ficha.png`;
+        link.download = shareScope === 'menu' ? `Carta_Cafes_BeanTag_${Date.now()}.png` : `${batch.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}_ficha.png`;
         link.href = shareImage;
         link.click();
         setShareStatus('📥 Imagen descargada');
@@ -1398,66 +1439,125 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
         </div>
       )}
 
-      {/* Modal de Compartir Ticket POS */}
+      {/* Modal de Compartir Ticket POS & Carta de Cafés */}
       {shareImage && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          zIndex: 11000, display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: '12px', boxSizing: 'border-box'
         }} onClick={() => { setShareImage(null); setShareStatus(''); }}>
-          <div className="candy-card static" style={{
+          <div className="candy-card static animate-entrance" style={{
             maxWidth: '480px', width: '100%',
+            maxHeight: '92vh',
             padding: '16px', boxSizing: 'border-box',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
-            animation: 'soft-pop 250ms var(--transition-spring)',
-            display: 'flex', flexDirection: 'column', gap: '10px'
+            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+            display: 'flex', flexDirection: 'column', gap: '10px',
+            overflowY: 'auto'
           }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0 }}>
-                  🧾 Ticket Barista • {batch?.name}
-                </h3>
-                {/* Content Toggle */}
+              
+              {/* Row 1: Scope Selector (Ficha de este café vs Carta Completa) */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
                 <div style={{ display: 'flex', gap: '4px' }}>
-                  <button 
-                    type="button" 
-                    onClick={() => { setShareIncludeRecipe(false); handleShareBatchCard(false, shareTemplate); }}
-                    style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: !shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShareScope('single');
+                      handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'single');
+                    }}
+                    style={{
+                      padding: '5px 10px',
+                      fontSize: '11px',
+                      borderRadius: '6px',
+                      border: shareScope === 'single' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                      backgroundColor: shareScope === 'single' ? '#FFFFFF' : 'var(--bg-canvas)',
+                      fontWeight: shareScope === 'single' ? '800' : '500',
+                      color: shareScope === 'single' ? 'var(--color-crimson)' : 'var(--color-text)',
+                      cursor: 'pointer'
+                    }}
                   >
-                    🌾 Solo Grano
+                    🎫 Ficha de este Café
                   </button>
-                  <button 
-                    type="button" 
-                    onClick={() => { setShareIncludeRecipe(true); handleShareBatchCard(true, shareTemplate); }}
-                    style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShareScope('menu');
+                      handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'menu');
+                    }}
+                    style={{
+                      padding: '5px 10px',
+                      fontSize: '11px',
+                      borderRadius: '6px',
+                      border: shareScope === 'menu' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                      backgroundColor: shareScope === 'menu' ? '#FFFFFF' : 'var(--bg-canvas)',
+                      fontWeight: shareScope === 'menu' ? '800' : '500',
+                      color: shareScope === 'menu' ? 'var(--color-crimson)' : 'var(--color-text)',
+                      cursor: 'pointer'
+                    }}
                   >
-                    🧾 Con Receta
+                    📋 Carta de Cafés ({batches && batches.length > 0 ? batches.length : 1})
                   </button>
                 </div>
+
+                <button 
+                  type="button" 
+                  onClick={() => setShareImage(null)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--color-text-muted)' }}
+                >
+                  <X size={20} />
+                </button>
               </div>
 
+              {/* Row 2: Sub-options (Only when scope is single: Solo Grano vs Con Receta) */}
+              {shareScope === 'single' && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--color-text)' }}>
+                    {batch?.name}
+                  </span>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <button 
+                      type="button" 
+                      onClick={() => { setShareIncludeRecipe(false); handleShareBatchCard(false, shareTemplate, 'single'); }}
+                      style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: !shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : '#FFFFFF', color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      🌾 Solo Grano
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => { setShareIncludeRecipe(true); handleShareBatchCard(true, shareTemplate, 'single'); }}
+                      style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : '#FFFFFF', color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      🧾 Con Receta
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Aesthetic Template Selector */}
-              <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+              <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
                 {[
-                  { id: 'craft', label: '☕ Artesanal (Warm)' },
-                  { id: 'minimal', label: '🏷️ Nórdico (Minimal)' },
+                  { id: 'craft', label: '☕ Artesanal' },
+                  { id: 'minimal', label: '🏷️ Nórdico' },
                   { id: 'dark', label: '🌑 Tokyo Dark' }
                 ].map(t => (
                   <button
                     key={t.id}
                     type="button"
-                    onClick={() => { setShareTemplate(t.id); handleShareBatchCard(shareIncludeRecipe, t.id); }}
+                    onClick={() => { setShareTemplate(t.id); handleShareBatchCard(shareIncludeRecipe, t.id, shareScope); }}
                     style={{
                       flex: 1,
                       padding: '4px 6px',
                       fontSize: '9.5px',
-                      borderRadius: '4px',
-                      border: shareTemplate === t.id ? '1.5px solid var(--color-crimson)' : 'none',
-                      backgroundColor: shareTemplate === t.id ? 'var(--bg-header)' : 'transparent',
-                      fontWeight: shareTemplate === t.id ? '900' : 'normal',
-                      color: 'var(--color-text)',
+                      borderRadius: '6px',
+                      border: shareTemplate === t.id ? '1px solid var(--color-crimson)' : 'none',
+                      backgroundColor: shareTemplate === t.id ? '#FFFFFF' : 'transparent',
+                      fontWeight: shareTemplate === t.id ? '800' : '500',
+                      color: shareTemplate === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
+                      boxShadow: shareTemplate === t.id ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
                       cursor: 'pointer'
                     }}
                   >
@@ -1467,54 +1567,55 @@ export default function BatchDetail({ batchId, prefillRecipe, onBack, onSubtract
               </div>
             </div>
 
-            <div style={{ textAlign: 'center', backgroundColor: '#E2E8F0', borderRadius: '8px', padding: '6px', overflow: 'hidden' }}>
+            <div style={{ textAlign: 'center', backgroundColor: '#F1F5F9', borderRadius: '10px', padding: '6px', overflow: 'hidden', maxHeight: '52vh', overflowY: 'auto' }}>
               <img 
                 src={shareImage} 
-                alt="Ticket de café POS" 
+                alt="Ticket de café POS o Carta" 
                 style={{
                   maxWidth: '100%',
                   height: 'auto',
-                  borderRadius: '2px', 
+                  borderRadius: '4px', 
                   display: 'block',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                  margin: '0 auto',
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.12)'
                 }} 
               />
             </div>
             
             {shareStatus && (
               <div style={{
-                background: shareStatus.includes('❌') ? '#FED7D7' : (shareStatus.includes('✅') || shareStatus.includes('📋') || shareStatus.includes('📥')) ? '#C6F6D5' : '#FEFCBF',
-                color: shareStatus.includes('❌') ? '#9B2C2C' : (shareStatus.includes('✅') || shareStatus.includes('📋') || shareStatus.includes('📥')) ? '#22543D' : '#744210',
-                border: '1.5px solid var(--border-color)',
-                borderRadius: '6px',
-                padding: '6px 10px',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                textAlign: 'center',
-                fontFamily: 'var(--font-heading)'
+                background: shareStatus.includes('❌') ? '#FEE2E2' : '#ECFDF5',
+                color: shareStatus.includes('❌') ? '#991B1B' : '#065F46',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                padding: '6px 12px',
+                fontSize: '11.5px',
+                fontWeight: '600',
+                textAlign: 'center'
               }}>
                 {shareStatus}
               </div>
             )}
 
-            <div style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
-              <button 
-                type="button" 
-                className="btn-candy primary" 
-                style={{ flex: 1, padding: '9px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px' }} 
-                onClick={handleNativeShare}
-              >
-                <Share2 size={15} strokeWidth={2.5} />
-                Compartir / Guardar PNG
-              </button>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '2px' }}>
               <button 
                 type="button" 
                 className="btn-candy" 
-                style={{ padding: '9px 14px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px' }} 
-                onClick={() => setShareImage(null)}
+                style={{ padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', fontWeight: '700' }} 
+                onClick={handleCopyShareText}
               >
-                <X size={15} strokeWidth={2.5} />
-                Cerrar
+                <ClipboardCopy size={15} strokeWidth={2.2} />
+                Copiar Texto (WhatsApp)
+              </button>
+
+              <button 
+                type="button" 
+                className="btn-candy primary" 
+                style={{ padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', fontWeight: '700' }} 
+                onClick={handleNativeShare}
+              >
+                <Share2 size={15} strokeWidth={2.2} />
+                Compartir PNG (2x)
               </button>
             </div>
           </div>

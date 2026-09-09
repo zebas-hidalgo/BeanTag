@@ -344,6 +344,7 @@ export default function App() {
           <BatchDetail 
             key={selectedBatchId}
             batchId={selectedBatchId} 
+            batches={batches}
             prefillRecipe={prefillRecipe}
             onBack={handleBack}
             onSubtractDose={handleSubtractDose}
