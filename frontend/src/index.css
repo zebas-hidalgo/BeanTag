@@ -3,35 +3,74 @@
 
 
 :root {
-  /* 🎨 Ultra-Modern Clean & Minimal Specialty Coffee Design Tokens (2026 Edition) */
-  --bg-canvas: #F8F9FA;
+  /* 🍎 Cupertino Haptic & iOS Native Luxe Design Tokens */
+  --bg-canvas: #F2F2F7; /* Apple System Gray 6 (Base) */
   --bg-card: #FFFFFF;
   --color-crimson: #BC5449; /* Artisan Terracotta */
   --color-honey: #D97706;
   --color-emerald-light: #F0FDF4;
-  --border-color: #E2E8F0;
-  --color-text: #0F172A;
-  --color-text-muted: #64748B;
-  --bg-header: rgba(255, 255, 255, 0.90);
-  --color-header-text: #0F172A;
-  
-  --font-heading: 'Outfit', 'Space Grotesk', -apple-system, sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --border-color: rgba(60, 60, 67, 0.12); /* Apple HIG System Separator */
+  --color-text: #000000;
+  --color-text-muted: #8E8E93; /* Apple Secondary Label */
+  --bg-header: rgba(242, 242, 247, 0.82);
+  --color-header-text: #000000;
+  --sheet-bg: rgba(255, 255, 255, 0.94);
+  --segmented-bg: rgba(118, 118, 128, 0.12);
+  --segmented-active: #FFFFFF;
+  --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
 
-  --transition-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --font-heading: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Outfit', sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+  --font-mono: 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+
+  --transition-spring: cubic-bezier(0.32, 0.72, 0, 1);
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Genjutsu Motion Principles & Animations */
-.animate-entrance {
-  animation: modernFadeSlide 0.28s var(--transition-spring) forwards;
+/* 🌑 True OLED Pure Dark Mode (#000000) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="espresso"]):not([data-theme="matcha"]):not([data-theme="cyber"]):not([data-theme="sakura"]):not([data-theme="caramel"]):not([data-theme="frost"]) {
+    --bg-canvas: #000000;
+    --bg-card: #1C1C1E;
+    --color-crimson: #E06C60;
+    --color-honey: #F59E0B;
+    --border-color: rgba(84, 84, 88, 0.36);
+    --color-text: #FFFFFF;
+    --color-text-muted: #8E8E93;
+    --bg-header: rgba(0, 0, 0, 0.82);
+    --color-header-text: #FFFFFF;
+    --sheet-bg: rgba(28, 28, 30, 0.94);
+    --segmented-bg: rgba(118, 118, 128, 0.24);
+    --segmented-active: #2C2C2E;
+    --card-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  }
 }
 
-@keyframes modernFadeSlide {
+[data-theme="dark"] {
+  --bg-canvas: #000000 !important;
+  --bg-card: #1C1C1E !important;
+  --color-crimson: #E06C60 !important;
+  --color-honey: #F59E0B !important;
+  --border-color: rgba(84, 84, 88, 0.36) !important;
+  --color-text: #FFFFFF !important;
+  --color-text-muted: #8E8E93 !important;
+  --bg-header: rgba(0, 0, 0, 0.82) !important;
+  --color-header-text: #FFFFFF !important;
+  --sheet-bg: rgba(28, 28, 30, 0.94) !important;
+  --segmented-bg: rgba(118, 118, 128, 0.24) !important;
+  --segmented-active: #2C2C2E !important;
+  --card-shadow: 0 6px 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Genjutsu & Cupertino Motion Principles */
+.animate-entrance {
+  animation: cupertinoSlideUp 0.32s var(--transition-spring) forwards;
+}
+
+@keyframes cupertinoSlideUp {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.99);
+    transform: translateY(16px) scale(0.985);
   }
   to {
     opacity: 1;
@@ -40,93 +79,74 @@
 }
 
 .genjutsu-pulse {
-  animation: modernPulse 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: cupertinoHapticPulse 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes modernPulse {
+@keyframes cupertinoHapticPulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  50% { transform: scale(1.04); }
   100% { transform: scale(1); }
 }
 
-/* 🎨 6 Refined Editorial Specialty Themes */
-
-/* 1. Espresso Terracotta & Clean Ivory (Default) */
-[data-theme="espresso"], :root {
-  --bg-canvas: #F9FAFB;
+/* 🎨 Cupertino Adaptive Themes */
+[data-theme="espresso"] {
+  --bg-canvas: #F5F4F0;
   --bg-card: #FFFFFF;
-  --bg-header: rgba(255, 255, 255, 0.92);
+  --bg-header: rgba(245, 244, 240, 0.85);
   --color-crimson: #BC5449;
-  --color-honey: #D97706;
-  --border-color: #E5E7EB;
-  --color-text: #111827;
-  --color-text-muted: #6B7280;
-  --color-header-text: #111827;
-}
-
-/* 2. Organic Matcha Sage */
-[data-theme="matcha"] {
-  --bg-canvas: #F8FAF7;
-  --bg-card: #FFFFFF;
-  --bg-header: rgba(255, 255, 255, 0.92);
-  --color-crimson: #059669;
-  --color-honey: #D97706;
-  --border-color: #E2E8F0;
-  --color-text: #0F172A;
-  --color-text-muted: #64748B;
-  --color-header-text: #0F172A;
-}
-
-/* 3. Cyber Indigo Lab */
-[data-theme="cyber"] {
-  --bg-canvas: #F8FAFC;
-  --bg-card: #FFFFFF;
-  --bg-header: rgba(255, 255, 255, 0.92);
-  --color-crimson: #2563EB;
-  --color-honey: #EA580C;
-  --border-color: #E2E8F0;
-  --color-text: #0F172A;
-  --color-text-muted: #64748B;
-  --color-header-text: #0F172A;
-}
-
-/* 4. Sakura Rose & Cold Brew */
-[data-theme="sakura"] {
-  --bg-canvas: #FAF8F9;
-  --bg-card: #FFFFFF;
-  --bg-header: rgba(255, 255, 255, 0.92);
-  --color-crimson: #DB2777;
-  --color-honey: #C026D3;
-  --border-color: #F1E5EC;
-  --color-text: #1E1B24;
-  --color-text-muted: #736B7E;
-  --color-header-text: #1E1B24;
-}
-
-/* 5. Golden Amber & Honey */
-[data-theme="caramel"] {
-  --bg-canvas: #FAF9F6;
-  --bg-card: #FFFFFF;
-  --bg-header: rgba(255, 255, 255, 0.92);
-  --color-crimson: #D97706;
-  --color-honey: #B45309;
-  --border-color: #EBE5DA;
+  --border-color: rgba(60, 60, 67, 0.12);
   --color-text: #1C1917;
   --color-text-muted: #78716C;
-  --color-header-text: #1C1917;
 }
 
-/* 6. Nordic Arctic Frost */
-[data-theme="frost"] {
-  --bg-canvas: #F6F9FB;
+[data-theme="matcha"] {
+  --bg-canvas: #F2F5F3;
   --bg-card: #FFFFFF;
-  --bg-header: rgba(255, 255, 255, 0.92);
+  --bg-header: rgba(242, 245, 243, 0.85);
+  --color-crimson: #059669;
+  --border-color: rgba(5, 150, 105, 0.15);
+  --color-text: #064E3B;
+  --color-text-muted: #047857;
+}
+
+[data-theme="cyber"] {
+  --bg-canvas: #F0F4F8;
+  --bg-card: #FFFFFF;
+  --bg-header: rgba(240, 244, 248, 0.85);
+  --color-crimson: #2563EB;
+  --border-color: rgba(37, 99, 235, 0.15);
+  --color-text: #1E3A8A;
+  --color-text-muted: #1E40AF;
+}
+
+[data-theme="sakura"] {
+  --bg-canvas: #F9F3F6;
+  --bg-card: #FFFFFF;
+  --bg-header: rgba(249, 243, 246, 0.85);
+  --color-crimson: #DB2777;
+  --border-color: rgba(219, 39, 119, 0.15);
+  --color-text: #831843;
+  --color-text-muted: #9D174D;
+}
+
+[data-theme="caramel"] {
+  --bg-canvas: #F7F4EC;
+  --bg-card: #FFFFFF;
+  --bg-header: rgba(247, 244, 236, 0.85);
+  --color-crimson: #D97706;
+  --border-color: rgba(217, 119, 6, 0.15);
+  --color-text: #78350F;
+  --color-text-muted: #92400E;
+}
+
+[data-theme="frost"] {
+  --bg-canvas: #EDF4F9;
+  --bg-card: #FFFFFF;
+  --bg-header: rgba(237, 244, 249, 0.85);
   --color-crimson: #0284C7;
-  --color-honey: #4F46E5;
-  --border-color: #E0E7EC;
-  --color-text: #0B192C;
-  --color-text-muted: #5B6B7C;
-  --color-header-text: #0B192C;
+  --border-color: rgba(2, 132, 199, 0.15);
+  --color-text: #0C4A6E;
+  --color-text-muted: #0369A1;
 }
 
 body {
@@ -137,7 +157,7 @@ body {
   -webkit-font-smoothing: antialiased;
   touch-action: manipulation;
   overflow: hidden;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition: background-color 0.3s var(--transition-spring), color 0.3s ease;
 }
 
 .app-container {
@@ -819,7 +839,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   margin: 3px 0 0 0;
 }
 
-/* Bento Grid System */
+/* Bento Grid & Cupertino Metric Cards */
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -829,20 +849,23 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 
 .bento-widget {
   background-color: var(--bg-card);
-  border: 2px solid var(--border-color);
-  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
   padding: 14px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 2px 2px 0px var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   box-sizing: border-box;
   min-height: 118px;
+  transition: all 180ms ease;
 }
 
 .bento-widget.accent {
   background-color: var(--color-crimson);
   color: #fff;
+  border-color: var(--color-crimson);
+  box-shadow: 0 4px 16px rgba(188, 84, 73, 0.28);
 }
 
 .bento-header {
@@ -851,9 +874,10 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   align-items: center;
   font-family: var(--font-heading);
   font-size: 11.5px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   margin-bottom: 6px;
+  letter-spacing: 0.02em;
 }
 
 .bento-value-container {
@@ -864,9 +888,9 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .bento-value-container input {
-  font-size: 30px;
+  font-size: 32px;
   font-family: var(--font-mono);
-  font-weight: 900;
+  font-weight: 800;
   text-align: center;
   border: none;
   background: transparent;
@@ -878,7 +902,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 .bento-value-container input:focus { outline: none; }
 .bento-value-container span.unit {
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   font-family: var(--font-body);
 }
 
@@ -887,29 +911,268 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   justify-content: space-between;
   margin-top: auto;
   padding-top: 8px;
+  gap: 8px;
 }
+
 .bento-btn {
-  background: transparent;
-  border: 1.5px solid currentColor;
-  border-radius: 8px;
-  width: 38px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  flex: 1;
   height: 34px;
   min-height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 900;
-  font-size: 16px;
+  font-weight: 700;
+  font-size: 14px;
   cursor: pointer;
   color: inherit;
   transition: transform 120ms var(--transition-spring), background-color 120ms ease;
 }
+
 .bento-btn:active { 
-  transform: scale(0.92);
-  background-color: rgba(0,0,0,0.06);
+  transform: scale(0.94);
+  background-color: rgba(0,0,0,0.08);
 }
+
+.bento-widget.accent .bento-btn {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #FFFFFF;
+}
+
 .bento-widget.accent .bento-btn:active {
-  background-color: rgba(255,255,255,0.15);
+  background-color: rgba(255,255,255,0.3);
+}
+
+/* 🍎 Cupertino Bottom Sheet Architecture */
+.cupertino-sheet-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 10000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: backdropFadeIn 0.25s ease forwards;
+}
+
+@keyframes backdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cupertino-sheet {
+  width: 100%;
+  max-width: 480px;
+  max-height: 92dvh;
+  background-color: var(--sheet-bg);
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  animation: sheetSlideUp 0.35s var(--transition-spring) forwards;
+}
+
+@keyframes sheetSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.sheet-drag-handle {
+  width: 38px;
+  height: 5px;
+  border-radius: 999px;
+  background-color: rgba(120, 120, 128, 0.3);
+  margin: 10px auto 4px auto;
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+.sheet-content {
+  overflow-y: auto;
+  padding: 12px 18px calc(24px + env(safe-area-inset-bottom)) 18px;
+  box-sizing: border-box;
+  flex: 1;
+}
+
+/* 🍎 Cupertino Segmented Controls */
+.cupertino-segmented {
+  display: flex;
+  background-color: var(--segmented-bg);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 2px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.cupertino-segmented-btn {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-heading);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 180ms var(--transition-spring);
+  user-select: none;
+}
+
+.cupertino-segmented-btn.active {
+  background-color: var(--segmented-active);
+  color: var(--color-text);
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* 🍎 Cupertino Steppers & Sliders */
+.cupertino-stepper-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--segmented-bg);
+  color: var(--color-text);
+  font-size: 19px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 120ms var(--transition-spring);
+  user-select: none;
+  flex-shrink: 0;
+  padding: 0;
+  line-height: 1;
+}
+
+.cupertino-stepper-btn:active {
+  transform: scale(0.88);
+  background: var(--color-crimson);
+  color: #FFFFFF;
+  border-color: var(--color-crimson);
+}
+
+.cupertino-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--segmented-bg);
+  outline: none;
+  margin: 6px 0;
+  cursor: pointer;
+}
+
+.cupertino-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+
+.cupertino-slider::-webkit-slider-thumb:active {
+  transform: scale(1.2);
+}
+
+/* 🍎 Cupertino Haptic Touch Context Menu */
+.cupertino-context-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: contextFadeIn 0.2s ease forwards;
+}
+
+@keyframes contextFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cupertino-context-menu {
+  width: 260px;
+  background-color: var(--sheet-bg);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-radius: 18px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  animation: contextPop 0.24s var(--transition-spring) forwards;
+}
+
+@keyframes contextPop {
+  0% { transform: scale(0.92); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.cupertino-context-item {
+  width: 100%;
+  padding: 13px 16px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 120ms ease;
+  box-sizing: border-box;
+}
+
+.cupertino-context-item:last-child {
+  border-bottom: none;
+}
+
+.cupertino-context-item:active {
+  background-color: rgba(120, 120, 128, 0.15);
+}
+
+.cupertino-context-item.danger {
+  color: #EF4444;
 }
 
 .bento-full-row {

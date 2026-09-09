@@ -336,6 +336,8 @@ export default function App() {
             batches={batches} 
             onSelectBatch={handleSelectBatch} 
             onCreateTrigger={() => setCurrentView('creator')}
+            onSubtractDose={handleSubtractDose}
+            onRefreshBatches={fetchBatches}
             showToast={showToast}
           />
         )}

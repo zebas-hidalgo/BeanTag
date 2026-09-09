@@ -1,15 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Plus, Zap, Snowflake, CheckCircle2, Mountain, Sparkles, Loader2, Compass, Share2, ClipboardCopy, X, Layers, FileText } from 'lucide-react';
 import { RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 import { generateCoffeeMenuCardImage, generateCoffeeMenuText } from '../utils/cardGenerator';
 import { copyToClipboard } from '../utils/clipboard';
 
-export default function Inventory({ batches, onSelectBatch, onCreateTrigger, showToast }) {
+export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onSubtractDose, onRefreshBatches, showToast }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFinished, setShowFinished] = useState(false);
   const [sommelierLoading, setSommelierLoading] = useState(false);
   const [sommelierResult, setSommelierResult] = useState(null);
+
+  // Haptic Touch Context Menu State
+  const [contextBatch, setContextBatch] = useState(null);
+  const pressTimerRef = useRef(null);
+  const isLongPressTriggered = useRef(false);
+
+  const handlePressStart = (batch) => {
+    isLongPressTriggered.current = false;
+    pressTimerRef.current = setTimeout(() => {
+      isLongPressTriggered.current = true;
+      if (navigator.vibrate) {
+        try { navigator.vibrate([15, 50, 15]); } catch (e) {}
+      }
+      setContextBatch(batch);
+    }, 450);
+  };
+
+  const handlePressEnd = () => {
+    if (pressTimerRef.current) {
+      clearTimeout(pressTimerRef.current);
+      pressTimerRef.current = null;
+    }
+  };
 
   // Menu Share State
   const [showMenuShareModal, setShowMenuShareModal] = useState(false);
@@ -266,23 +289,29 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, sho
         </div>
       )}
 
-      {/* 2. Simple & Clean Status Tabs */}
-      <div className="canvas-tab-selector" style={{ marginBottom: '16px' }}>
+      {/* 2. Cupertino Segmented Status Tabs */}
+      <div className="cupertino-segmented" style={{ marginBottom: '16px' }}>
         <button 
-          className={`canvas-tab-btn ${!showFinished ? 'active' : ''}`}
-          onClick={() => setShowFinished(false)}
-          style={{ padding: '8px 12px', fontSize: '11.5px' }}
+          type="button"
+          className={`cupertino-segmented-btn ${!showFinished ? 'active' : ''}`}
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate(8);
+            setShowFinished(false);
+          }}
         >
           <Snowflake size={14} strokeWidth={2.5} />
-          En Congelador ({availableBatches.length})
+          <span>En Congelador ({availableBatches.length})</span>
         </button>
         <button 
-          className={`canvas-tab-btn ${showFinished ? 'active' : ''}`}
-          onClick={() => setShowFinished(true)}
-          style={{ padding: '8px 12px', fontSize: '11.5px' }}
+          type="button"
+          className={`cupertino-segmented-btn ${showFinished ? 'active' : ''}`}
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate(8);
+            setShowFinished(true);
+          }}
         >
           <CheckCircle2 size={14} strokeWidth={2.5} />
-          Agotados ({finishedBatches.length})
+          <span>Agotados ({finishedBatches.length})</span>
         </button>
       </div>
 
@@ -322,7 +351,24 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, sho
             <div 
               key={batch.id} 
               className={`candy-card ${isLowStock ? 'low-stock' : ''}`}
-              onClick={() => onSelectBatch(batch.id)}
+              onClick={() => {
+                if (isLongPressTriggered.current) {
+                  isLongPressTriggered.current = false;
+                  return;
+                }
+                onSelectBatch(batch.id);
+              }}
+              onTouchStart={() => handlePressStart(batch)}
+              onTouchEnd={handlePressEnd}
+              onTouchMove={handlePressEnd}
+              onMouseDown={() => handlePressStart(batch)}
+              onMouseUp={handlePressEnd}
+              onMouseLeave={handlePressEnd}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                handlePressEnd();
+                setContextBatch(batch);
+              }}
               style={{ 
                 marginBottom: '14px', 
                 padding: '16px', 
@@ -331,7 +377,10 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, sho
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 minHeight: '215px',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                cursor: 'pointer',
+                userSelect: 'none',
+                WebkitUserSelect: 'none'
               }}
             >
               {/* Top Segment: Title, Origin, Producer, Altitude */}
@@ -572,6 +621,81 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, sho
                 Compartir PNG (2x)
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🍎 CUPERTINO HAPTIC TOUCH CONTEXT MENU */}
+      {contextBatch && (
+        <div className="cupertino-context-overlay" onClick={() => setContextBatch(null)}>
+          <div className="cupertino-context-menu" onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '14px 16px 10px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-canvas)' }}>
+              <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' }}>
+                Acciones Rápidas • {contextBatch.origin || 'Origen'}
+              </div>
+              <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {contextBatch.name}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                {contextBatch.remaining_doses} tubos restantes ({contextBatch.remaining_weight_g || 0}g)
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="cupertino-context-item"
+              onClick={() => {
+                const b = contextBatch;
+                setContextBatch(null);
+                if (b.recipes && b.recipes.length > 0) {
+                  onSelectBatch(b, { prefillRecipe: b.recipes[0] });
+                } else {
+                  onSelectBatch(b.id);
+                }
+              }}
+            >
+              <span>☕ Preparar / Dial-In</span>
+              <Zap size={15} color="var(--color-crimson)" />
+            </button>
+
+            {contextBatch.remaining_doses > 0 && onSubtractDose && (
+              <button
+                type="button"
+                className="cupertino-context-item"
+                onClick={() => {
+                  const b = contextBatch;
+                  setContextBatch(null);
+                  onSubtractDose(b.id, () => {
+                    if (onRefreshBatches) onRefreshBatches();
+                  });
+                }}
+              >
+                <span>❄️ Restar 1 Tubo (-1)</span>
+                <Snowflake size={15} color="var(--color-crimson)" />
+              </button>
+            )}
+
+            <button
+              type="button"
+              className="cupertino-context-item"
+              onClick={() => {
+                const b = contextBatch;
+                setContextBatch(null);
+                onSelectBatch(b.id);
+              }}
+            >
+              <span>📋 Ver Ficha & Compartir</span>
+              <Share2 size={15} />
+            </button>
+
+            <button
+              type="button"
+              className="cupertino-context-item danger"
+              onClick={() => setContextBatch(null)}
+            >
+              <span>✕ Cancelar</span>
+              <X size={15} />
+            </button>
           </div>
         </div>
       )}

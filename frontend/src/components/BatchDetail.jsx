@@ -778,34 +778,40 @@ export default function BatchDetail({ batchId, batches = [], prefillRecipe, onBa
         />
       </div>
 
-      {/* PESTAÑAS PRINCIPALES (Main Tabs) */}
-      <div className="filter-scroll-container" style={{ marginBottom: '14px' }}>
+      {/* PESTAÑAS PRINCIPALES (Cupertino Segmented) */}
+      <div className="cupertino-segmented" style={{ marginBottom: '16px' }}>
         <button
           type="button"
-          className={`filter-chip ${activeTab === 'brew' ? 'active' : ''}`}
-          onClick={() => setActiveTab('brew')}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          className={`cupertino-segmented-btn ${activeTab === 'brew' ? 'active' : ''}`}
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate(8);
+            setActiveTab('brew');
+          }}
         >
-          <Coffee size={14} />
-          Preparar Café
+          <Coffee size={14} strokeWidth={2.2} />
+          <span>Preparar</span>
         </button>
         <button
           type="button"
-          className={`filter-chip ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => setActiveTab('history')}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          className={`cupertino-segmented-btn ${activeTab === 'history' ? 'active' : ''}`}
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate(8);
+            setActiveTab('history');
+          }}
         >
-          <BookOpen size={14} />
-          Historial ({batch.recipes?.length || 0})
+          <BookOpen size={14} strokeWidth={2.2} />
+          <span>Historial ({batch.recipes?.length || 0})</span>
         </button>
         <button
           type="button"
-          className={`filter-chip ${activeTab === 'tools' ? 'active' : ''}`}
-          onClick={() => setActiveTab('tools')}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          className={`cupertino-segmented-btn ${activeTab === 'tools' ? 'active' : ''}`}
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate(8);
+            setActiveTab('tools');
+          }}
         >
-          <Calculator size={14} />
-          Herramientas & NFC
+          <Calculator size={14} strokeWidth={2.2} />
+          <span>Ajustes & NFC</span>
         </button>
       </div>
 
@@ -813,39 +819,37 @@ export default function BatchDetail({ batchId, batches = [], prefillRecipe, onBa
       {activeTab === 'brew' && (
         <div ref={brewFormRef} className="animate-entrance">
           <form onSubmit={handleRecipeSubmit}>
-            {/* Method Icon Selector with Comfortable Tap Targets */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '16px' }}>
+            {/* Method Cupertino Segmented Selector */}
+            <div className="cupertino-segmented" style={{ padding: '4px', gap: '4px', marginBottom: '16px' }}>
               {[
-                { id: 'V60 (Filtrado)', lucide: <Filter size={20} strokeWidth={2.5} />, label: 'V60' },
-                { id: 'Espresso', lucide: <Zap size={20} strokeWidth={2.5} />, label: 'Espresso' },
-                { id: 'AeroPress', lucide: <Droplet size={20} strokeWidth={2.5} />, label: 'AeroPress' },
-                { id: 'Prensa Francesa', lucide: <Coffee size={20} strokeWidth={2.5} />, label: 'Prensa' }
-              ].map(m => (
-                <button
-                  type="button"
-                  key={m.id}
-                  onClick={() => setMethod(m.id)}
-                  style={{
-                    padding: '10px 6px',
-                    minHeight: '64px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    borderRadius: '8px',
-                    border: method === m.id ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
-                    backgroundColor: method === m.id ? 'var(--color-crimson)' : 'var(--bg-card)',
-                    color: method === m.id ? '#FFFFFF' : 'var(--color-text)',
-                    boxShadow: method === m.id ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
-                    cursor: 'pointer',
-                    transition: 'all 150ms ease'
-                  }}
-                >
-                  {m.lucide}
-                  <span style={{ fontSize: '11px', fontWeight: '800' }}>{m.label}</span>
-                </button>
-              ))}
+                { id: 'V60 (Filtrado)', lucide: <Filter size={18} strokeWidth={2.3} />, label: 'V60' },
+                { id: 'Espresso', lucide: <Zap size={18} strokeWidth={2.3} />, label: 'Espresso' },
+                { id: 'AeroPress', lucide: <Droplet size={18} strokeWidth={2.3} />, label: 'AeroPress' },
+                { id: 'Prensa Francesa', lucide: <Coffee size={18} strokeWidth={2.3} />, label: 'Prensa' }
+              ].map(m => {
+                const isActive = method === m.id;
+                return (
+                  <button
+                    type="button"
+                    key={m.id}
+                    onClick={() => {
+                      if (navigator.vibrate) navigator.vibrate(8);
+                      setMethod(m.id);
+                    }}
+                    className={`cupertino-segmented-btn ${isActive ? 'active' : ''}`}
+                    style={{
+                      flexDirection: 'column',
+                      padding: '8px 4px',
+                      minHeight: '52px',
+                      gap: '4px',
+                      borderRadius: '10px'
+                    }}
+                  >
+                    {m.lucide}
+                    <span style={{ fontSize: '11px', fontWeight: isActive ? '800' : '600' }}>{m.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* 🌟 Recetas Legendarias & Técnicas de Baristas Famosos */}
@@ -1014,46 +1018,193 @@ export default function BatchDetail({ batchId, batches = [], prefillRecipe, onBa
               )}
             </div>
 
-            {/* Formulario Bento Grid */}
+            {/* Formulario Bento Grid con Steppers Cupertino */}
             <div className="bento-grid" style={{ gap: '10px', marginBottom: '16px' }}>
               <div className="bento-widget accent">
-                <div className="bento-header"><span>Grams</span><Scale size={14} /></div>
-                <div className="bento-value-container">
-                  <input type="number" step="0.5" value={doseInG} onChange={(e) => setDoseInG(parseFloat(e.target.value) || 0)} />
-                  <span className="unit">g</span>
+                <div className="bento-header">
+                  <span>Dosis In</span>
+                  <Scale size={14} />
+                </div>
+                <div className="bento-value-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', marginTop: '4px' }}>
+                  <button
+                    type="button"
+                    className="cupertino-stepper-btn"
+                    onClick={() => {
+                      if (navigator.vibrate) navigator.vibrate(8);
+                      setDoseInG(d => Math.max(5, parseFloat((d - 0.5).toFixed(1))));
+                    }}
+                    aria-label="Menos dosis"
+                  >
+                    -
+                  </button>
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={doseInG}
+                      onChange={(e) => setDoseInG(parseFloat(e.target.value) || 0)}
+                      style={{ width: '56px', textAlign: 'center', fontSize: '19px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
+                    />
+                    <span className="unit" style={{ marginLeft: '2px' }}>g</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="cupertino-stepper-btn"
+                    onClick={() => {
+                      if (navigator.vibrate) navigator.vibrate(8);
+                      setDoseInG(d => Math.min(50, parseFloat((d + 0.5).toFixed(1))));
+                    }}
+                    aria-label="Más dosis"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
 
               {method === 'Espresso' ? (
                 <div className="bento-widget accent">
-                  <div className="bento-header"><span>Output</span><Droplet size={14} /></div>
-                  <div className="bento-value-container">
-                    <input type="number" step="0.5" value={doseOutG} onChange={(e) => setDoseOutG(parseFloat(e.target.value) || 0)} />
-                    <span className="unit">g</span>
+                  <div className="bento-header">
+                    <span>Output</span>
+                    <Droplet size={14} />
+                  </div>
+                  <div className="bento-value-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', marginTop: '4px' }}>
+                    <button
+                      type="button"
+                      className="cupertino-stepper-btn"
+                      onClick={() => {
+                        if (navigator.vibrate) navigator.vibrate(8);
+                        setDoseOutG(d => Math.max(5, parseFloat((d - 1).toFixed(1))));
+                      }}
+                      aria-label="Menos output"
+                    >
+                      -
+                    </button>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
+                      <input
+                        type="number"
+                        step="0.5"
+                        value={doseOutG}
+                        onChange={(e) => setDoseOutG(parseFloat(e.target.value) || 0)}
+                        style={{ width: '56px', textAlign: 'center', fontSize: '19px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
+                      />
+                      <span className="unit" style={{ marginLeft: '2px' }}>g</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="cupertino-stepper-btn"
+                      onClick={() => {
+                        if (navigator.vibrate) navigator.vibrate(8);
+                        setDoseOutG(d => Math.min(100, parseFloat((d + 1).toFixed(1))));
+                      }}
+                      aria-label="Más output"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div className="bento-info" style={{ marginTop: '4px' }}>
+                    Ratio ~1:{doseInG > 0 ? (doseOutG / doseInG).toFixed(1) : 2}
                   </div>
                 </div>
               ) : (
                 <div className="bento-widget accent">
-                  <div className="bento-header"><span>Ratio 1:</span><Gauge size={14} /></div>
-                  <div className="bento-value-container">
-                    <input type="number" step="0.5" value={ratioVal} onChange={(e) => setRatioVal(parseFloat(e.target.value) || 0)} />
+                  <div className="bento-header">
+                    <span>Ratio 1:</span>
+                    <Gauge size={14} />
                   </div>
-                  <div className="bento-info">~{Math.round(doseInG * ratioVal)}g agua</div>
+                  <div className="bento-value-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', marginTop: '4px' }}>
+                    <button
+                      type="button"
+                      className="cupertino-stepper-btn"
+                      onClick={() => {
+                        if (navigator.vibrate) navigator.vibrate(8);
+                        setRatioVal(r => Math.max(8, parseFloat((r - 0.5).toFixed(1))));
+                      }}
+                      aria-label="Menos ratio"
+                    >
+                      -
+                    </button>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
+                      <input
+                        type="number"
+                        step="0.5"
+                        value={ratioVal}
+                        onChange={(e) => setRatioVal(parseFloat(e.target.value) || 0)}
+                        style={{ width: '56px', textAlign: 'center', fontSize: '19px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="cupertino-stepper-btn"
+                      onClick={() => {
+                        if (navigator.vibrate) navigator.vibrate(8);
+                        setRatioVal(r => Math.min(25, parseFloat((r + 0.5).toFixed(1))));
+                      }}
+                      aria-label="Más ratio"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div className="bento-info" style={{ marginTop: '4px' }}>
+                    ~{Math.round(doseInG * ratioVal)}g agua
+                  </div>
                 </div>
               )}
 
               <div className="bento-widget">
-                <div className="bento-header"><span>Water Temp</span><Thermometer size={14} /></div>
-                <div className="bento-value-container">
-                  <input type="number" value={waterTemp} onChange={(e) => setWaterTemp(parseInt(e.target.value) || 93)} />
-                  <span className="unit">°C</span>
+                <div className="bento-header">
+                  <span>Temp Agua</span>
+                  <Thermometer size={14} />
+                </div>
+                <div className="bento-value-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', marginTop: '4px' }}>
+                  <button
+                    type="button"
+                    className="cupertino-stepper-btn"
+                    onClick={() => {
+                      if (navigator.vibrate) navigator.vibrate(8);
+                      setWaterTemp(t => Math.max(70, t - 1));
+                    }}
+                    aria-label="Menos temperatura"
+                  >
+                    -
+                  </button>
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
+                    <input
+                      type="number"
+                      value={waterTemp}
+                      onChange={(e) => setWaterTemp(parseInt(e.target.value) || 93)}
+                      style={{ width: '52px', textAlign: 'center', fontSize: '19px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
+                    />
+                    <span className="unit" style={{ marginLeft: '2px' }}>°C</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="cupertino-stepper-btn"
+                    onClick={() => {
+                      if (navigator.vibrate) navigator.vibrate(8);
+                      setWaterTemp(t => Math.min(100, t + 1));
+                    }}
+                    aria-label="Más temperatura"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
 
               <div className="bento-widget">
-                <div className="bento-header"><span>Time</span><Timer size={14} /></div>
-                <div className="bento-value-container">
-                  <input type="text" style={{ fontSize: '20px' }} value={brewTime} onChange={(e) => setBrewTime(e.target.value)} />
+                <div className="bento-header">
+                  <span>Tiempo</span>
+                  <Timer size={14} />
+                </div>
+                <div className="bento-value-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '4px', minHeight: '34px' }}>
+                  <input
+                    type="text"
+                    style={{ fontSize: '19px', fontWeight: '800', textAlign: 'center', width: '90px', border: 'none', background: 'transparent' }}
+                    value={brewTime}
+                    onChange={(e) => setBrewTime(e.target.value)}
+                  />
+                </div>
+                <div className="bento-info" style={{ marginTop: '4px' }}>
+                  mm:ss objetivo
                 </div>
               </div>
 
