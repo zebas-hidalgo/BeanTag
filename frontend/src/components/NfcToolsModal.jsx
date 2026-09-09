@@ -127,7 +127,7 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
       if (showToast) showToast('Selecciona un lote para vincular.', { type: 'error' });
       return;
     }
-    const targetUrl = `${window.location.origin}/batch/${targetId}`;
+    const targetUrl = getTargetUrl(targetId);
 
     if (!hasNfc) {
       await handleCopyUrl(targetId);

@@ -15,6 +15,7 @@ import { User, LogIn, LogOut } from 'lucide-react';
 const getInitialRoute = () => {
   const path = window.location.pathname;
   const searchParams = new URLSearchParams(window.location.search);
+  const hash = window.location.hash;
   const queryBatchId = searchParams.get('batch') || searchParams.get('b');
   
   let targetBatchId = null;
@@ -25,6 +26,14 @@ const getInitialRoute = () => {
     }
   } else if (queryBatchId) {
     targetBatchId = decodeURIComponent(queryBatchId);
+  } else if (hash && hash.includes('/batch/')) {
+    const parts = hash.split('/batch/');
+    if (parts[1]) {
+      targetBatchId = decodeURIComponent(parts[1].split('?')[0].replace(/\/$/, ''));
+    }
+  } else if (hash && hash.includes('batch=')) {
+    const match = hash.match(/batch=([^&]+)/);
+    if (match) targetBatchId = decodeURIComponent(match[1]);
   }
 
   if (targetBatchId) {
@@ -61,37 +70,52 @@ export default function App() {
     localStorage.setItem('beantag-theme', theme);
   }, [theme]);
 
-  // R1: Generalized Toast system (replaces all alert() calls)
-  const [toast, setToast] = useState({ message: '', type: 'info', visible: false, showUndo: false });
-  const toastTimerRef = React.useRef(null);
+  // Toast Notification System State
+  const [toast, setToast] = useState({
+    visible: false,
+    message: '',
+    type: 'info',
+    showUndo: false,
+    duration: 3000
+  });
 
-  const showToast = useCallback((message, { type = 'info', duration = 3000, showUndo = false } = {}) => {
-    clearTimeout(toastTimerRef.current);
-    setToast({ message, type, visible: true, showUndo });
+  const toastTimerRef = useRef(null);
+
+  const showToast = (message, options = {}) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast({
+      visible: true,
+      message,
+      type: options.type || 'info',
+      showUndo: options.showUndo || false,
+      duration: options.duration || 3000
+    });
     toastTimerRef.current = setTimeout(() => {
       setToast(prev => ({ ...prev, visible: false }));
-    }, duration);
-  }, []);
+    }, options.duration || 3000);
+  };
 
-  const dismissToast = useCallback(() => {
-    clearTimeout(toastTimerRef.current);
+  const dismissToast = () => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToast(prev => ({ ...prev, visible: false }));
-  }, []);
+  };
 
-  // Delete confirmation modal
-  const [deleteModal, setDeleteModal] = useState({ visible: false, batchId: null, batchName: '' });
+  // Delete Confirmation Modal State (R10)
+  const [deleteModal, setDeleteModal] = useState({
+    visible: false,
+    batchId: null,
+    batchName: ''
+  });
 
-  // Auth Handlers
-  const handleAuthSuccess = (data) => {
-    setToken(data.token);
-    setCurrentUser(data.user);
-    localStorage.setItem('beantag-token', data.token);
-    localStorage.setItem('beantag-user', JSON.stringify(data.user));
-    fetchBatches(data.token);
+  const handleAuthSuccess = (userData, authToken) => {
+    setCurrentUser(userData);
+    setToken(authToken);
+    setShowAuthModal(false);
+    showToast(`¡Bienvenido, ${userData.name}!`, { type: 'success', duration: 3000 });
+    fetchBatches(authToken);
   };
 
   const handleLogout = () => {
-    setToken('');
     setCurrentUser(null);
     localStorage.removeItem('beantag-token');
     localStorage.removeItem('beantag-user');
@@ -115,8 +139,6 @@ export default function App() {
     if (route.view === 'detail' && route.batchId) {
       setSelectedBatchId(route.batchId);
       setCurrentView('detail');
-    } else if (!currentUser) {
-      setShowAuthModal(true);
     }
   }, []);
 
@@ -138,9 +160,6 @@ export default function App() {
       setSelectedBatchId(null);
       setPrefillRecipe(null);
       dismissToast();
-      if (!currentUser) {
-        setShowAuthModal(true);
-      }
     }
     fetchBatches();
   };
@@ -398,7 +417,13 @@ export default function App() {
           <Inventory 
             batches={batches} 
             onSelectBatch={handleSelectBatch} 
-            onCreateTrigger={() => setCurrentView('creator')}
+            onCreateTrigger={() => {
+              if (!currentUser) {
+                setShowAuthModal(true);
+              } else {
+                setCurrentView('creator');
+              }
+            }}
             onSubtractDose={handleSubtractDose}
             onRefreshBatches={fetchBatches}
             showToast={showToast}

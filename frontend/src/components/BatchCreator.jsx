@@ -251,7 +251,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
           showToast('Lote actualizado con éxito.', { type: 'success', duration: 2500 });
         } else {
           const host = window.location.origin;
-          setGeneratedUrl(`${host}/batch/${id}`);
+          setGeneratedUrl(`${host}/beantag/?batch=${encodeURIComponent(id)}&action=new_brew`);
           showToast('Lote creado con éxito.', { type: 'success', duration: 2500 });
         }
         if (onBatchCreated) onBatchCreated();
