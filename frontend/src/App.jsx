@@ -388,6 +388,7 @@ export default function App() {
             theme={theme}
             setTheme={setTheme}
             currentUser={currentUser}
+            batches={batches}
             onLogout={handleLogout}
             showToast={showToast}
           />
@@ -454,7 +455,7 @@ export default function App() {
       )}
 
       {showNfcTools && (
-        <NfcToolsModal onClose={() => setShowNfcTools(false)} showToast={showToast} />
+        <NfcToolsModal batches={batches} onClose={() => setShowNfcTools(false)} showToast={showToast} />
       )}
 
       {/* Genjutsu Floating Bottom Navigation Bar */}

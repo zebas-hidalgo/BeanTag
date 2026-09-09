@@ -3,7 +3,7 @@ import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet } from 'lucide-react'
 import NfcToolsModal from './NfcToolsModal';
 import { apiUrl } from '../utils/api';
 
-export default function Settings({ theme, setTheme, showToast }) {
+export default function Settings({ theme, setTheme, batches = [], showToast }) {
   const [showNfcModal, setShowNfcModal] = useState(false);
   const [pendingImportData, setPendingImportData] = useState(null);
   const [importMode, setImportMode] = useState('merge');
@@ -416,7 +416,7 @@ export default function Settings({ theme, setTheme, showToast }) {
       </div>
 
       {showNfcModal && (
-        <NfcToolsModal onClose={() => setShowNfcModal(false)} showToast={showToast} />
+        <NfcToolsModal batches={batches} onClose={() => setShowNfcModal(false)} showToast={showToast} />
       )}
 
       {pendingImportData && (

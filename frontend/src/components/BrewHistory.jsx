@@ -227,12 +227,12 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
   const handleDeleteRecipe = (recipeId) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta preparación de la bitácora?')) {
-      fetch(`/api/recipes/${recipeId}`, { method: 'DELETE' })
+      fetch(apiUrl(`api/recipes/${recipeId}`), { method: 'DELETE' })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
             setSelectedRecipe(null);
-            fetch('/api/recipes')
+            fetch(apiUrl('api/recipes'))
               .then(res => res.json())
               .then(d => setHistory(d));
           }

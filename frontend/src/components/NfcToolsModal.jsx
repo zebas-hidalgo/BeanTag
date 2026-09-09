@@ -1,29 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { Nfc, RefreshCw, Trash2, Copy, X, CheckCircle, Smartphone, Share2, ExternalLink } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
+import { apiUrl } from '../utils/api';
 
-export default function NfcToolsModal({ onClose, showToast }) {
-  const [batches, setBatches] = useState([]);
+export default function NfcToolsModal({ onClose, batches: propBatches, showToast }) {
+  const [batches, setBatches] = useState(() => Array.isArray(propBatches) ? propBatches : []);
   const hasNfc = typeof window !== 'undefined' && 'NDEFReader' in window;
   const isIos = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
   
   const [activeTab, setActiveTab] = useState(hasNfc ? 'scan' : 'ios'); // 'ios' | 'scan' | 'format' | 'clone'
-  const [selectedBatchId, setSelectedBatchId] = useState('');
+  const [selectedBatchId, setSelectedBatchId] = useState(() => (Array.isArray(propBatches) && propBatches.length > 0) ? propBatches[0].id : '');
   const [scannedData, setScannedData] = useState(null);
   const [statusMessage, setStatusMessage] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    fetch('/api/batches')
+    if (Array.isArray(propBatches) && propBatches.length > 0) {
+      setBatches(propBatches);
+      if (!selectedBatchId) {
+        setSelectedBatchId(propBatches[0].id);
+      }
+      return;
+    }
+
+    const token = localStorage.getItem('beantag-token');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+    fetch(apiUrl('api/batches'), { headers })
       .then(res => res.json())
       .then(data => {
-        setBatches(data || []);
-        if (data && data.length > 0) {
-          setSelectedBatchId(data[0].id);
+        if (Array.isArray(data)) {
+          setBatches(data);
+          if (data.length > 0 && !selectedBatchId) {
+            setSelectedBatchId(data[0].id);
+          }
         }
       })
-      .catch(() => {});
-  }, []);
+      .catch((err) => {
+        console.error('Error fetching batches in NFC modal:', err);
+      });
+  }, [propBatches]);
 
   const getTargetUrl = (batchId) => {
     const id = batchId || selectedBatchId || (batches.length > 0 ? batches[0].id : '');
