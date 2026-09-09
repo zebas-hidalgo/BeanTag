@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Plus, Zap, Snowflake, CheckCircle2, Mountain, Sparkles, Loader2, Compass, Share2, ClipboardCopy, X, Layers, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Zap, Snowflake, CheckCircle2, Mountain, Sparkles, Loader2, Compass, Share2, ClipboardCopy, X, Layers, FileText, MoreHorizontal } from 'lucide-react';
 import { RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 import { generateCoffeeMenuCardImage, generateCoffeeMenuText } from '../utils/cardGenerator';
@@ -11,28 +11,8 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
   const [sommelierLoading, setSommelierLoading] = useState(false);
   const [sommelierResult, setSommelierResult] = useState(null);
 
-  // Haptic Touch Context Menu State
+  // Quick Action Context Menu State
   const [contextBatch, setContextBatch] = useState(null);
-  const pressTimerRef = useRef(null);
-  const isLongPressTriggered = useRef(false);
-
-  const handlePressStart = (batch) => {
-    isLongPressTriggered.current = false;
-    pressTimerRef.current = setTimeout(() => {
-      isLongPressTriggered.current = true;
-      if (navigator.vibrate) {
-        try { navigator.vibrate([15, 50, 15]); } catch (e) {}
-      }
-      setContextBatch(batch);
-    }, 450);
-  };
-
-  const handlePressEnd = () => {
-    if (pressTimerRef.current) {
-      clearTimeout(pressTimerRef.current);
-      pressTimerRef.current = null;
-    }
-  };
 
   // Menu Share State
   const [showMenuShareModal, setShowMenuShareModal] = useState(false);
@@ -351,22 +331,10 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
             <div 
               key={batch.id} 
               className={`candy-card ${isLowStock ? 'low-stock' : ''}`}
-              onClick={() => {
-                if (isLongPressTriggered.current) {
-                  isLongPressTriggered.current = false;
-                  return;
-                }
-                onSelectBatch(batch.id);
-              }}
-              onTouchStart={() => handlePressStart(batch)}
-              onTouchEnd={handlePressEnd}
-              onTouchMove={handlePressEnd}
-              onMouseDown={() => handlePressStart(batch)}
-              onMouseUp={handlePressEnd}
-              onMouseLeave={handlePressEnd}
+              onClick={() => onSelectBatch(batch.id)}
               onContextMenu={(e) => {
                 e.preventDefault();
-                handlePressEnd();
+                e.stopPropagation();
                 setContextBatch(batch);
               }}
               style={{ 
@@ -378,9 +346,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                 justifyContent: 'space-between',
                 minHeight: '215px',
                 boxSizing: 'border-box',
-                cursor: 'pointer',
-                userSelect: 'none',
-                WebkitUserSelect: 'none'
+                cursor: 'pointer'
               }}
             >
               {/* Top Segment: Title, Origin, Producer, Altitude */}
@@ -389,9 +355,39 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                   <h3 className="card-title" style={{ margin: 0, fontSize: '16px', lineHeight: 1.25, flex: 1, wordBreak: 'break-word' }}>
                     {batch.name}
                   </h3>
-                  <span className="mono-lbl-tag" style={{ fontSize: '10.5px', padding: '3px 7px', flexShrink: 0 }}>
-                    {batch.origin || 'N/A'}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                    <span className="mono-lbl-tag" style={{ fontSize: '10.5px', padding: '3px 7px' }}>
+                      {batch.origin || 'N/A'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (navigator.vibrate) {
+                          try { navigator.vibrate(8); } catch (err) {}
+                        }
+                        setContextBatch(batch);
+                      }}
+                      style={{
+                        background: 'var(--segmented-bg, rgba(120, 120, 128, 0.12))',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '50%',
+                        width: '26px',
+                        height: '26px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: 'var(--color-text)',
+                        padding: 0,
+                        flexShrink: 0
+                      }}
+                      title="Opciones rápidas"
+                      aria-label="Opciones rápidas"
+                    >
+                      <MoreHorizontal size={15} />
+                    </button>
+                  </div>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
