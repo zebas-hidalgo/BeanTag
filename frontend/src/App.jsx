@@ -111,14 +111,12 @@ export default function App() {
   useEffect(() => {
     fetchBatches();
     
-    if (!currentUser) {
-      setShowAuthModal(true);
-    }
-
     const route = getInitialRoute();
     if (route.view === 'detail' && route.batchId) {
       setSelectedBatchId(route.batchId);
       setCurrentView('detail');
+    } else if (!currentUser) {
+      setShowAuthModal(true);
     }
   }, []);
 
@@ -140,20 +138,33 @@ export default function App() {
       setSelectedBatchId(null);
       setPrefillRecipe(null);
       dismissToast();
+      if (!currentUser) {
+        setShowAuthModal(true);
+      }
     }
     fetchBatches();
   };
 
   const handleSubtractDose = (id, callback) => {
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
     fetch(apiUrl(`api/batches/${id}/doses`), {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ change: -1 })
     })
-    .then(res => res.json())
+    .then(async res => {
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al restar dosis');
+      }
+      return data;
+    })
     .then(data => {
       if (data.success) {
-        callback();
+        if (callback) callback();
         setLastSubtractedBatch(id);
         showToast('Dosis restada con éxito.', { type: 'success', duration: 5000, showUndo: true });
         
@@ -168,18 +179,31 @@ export default function App() {
           badge.classList.add('bounce-pop');
         }
       }
+    })
+    .catch(err => {
+      showToast(err.message, { type: 'error', duration: 4000 });
     });
   };
 
   // R4: Undo without page reload — re-fetch batch data instead
   const handleUndo = () => {
     if (!lastSubtractedBatch) return;
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
     fetch(apiUrl(`api/batches/${lastSubtractedBatch}/doses`), {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ change: 1 })
     })
-    .then(res => res.json())
+    .then(async res => {
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al restaurar dosis');
+      }
+      return data;
+    })
     .then(data => {
       if (data.success) {
         dismissToast();
@@ -192,17 +216,30 @@ export default function App() {
           setTimeout(() => setSelectedBatchId(lastSubtractedBatch), 50);
         }
       }
+    })
+    .catch(err => {
+      showToast(err.message, { type: 'error', duration: 4000 });
     });
   };
 
   // R5: Save recipe with toast transition + automatic tube deduction
   const handleSaveRecipe = (recipePayload) => {
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
     fetch(apiUrl('api/recipes'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(recipePayload)
     })
-    .then(res => res.json())
+    .then(async res => {
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al guardar la receta');
+      }
+      return data;
+    })
     .then(data => {
       if (data.success) {
         showToast('Receta guardada. -1 tubo descontado del inventario. ☕', { type: 'success', duration: 2500 });
@@ -211,6 +248,9 @@ export default function App() {
           handleBack();
         }, 1500);
       }
+    })
+    .catch(err => {
+      showToast(err.message, { type: 'error', duration: 4000 });
     });
   };
 
@@ -251,14 +291,27 @@ export default function App() {
   };
 
   const confirmDeleteBatch = () => {
-    fetch(apiUrl(`api/batches/${deleteModal.batchId}`), { method: 'DELETE' })
-      .then(res => res.json())
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    fetch(apiUrl(`api/batches/${deleteModal.batchId}`), { 
+      method: 'DELETE',
+      headers
+    })
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Error al eliminar lote');
+        }
+        return data;
+      })
       .then(data => {
         if (data.success) {
           setDeleteModal({ visible: false, batchId: null, batchName: '' });
           showToast('Lote eliminado.', { type: 'success', duration: 2500 });
           handleBack();
         }
+      })
+      .catch(err => {
+        showToast(err.message, { type: 'error', duration: 4000 });
       });
   };
   // Toast color based on type
@@ -308,21 +361,31 @@ export default function App() {
           }}>BeanTag</span>
         </div>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-surface, #FFF)', border: '1.5px solid var(--color-border, #E5E7EB)', borderRadius: '20px', padding: '3px 8px 3px 4px' }}>
-            {currentUser.picture ? (
-              <img src={currentUser.picture} alt="Avatar" style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }} />
-            ) : (
-              <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--color-crimson, #E53E3E)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '900' }}>
-                {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
-              </div>
-            )}
-            <span style={{ fontSize: '11px', fontWeight: 'bold', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {currentUser.name}
-            </span>
-            <button onClick={handleLogout} title="Cerrar Sesión" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}>
-              <LogOut size={13} color="var(--color-text-muted)" />
+          {currentUser ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-surface, #FFF)', border: '1.5px solid var(--color-border, #E5E7EB)', borderRadius: '20px', padding: '3px 8px 3px 4px' }}>
+              {currentUser.picture ? (
+                <img src={currentUser.picture} alt="Avatar" style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--color-crimson, #E53E3E)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '900' }}>
+                  {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+                </div>
+              )}
+              <span style={{ fontSize: '11px', fontWeight: 'bold', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {currentUser.name}
+              </span>
+              <button onClick={handleLogout} title="Cerrar Sesión" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}>
+                <LogOut size={13} color="var(--color-text-muted)" />
+              </button>
+            </div>
+          ) : (
+            <button 
+              className="btn-candy primary"
+              onClick={() => setShowAuthModal(true)}
+              style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 'bold', margin: 0 }}
+            >
+              Iniciar Sesión
             </button>
-          </div>
+          )}
 
           <button className="app-bar-btn" onClick={() => setShowNfcTools(true)} title="Herramientas NFC" style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1.5px solid var(--color-border, #E5E7EB)' }}>
             <Nfc size={14} strokeWidth={2} />
@@ -347,6 +410,8 @@ export default function App() {
             key={selectedBatchId}
             batchId={selectedBatchId} 
             batches={batches}
+            currentUser={currentUser}
+            onRequireAuth={() => setShowAuthModal(true)}
             prefillRecipe={prefillRecipe}
             onBack={handleBack}
             onSubtractDose={handleSubtractDose}

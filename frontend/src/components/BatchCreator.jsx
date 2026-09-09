@@ -227,12 +227,24 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
       payload.id = id;
     }
 
+    const token = localStorage.getItem('beantag-token');
+    const headers = { 
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+
     fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(payload)
     })
-    .then(res => res.json())
+    .then(async res => {
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al guardar el lote');
+      }
+      return data;
+    })
     .then(data => {
       if (data.success) {
         if (batchToEdit) {
@@ -244,6 +256,9 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, show
         }
         if (onBatchCreated) onBatchCreated();
       }
+    })
+    .catch(err => {
+      if (showToast) showToast(err.message, { type: 'error', duration: 4000 });
     });
   };
 

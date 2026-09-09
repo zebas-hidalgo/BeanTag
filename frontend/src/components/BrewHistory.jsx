@@ -227,8 +227,14 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
 
   const handleDeleteRecipe = (recipeId) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta preparación de la bitácora?')) {
-      fetch(apiUrl(`api/recipes/${recipeId}`), { method: 'DELETE' })
-        .then(res => res.json())
+      const token = localStorage.getItem('beantag-token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      fetch(apiUrl(`api/recipes/${recipeId}`), { method: 'DELETE', headers })
+        .then(async res => {
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Error al eliminar receta');
+          return data;
+        })
         .then(data => {
           if (data.success) {
             setSelectedRecipe(null);
@@ -236,6 +242,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch }) {
               .then(res => res.json())
               .then(d => setHistory(d));
           }
+        })
+        .catch(err => {
+          alert(err.message);
         });
     }
   };

@@ -229,9 +229,13 @@ app.patch('/api/batches/:id/doses', async (req, res) => {
   }
   try {
     const db = await getDb();
-    const batch = await db.get('SELECT remaining_doses, total_doses FROM batches WHERE id = ?', req.params.id);
+    const batch = await db.get('SELECT user_id, remaining_doses, total_doses FROM batches WHERE id = ?', req.params.id);
     if (!batch) {
       return res.status(404).json({ error: 'Lote no encontrado' });
+    }
+
+    if (batch.user_id !== null && (!req.user || req.user.id !== batch.user_id)) {
+      return res.status(403).json({ error: 'Solo el propietario de este café puede modificar las dosis.' });
     }
     
     const newDoses = batch.remaining_doses + change;
@@ -259,17 +263,26 @@ app.post('/api/recipes', async (req, res) => {
   try {
     const db = await getDb();
     
-    // Fetch batch to get default dose weight if needed
-    const batch = await db.get('SELECT dose_weight FROM batches WHERE id = ?', batch_id);
-    const defaultDose = batch ? (parseFloat(batch.dose_weight) || 20.0) : 20.0;
+    // Fetch batch to get user_id and default dose weight if needed
+    const batch = await db.get('SELECT user_id, dose_weight FROM batches WHERE id = ?', batch_id);
+    if (!batch) {
+      return res.status(404).json({ error: 'Lote no encontrado' });
+    }
+
+    if (batch.user_id !== null && (!req.user || req.user.id !== batch.user_id)) {
+      return res.status(403).json({ error: 'Solo el propietario de este café puede registrar extracciones.' });
+    }
+
+    const defaultDose = parseFloat(batch.dose_weight) || 20.0;
     const doseInVal = dose_in_g !== undefined ? parseFloat(dose_in_g) : defaultDose;
+    const userId = req.user ? req.user.id : (batch.user_id || null);
 
     await db.run('BEGIN TRANSACTION;');
     try {
       await db.run(
-        `INSERT INTO recipes (batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, doseInVal, dose_out_g, espresso_pressure, espresso_preinfusion]
+        `INSERT INTO recipes (batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion, user_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, doseInVal, dose_out_g, espresso_pressure, espresso_preinfusion, userId]
       );
 
       // Subtract 1 tube (dose) and grams from batch remaining stock
@@ -329,9 +342,13 @@ app.put('/api/batches/:id', async (req, res) => {
   }
   try {
     const db = await getDb();
-    const current = await db.get('SELECT total_doses, remaining_doses FROM batches WHERE id = ?', req.params.id);
+    const current = await db.get('SELECT user_id, total_doses, remaining_doses FROM batches WHERE id = ?', req.params.id);
     if (!current) {
       return res.status(404).json({ error: 'Lote no encontrado' });
+    }
+
+    if (current.user_id !== null && (!req.user || req.user.id !== current.user_id)) {
+      return res.status(403).json({ error: 'Solo el propietario puede editar este lote.' });
     }
     
     // Adjust remaining doses if total_doses changed and remaining_doses is not explicitly provided
@@ -363,6 +380,13 @@ app.put('/api/batches/:id', async (req, res) => {
 app.delete('/api/recipes/:id', async (req, res) => {
   try {
     const db = await getDb();
+    const recipe = await db.get('SELECT r.id, b.user_id FROM recipes r JOIN batches b ON r.batch_id = b.id WHERE r.id = ?', req.params.id);
+    if (!recipe) {
+      return res.status(404).json({ error: 'Receta no encontrada' });
+    }
+    if (recipe.user_id !== null && (!req.user || req.user.id !== recipe.user_id)) {
+      return res.status(403).json({ error: 'Solo el propietario puede eliminar recetas de este lote.' });
+    }
     await db.run('DELETE FROM recipes WHERE id = ?', req.params.id);
     res.json({ success: true });
   } catch (err) {
@@ -375,10 +399,15 @@ app.delete('/api/recipes/:id', async (req, res) => {
 app.delete('/api/batches/:id', async (req, res) => {
   try {
     const db = await getDb();
-    const batch = await db.get('SELECT id FROM batches WHERE id = ?', req.params.id);
+    const batch = await db.get('SELECT id, user_id FROM batches WHERE id = ?', req.params.id);
     if (!batch) {
       return res.status(404).json({ error: 'Lote no encontrado' });
     }
+
+    if (batch.user_id !== null && (!req.user || req.user.id !== batch.user_id)) {
+      return res.status(403).json({ error: 'Solo el propietario puede eliminar este lote.' });
+    }
+
     await db.run('DELETE FROM recipes WHERE batch_id = ?', req.params.id);
     await db.run('DELETE FROM batches WHERE id = ?', req.params.id);
     res.json({ success: true });

@@ -30,9 +30,13 @@ const parseGrindToMicrons = (grindStr) => {
   return null;
 };
 
-export default function BatchDetail({ batchId, batches = [], prefillRecipe, onBack, onSubtractDose, onSaveRecipe, onDeleteBatch, onEditBatch, showToast }) {
+export default function BatchDetail({ batchId, batches = [], currentUser, onRequireAuth, prefillRecipe, onBack, onSubtractDose, onSaveRecipe, onDeleteBatch, onEditBatch, showToast }) {
   const [batch, setBatch] = useState(null);
   const brewFormRef = useRef(null);
+
+  const isOwner = Boolean(
+    currentUser && (!batch?.user_id || currentUser.id === batch.user_id)
+  );
 
   useEffect(() => {
     const isNewBrew = window.location.search.includes('action=new_brew') || window.location.pathname.includes('/batch/');
@@ -507,6 +511,21 @@ export default function BatchDetail({ batchId, batches = [], prefillRecipe, onBa
     });
   };
 
+  const handleLoadRecipeToForm = (rec) => {
+    if (!rec) return;
+    if (rec.method) setMethod(rec.method);
+    if (rec.dose_in_g) setDoseInG(rec.dose_in_g);
+    if (rec.dose_out_g) setDoseOutG(rec.dose_out_g);
+    if (rec.temperature) {
+      const t = parseInt(rec.temperature);
+      if (!isNaN(t)) setWaterTemp(t);
+    }
+    if (rec.brew_time) setBrewTime(rec.brew_time);
+    if (rec.notes) setNotes(rec.notes);
+    setActiveTab('brew');
+    if (showToast) showToast('Parámetros cargados en el preparador.', { type: 'info', duration: 2000 });
+  };
+
   const handleWriteNfc = async () => {
     if (!batch || !batch.id) return;
     const batchUrl = `${window.location.origin}/beantag/?batch=${encodeURIComponent(batch.id)}&action=new_brew`;
@@ -689,8 +708,46 @@ export default function BatchDetail({ batchId, batches = [], prefillRecipe, onBa
         </div>
       </div>
 
+      {/* Guest Mode Banner */}
+      {!isOwner && (
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(234, 88, 12, 0.08) 0%, rgba(220, 38, 38, 0.05) 100%)',
+          border: '1.5px solid rgba(234, 88, 12, 0.25)',
+          borderRadius: '12px',
+          padding: '10px 14px',
+          marginBottom: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '10px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '18px' }}>👁️</span>
+            <div>
+              <div style={{ fontSize: '11.5px', fontWeight: '800', color: 'var(--color-text-main)' }}>
+                Modo Invitado (NFC)
+              </div>
+              <div style={{ fontSize: '10.5px', color: 'var(--color-text-muted)' }}>
+                {currentUser 
+                  ? 'Ficha en modo solo lectura.'
+                  : 'Ficha pública de solo lectura. Inicia sesión si eres el dueño.'}
+              </div>
+            </div>
+          </div>
+          {!currentUser && onRequireAuth && (
+            <button 
+              className="btn-candy primary"
+              onClick={onRequireAuth}
+              style={{ padding: '5px 10px', fontSize: '11px', whiteSpace: 'nowrap', margin: 0, fontWeight: 'bold' }}
+            >
+              Acceder
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Top Header - Row 2: Spacious Action Toolbar */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '8px', marginBottom: '14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isOwner ? '1fr auto auto' : '1fr', gap: '8px', marginBottom: '14px' }}>
         <button 
           className="btn-candy primary" 
           onClick={() => handleShareBatchCard(false)} 
@@ -700,23 +757,27 @@ export default function BatchDetail({ batchId, batches = [], prefillRecipe, onBa
           <span>Compartir Ticket</span>
         </button>
 
-        <button 
-          className="btn-candy" 
-          onClick={() => onEditBatch(batch)} 
-          style={{ padding: '8px 12px', fontSize: '11.5px', display: 'flex', alignItems: 'center', gap: '5px', margin: 0 }}
-        >
-          <Edit2 size={13} strokeWidth={2.5} />
-          <span>Editar</span>
-        </button>
+        {isOwner && (
+          <button 
+            className="btn-candy" 
+            onClick={() => onEditBatch(batch)} 
+            style={{ padding: '8px 12px', fontSize: '11.5px', display: 'flex', alignItems: 'center', gap: '5px', margin: 0 }}
+          >
+            <Edit2 size={13} strokeWidth={2.5} />
+            <span>Editar</span>
+          </button>
+        )}
 
-        <button 
-          className="btn-candy" 
-          onClick={() => onDeleteBatch(batch.id, batch.name)} 
-          style={{ padding: '8px 12px', fontSize: '11.5px', color: 'var(--color-crimson)', borderColor: 'var(--color-crimson)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: 0 }}
-          title="Eliminar lote"
-        >
-          <Trash2 size={14} strokeWidth={2.5} />
-        </button>
+        {isOwner && (
+          <button 
+            className="btn-candy" 
+            onClick={() => onDeleteBatch(batch.id, batch.name)} 
+            style={{ padding: '8px 12px', fontSize: '11.5px', color: 'var(--color-crimson)', borderColor: 'var(--color-crimson)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: 0 }}
+            title="Eliminar lote"
+          >
+            <Trash2 size={14} strokeWidth={2.5} />
+          </button>
+        )}
       </div>
 
       {/* Hero Ficha del Café */}
@@ -739,7 +800,7 @@ export default function BatchDetail({ batchId, batches = [], prefillRecipe, onBa
           <div>
             <strong>Tubos:</strong> <span style={{ color: 'var(--color-crimson)', fontWeight: '900' }}>{batch.remaining_doses} / {batch.total_doses}</span> ({batch.remaining_weight_g || 0}g rest.)
           </div>
-          {batch.remaining_doses > 0 && (
+          {isOwner && batch.remaining_doses > 0 && (
             <button className="btn-candy primary" onClick={handleDoseDeduction} style={{ margin: 0, padding: '6px 10px', fontSize: '11px', fontWeight: 'bold' }}>
               - Restar 1 Tubo
             </button>
@@ -1416,10 +1477,21 @@ export default function BatchDetail({ batchId, batches = [], prefillRecipe, onBa
               </div>
             </div>
 
-            <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '12px', fontSize: '14px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-              <Save size={18} />
-              Guardar Bitácora
-            </button>
+            {isOwner ? (
+              <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '12px', fontSize: '14px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <Save size={18} />
+                Guardar Bitácora
+              </button>
+            ) : (
+              <button 
+                type="button" 
+                onClick={onRequireAuth} 
+                className="btn-candy" 
+                style={{ width: '100%', marginTop: '12px', fontSize: '12.5px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: 0.9, cursor: 'pointer', background: 'var(--bg-canvas)' }}
+              >
+                🔒 Solo el propietario puede registrar extracciones {currentUser ? '' : '(Iniciar Sesión)'}
+              </button>
+            )}
           </form>
 
           {/* Dial-in Calibration Assistant */}
@@ -1439,10 +1511,17 @@ export default function BatchDetail({ batchId, batches = [], prefillRecipe, onBa
               <div style={{ fontSize: '13px', fontWeight: '900' }}>
                 {lastRecipe.method} | {lastRecipe.grind} | {lastRecipe.ratio}
               </div>
-              <button className="btn-candy primary" onClick={handleRepeatLastRecipe} style={{ width: '100%', marginTop: '8px', padding: '6px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                <Zap size={12} />
-                ⚡ Cargar esta Receta al Formulario
-              </button>
+              {isOwner ? (
+                <button className="btn-candy primary" onClick={handleRepeatLastRecipe} style={{ width: '100%', marginTop: '8px', padding: '6px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                  <Zap size={12} />
+                  ⚡ Repetir y Guardar esta Receta (-1 Tubo)
+                </button>
+              ) : (
+                <button className="btn-candy" onClick={() => handleLoadRecipeToForm(lastRecipe)} style={{ width: '100%', marginTop: '8px', padding: '6px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                  <Zap size={12} />
+                  ⚡ Cargar Parámetros al Preparador
+                </button>
+              )}
             </div>
           )}
 
