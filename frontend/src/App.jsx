@@ -340,19 +340,6 @@ export default function App() {
     info: { backgroundColor: 'var(--bg-card)', color: 'var(--color-text)', border: '1.5px solid var(--border-color)' },
   };
 
-  if (!currentUser) {
-    return (
-      <>
-        {toast.visible && (
-          <div className="toast-notification animate-entrance" style={{ ...toastStyles[toast.type], zIndex: 12000 }}>
-            {toast.message}
-          </div>
-        )}
-        <AuthView onSuccess={handleAuthSuccess} showToast={showToast} />
-      </>
-    );
-  }
-
   return (
     <div className="app-container" style={{ paddingBottom: '90px' }}>
       <header className="app-header">
@@ -546,6 +533,15 @@ export default function App() {
 
       {showNfcTools && (
         <NfcToolsModal batches={batches} onClose={() => setShowNfcTools(false)} showToast={showToast} />
+      )}
+
+      {showAuthModal && (
+        <AuthModal 
+          isOpen={showAuthModal} 
+          onClose={() => setShowAuthModal(false)} 
+          onSuccess={handleAuthSuccess} 
+          showToast={showToast} 
+        />
       )}
 
       {/* Genjutsu Floating Bottom Navigation Bar */}
