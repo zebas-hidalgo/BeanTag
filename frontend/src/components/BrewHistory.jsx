@@ -31,10 +31,11 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
     try {
       const pref = localStorage.getItem('beantag-inventory-style');
       if (pref === 'archive') return 'archive';
-      if (pref === 'list') return 'ticket';
-      return 'editorial';
+      if (pref === 'boarding') return 'boarding';
+      if (pref === 'editorial') return 'editorial';
+      return 'receipt';
     } catch (e) {
-      return 'editorial';
+      return 'receipt';
     }
   });
   const textureRef = useRef(null);
@@ -660,14 +661,14 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 <div style={{ display: 'flex', gap: '4px' }}>
                   <button 
                     type="button" 
-                    onClick={() => { setShareIncludeRecipe(true); exportRecipeAsImage(selectedRecipe, shareTemplate || 'craft', true); }}
+                    onClick={() => { setShareIncludeRecipe(true); exportRecipeAsImage(selectedRecipe, shareTemplate || 'receipt', true); }}
                     style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
                   >
                     🧾 Con Receta
                   </button>
                   <button 
                     type="button" 
-                    onClick={() => { setShareIncludeRecipe(false); exportRecipeAsImage(selectedRecipe, shareTemplate || 'craft', false); }}
+                    onClick={() => { setShareIncludeRecipe(false); exportRecipeAsImage(selectedRecipe, shareTemplate || 'receipt', false); }}
                     style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: !shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
                   >
                     🌾 Solo Grano
@@ -679,9 +680,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                 <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
                 {[
+                  { id: 'receipt', label: '🧾 Recibo' },
                   { id: 'editorial', label: '🏷️ Editorial' },
-                  { id: 'ticket', label: '🧾 Ticket Barista' },
-                  { id: 'archive', label: '📐 Archivo Lab' }
+                  { id: 'boarding', label: '🎫 Boarding' },
+                  { id: 'archive', label: '🌑 Cyber Lab' }
                 ].map(t => (
                   <button
                     key={t.id}
@@ -692,9 +694,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       padding: '4px 6px',
                       fontSize: '9.5px',
                       borderRadius: '4px',
-                      border: (shareTemplate || 'craft') === t.id ? '1.5px solid var(--color-crimson)' : 'none',
-                      backgroundColor: (shareTemplate || 'craft') === t.id ? 'var(--bg-header)' : 'transparent',
-                      fontWeight: (shareTemplate || 'craft') === t.id ? '900' : 'normal',
+                      border: (shareTemplate || 'receipt') === t.id ? '1.5px solid var(--color-crimson)' : 'none',
+                      backgroundColor: (shareTemplate || 'receipt') === t.id ? 'var(--bg-header)' : 'transparent',
+                      fontWeight: (shareTemplate || 'receipt') === t.id ? '900' : 'normal',
                       color: 'var(--color-text)',
                       cursor: 'pointer'
                     }}

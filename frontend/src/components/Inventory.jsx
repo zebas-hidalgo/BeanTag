@@ -57,10 +57,11 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
     try {
       const pref = localStorage.getItem('beantag-inventory-style');
       if (pref === 'archive') return 'archive';
-      if (pref === 'list') return 'ticket';
-      return 'editorial';
+      if (pref === 'boarding') return 'boarding';
+      if (pref === 'editorial') return 'editorial';
+      return 'receipt';
     } catch (e) {
-      return 'editorial';
+      return 'receipt';
     }
   });
   const [menuShareStatus, setMenuShareStatus] = useState('');
@@ -840,9 +841,10 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
             <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
               <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
               {[
+                { id: 'receipt', label: '🧾 Recibo' },
                 { id: 'editorial', label: '🏷️ Editorial' },
-                { id: 'ticket', label: '🧾 Ticket Barista' },
-                { id: 'archive', label: '📐 Archivo Lab' }
+                { id: 'boarding', label: '🎫 Boarding' },
+                { id: 'archive', label: '🌑 Cyber Lab' }
               ].map(t => (
                 <button
                   key={t.id}

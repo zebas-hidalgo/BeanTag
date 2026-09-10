@@ -101,10 +101,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     try {
       const pref = localStorage.getItem('beantag-inventory-style');
       if (pref === 'archive') return 'archive';
-      if (pref === 'list') return 'ticket';
-      return 'editorial';
+      if (pref === 'boarding') return 'boarding';
+      if (pref === 'editorial') return 'editorial';
+      return 'receipt';
     } catch (e) {
-      return 'editorial';
+      return 'receipt';
     }
   });
   const [shareStatus, setShareStatus] = useState('');
@@ -1779,9 +1780,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
                 {[
+                  { id: 'receipt', label: '🧾 Recibo' },
                   { id: 'editorial', label: '🏷️ Editorial' },
-                  { id: 'ticket', label: '🧾 Ticket Barista' },
-                  { id: 'archive', label: '📐 Archivo Lab' }
+                  { id: 'boarding', label: '🎫 Boarding' },
+                  { id: 'archive', label: '🌑 Cyber Lab' }
                 ].map(t => (
                   <button
                     key={t.id}
