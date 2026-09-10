@@ -27,7 +27,16 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   const [shareImage, setShareImage] = useState(null);
   const [shareStatus, setShareStatus] = useState('');
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(true);
-  const [shareTemplate, setShareTemplate] = useState('receipt');
+  const [shareTemplate, setShareTemplate] = useState(() => {
+    try {
+      const pref = localStorage.getItem('beantag-inventory-style');
+      if (pref === 'archive') return 'archive';
+      if (pref === 'list') return 'ticket';
+      return 'editorial';
+    } catch (e) {
+      return 'editorial';
+    }
+  });
   const textureRef = useRef(null);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -670,9 +679,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                 <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
                 {[
-                  { id: 'craft', label: '☕ Artesanal' },
-                  { id: 'minimal', label: '🏷️ Nórdico' },
-                  { id: 'dark', label: '🌑 Tokyo Dark' }
+                  { id: 'editorial', label: '🏷️ Editorial' },
+                  { id: 'ticket', label: '🧾 Ticket Barista' },
+                  { id: 'archive', label: '📐 Archivo Lab' }
                 ].map(t => (
                   <button
                     key={t.id}

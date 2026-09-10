@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Zap, Snowflake, CheckCircle2, Mountain, Sparkles, Loader2, Compass, Share2, ClipboardCopy, X, Layers, FileText, MoreHorizontal, ChevronRight } from 'lucide-react';
 import { RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
@@ -20,10 +20,27 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
     }
   });
 
+  useEffect(() => {
+    const handleStyleSync = () => {
+      try {
+        const saved = localStorage.getItem('beantag-inventory-style') || 'editorial';
+        setCardStyle(saved);
+      } catch (e) {}
+    };
+
+    window.addEventListener('beantag-inventory-style-changed', handleStyleSync);
+    window.addEventListener('storage', handleStyleSync);
+    return () => {
+      window.removeEventListener('beantag-inventory-style-changed', handleStyleSync);
+      window.removeEventListener('storage', handleStyleSync);
+    };
+  }, []);
+
   const handleCardStyleChange = (style) => {
     setCardStyle(style);
     try {
       localStorage.setItem('beantag-inventory-style', style);
+      window.dispatchEvent(new Event('beantag-inventory-style-changed'));
     } catch (e) {}
     if (navigator.vibrate) {
       try { navigator.vibrate(8); } catch (err) {}
@@ -36,7 +53,16 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
   // Menu Share State
   const [showMenuShareModal, setShowMenuShareModal] = useState(false);
   const [menuShareImage, setMenuShareImage] = useState(null);
-  const [menuShareTemplate, setMenuShareTemplate] = useState('craft');
+  const [menuShareTemplate, setMenuShareTemplate] = useState(() => {
+    try {
+      const pref = localStorage.getItem('beantag-inventory-style');
+      if (pref === 'archive') return 'archive';
+      if (pref === 'list') return 'ticket';
+      return 'editorial';
+    } catch (e) {
+      return 'editorial';
+    }
+  });
   const [menuShareStatus, setMenuShareStatus] = useState('');
 
   const safeBatches = Array.isArray(batches) ? batches : [];
@@ -814,9 +840,9 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
             <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
               <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
               {[
-                { id: 'craft', label: '☕ Artesanal' },
-                { id: 'minimal', label: '🏷️ Nórdico' },
-                { id: 'dark', label: '🌑 Tokyo Dark' }
+                { id: 'editorial', label: '🏷️ Editorial' },
+                { id: 'ticket', label: '🧾 Ticket Barista' },
+                { id: 'archive', label: '📐 Archivo Lab' }
               ].map(t => (
                 <button
                   key={t.id}

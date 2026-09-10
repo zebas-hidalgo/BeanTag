@@ -97,7 +97,16 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [shareImage, setShareImage] = useState(null);
   const [shareScope, setShareScope] = useState('single'); // 'single' | 'menu'
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(false); // Default to bean-only for batch detail
-  const [shareTemplate, setShareTemplate] = useState('craft'); // 'craft' | 'minimal' | 'dark'
+  const [shareTemplate, setShareTemplate] = useState(() => {
+    try {
+      const pref = localStorage.getItem('beantag-inventory-style');
+      if (pref === 'archive') return 'archive';
+      if (pref === 'list') return 'ticket';
+      return 'editorial';
+    } catch (e) {
+      return 'editorial';
+    }
+  });
   const [shareStatus, setShareStatus] = useState('');
 
   const handleShareBatchCard = (incRecipe = shareIncludeRecipe, templ = shareTemplate, scope = shareScope) => {
@@ -1770,9 +1779,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
                 {[
-                  { id: 'craft', label: '☕ Artesanal' },
-                  { id: 'minimal', label: '🏷️ Nórdico' },
-                  { id: 'dark', label: '🌑 Tokyo Dark' }
+                  { id: 'editorial', label: '🏷️ Editorial' },
+                  { id: 'ticket', label: '🧾 Ticket Barista' },
+                  { id: 'archive', label: '📐 Archivo Lab' }
                 ].map(t => (
                   <button
                     key={t.id}

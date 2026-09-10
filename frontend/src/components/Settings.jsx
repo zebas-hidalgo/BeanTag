@@ -20,6 +20,33 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
     return localStorage.getItem('default-grinder') || 'jmax';
   });
 
+  const [cardStyle, setCardStyle] = useState(() => {
+    try {
+      return localStorage.getItem('beantag-inventory-style') || 'editorial';
+    } catch (e) {
+      return 'editorial';
+    }
+  });
+
+  const handleCardStyleChange = (style) => {
+    setCardStyle(style);
+    try {
+      localStorage.setItem('beantag-inventory-style', style);
+      window.dispatchEvent(new Event('beantag-inventory-style-changed'));
+    } catch (e) {}
+    if (navigator.vibrate) {
+      try { navigator.vibrate(8); } catch (err) {}
+    }
+    const names = {
+      editorial: '🏷️ Editorial (Nordic)',
+      list: '📋 Lista (Cupertino)',
+      archive: '📐 Archivo (Tokyo Lab)'
+    };
+    if (showToast) {
+      showToast(`Estilo de inventario: ${names[style] || style}`, { type: 'success', duration: 2000 });
+    }
+  };
+
   const handleSaveKey = () => {
     localStorage.setItem('gemini-api-key', apiKey);
     localStorage.setItem('gemini-model', selectedModel);
@@ -128,6 +155,87 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 14px 0', fontSize: '16px' }}>
         Ajustes y Configuración
       </h2>
+
+      {/* Estilo Visual del Inventario */}
+      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
+        <div>
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+            🎛️ Estilo Visual del Inventario
+          </h4>
+          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
+            Elige cómo se presentan las tarjetas de café en tu congelador por defecto
+          </p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
+          {[
+            { 
+              id: 'editorial', 
+              name: '🏷️ Editorial', 
+              subtitle: 'Nordic Atelier', 
+              desc: 'Respiro nórdico, chips pastel, cápsula de stock y botón rápido.' 
+            },
+            { 
+              id: 'list', 
+              name: '📋 Lista', 
+              subtitle: 'Cupertino Table', 
+              desc: 'Filas compactas (~52px), pastilla de stock y flecha indicadora.' 
+            },
+            { 
+              id: 'archive', 
+              name: '📐 Archivo', 
+              subtitle: 'Tokyo Coffee Lab', 
+              desc: 'Ficha técnica monoespaciada, código #01 • LOT y matriz 2x2.' 
+            }
+          ].map((item) => {
+            const isActive = cardStyle === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleCardStyleChange(item.id)}
+                style={{
+                  margin: 0,
+                  fontSize: '11px',
+                  padding: '12px 10px',
+                  borderRadius: '14px',
+                  border: isActive ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
+                  backgroundColor: isActive ? 'var(--bg-header)' : 'var(--bg-card)',
+                  color: 'var(--color-text)',
+                  cursor: 'pointer',
+                  transition: 'all 0.18s ease',
+                  textAlign: 'left',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '5px',
+                  position: 'relative'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                  <span style={{ fontSize: '12px', fontWeight: '800' }}>{item.name}</span>
+                  {isActive && (
+                    <span style={{ 
+                      fontSize: '9px', 
+                      background: 'var(--color-crimson)', 
+                      color: '#FFFFFF', 
+                      padding: '2px 5px', 
+                      borderRadius: '4px', 
+                      fontWeight: '800' 
+                    }}>
+                      ACTIVO
+                    </span>
+                  )}
+                </div>
+                <span style={{ fontSize: '10px', color: 'var(--color-crimson)', fontWeight: '700' }}>
+                  {item.subtitle}
+                </span>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', lineHeight: 1.3 }}>
+                  {item.desc}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Temas Visuales de Fantasía */}
       <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
