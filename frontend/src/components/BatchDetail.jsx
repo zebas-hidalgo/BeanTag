@@ -99,13 +99,13 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(false); // Default to bean-only for batch detail
   const [shareTemplate, setShareTemplate] = useState(() => {
     try {
-      const pref = localStorage.getItem('beantag-inventory-style');
-      if (pref === 'archive') return 'archive';
-      if (pref === 'boarding') return 'boarding';
-      if (pref === 'editorial') return 'editorial';
-      return 'receipt';
+      const pref = localStorage.getItem('beantag-share-style');
+      if (pref === 'neobrutalist') return 'neobrutalist';
+      if (pref === 'aurora') return 'aurora';
+      if (pref === 'hangtag') return 'hangtag';
+      return 'blueprint';
     } catch (e) {
-      return 'receipt';
+      return 'blueprint';
     }
   });
   const [shareStatus, setShareStatus] = useState('');
@@ -1780,15 +1780,19 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
                 {[
-                  { id: 'receipt', label: '🧾 Recibo' },
-                  { id: 'editorial', label: '🏷️ Editorial' },
-                  { id: 'boarding', label: '🎫 Boarding' },
-                  { id: 'archive', label: '🌑 Cyber Lab' }
+                  { id: 'blueprint', label: '📐 Blueprint' },
+                  { id: 'neobrutalist', label: '⚡ Neo-Pop' },
+                  { id: 'aurora', label: '🔮 Aurora' },
+                  { id: 'hangtag', label: '🏷️ Hangtag' }
                 ].map(t => (
                   <button
                     key={t.id}
                     type="button"
-                    onClick={() => { setShareTemplate(t.id); handleShareBatchCard(shareIncludeRecipe, t.id, shareScope); }}
+                    onClick={() => {
+                      setShareTemplate(t.id);
+                      try { localStorage.setItem('beantag-share-style', t.id); } catch (e) {}
+                      handleShareBatchCard(shareIncludeRecipe, t.id, shareScope);
+                    }}
                     style={{
                       flex: 1,
                       padding: '4px 6px',

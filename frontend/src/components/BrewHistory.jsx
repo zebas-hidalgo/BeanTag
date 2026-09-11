@@ -29,13 +29,13 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(true);
   const [shareTemplate, setShareTemplate] = useState(() => {
     try {
-      const pref = localStorage.getItem('beantag-inventory-style');
-      if (pref === 'archive') return 'archive';
-      if (pref === 'boarding') return 'boarding';
-      if (pref === 'editorial') return 'editorial';
-      return 'receipt';
+      const pref = localStorage.getItem('beantag-share-style');
+      if (pref === 'neobrutalist') return 'neobrutalist';
+      if (pref === 'aurora') return 'aurora';
+      if (pref === 'hangtag') return 'hangtag';
+      return 'blueprint';
     } catch (e) {
-      return 'receipt';
+      return 'blueprint';
     }
   });
   const textureRef = useRef(null);
@@ -98,7 +98,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   };
 
   const exportRecipeAsImage = (recipe, templateOverride, includeRecipeOverride) => {
-    const currentTpl = templateOverride || shareTemplate || 'story';
+    const currentTpl = templateOverride || shareTemplate || 'blueprint';
     const incRecipe = includeRecipeOverride !== undefined ? includeRecipeOverride : shareIncludeRecipe;
     setShareStatus('Generando tarjeta en Ultra-HD...');
     setShareImage(null);
@@ -661,14 +661,14 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 <div style={{ display: 'flex', gap: '4px' }}>
                   <button 
                     type="button" 
-                    onClick={() => { setShareIncludeRecipe(true); exportRecipeAsImage(selectedRecipe, shareTemplate || 'receipt', true); }}
+                    onClick={() => { setShareIncludeRecipe(true); exportRecipeAsImage(selectedRecipe, shareTemplate || 'blueprint', true); }}
                     style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
                   >
                     🧾 Con Receta
                   </button>
                   <button 
                     type="button" 
-                    onClick={() => { setShareIncludeRecipe(false); exportRecipeAsImage(selectedRecipe, shareTemplate || 'receipt', false); }}
+                    onClick={() => { setShareIncludeRecipe(false); exportRecipeAsImage(selectedRecipe, shareTemplate || 'blueprint', false); }}
                     style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: !shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
                   >
                     🌾 Solo Grano
@@ -680,23 +680,27 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                 <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
                 {[
-                  { id: 'receipt', label: '🧾 Recibo' },
-                  { id: 'editorial', label: '🏷️ Editorial' },
-                  { id: 'boarding', label: '🎫 Boarding' },
-                  { id: 'archive', label: '🌑 Cyber Lab' }
+                  { id: 'blueprint', label: '📐 Blueprint' },
+                  { id: 'neobrutalist', label: '⚡ Neo-Pop' },
+                  { id: 'aurora', label: '🔮 Aurora' },
+                  { id: 'hangtag', label: '🏷️ Hangtag' }
                 ].map(t => (
                   <button
                     key={t.id}
                     type="button"
-                    onClick={() => { setShareTemplate(t.id); exportRecipeAsImage(selectedRecipe, t.id, shareIncludeRecipe); }}
+                    onClick={() => {
+                      setShareTemplate(t.id);
+                      try { localStorage.setItem('beantag-share-style', t.id); } catch (e) {}
+                      exportRecipeAsImage(selectedRecipe, t.id, shareIncludeRecipe);
+                    }}
                     style={{
                       flex: 1,
                       padding: '4px 6px',
                       fontSize: '9.5px',
                       borderRadius: '4px',
-                      border: (shareTemplate || 'receipt') === t.id ? '1.5px solid var(--color-crimson)' : 'none',
-                      backgroundColor: (shareTemplate || 'receipt') === t.id ? 'var(--bg-header)' : 'transparent',
-                      fontWeight: (shareTemplate || 'receipt') === t.id ? '900' : 'normal',
+                      border: (shareTemplate || 'blueprint') === t.id ? '1.5px solid var(--color-crimson)' : 'none',
+                      backgroundColor: (shareTemplate || 'blueprint') === t.id ? 'var(--bg-header)' : 'transparent',
+                      fontWeight: (shareTemplate || 'blueprint') === t.id ? '900' : 'normal',
                       color: 'var(--color-text)',
                       cursor: 'pointer'
                     }}

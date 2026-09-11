@@ -55,13 +55,13 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
   const [menuShareImage, setMenuShareImage] = useState(null);
   const [menuShareTemplate, setMenuShareTemplate] = useState(() => {
     try {
-      const pref = localStorage.getItem('beantag-inventory-style');
-      if (pref === 'archive') return 'archive';
-      if (pref === 'boarding') return 'boarding';
-      if (pref === 'editorial') return 'editorial';
-      return 'receipt';
+      const pref = localStorage.getItem('beantag-share-style');
+      if (pref === 'neobrutalist') return 'neobrutalist';
+      if (pref === 'aurora') return 'aurora';
+      if (pref === 'hangtag') return 'hangtag';
+      return 'blueprint';
     } catch (e) {
-      return 'receipt';
+      return 'blueprint';
     }
   });
   const [menuShareStatus, setMenuShareStatus] = useState('');
@@ -841,15 +841,18 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
             <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
               <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
               {[
-                { id: 'receipt', label: '🧾 Recibo' },
-                { id: 'editorial', label: '🏷️ Editorial' },
-                { id: 'boarding', label: '🎫 Boarding' },
-                { id: 'archive', label: '🌑 Cyber Lab' }
+                { id: 'blueprint', label: '📐 Blueprint' },
+                { id: 'neobrutalist', label: '⚡ Neo-Pop' },
+                { id: 'aurora', label: '🔮 Aurora' },
+                { id: 'hangtag', label: '🏷️ Hangtag' }
               ].map(t => (
                 <button
                   key={t.id}
                   type="button"
-                  onClick={() => handleOpenMenuShare(t.id)}
+                  onClick={() => {
+                    try { localStorage.setItem('beantag-share-style', t.id); } catch (e) {}
+                    handleOpenMenuShare(t.id);
+                  }}
                   style={{
                     flex: 1,
                     padding: '5px 8px',
