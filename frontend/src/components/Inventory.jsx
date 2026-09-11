@@ -84,17 +84,22 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
     return name.toLowerCase().includes(q) || producer.toLowerCase().includes(q) || origin.toLowerCase().includes(q);
   });
 
-  const handleOpenMenuShare = (template = menuShareTemplate) => {
+  const handleOpenMenuShare = async (template = menuShareTemplate) => {
     const targetList = availableBatches.length > 0 ? availableBatches : safeBatches;
     if (targetList.length === 0) {
       if (showToast) showToast('No hay cafés en el inventario para generar la carta.', { type: 'info' });
       return;
     }
-    const imgData = generateCoffeeMenuCardImage(targetList, template);
-    setMenuShareImage(imgData);
-    setMenuShareTemplate(template);
-    setShowMenuShareModal(true);
-    setMenuShareStatus('');
+    try {
+      const imgData = await generateCoffeeMenuCardImage(targetList, template);
+      setMenuShareImage(imgData);
+      setMenuShareTemplate(template);
+      setShowMenuShareModal(true);
+      setMenuShareStatus('');
+    } catch (err) {
+      console.error("Menu card generation error:", err);
+      if (showToast) showToast('Error al generar la carta: ' + err.message, { type: 'error' });
+    }
   };
 
   const handleCopyMenuText = async () => {

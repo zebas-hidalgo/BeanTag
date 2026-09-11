@@ -1,73 +1,79 @@
-// --- BEANTAG AESTHETIC SPECIALTY COFFEE CARD & TICKET GENERATOR 2026/2027 ---
-import { stripEmojis } from './scaIcons';
+// --- BEANTAG AESTHETIC TICKET & CARD GENERATOR (2026/2027) ---
+// Retina 2x Canvas rendering with authentic AI-generated Nanobanana/Imagen
+// visual asset kits (Blueprint, Neo-Brutalist, Holographic Aurora, Nordic Hangtag).
+
 import {
+  ensureCardAssetsLoaded,
+  drawHeroAsset,
+  drawMetricAsset,
+  drawBadgeAsset,
+  drawCardAsset,
   drawBlueprintBean,
-  drawBlueprintDripper,
-  drawBlueprintScale,
-  drawBlueprintTimer,
-  drawNeoPopBean,
-  drawNeoPopLightning,
-  drawNeoPopStar,
-  drawNeoPopFlame,
-  drawAuroraCrystalBean,
-  drawAuroraWaterDrop,
-  drawAuroraWave,
-  drawBotanicalBranch,
-  drawGooseneckKettle,
-  drawRoasterySeal,
-  drawMetallicEyelet
+  drawNeobrutalistBean,
+  drawNeobrutalistStar,
+  drawAuroraBean,
+  drawHangtagBotanical,
+  drawHangtagSeal
 } from './ticketIconKits';
 
 /**
- * Normalizes template names into one of the 4 official 2026/2027 styles:
- * 1. 'blueprint': 📐 Technical engineering blueprint / patent drafting
- * 2. 'neobrutalist': ⚡ Tokyo/Berlin streetwear pop roastery with hard shadows
- * 3. 'aurora': 🔮 Apple VisionOS dark obsidian glassmorphism
- * 4. 'hangtag': 🏷️ Nordic atelier cotton tag with metallic eyelet & editorial serif
+ * Normalizes template names to the 4 official 2026/2027 styles:
+ * 'blueprint' | 'neobrutalist' | 'aurora' | 'hangtag'
  */
-export function normalizeCardStyle(template) {
-  if (!template) return 'blueprint';
-  const t = String(template).toLowerCase();
-  if (t === 'blueprint' || t === 'receipt' || t === 'craft' || t === 'ticket' || t === 'recibo') return 'blueprint';
-  if (t === 'neobrutalist' || t === 'neo' || t === 'brutalist' || t === 'boarding' || t === 'pass') return 'neobrutalist';
-  if (t === 'aurora' || t === 'holographic' || t === 'archive' || t === 'dark' || t === 'cyber' || t === 'lab') return 'aurora';
-  if (t === 'hangtag' || t === 'editorial' || t === 'minimal' || t === 'nordic' || t === 'atelier') return 'hangtag';
+export function normalizeCardStyle(tpl) {
+  if (!tpl) return 'blueprint';
+  const lower = String(tpl).toLowerCase();
+  if (lower.includes('blue') || lower.includes('cyan') || lower.includes('tech')) return 'blueprint';
+  if (lower.includes('neo') || lower.includes('brutal') || lower.includes('pop') || lower.includes('tokyo')) return 'neobrutalist';
+  if (lower.includes('aurora') || lower.includes('glass') || lower.includes('holo') || lower.includes('dark')) return 'aurora';
+  if (lower.includes('hang') || lower.includes('nord') || lower.includes('vintage') || lower.includes('paper') || lower.includes('minimal')) return 'hangtag';
   return 'blueprint';
 }
 
-function parseGrindToMicrons(grindText) {
-  if (!grindText) return null;
-  const str = String(grindText);
-  const femoMatch = str.match(/femobook.*?(\d+)\s*clic/i);
-  if (femoMatch) return Math.round(parseInt(femoMatch[1]) * 18);
-  const comMatch = str.match(/comandante.*?(\d+)\s*clic/i);
-  if (comMatch) return Math.round(parseInt(comMatch[1]) * 30);
-  const jmaxMatch = str.match(/(\d+)\.(\d+)\.(\d+)/);
-  if (jmaxMatch) {
-    const rot = parseInt(jmaxMatch[1]) || 0;
-    const num = parseInt(jmaxMatch[2]) || 0;
-    const click = parseInt(jmaxMatch[3]) || 0;
-    return Math.round(((rot * 90) + (num * 10) + click) * 8.8);
-  }
-  return null;
+/**
+ * Strips OS emojis from strings for clean typography
+ */
+export function stripEmojis(str) {
+  if (!str || typeof str !== 'string') return '';
+  return str
+    .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}]/gu, '')
+    .trim();
 }
 
-function extractFlavorTags(notesStr) {
-  if (!notesStr) return [];
-  const str = String(notesStr);
-  if (str.includes('[Notas: ') && str.includes(']')) {
-    const match = str.match(/\[Notas: (.*?)\]/);
-    if (match) {
-      return match[1].split(',').map(t => stripEmojis(t.trim())).filter(Boolean);
-    }
-  }
-  if (str.includes(' | ')) {
-    return str.split(' | ')[0].split(',').map(t => stripEmojis(t.trim())).filter(Boolean);
-  }
-  return str.split(',').map(t => stripEmojis(t.trim())).filter(Boolean).slice(0, 5);
+/**
+ * Extracts flavor notes into tags array
+ */
+export function extractFlavorTags(notes) {
+  if (!notes) return [];
+  const cleaned = stripEmojis(notes);
+  return cleaned
+    .split(/[,•|\/\n]+/)
+    .map(t => t.trim())
+    .filter(t => t.length > 1 && !t.toLowerCase().startsWith('notas:'));
 }
 
-function drawRoundedRect(ctx, x, y, width, height, radius, fill = true, stroke = false) {
+/**
+ * Translates grind description into approximate microns for technical precision
+ */
+export function parseGrindToMicrons(grind) {
+  if (!grind) return 850;
+  const lower = String(grind).toLowerCase();
+  const numMatch = lower.match(/(\d{3,4})\s*(?:um|µm|micr)/i);
+  if (numMatch) return parseInt(numMatch[1], 10);
+  if (lower.includes('espresso') || lower.includes('fino')) return 380;
+  if (lower.includes('aeropress')) return 620;
+  if (lower.includes('v60') || lower.includes('medio fino') || lower.includes('medio-fino')) return 750;
+  if (lower.includes('kalita') || lower.includes('chemex')) return 850;
+  if (lower.includes('medio grueso') || lower.includes('medio-grueso')) return 980;
+  if (lower.includes('prensa') || lower.includes('french') || lower.includes('grueso') || lower.includes('cupping')) return 1100;
+  if (lower.includes('cold brew')) return 1250;
+  return 850;
+}
+
+/**
+ * Utility: Draws rounded rectangle
+ */
+function drawRoundedRect(ctx, x, y, width, height, radius, fill = false, stroke = true) {
   ctx.beginPath();
   ctx.moveTo(x + radius, y);
   ctx.lineTo(x + width - radius, y);
@@ -85,12 +91,14 @@ function drawRoundedRect(ctx, x, y, width, height, radius, fill = true, stroke =
 
 /**
  * Generates an Ultra-Aesthetic Share Card (840 x 580 px @ 2x Retina = 1680 x 1160 px)
- * @param {Object} recipe Recipe or batch data
- * @param {string} template 'blueprint' | 'neobrutalist' | 'aurora' | 'hangtag'
- * @param {boolean} incRecipe Include brew recipe parameters or bean-only
- * @returns {string} Base64 PNG data URL
+ * incorporating authentic Nanobanana visual asset kits.
  */
-export function generateRecipeCardImage(recipe, template = 'blueprint', incRecipe = true) {
+export async function generateRecipeCardImage(recipe, template = 'blueprint', incRecipe = true) {
+  const style = normalizeCardStyle(template);
+
+  // Ensure all image assets for this style are loaded in memory
+  await ensureCardAssetsLoaded(style);
+
   const canvas = document.createElement('canvas');
   const scaleFactor = 2;
   const baseW = 840;
@@ -101,8 +109,6 @@ export function generateRecipeCardImage(recipe, template = 'blueprint', incRecip
 
   const ctx = canvas.getContext('2d');
   ctx.scale(scaleFactor, scaleFactor);
-
-  const style = normalizeCardStyle(template);
 
   // Helper text fitters
   const drawTruncatedText = (text, x, y, maxWidth) => {
@@ -133,6 +139,7 @@ export function generateRecipeCardImage(recipe, template = 'blueprint', incRecip
   const coffeeName = stripEmojis(recipe.batch_name || recipe.coffee_name || 'Café de Especialidad');
   const origin = stripEmojis(recipe.origin || 'Origen Desconocido');
   const roaster = stripEmojis(recipe.roaster || 'Tostaduría Artesanal');
+  const producer = stripEmojis(recipe.producer || recipe.batch_producer || '');
   const process = stripEmojis(recipe.process || 'Lavado');
   const variety = stripEmojis(recipe.variety || 'Heirloom');
   const altitude = recipe.altitude ? `${recipe.altitude}m` : '1.850m';
@@ -170,10 +177,26 @@ export function generateRecipeCardImage(recipe, template = 'blueprint', incRecip
     for (let y = 0; y <= baseH; y += gridSize) { ctx.moveTo(0, y); ctx.lineTo(baseW, y); }
     ctx.stroke();
 
-    // Outer Technical Border
+    // Outer Technical Border with corner registration marks
     ctx.strokeStyle = '#38BDF8';
     ctx.lineWidth = 1.5;
-    ctx.strokeRect(paddingX - 10, paddingY - 10, availW + 20, baseH - (paddingY * 2) + 20);
+    const bx = paddingX - 10;
+    const by = paddingY - 10;
+    const bw = availW + 20;
+    const bh = baseH - (paddingY * 2) + 20;
+    ctx.strokeRect(bx, by, bw, bh);
+
+    // Corner crosshairs (+)
+    const drawCross = (cx, cy) => {
+      ctx.beginPath();
+      ctx.moveTo(cx - 6, cy); ctx.lineTo(cx + 6, cy);
+      ctx.moveTo(cx, cy - 6); ctx.lineTo(cx, cy + 6);
+      ctx.stroke();
+    };
+    drawCross(bx, by);
+    drawCross(bx + bw, by);
+    drawCross(bx, by + bh);
+    drawCross(bx + bw, by + bh);
 
     // Header Left
     ctx.fillStyle = '#38BDF8';
@@ -181,53 +204,54 @@ export function generateRecipeCardImage(recipe, template = 'blueprint', incRecip
     ctx.fillText(`// PATENT SPEC: COFFEA ARABICA VAR. ${variety.toUpperCase()}`, paddingX, paddingY + 12);
 
     ctx.fillStyle = '#FFFFFF';
-    drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 40, availW - 140, 24, '"JetBrains Mono", monospace', '900');
+    drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 40, availW - 190, 24, '"JetBrains Mono", monospace', '900');
 
     ctx.fillStyle = '#93C5FD';
-    ctx.font = '700 11px "JetBrains Mono", monospace';
-    ctx.fillText(`${origin.toUpperCase()} • ${process.toUpperCase()} • ${altitude} • ROAST: ${roaster.toUpperCase()}`, paddingX, paddingY + 60);
+    ctx.font = '700 10.5px "JetBrains Mono", monospace';
+    ctx.fillText(`${origin.toUpperCase()} • ${process.toUpperCase()} • ${altitude} • ROAST: ${roaster.toUpperCase()}`, paddingX, paddingY + 62);
 
-    // Header Right: Patent Bean Box
-    const beanBoxW = 105;
-    const beanBoxH = 58;
-    const beanBoxX = baseW - paddingX - beanBoxW;
-    const beanBoxY = paddingY;
+    // Header Right: HERO CAD SCHEMATIC CONTAINER
+    const heroBoxW = 160;
+    const heroBoxH = 88;
+    const heroBoxX = baseW - paddingX - heroBoxW;
+    const heroBoxY = paddingY - 4;
 
-    ctx.fillStyle = 'rgba(56, 189, 248, 0.06)';
+    ctx.fillStyle = 'rgba(14, 165, 233, 0.08)';
     ctx.strokeStyle = '#38BDF8';
     ctx.lineWidth = 1.2;
-    drawRoundedRect(ctx, beanBoxX, beanBoxY, beanBoxW, beanBoxH, 6, true, true);
+    drawRoundedRect(ctx, heroBoxX, heroBoxY, heroBoxW, heroBoxH, 6, true, true);
 
-    drawBlueprintBean(ctx, beanBoxX + 52, beanBoxY + 24, 30, '#38BDF8');
+    // Draw the authentic CAD Bean cross-section schematic
+    drawHeroAsset(ctx, 'blueprint', heroBoxX + 15, heroBoxY + 4, 130, 60);
 
     ctx.fillStyle = '#4ADE80';
     ctx.font = '800 8.5px "JetBrains Mono", monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(`SCA: ${scaScore}★ [PASSED]`, beanBoxX + 52, beanBoxY + 50);
+    ctx.fillText(`SCA: ${scaScore}★ // PASSED`, heroBoxX + (heroBoxW / 2), heroBoxY + heroBoxH - 8);
     ctx.textAlign = 'left';
 
-    // Divider
+    // Divider Line
     ctx.strokeStyle = '#38BDF8';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(paddingX, paddingY + 76);
-    ctx.lineTo(baseW - paddingX, paddingY + 76);
+    ctx.moveTo(paddingX, paddingY + 92);
+    ctx.lineTo(baseW - paddingX, paddingY + 92);
     ctx.stroke();
 
     // Body: Recipe vs Bean Only
     if (incRecipe) {
-      // 4 Metric Boxes
-      const metricY = paddingY + 92;
+      // 4 Metric Boxes with Authentic CAD Icons
+      const metricY = paddingY + 104;
       const cols = 4;
       const gap = 12;
       const colW = (availW - (gap * (cols - 1))) / cols;
-      const colH = 68;
+      const colH = 76;
 
       const metrics = [
-        { lbl: 'MÉTODO CAD', val: methodStr.toUpperCase(), sub: 'CONICAL 60°' },
-        { lbl: 'DOSIS IN/OUT', val: `${coffeeG}g → ${waterG}g`, sub: `RATIO ${ratioStr}` },
-        { lbl: 'MOLIENDA', val: microns ? `${microns} µm` : grindStr.toUpperCase(), sub: 'CALIBRATED' },
-        { lbl: 'TIEMPO/TEMP', val: `${timeStr} min`, sub: tempStr }
+        { type: 'method', lbl: 'MÉTODO CAD', val: methodStr.toUpperCase(), sub: 'CONICAL 60°' },
+        { type: 'dose', lbl: 'DOSIS IN/OUT', val: `${coffeeG}g → ${waterG}g`, sub: `RATIO ${ratioStr}` },
+        { type: 'grind', lbl: 'MOLIENDA', val: microns ? `${microns} µm` : grindStr.toUpperCase(), sub: 'CALIBRATED' },
+        { type: 'time', lbl: 'TIEMPO/TEMP', val: `${timeStr} min`, sub: tempStr }
       ];
 
       metrics.forEach((m, i) => {
@@ -237,17 +261,20 @@ export function generateRecipeCardImage(recipe, template = 'blueprint', incRecip
         ctx.lineWidth = 1;
         drawRoundedRect(ctx, x, metricY, colW, colH, 6, true, true);
 
+        // Draw dedicated CAD icon in top-right of box
+        drawMetricAsset(ctx, 'blueprint', m.type, x + colW - 22, metricY + 22, 34);
+
         ctx.fillStyle = '#7DD3FC';
         ctx.font = '800 8.5px "JetBrains Mono", monospace';
         ctx.fillText(m.lbl, x + 10, metricY + 18);
 
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = '900 13.5px "JetBrains Mono", monospace';
-        drawTruncatedText(m.val, x + 10, metricY + 40, colW - 20);
+        ctx.font = '900 13px "JetBrains Mono", monospace';
+        drawTruncatedText(m.val, x + 10, metricY + 42, colW - 44);
 
         ctx.fillStyle = '#38BDF8';
         ctx.font = '700 8px "JetBrains Mono", monospace';
-        ctx.fillText(m.sub, x + 10, metricY + 56);
+        ctx.fillText(m.sub, x + 10, metricY + 62);
       });
 
       // Pour Timeline Progress Bar
@@ -256,19 +283,19 @@ export function generateRecipeCardImage(recipe, template = 'blueprint', incRecip
       ctx.strokeStyle = '#38BDF8';
       ctx.lineWidth = 1;
       ctx.setLineDash([3, 3]);
-      drawRoundedRect(ctx, paddingX, flowY, availW, 56, 6, true, true);
+      drawRoundedRect(ctx, paddingX, flowY, availW, 52, 6, true, true);
       ctx.setLineDash([]);
 
       ctx.fillStyle = '#7DD3FC';
-      ctx.font = '700 9px "JetBrains Mono", monospace';
-      ctx.fillText('BLOOM (0:00): 45g', paddingX + 16, flowY + 18);
-      ctx.fillText('VERTIDO 2 (0:45): +90g', paddingX + 180, flowY + 18);
-      ctx.fillText('VERTIDO 3 (1:30): +90g', paddingX + 380, flowY + 18);
+      ctx.font = '700 8.5px "JetBrains Mono", monospace';
+      ctx.fillText('BLOOM (0:00): 45g', paddingX + 16, flowY + 16);
+      ctx.fillText('VERTIDO 2 (0:45): +90g', paddingX + 180, flowY + 16);
+      ctx.fillText('VERTIDO 3 (1:30): +90g', paddingX + 380, flowY + 16);
       ctx.fillStyle = '#4ADE80';
-      ctx.fillText(`TOTAL: ${waterG}g (${ratioStr})`, paddingX + availW - 140, flowY + 18);
+      ctx.fillText(`TOTAL: ${waterG}g (${ratioStr})`, paddingX + availW - 140, flowY + 16);
 
       // Progress bar
-      const barY = flowY + 30;
+      const barY = flowY + 26;
       const barW = availW - 32;
       ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
       drawRoundedRect(ctx, paddingX + 16, barY, barW, 10, 5, true, false);
@@ -281,326 +308,269 @@ export function generateRecipeCardImage(recipe, template = 'blueprint', incRecip
       drawRoundedRect(ctx, paddingX + 16 + (barW * 0.6), barY, barW * 0.4, 10, 5, true, false);
 
       // Sensory Descriptors
-      const notesY = flowY + 72;
+      const notesY = flowY + 68;
       ctx.fillStyle = 'rgba(56, 189, 248, 0.05)';
-      ctx.fillRect(paddingX, notesY, availW, 46);
+      ctx.fillRect(paddingX, notesY, availW, 44);
       ctx.fillStyle = '#38BDF8';
-      ctx.fillRect(paddingX, notesY, 4, 46);
+      ctx.fillRect(paddingX, notesY, 4, 44);
 
       ctx.fillStyle = '#7DD3FC';
       ctx.font = '800 8.5px "JetBrains Mono", monospace';
-      ctx.fillText('SENSORY DESCRIPTORS & TASTING PROFILE:', paddingX + 14, notesY + 16);
+      ctx.fillText('SENSORY DESCRIPTORS & TASTING PROFILE:', paddingX + 14, notesY + 15);
 
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '800 12.5px "JetBrains Mono", monospace';
+      ctx.font = '800 12px "JetBrains Mono", monospace';
       const cleanNotes = flavorTags.length > 0 ? flavorTags.join(' • ') : notesStr;
-      drawTruncatedText(cleanNotes, paddingX + 14, notesY + 35, availW - 28);
+      drawTruncatedText(cleanNotes, paddingX + 14, notesY + 33, availW - 28);
 
     } else {
-      // Bean Only layout with 4 big blocks
-      const specY = paddingY + 100;
-      const specH = 80;
-      const specW = (availW - 16) / 2;
+      // Bean Only layout with 4 big blocks & CAD illustrations
+      const bodyY = paddingY + 110;
+      const bodyH = 220;
+      const colW = (availW - 16) / 2;
 
-      const specs = [
-        { lbl: 'VARIETAL & TAXONOMY', val: `${variety.toUpperCase()} (ARABICA)`, sub: 'DENSIDAD: 0.72 g/ml' },
-        { lbl: 'TERROIR & ALTITUD', val: `${origin.toUpperCase()}`, sub: `ELEVACIÓN: ${altitude}` },
-        { lbl: 'BENEFICIO & FERMENTO', val: `${process.toUpperCase()}`, sub: 'REPOSADO CAVA' },
-        { lbl: 'PERFIL DE TUESTE', val: `${roaster.toUpperCase()}`, sub: 'DESARROLLO ÓPTIMO' }
-      ];
-
-      specs.forEach((s, idx) => {
-        const col = idx % 2;
-        const row = Math.floor(idx / 2);
-        const x = paddingX + col * (specW + 16);
-        const y = specY + row * (specH + 16);
-
-        ctx.fillStyle = 'rgba(14, 165, 233, 0.08)';
-        ctx.strokeStyle = '#38BDF8';
-        ctx.lineWidth = 1;
-        drawRoundedRect(ctx, x, y, specW, specH, 6, true, true);
-
-        ctx.fillStyle = '#7DD3FC';
-        ctx.font = '800 9px "JetBrains Mono", monospace';
-        ctx.fillText(s.lbl, x + 14, y + 22);
-
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = '900 15px "JetBrains Mono", monospace';
-        drawTruncatedText(s.val, x + 14, y + 48, specW - 28);
-
-        ctx.fillStyle = '#38BDF8';
-        ctx.font = '700 9.5px "JetBrains Mono", monospace';
-        ctx.fillText(s.sub, x + 14, y + 66);
-      });
-
-      // Notes
-      const notesY = specY + (specH * 2) + 36;
-      ctx.fillStyle = 'rgba(56, 189, 248, 0.05)';
-      ctx.fillRect(paddingX, notesY, availW, 50);
+      // Left Box: Origin & Terroir
+      ctx.fillStyle = 'rgba(14, 165, 233, 0.08)';
+      ctx.strokeStyle = '#38BDF8';
+      drawRoundedRect(ctx, paddingX, bodyY, colW, bodyH, 8, true, true);
       ctx.fillStyle = '#38BDF8';
-      ctx.fillRect(paddingX, notesY, 4, 50);
-
-      ctx.fillStyle = '#7DD3FC';
-      ctx.font = '800 9px "JetBrains Mono", monospace';
-      ctx.fillText('SENSORY NOTES:', paddingX + 14, notesY + 18);
+      ctx.font = '800 9.5px "JetBrains Mono", monospace';
+      ctx.fillText('// TERROIR & HARVEST SPEC', paddingX + 16, bodyY + 24);
 
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '800 13.5px "JetBrains Mono", monospace';
-      const cleanNotes = flavorTags.length > 0 ? flavorTags.join(' • ') : notesStr;
-      drawTruncatedText(cleanNotes, paddingX + 14, notesY + 38, availW - 28);
+      ctx.font = '800 13px "JetBrains Mono", monospace';
+      ctx.fillText(`VARIEDAD: ${variety.toUpperCase()}`, paddingX + 16, bodyY + 54);
+      ctx.fillText(`PROCESO: ${process.toUpperCase()}`, paddingX + 16, bodyY + 80);
+      ctx.fillText(`ALTITUD: ${altitude}`, paddingX + 16, bodyY + 106);
+      ctx.fillText(`ORIGEN: ${origin.toUpperCase()}`, paddingX + 16, bodyY + 132);
+      ctx.fillText(`TOSTADOR: ${roaster.toUpperCase()}`, paddingX + 16, bodyY + 158);
+
+      // Right Box: Sensory Notes & CAD Scale
+      const rX = paddingX + colW + 16;
+      ctx.fillStyle = 'rgba(14, 165, 233, 0.08)';
+      ctx.strokeStyle = '#38BDF8';
+      drawRoundedRect(ctx, rX, bodyY, colW, bodyH, 8, true, true);
+      ctx.fillStyle = '#38BDF8';
+      ctx.font = '800 9.5px "JetBrains Mono", monospace';
+      ctx.fillText('// SENSORY CUPPING EVALUATION', rX + 16, bodyY + 24);
+
+      ctx.fillStyle = '#4ADE80';
+      ctx.font = '900 16px "JetBrains Mono", monospace';
+      ctx.fillText(`CALIDAD: SCA ${scaScore}★ PASSED`, rX + 16, bodyY + 58);
+
+      // Draw CAD dripper & water in sensory box
+      drawMetricAsset(ctx, 'blueprint', 'method', rX + colW - 40, bodyY + 58, 48);
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '800 12px "JetBrains Mono", monospace';
+      flavorTags.slice(0, 4).forEach((t, i) => {
+        ctx.fillText(`[✓] ${t.toUpperCase()}`, rX + 16, bodyY + 94 + (i * 26));
+      });
     }
 
-    // Architectural Title Block (Cajetín) at Bottom
-    const titleBlockY = baseH - paddingY - 46;
-    ctx.fillStyle = 'rgba(56, 189, 248, 0.08)';
+    // Architectural Title Block (Bottom)
+    const tbY = baseH - paddingY - 42;
+    const tbH = 42;
     ctx.strokeStyle = '#38BDF8';
-    ctx.lineWidth = 1.5;
-    drawRoundedRect(ctx, paddingX, titleBlockY, availW, 46, 4, true, true);
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(paddingX, tbY, availW, tbH);
 
-    const c1W = availW * 0.52;
-    const c2W = availW * 0.28;
+    const b1W = 160;
+    const b2W = 200;
+    const b3W = 160;
 
     ctx.beginPath();
-    ctx.moveTo(paddingX + c1W, titleBlockY);
-    ctx.lineTo(paddingX + c1W, titleBlockY + 46);
-    ctx.moveTo(paddingX + c1W + c2W, titleBlockY);
-    ctx.lineTo(paddingX + c1W + c2W, titleBlockY + 46);
+    ctx.moveTo(paddingX + b1W, tbY); ctx.lineTo(paddingX + b1W, tbY + tbH);
+    ctx.moveTo(paddingX + b1W + b2W, tbY); ctx.lineTo(paddingX + b1W + b2W, tbY + tbH);
+    ctx.moveTo(paddingX + b1W + b2W + b3W, tbY); ctx.lineTo(paddingX + b1W + b2W + b3W, tbY + tbH);
     ctx.stroke();
 
     ctx.fillStyle = '#7DD3FC';
-    ctx.font = '700 8px "JetBrains Mono", monospace';
-    ctx.fillText('DRAWING TITLE:', paddingX + 10, titleBlockY + 16);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '900 11px "JetBrains Mono", monospace';
-    ctx.fillText('BEANTAG SPECIALTY BREW CALIBRATION CAD', paddingX + 10, titleBlockY + 34);
+    ctx.font = '700 7px "JetBrains Mono", monospace';
+    ctx.fillText('DWG NO:', paddingX + 8, tbY + 12);
+    ctx.fillText('ROASTER / LAB:', paddingX + b1W + 8, tbY + 12);
+    ctx.fillText('SCALE / STATUS:', paddingX + b1W + b2W + 8, tbY + 12);
+    ctx.fillText('ARCHIVE SYSTEM:', paddingX + b1W + b2W + b3W + 8, tbY + 12);
 
-    ctx.fillStyle = '#7DD3FC';
-    ctx.font = '700 8px "JetBrains Mono", monospace';
-    ctx.fillText('DWG CODE:', paddingX + c1W + 10, titleBlockY + 16);
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '900 11px "JetBrains Mono", monospace';
-    ctx.fillText(`CAD-BT-${Date.now().toString(36).toUpperCase()}`, paddingX + c1W + 10, titleBlockY + 34);
-
-    ctx.fillStyle = '#7DD3FC';
-    ctx.font = '700 8px "JetBrains Mono", monospace';
-    ctx.fillText('APPROVED:', paddingX + c1W + c2W + 10, titleBlockY + 16);
-    ctx.fillStyle = '#4ADE80';
-    ctx.font = '900 11px "JetBrains Mono", monospace';
-    ctx.fillText('PASSED ✓', paddingX + c1W + c2W + 10, titleBlockY + 34);
+    ctx.font = '800 10.5px "JetBrains Mono", monospace';
+    ctx.fillText('BT-2027-CAD', paddingX + 8, tbY + 30);
+    drawTruncatedText(roaster.toUpperCase(), paddingX + b1W + 8, tbY + 30, b2W - 16);
+    ctx.fillText('1:1 CALIBRATED', paddingX + b1W + b2W + 8, tbY + 30);
+    ctx.fillText('BEANTAG SPECIALTY', paddingX + b1W + b2W + b3W + 8, tbY + 30);
   }
 
   // =========================================================================
-  // 2. STYLE: NEO-BRUTALIST POP
+  // 2. STYLE: NEO-BRUTALIST POP (TOKYO STREETWEAR)
   // =========================================================================
   else if (style === 'neobrutalist') {
-    // Canvas background
-    ctx.fillStyle = '#E5E7EB';
+    // Pure White Background
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, baseW, baseH);
 
-    // Hard drop shadow for card
-    ctx.fillStyle = '#111827';
-    drawRoundedRect(ctx, paddingX + 6, paddingY + 6, availW, baseH - (paddingY * 2), 10, true, false);
-
-    // Main Card Body
-    ctx.fillStyle = '#FFFFFF';
-    ctx.strokeStyle = '#111827';
+    // Header Pill Badge (Top Left)
+    const badgeW = 260;
+    const badgeH = 26;
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(paddingX + 3, paddingY + 3, badgeW, badgeH);
+    ctx.fillStyle = '#E2F952'; // Acid Lime
+    ctx.fillRect(paddingX, paddingY, badgeW, badgeH);
+    ctx.strokeStyle = '#000000';
     ctx.lineWidth = 2.5;
-    drawRoundedRect(ctx, paddingX, paddingY, availW, baseH - (paddingY * 2), 10, true, true);
+    ctx.strokeRect(paddingX, paddingY, badgeW, badgeH);
 
-    // Top Badges
-    const badgeY = paddingY + 22;
-    // Left Pop Badge: Acid Lime
-    ctx.fillStyle = '#111827';
-    ctx.fillRect(paddingX + 22, badgeY + 2.5, 145, 26);
-    ctx.fillStyle = '#E2F952';
-    ctx.strokeStyle = '#111827';
-    ctx.lineWidth = 2;
-    ctx.fillRect(paddingX + 20, badgeY, 145, 26);
-    ctx.strokeRect(paddingX + 20, badgeY, 145, 26);
-
-    drawNeoPopLightning(ctx, paddingX + 34, badgeY + 13, 18);
-    ctx.fillStyle = '#111827';
+    ctx.fillStyle = '#000000';
     ctx.font = '900 10.5px "Space Grotesk", sans-serif';
-    ctx.fillText('MICRO-LOTE SPEC', paddingX + 48, badgeY + 17);
+    ctx.fillText('★ TOKYO STREETWEAR // ROASTERY ★', paddingX + 12, paddingY + 17);
 
-    // Right Pop Badge: Safety Orange
-    const scoreBadgeW = 125;
-    const scoreBadgeX = baseW - paddingX - 20 - scoreBadgeW;
+    // Huge Brutalist Title
     ctx.fillStyle = '#111827';
-    ctx.fillRect(scoreBadgeX + 2.5, badgeY + 2.5, scoreBadgeW, 26);
-    ctx.fillStyle = '#FF4B26';
-    ctx.strokeStyle = '#111827';
-    ctx.lineWidth = 2;
-    ctx.fillRect(scoreBadgeX, badgeY, scoreBadgeW, 26);
-    ctx.strokeRect(scoreBadgeX, badgeY, scoreBadgeW, 26);
+    drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 68, availW - 200, 32, '"Space Grotesk", sans-serif', '900');
 
-    drawNeoPopStar(ctx, scoreBadgeX + 18, badgeY + 13, 16);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '900 11px "Space Grotesk", sans-serif';
-    ctx.fillText(`SCA ${scaScore} ★`, scoreBadgeX + 32, badgeY + 17);
+    // Tags Bar
+    const tagY = paddingY + 84;
+    const tags = [
+      { text: origin.toUpperCase(), bg: '#FF4B26', color: '#FFF' },
+      { text: process.toUpperCase(), bg: '#FFFFFF', color: '#000' },
+      { text: altitude, bg: '#D8B4FE', color: '#000' },
+      { text: roaster.toUpperCase(), bg: '#E2F952', color: '#000' }
+    ];
 
-    // Main Title
-    const titleY = badgeY + 62;
-    ctx.fillStyle = '#111827';
-    drawFittedText(coffeeName.toUpperCase(), paddingX + 20, titleY, availW - 40, 30, '"Space Grotesk", sans-serif', '900');
-
-    ctx.fillStyle = '#4B5563';
-    ctx.font = '800 12.5px "Space Grotesk", sans-serif';
-    ctx.fillText(`${origin.toUpperCase()} • ${process.toUpperCase()} • ${roaster.toUpperCase()} • ${altitude}`, paddingX + 20, titleY + 22);
-
-    // Bento Grid Metrics
-    const bentoY = titleY + 40;
-    if (incRecipe) {
-      const bCols = 3;
-      const bGap = 14;
-      const bColW = (availW - 40 - (bGap * (bCols - 1))) / bCols;
-      const bColH = 76;
-
-      const bItems = [
-        { lbl: 'RATIO', val: ratioStr, bg: '#F8FAFC' },
-        { lbl: 'DOSIS', val: `${coffeeG}g → ${waterG}g`, bg: '#F8FAFC' },
-        { lbl: 'TIEMPO', val: `${timeStr} min`, bg: '#E2F952' }
-      ];
-
-      bItems.forEach((b, i) => {
-        const x = paddingX + 20 + i * (bColW + bGap);
-        // Hard shadow
-        ctx.fillStyle = '#111827';
-        ctx.fillRect(x + 3, bentoY + 3, bColW, bColH);
-
-        // Box
-        ctx.fillStyle = b.bg;
-        ctx.strokeStyle = '#111827';
-        ctx.lineWidth = 2;
-        ctx.fillRect(x, bentoY, bColW, bColH);
-        ctx.strokeRect(x, bentoY, bColW, bColH);
-
-        ctx.fillStyle = '#64748B';
-        ctx.font = '900 9.5px "Space Grotesk", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(b.lbl, x + (bColW / 2), bentoY + 24);
-
-        ctx.fillStyle = '#111827';
-        ctx.font = '900 18px "Space Grotesk", sans-serif';
-        ctx.fillText(b.val, x + (bColW / 2), bentoY + 54);
-        ctx.textAlign = 'left';
-      });
-
-      // Flavor Tags (Pop Pills)
-      const pillsY = bentoY + bColH + 24;
-      let curPillX = paddingX + 20;
-      const tags = flavorTags.length > 0 ? flavorTags : ['Fresa Salvaje', 'Melocotón', 'Vainilla Bourbon'];
-
-      tags.forEach((tag, idx) => {
-        const tagText = tag.trim();
-        ctx.font = '800 11px "Space Grotesk", sans-serif';
-        const tw = ctx.measureText(tagText).width + 28;
-        if (curPillX + tw > baseW - paddingX - 20) return;
-
-        // Shadow
-        ctx.fillStyle = '#111827';
-        drawRoundedRect(ctx, curPillX + 2.5, pillsY + 2.5, tw, 28, 14, true, false);
-
-        // Pill
-        const colors = ['#FEE2E2', '#FEF3C7', '#EDE9FE', '#DCFCE7'];
-        ctx.fillStyle = colors[idx % colors.length];
-        ctx.strokeStyle = '#111827';
-        ctx.lineWidth = 1.8;
-        drawRoundedRect(ctx, curPillX, pillsY, tw, 28, 14, true, true);
-
-        ctx.fillStyle = '#111827';
-        ctx.fillText(tagText, curPillX + 14, pillsY + 18);
-        curPillX += tw + 10;
-      });
-
-    } else {
-      // Bean Only Bento
-      const bCols = 3;
-      const bGap = 14;
-      const bColW = (availW - 40 - (bGap * (bCols - 1))) / bCols;
-      const bColH = 80;
-
-      const bItems = [
-        { lbl: 'VARIETAL', val: variety.toUpperCase(), bg: '#F8FAFC' },
-        { lbl: 'BENEFICIO', val: process.toUpperCase(), bg: '#F8FAFC' },
-        { lbl: 'ELEVACIÓN', val: altitude, bg: '#E2F952' }
-      ];
-
-      bItems.forEach((b, i) => {
-        const x = paddingX + 20 + i * (bColW + bGap);
-        ctx.fillStyle = '#111827';
-        ctx.fillRect(x + 3, bentoY + 3, bColW, bColH);
-
-        ctx.fillStyle = b.bg;
-        ctx.strokeStyle = '#111827';
-        ctx.lineWidth = 2;
-        ctx.fillRect(x, bentoY, bColW, bColH);
-        ctx.strokeRect(x, bentoY, bColW, bColH);
-
-        ctx.fillStyle = '#64748B';
-        ctx.font = '900 9.5px "Space Grotesk", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(b.lbl, x + (bColW / 2), bentoY + 26);
-
-        ctx.fillStyle = '#111827';
-        ctx.font = '900 16px "Space Grotesk", sans-serif';
-        ctx.fillText(b.val, x + (bColW / 2), bentoY + 56);
-        ctx.textAlign = 'left';
-      });
-
-      // Notes
-      const notesY = bentoY + bColH + 24;
-      ctx.fillStyle = '#F8FAFC';
-      ctx.strokeStyle = '#111827';
+    let curTagX = paddingX;
+    tags.forEach(t => {
+      ctx.font = '900 10px "Space Grotesk", sans-serif';
+      const tw = ctx.measureText(t.text).width + 16;
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(curTagX + 2, tagY + 2, tw, 22);
+      ctx.fillStyle = t.bg;
+      ctx.fillRect(curTagX, tagY, tw, 22);
+      ctx.strokeStyle = '#000000';
       ctx.lineWidth = 2;
-      drawRoundedRect(ctx, paddingX + 20, notesY, availW - 40, 36, 6, true, true);
+      ctx.strokeRect(curTagX, tagY, tw, 22);
 
-      ctx.fillStyle = '#111827';
-      ctx.font = '800 12px "Space Grotesk", sans-serif';
-      drawTruncatedText(`NOTAS: ${notesStr}`, paddingX + 32, notesY + 23, availW - 64);
-    }
-
-    // Bottom Barcode Strip
-    const footerY = baseH - paddingY - 50;
-    ctx.strokeStyle = '#111827';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 4]);
-    ctx.beginPath();
-    ctx.moveTo(paddingX + 20, footerY);
-    ctx.lineTo(baseW - paddingX - 20, footerY);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Real POS Barcode
-    const barPattern = [3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 4, 1, 2, 3, 1, 4, 2, 1, 3, 2, 4, 1, 3, 1, 2, 4];
-    let curBx = paddingX + 20;
-    ctx.fillStyle = '#111827';
-    barPattern.forEach((w, i) => {
-      if (i % 2 === 0) {
-        ctx.fillRect(curBx, footerY + 12, w * 2.5, 24);
-      }
-      curBx += (w * 2.5) + 2;
+      ctx.fillStyle = t.color;
+      ctx.fillText(t.text, curTagX + 8, tagY + 15);
+      curTagX += tw + 10;
     });
 
-    ctx.fillStyle = '#64748B';
-    ctx.font = '800 8.5px monospace';
-    ctx.fillText('BEANTAG • TOKYO SPEC 2027', paddingX + 20, footerY + 44);
+    // HERO STICKER RIGHT: Cool Bean with Sunglasses + Star Badge
+    const heroBoxX = baseW - paddingX - 160;
+    const heroBoxY = paddingY - 6;
+    drawHeroAsset(ctx, 'neobrutalist', heroBoxX, heroBoxY, 110, 100);
+    drawBadgeAsset(ctx, 'neobrutalist', 'star', heroBoxX + 130, heroBoxY + 36, 48);
 
-    // Certified Badge Right
-    const certW = 160;
-    const certX = baseW - paddingX - 20 - certW;
-    ctx.fillStyle = '#111827';
-    ctx.fillRect(certX, footerY + 12, certW, 28);
+    // Thick Divider
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(paddingX, paddingY + 118, availW, 3.5);
 
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '900 10.5px "Space Grotesk", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('AUTHENTIC SPECIALTY ✓', certX + (certW / 2), footerY + 30);
-    ctx.textAlign = 'left';
+    // Body
+    if (incRecipe) {
+      // 4 Bento Metric Boxes with Hard Black Drop Shadows & Pop Stickers
+      const metricY = paddingY + 132;
+      const cols = 4;
+      const gap = 14;
+      const colW = (availW - (gap * (cols - 1))) / cols;
+      const colH = 88;
+
+      const metrics = [
+        { type: 'method', lbl: 'MÉTODO', val: methodStr.toUpperCase(), bg: '#E2F952' },
+        { type: 'dose', lbl: 'DOSIS IN/OUT', val: `${coffeeG}g → ${waterG}g`, bg: '#FFFFFF' },
+        { type: 'grind', lbl: 'MOLIENDA', val: microns ? `${microns} µm` : grindStr.toUpperCase(), bg: '#FF4B26', valColor: '#FFF' },
+        { type: 'time', lbl: 'TIEMPO/TEMP', val: `${timeStr} / ${tempStr}`, bg: '#FFFFFF' }
+      ];
+
+      metrics.forEach((m, i) => {
+        const x = paddingX + i * (colW + gap);
+        // Hard 4px shadow
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(x + 4, metricY + 4, colW, colH);
+
+        // Box background
+        ctx.fillStyle = m.bg;
+        ctx.fillRect(x, metricY, colW, colH);
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(x, metricY, colW, colH);
+
+        // Draw dedicated sticker icon inside each box
+        drawMetricAsset(ctx, 'neobrutalist', m.type, x + colW - 24, metricY + 26, 38);
+
+        ctx.fillStyle = m.valColor || '#000000';
+        ctx.font = '900 9px "Space Grotesk", sans-serif';
+        ctx.fillText(m.lbl, x + 10, metricY + 20);
+
+        ctx.font = '900 13px "Space Grotesk", sans-serif';
+        drawTruncatedText(m.val, x + 10, metricY + 50, colW - 36);
+
+        // Little bottom badge
+        ctx.fillStyle = '#000000';
+        ctx.font = '800 8.5px monospace';
+        ctx.fillText(i === 1 ? `RATIO ${ratioStr}` : 'SPECIALTY', x + 10, metricY + 74);
+      });
+
+      // Flavor Notes Stickers Bento
+      const notesY = metricY + colH + 16;
+      const notesH = 80;
+
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(paddingX + 4, notesY + 4, availW, notesH);
+      ctx.fillStyle = '#F8FAFC';
+      ctx.fillRect(paddingX, notesY, availW, notesH);
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(paddingX, notesY, availW, notesH);
+
+      ctx.fillStyle = '#000000';
+      ctx.font = '900 10.5px "Space Grotesk", sans-serif';
+      ctx.fillText('⚡ PERFIL SENSORIAL // POP STICKERS:', paddingX + 16, notesY + 24);
+
+      // Render flavor pills
+      let pillX = paddingX + 16;
+      const pillY = notesY + 38;
+      const pillColors = ['#E2F952', '#FF4B26', '#D8B4FE', '#67E8F9', '#FED7AA'];
+
+      const displayTags = flavorTags.length > 0 ? flavorTags : ['Notas Limpias', 'Balance', 'Dulzor Frutal'];
+      displayTags.slice(0, 5).forEach((tag, idx) => {
+        const bgCol = pillColors[idx % pillColors.length];
+        ctx.font = '900 11px "Space Grotesk", sans-serif';
+        const pw = ctx.measureText(tag.toUpperCase()).width + 20;
+
+        if (pillX + pw < paddingX + availW - 20) {
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(pillX + 2, pillY + 2, pw, 26);
+          ctx.fillStyle = bgCol;
+          ctx.fillRect(pillX, pillY, pw, 26);
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(pillX, pillY, pw, 26);
+
+          ctx.fillStyle = bgCol === '#FF4B26' ? '#FFFFFF' : '#000000';
+          ctx.fillText(tag.toUpperCase(), pillX + 10, pillY + 17);
+
+          pillX += pw + 12;
+        }
+      });
+    }
+
+    // Authentic POS Barcode (Bottom)
+    const bcY = baseH - paddingY - 42;
+    const barPattern = [3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 4, 1, 2, 3, 1, 4, 2, 1, 3, 2, 4, 1, 3, 1, 2, 4, 2, 3, 1, 4];
+    let curBarX = paddingX;
+    ctx.fillStyle = '#000000';
+    barPattern.forEach((w, i) => {
+      if (i % 2 === 0) {
+        ctx.fillRect(curBarX, bcY, w * 2.6, 26);
+      }
+      curBarX += (w * 2.6) + 2.5;
+    });
+
+    ctx.fillStyle = '#000000';
+    ctx.font = '900 9.5px "Space Grotesk", sans-serif';
+    ctx.fillText(`BEANTAG SPECIALTY // ARCHIVE 2027 // SCA: ${scaScore}★`, curBarX + 18, bcY + 17);
   }
 
   // =========================================================================
-  // 3. STYLE: HOLOGRAPHIC AURORA
+  // 3. STYLE: HOLOGRAPHIC AURORA (VISIONOS DARK GLASS)
   // =========================================================================
   else if (style === 'aurora') {
     // Obsidian Dark Base
@@ -608,337 +578,282 @@ export function generateRecipeCardImage(recipe, template = 'blueprint', incRecip
     ctx.fillRect(0, 0, baseW, baseH);
 
     // Radial Aurora Glows
-    const grad1 = ctx.createRadialGradient(baseW * 0.85, baseH * 0.2, 0, baseW * 0.85, baseH * 0.2, 320);
-    grad1.addColorStop(0, 'rgba(139, 92, 246, 0.38)');
+    const grad1 = ctx.createRadialGradient(baseW * 0.82, baseH * 0.22, 0, baseW * 0.82, baseH * 0.22, 340);
+    grad1.addColorStop(0, 'rgba(139, 92, 246, 0.45)');
     grad1.addColorStop(1, 'rgba(139, 92, 246, 0)');
     ctx.fillStyle = grad1;
     ctx.fillRect(0, 0, baseW, baseH);
 
-    const grad2 = ctx.createRadialGradient(baseW * 0.15, baseH * 0.8, 0, baseW * 0.15, baseH * 0.8, 280);
-    grad2.addColorStop(0, 'rgba(6, 182, 212, 0.28)');
+    const grad2 = ctx.createRadialGradient(baseW * 0.18, baseH * 0.78, 0, baseW * 0.18, baseH * 0.78, 300);
+    grad2.addColorStop(0, 'rgba(6, 182, 212, 0.35)');
     grad2.addColorStop(1, 'rgba(6, 182, 212, 0)');
     ctx.fillStyle = grad2;
     ctx.fillRect(0, 0, baseW, baseH);
 
-    // Outer Frosted Glass Container
+    // Frosted Glass Outer Container
     ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-    ctx.lineWidth = 1;
-    drawRoundedRect(ctx, paddingX, paddingY, availW, baseH - (paddingY * 2), 12, true, true);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.lineWidth = 1.2;
+    drawRoundedRect(ctx, paddingX - 8, paddingY - 8, availW + 16, baseH - (paddingY * 2) + 16, 16, true, true);
 
     // Header Left
-    drawAuroraCrystalBean(ctx, paddingX + 36, paddingY + 44, 28);
-
-    ctx.fillStyle = '#A5B4FC';
-    ctx.font = '800 9px -apple-system, BlinkMacSystemFont, sans-serif';
-    ctx.fillText('SPECIALTY CRYO VAULT // 2027', paddingX + 70, paddingY + 30);
+    ctx.fillStyle = '#C084FC';
+    ctx.font = '800 9px -apple-system, sans-serif';
+    ctx.fillText('HOLOGRAPHIC EXTRACTION // BEANTAG VISION', paddingX, paddingY + 12);
 
     ctx.fillStyle = '#FFFFFF';
-    drawFittedText(coffeeName, paddingX + 70, paddingY + 54, availW - 220, 26, '-apple-system, BlinkMacSystemFont, sans-serif', '800');
+    drawFittedText(coffeeName, paddingX, paddingY + 44, availW - 220, 28, '-apple-system, sans-serif', '800');
 
     ctx.fillStyle = '#94A3B8';
-    ctx.font = '600 11.5px -apple-system, sans-serif';
-    ctx.fillText(`${origin} • ${process} • ${altitude}`, paddingX + 70, paddingY + 74);
+    ctx.font = '500 11px -apple-system, sans-serif';
+    ctx.fillText(`${origin} • ${process} • ${altitude} • ${roaster}`, paddingX, paddingY + 68);
 
-    // Header Right: Holographic Score Pill
-    const pillW = 120;
-    const pillH = 32;
-    const pillX = baseW - paddingX - 24 - pillW;
-    const pillY = paddingY + 32;
+    // HERO 3D HOLOGRAPHIC GLASS BEAN (Top Right)
+    const heroBoxX = baseW - paddingX - 160;
+    const heroBoxY = paddingY - 4;
+    drawHeroAsset(ctx, 'aurora', heroBoxX, heroBoxY, 105, 95);
+    drawBadgeAsset(ctx, 'aurora', 'star', heroBoxX + 115, heroBoxY + 36, 44);
 
-    const pillGrad = ctx.createLinearGradient(pillX, pillY, pillX + pillW, pillY + pillH);
-    pillGrad.addColorStop(0, '#EC4899');
-    pillGrad.addColorStop(1, '#8B5CF6');
-
-    ctx.fillStyle = pillGrad;
-    ctx.shadowColor = 'rgba(236, 72, 153, 0.4)';
-    ctx.shadowBlur = 14;
-    drawRoundedRect(ctx, pillX, pillY, pillW, pillH, 16, true, false);
-    ctx.shadowColor = 'transparent';
-
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '800 12.5px -apple-system, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${scaScore} PTS ★`, pillX + (pillW / 2), pillY + 20);
-    ctx.textAlign = 'left';
-
-    // Body: 3 Glass Cards
-    const glassY = paddingY + 112;
+    // Body
     if (incRecipe) {
-      const gCols = 3;
-      const gGap = 14;
-      const gColW = (availW - 48 - (gGap * (gCols - 1))) / gCols;
-      const gColH = 92;
+      // 4 Frosted Glass Metric Tiles with Glowing Neon Icons
+      const metricY = paddingY + 98;
+      const cols = 4;
+      const gap = 12;
+      const colW = (availW - (gap * (cols - 1))) / cols;
+      const colH = 82;
 
-      const gItems = [
-        { lbl: 'MÉTODO', val: methodStr, sub: `RATIO ${ratioStr}`, color: '#38BDF8' },
-        { lbl: 'MOLIENDA', val: microns ? `${microns} µm` : grindStr, sub: 'PRECISIÓN', color: '#F472B6' },
-        { lbl: 'AGUA', val: tempStr, sub: '80 PPM MINERAL', color: '#A78BFA' }
+      const metrics = [
+        { type: 'method', lbl: 'MÉTODO', val: methodStr, sub: 'V60 60°' },
+        { type: 'dose', lbl: 'DOSIS / RATIO', val: `${coffeeG}g → ${waterG}g`, sub: `RATIO ${ratioStr}` },
+        { type: 'grind', lbl: 'MOLIENDA', val: microns ? `${microns} µm` : grindStr, sub: 'CALIBRADA' },
+        { type: 'time', lbl: 'TIEMPO / TEMP', val: `${timeStr} min`, sub: tempStr }
       ];
 
-      gItems.forEach((g, i) => {
-        const x = paddingX + 24 + i * (gColW + gGap);
+      metrics.forEach((m, i) => {
+        const x = paddingX + i * (colW + gap);
         ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
         ctx.lineWidth = 1;
-        drawRoundedRect(ctx, x, glassY, gColW, gColH, 10, true, true);
+        drawRoundedRect(ctx, x, metricY, colW, colH, 10, true, true);
 
-        ctx.fillStyle = '#94A3B8';
+        // Draw dedicated 3D aurora icon
+        drawMetricAsset(ctx, 'aurora', m.type, x + colW - 24, metricY + 24, 38);
+
+        ctx.fillStyle = '#A78BFA';
         ctx.font = '700 8.5px -apple-system, sans-serif';
-        ctx.fillText(g.lbl, x + 16, glassY + 22);
+        ctx.fillText(m.lbl, x + 12, metricY + 20);
 
-        ctx.fillStyle = g.color;
-        ctx.font = '800 17px -apple-system, sans-serif';
-        drawTruncatedText(g.val, x + 16, glassY + 52, gColW - 32);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '800 13px -apple-system, sans-serif';
+        drawTruncatedText(m.val, x + 12, metricY + 44, colW - 40);
 
-        ctx.fillStyle = '#E2E8F0';
-        ctx.font = '600 9.5px -apple-system, sans-serif';
-        ctx.fillText(g.sub, x + 16, glassY + 74);
+        ctx.fillStyle = '#38BDF8';
+        ctx.font = '600 8.5px -apple-system, sans-serif';
+        ctx.fillText(m.sub, x + 12, metricY + 66);
       });
 
-      // Sensory Glass Bar
-      const sensY = glassY + gColH + 20;
+      // Waveform Extraction Spectrum Bar
+      const waveY = metricY + colH + 16;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx.strokeStyle = 'rgba(139, 92, 246, 0.3)';
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, paddingX, waveY, availW, 54, 10, true, true);
+
+      // Draw Waveform visual
+      drawBadgeAsset(ctx, 'aurora', 'wave', paddingX + 50, waveY + 27, 44);
+
+      ctx.fillStyle = '#E2E8F0';
+      ctx.font = '700 9px -apple-system, sans-serif';
+      ctx.fillText('CURVA DE EXTRACCIÓN SENSORIAL // CLARIDAD & DULZOR', paddingX + 90, waveY + 24);
+
+      // Mini gradient bars
+      const barX = paddingX + 90;
+      const barY = waveY + 34;
+      const barW = availW - 110;
+      const barGrad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
+      barGrad.addColorStop(0, '#8B5CF6');
+      barGrad.addColorStop(0.5, '#EC4899');
+      barGrad.addColorStop(1, '#06B6D4');
+      ctx.fillStyle = barGrad;
+      drawRoundedRect(ctx, barX, barY, barW, 8, 4, true, false);
+
+      // Sensory Descriptors
+      const notesY = waveY + 70;
       ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-      ctx.lineWidth = 1;
-      drawRoundedRect(ctx, paddingX + 24, sensY, availW - 48, 54, 8, true, true);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+      drawRoundedRect(ctx, paddingX, notesY, availW, 52, 10, true, true);
 
-      drawAuroraWave(ctx, paddingX + 44, sensY + 27, 28);
+      ctx.fillStyle = '#F472B6';
+      ctx.font = '800 8.5px -apple-system, sans-serif';
+      ctx.fillText('NOTAS AROMÁTICAS & DESCRIPTORES:', paddingX + 14, notesY + 18);
 
-      ctx.fillStyle = '#F1F5F9';
-      ctx.font = '600 12.5px -apple-system, sans-serif';
-      const cNotes = flavorTags.length > 0 ? flavorTags.join(' • ') : notesStr;
-      drawTruncatedText(cNotes, paddingX + 70, sensY + 32, availW - 250);
-
-      ctx.fillStyle = 'rgba(52, 211, 153, 0.15)';
-      ctx.strokeStyle = '#34D399';
-      ctx.lineWidth = 1;
-      drawRoundedRect(ctx, baseW - paddingX - 160, sensY + 14, 136, 26, 6, true, true);
-
-      ctx.fillStyle = '#34D399';
-      ctx.font = '800 9.5px -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('EXTRACCIÓN ÓPTIMA', baseW - paddingX - 92, sensY + 31);
-      ctx.textAlign = 'left';
-
-    } else {
-      // Bean Only Glass Cards
-      const gCols = 3;
-      const gGap = 14;
-      const gColW = (availW - 48 - (gGap * (gCols - 1))) / gCols;
-      const gColH = 92;
-
-      const gItems = [
-        { lbl: 'VARIETAL', val: variety, sub: 'ARABICA HEIRLOOM', color: '#38BDF8' },
-        { lbl: 'BENEFICIO', val: process, sub: 'CRYO REPOSADO', color: '#F472B6' },
-        { lbl: 'ELEVACIÓN', val: altitude, sub: 'HIGH ALTITUDE', color: '#A78BFA' }
-      ];
-
-      gItems.forEach((g, i) => {
-        const x = paddingX + 24 + i * (gColW + gGap);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-        ctx.lineWidth = 1;
-        drawRoundedRect(ctx, x, glassY, gColW, gColH, 10, true, true);
-
-        ctx.fillStyle = '#94A3B8';
-        ctx.font = '700 8.5px -apple-system, sans-serif';
-        ctx.fillText(g.lbl, x + 16, glassY + 22);
-
-        ctx.fillStyle = g.color;
-        ctx.font = '800 17px -apple-system, sans-serif';
-        drawTruncatedText(g.val, x + 16, glassY + 52, gColW - 32);
-
-        ctx.fillStyle = '#E2E8F0';
-        ctx.font = '600 9.5px -apple-system, sans-serif';
-        ctx.fillText(g.sub, x + 16, glassY + 74);
-      });
-
-      // Notes
-      const sensY = glassY + gColH + 20;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-      ctx.lineWidth = 1;
-      drawRoundedRect(ctx, paddingX + 24, sensY, availW - 48, 54, 8, true, true);
-
-      drawAuroraWaterDrop(ctx, paddingX + 44, sensY + 27, 24);
-
-      ctx.fillStyle = '#F1F5F9';
-      ctx.font = '600 13px -apple-system, sans-serif';
-      drawTruncatedText(`NOTAS: ${notesStr}`, paddingX + 70, sensY + 33, availW - 120);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '700 12px -apple-system, sans-serif';
+      const cleanNotes = flavorTags.length > 0 ? flavorTags.join('   ✦   ') : notesStr;
+      drawTruncatedText(cleanNotes, paddingX + 14, notesY + 38, availW - 28);
     }
 
     // Footer
-    const footerY = baseH - paddingY - 34;
-    ctx.fillStyle = '#A5B4FC';
-    ctx.font = '700 10px "JetBrains Mono", monospace';
-    ctx.fillText(`★ BEANTAG AURORA VAULT // ${roaster.toUpperCase()} // HIGH-DPI RETINA ★`, paddingX + 24, footerY + 16);
+    const footY = baseH - paddingY - 24;
+    ctx.fillStyle = '#94A3B8';
+    ctx.font = '500 9px -apple-system, sans-serif';
+    ctx.fillText(`SCA CUPSCORE: ${scaScore}★ • CALIBRACIÓN HOLOGRÁFICA 2027 • BEANTAG`, paddingX, footY + 12);
   }
 
   // =========================================================================
-  // 4. STYLE: HANGTAG NÓRDICO (ATELIER SEY)
+  // 4. STYLE: HANGTAG NÓRDICO (SEY / TIM WENDELBOE ATELIER)
   // =========================================================================
   else if (style === 'hangtag') {
-    // Ivory cotton paper background
+    // Ivory Cotton Paper Background
     ctx.fillStyle = '#FAF7F2';
     ctx.fillRect(0, 0, baseW, baseH);
 
-    // Outer subtle card border
+    // Outer subtle border
     ctx.strokeStyle = '#E7E5E4';
-    ctx.lineWidth = 1.5;
-    drawRoundedRect(ctx, paddingX, paddingY, availW, baseH - (paddingY * 2), 12, false, true);
+    ctx.lineWidth = 1.2;
+    drawRoundedRect(ctx, paddingX - 10, paddingY - 10, availW + 20, baseH - (paddingY * 2) + 20, 8, false, true);
 
-    // Realistic Metallic Eyelet Top Center
-    drawMetallicEyelet(ctx, baseW / 2, paddingY + 22, 11);
+    // Realistic Metallic Bronze Eyelet at Top Center
+    const eyeletX = baseW / 2;
+    const eyeletY = paddingY + 2;
+    const eyeletR = 10;
 
-    // Centered Atelier Header
-    const headY = paddingY + 54;
+    ctx.save();
     ctx.fillStyle = '#78716C';
-    ctx.font = '700 8.5px -apple-system, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('SPECIALTY ROASTERY ARCHIVE // NORDIC ATELIER', baseW / 2, headY);
+    ctx.beginPath();
+    ctx.arc(eyeletX, eyeletY, eyeletR + 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#D6D3D1';
+    ctx.beginPath();
+    ctx.arc(eyeletX, eyeletY, eyeletR, 0, Math.PI * 2);
+    ctx.fill();
 
     ctx.fillStyle = '#1C1917';
-    ctx.font = 'bold 26px Georgia, serif';
-    drawTruncatedText(coffeeName, baseW / 2, headY + 34, availW - 120);
+    ctx.beginPath();
+    ctx.arc(eyeletX, eyeletY, eyeletR - 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
 
+    // Top Label
     ctx.fillStyle = '#78716C';
-    ctx.font = '600 11.5px -apple-system, sans-serif';
-    ctx.fillText(`${origin} • ${variety} • ${altitude} • ${process}`, baseW / 2, headY + 56);
+    ctx.font = '600 8.5px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('ATELIER DE CAFÉ // ÉDITION LIMITÉE', baseW / 2, paddingY + 30);
     ctx.textAlign = 'left';
 
-    // Divider
-    ctx.strokeStyle = '#E7E5E4';
+    // Main Serif Title
+    ctx.fillStyle = '#1C1917';
+    drawFittedText(coffeeName, paddingX, paddingY + 68, availW - 220, 26, 'Georgia, serif', 'bold');
+
+    ctx.fillStyle = '#78716C';
+    ctx.font = 'italic 11.5px Georgia, serif';
+    ctx.fillText(`${origin} — ${producer || roaster} — ${altitude}`, paddingX, paddingY + 92);
+
+    // HERO BOTANICAL ENGRAVING (Top Right)
+    const heroBoxX = baseW - paddingX - 170;
+    const heroBoxY = paddingY + 12;
+    drawHeroAsset(ctx, 'hangtag', heroBoxX, heroBoxY, 130, 95);
+
+    // Delicate Divider
+    ctx.strokeStyle = '#D6D3D1';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(paddingX + 36, headY + 74);
-    ctx.lineTo(baseW - paddingX - 36, headY + 74);
+    ctx.moveTo(paddingX, paddingY + 112);
+    ctx.lineTo(baseW - paddingX, paddingY + 112);
     ctx.stroke();
 
-    // Body: Recipe vs Bean Only
-    const bodyY = headY + 96;
-
+    // Body
     if (incRecipe) {
-      // Horizontal 4-metric columns with vertical dividers
-      const mCols = 4;
-      const mW = (availW - 72) / mCols;
+      // 4 Metric Columns with Delicate Engravings
+      const metricY = paddingY + 126;
+      const cols = 4;
+      const gap = 16;
+      const colW = (availW - (gap * (cols - 1))) / cols;
+      const colH = 82;
 
-      const mData = [
-        { lbl: 'MÉTODO', val: methodStr },
-        { lbl: 'RATIO', val: ratioStr },
-        { lbl: 'MOLIENDA', val: microns ? `${microns} µm` : grindStr },
-        { lbl: 'EXTRACCIÓN', val: `${timeStr} min` }
+      const metrics = [
+        { type: 'method', lbl: 'MÉTHODE', val: methodStr, sub: 'Extraction douce' },
+        { type: 'dose', lbl: 'DOSAGE', val: `${coffeeG}g / ${waterG}g`, sub: `Ratio ${ratioStr}` },
+        { type: 'grind', lbl: 'MOUTÚRE', val: microns ? `${microns} µm` : grindStr, sub: 'Calibrée' },
+        { type: 'time', lbl: 'TEMPS / TEMP', val: `${timeStr}`, sub: tempStr }
       ];
 
-      mData.forEach((m, idx) => {
-        const x = paddingX + 36 + idx * mW;
+      metrics.forEach((m, i) => {
+        const x = paddingX + i * (colW + gap);
+        ctx.strokeStyle = '#E7E5E4';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, metricY, colW, colH);
+
+        // Draw dedicated vintage engraving icon
+        drawMetricAsset(ctx, 'hangtag', m.type, x + colW - 24, metricY + 24, 34);
+
+        ctx.fillStyle = '#78716C';
+        ctx.font = '600 8.5px Georgia, serif';
+        ctx.fillText(m.lbl, x + 10, metricY + 18);
+
+        ctx.fillStyle = '#1C1917';
+        ctx.font = 'bold 12.5px Georgia, serif';
+        drawTruncatedText(m.val, x + 10, metricY + 44, colW - 36);
+
         ctx.fillStyle = '#A8A29E';
-        ctx.font = '700 8px -apple-system, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(m.lbl, x + (mW / 2), bodyY + 12);
-
-        ctx.fillStyle = '#44403C';
-        ctx.font = '800 15px -apple-system, sans-serif';
-        ctx.fillText(m.val, x + (mW / 2), bodyY + 36);
-
-        // Divider
-        if (idx < mCols - 1) {
-          ctx.strokeStyle = '#E7E5E4';
-          ctx.beginPath();
-          ctx.moveTo(x + mW, bodyY);
-          ctx.lineTo(x + mW, bodyY + 44);
-          ctx.stroke();
-        }
+        ctx.font = 'italic 8.5px Georgia, serif';
+        ctx.fillText(m.sub, x + 10, metricY + 68);
       });
-      ctx.textAlign = 'left';
 
-      // Botanical Quote Box
-      const quoteY = bodyY + 66;
-      ctx.fillStyle = '#F5F3EF';
+      // Botanical Tasting Quote
+      const quoteY = metricY + colH + 20;
+      ctx.fillStyle = '#F5F5F4';
       ctx.strokeStyle = '#E7E5E4';
-      ctx.lineWidth = 1;
-      drawRoundedRect(ctx, paddingX + 36, quoteY, availW - 72, 60, 8, true, true);
+      drawRoundedRect(ctx, paddingX, quoteY, availW, 64, 6, true, true);
 
-      drawBotanicalBranch(ctx, paddingX + 58, quoteY + 30, 26, '#44403C');
+      ctx.fillStyle = '#44403C';
+      ctx.font = 'italic 12px Georgia, serif';
+      const quoteText = `« Notes de dégustation: ${flavorTags.length > 0 ? flavorTags.join(', ') : notesStr}. Une tasse d'une grande pureté et équilibre remarquable. »`;
+      drawTruncatedText(quoteText, paddingX + 16, quoteY + 28, availW - 32);
 
-      ctx.fillStyle = '#57534E';
-      ctx.font = 'italic 13px Georgia, serif';
-      const cNotes = flavorTags.length > 0 ? `“${flavorTags.join(', ')}”` : `“${notesStr}”`;
-      drawTruncatedText(cNotes, paddingX + 86, quoteY + 36, availW - 150);
-
-    } else {
-      // Bean Only Specs
-      const mCols = 3;
-      const mW = (availW - 72) / mCols;
-
-      const mData = [
-        { lbl: 'VARIEDAD', val: variety },
-        { lbl: 'BENEFICIO', val: process },
-        { lbl: 'ELEVACIÓN', val: altitude }
-      ];
-
-      mData.forEach((m, idx) => {
-        const x = paddingX + 36 + idx * mW;
-        ctx.fillStyle = '#A8A29E';
-        ctx.font = '700 8px -apple-system, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(m.lbl, x + (mW / 2), bodyY + 14);
-
-        ctx.fillStyle = '#44403C';
-        ctx.font = '800 16px -apple-system, sans-serif';
-        ctx.fillText(m.val, x + (mW / 2), bodyY + 40);
-
-        if (idx < mCols - 1) {
-          ctx.strokeStyle = '#E7E5E4';
-          ctx.beginPath();
-          ctx.moveTo(x + mW, bodyY);
-          ctx.lineTo(x + mW, bodyY + 48);
-          ctx.stroke();
-        }
-      });
-      ctx.textAlign = 'left';
-
-      // Botanical Quote Box
-      const quoteY = bodyY + 74;
-      ctx.fillStyle = '#F5F3EF';
-      ctx.strokeStyle = '#E7E5E4';
-      ctx.lineWidth = 1;
-      drawRoundedRect(ctx, paddingX + 36, quoteY, availW - 72, 64, 8, true, true);
-
-      drawBotanicalBranch(ctx, paddingX + 58, quoteY + 32, 28, '#44403C');
-
-      ctx.fillStyle = '#57534E';
-      ctx.font = 'italic 13.5px Georgia, serif';
-      drawTruncatedText(`“${notesStr}”`, paddingX + 86, quoteY + 38, availW - 150);
+      ctx.fillStyle = '#78716C';
+      ctx.font = '600 9px Georgia, serif';
+      ctx.fillText(`ÉVALUATION SENSORIAL: SCA ${scaScore}★ // SÉLECTION EXCLUSIVE`, paddingX + 16, quoteY + 50);
     }
 
-    // Footer with Roastery Seal
-    const footY = baseH - paddingY - 50;
+    // ROASTERY WAX SEAL STAMP (Bottom Right)
+    const sealX = baseW - paddingX - 40;
+    const sealY = baseH - paddingY - 36;
+    drawBadgeAsset(ctx, 'hangtag', 'seal', sealX, sealY, 48);
+
+    // Footer Left
+    const footY = baseH - paddingY - 30;
     ctx.fillStyle = '#78716C';
-    ctx.font = '600 9.5px -apple-system, sans-serif';
-    ctx.fillText(`SERIE: BT-${Date.now().toString(36).toUpperCase()} // ${roaster}`, paddingX + 36, footY + 28);
-
-    drawRoasterySeal(ctx, baseW - paddingX - 120, footY + 24, 16);
-
-    ctx.fillStyle = '#3F6212';
-    ctx.font = '800 10.5px -apple-system, sans-serif';
-    ctx.fillText(`SCA ${scaScore} PASSED`, baseW - paddingX - 94, footY + 28);
+    ctx.font = '600 9px Georgia, serif';
+    ctx.fillText(`BEANTAG ATELIER // ARCHIVE ${new Date().getFullYear()} // LOT ARTISANAL`, paddingX, footY + 14);
   }
 
   return canvas.toDataURL('image/png', 1.0);
 }
 
 /**
- * Generates an Ultra-Aesthetic Freezer / Cellar Inventory Menu Card
- * @param {Array} batches List of coffee batches
- * @param {string} template 'blueprint' | 'neobrutalist' | 'aurora' | 'hangtag'
- * @returns {string} Base64 PNG data URL
+ * Generates an Ultra-HD visual Specialty Coffee Menu Card (Cellar Inventory)
+ * incorporating authentic Nanobanana visual asset kits.
  */
-export function generateCoffeeMenuCardImage(batches = [], template = 'blueprint') {
+export async function generateCoffeeMenuCardImage(batches, template = 'blueprint') {
+  const style = normalizeCardStyle(template);
+
+  // Ensure assets are ready
+  await ensureCardAssetsLoaded(style);
+
   const canvas = document.createElement('canvas');
   const scaleFactor = 2;
   const baseW = 840;
-  const baseH = 580;
+
+  const validBatches = Array.isArray(batches) ? batches.filter(b => (b.remaining_doses || b.weight_current_g || 0) > 0) : [];
+  const displayList = validBatches.length > 0 ? validBatches : (Array.isArray(batches) ? batches.slice(0, 10) : []);
+
+  const headerH = 150;
+  const itemH = 68;
+  const footerH = 90;
+  const baseH = Math.max(580, headerH + (displayList.length * itemH) + footerH);
 
   canvas.width = baseW * scaleFactor;
   canvas.height = baseH * scaleFactor;
@@ -946,10 +861,7 @@ export function generateCoffeeMenuCardImage(batches = [], template = 'blueprint'
   const ctx = canvas.getContext('2d');
   ctx.scale(scaleFactor, scaleFactor);
 
-  const style = normalizeCardStyle(template);
-  const displayList = batches.slice(0, 7);
-
-  const paddingX = 36;
+  const paddingX = 40;
   const paddingY = 32;
   const availW = baseW - (paddingX * 2);
 
@@ -960,116 +872,150 @@ export function generateCoffeeMenuCardImage(batches = [], template = 'blueprint'
 
     ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
     ctx.lineWidth = 1;
-    for (let x = 0; x <= baseW; x += 20) { ctx.moveTo(x, 0); ctx.lineTo(x, baseH); }
-    for (let y = 0; y <= baseH; y += 20) { ctx.moveTo(0, y); ctx.lineTo(baseW, y); }
-    ctx.stroke();
+    for (let x = 0; x <= baseW; x += 20) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, baseH); ctx.stroke(); }
+    for (let y = 0; y <= baseH; y += 20) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(baseW, y); ctx.stroke(); }
 
     ctx.strokeStyle = '#38BDF8';
     ctx.lineWidth = 1.5;
-    ctx.strokeRect(paddingX - 8, paddingY - 8, availW + 16, baseH - (paddingY * 2) + 16);
+    ctx.strokeRect(paddingX - 10, paddingY - 10, availW + 20, baseH - (paddingY * 2) + 20);
+
+    // Hero Schematic in Header
+    drawHeroAsset(ctx, 'blueprint', baseW - paddingX - 130, paddingY + 6, 110, 64);
 
     ctx.fillStyle = '#38BDF8';
-    ctx.font = '700 9px "JetBrains Mono", monospace';
-    ctx.fillText('// BEANTAG CRYO INVENTORY DWG // CELLAR MENU', paddingX, paddingY + 12);
+    ctx.font = '800 11px "JetBrains Mono", monospace';
+    ctx.fillText('★ BEANTAG SPECIALTY CELLAR // CAVA DE CAFÉ ★', paddingX, paddingY + 20);
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '900 22px "JetBrains Mono", monospace';
-    ctx.fillText('CARTA DE CAFÉS DE ESPECIALIDAD', paddingX, paddingY + 38);
+    ctx.font = '900 20px "JetBrains Mono", monospace';
+    ctx.fillText('CATÁLOGO DE LOTES DISPONIBLES', paddingX, paddingY + 48);
 
-    // List
-    let rowY = paddingY + 70;
-    const rowH = 46;
+    ctx.fillStyle = '#93C5FD';
+    ctx.font = '700 9.5px "JetBrains Mono", monospace';
+    ctx.fillText(`TOTAL: ${displayList.length} LOTES REGISTRADOS // DOSIS CONGELADAS AL VACÍO`, paddingX, paddingY + 70);
 
-    displayList.forEach((b, i) => {
-      ctx.fillStyle = i % 2 === 0 ? 'rgba(56, 189, 248, 0.05)' : 'rgba(56, 189, 248, 0.02)';
-      ctx.fillRect(paddingX, rowY, availW, rowH - 6);
+    // Divider
+    ctx.strokeStyle = '#38BDF8';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(paddingX, paddingY + 86);
+    ctx.lineTo(baseW - paddingX, paddingY + 86);
+    ctx.stroke();
 
-      ctx.fillStyle = '#38BDF8';
-      ctx.font = '800 11px "JetBrains Mono", monospace';
-      ctx.fillText(`0${i + 1}.`, paddingX + 12, rowY + 26);
+    let curY = paddingY + 104;
+    displayList.forEach((b, idx) => {
+      ctx.fillStyle = 'rgba(14, 165, 233, 0.06)';
+      ctx.strokeStyle = '#38BDF8';
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, paddingX, curY, availW, itemH - 8, 6, true, true);
+
+      // CAD icon
+      drawMetricAsset(ctx, 'blueprint', 'method', paddingX + 22, curY + (itemH - 8) / 2, 28);
+
+      ctx.fillStyle = '#7DD3FC';
+      ctx.font = '900 11px "JetBrains Mono", monospace';
+      ctx.fillText(`0${idx + 1}.`, paddingX + 46, curY + 22);
 
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '800 13px "JetBrains Mono", monospace';
-      const name = stripEmojis(b.batch_name || b.coffee_name || 'Café');
-      ctx.fillText(name.toUpperCase(), paddingX + 44, rowY + 26);
+      ctx.font = '900 13px "JetBrains Mono", monospace';
+      ctx.fillText(stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café'), paddingX + 74, curY + 22);
 
       ctx.fillStyle = '#93C5FD';
       ctx.font = '700 9.5px "JetBrains Mono", monospace';
-      const meta = `${stripEmojis(b.origin || '')} • ${stripEmojis(b.process || '')} • ${b.weight_current_g || 0}g`;
-      ctx.fillText(meta.toUpperCase(), paddingX + 380, rowY + 26);
+      ctx.fillText(`${stripEmojis(b.origin || '')} • ${stripEmojis(b.variety || '')} (${stripEmojis(b.process || '')})`, paddingX + 74, curY + 44);
 
-      ctx.fillStyle = '#4ADE80';
-      ctx.font = '800 10.5px "JetBrains Mono", monospace';
-      ctx.fillText(`SCA ${b.sca_score || 88.5}★`, paddingX + availW - 90, rowY + 26);
+      // Doses Pill
+      const doseText = `${b.remaining_doses || 0} TUBOS`;
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
+      ctx.fillRect(baseW - paddingX - 110, curY + 14, 96, 26);
+      ctx.fillStyle = '#38BDF8';
+      ctx.font = '900 10.5px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(doseText, baseW - paddingX - 62, curY + 31);
+      ctx.textAlign = 'left';
 
-      rowY += rowH;
+      curY += itemH;
     });
 
     // Footer
-    const footY = baseH - paddingY - 32;
+    const footY = baseH - paddingY - 30;
     ctx.fillStyle = '#7DD3FC';
     ctx.font = '700 9px "JetBrains Mono", monospace';
-    ctx.fillText(`TOTAL LOTES EN INVENTARIO: ${displayList.length} // GESTIÓN INTELIGENTE CON BEANTAG.APP`, paddingX, footY + 16);
+    ctx.fillText(`BEANTAG ARCHIVE // ${displayList.length} LOTES // FECHA: ${new Date().toLocaleDateString('es-ES')}`, paddingX, footY + 14);
   }
 
-  // 2. NEO-BRUTALIST MENU
+  // 2. NEOBRUTALIST MENU
   else if (style === 'neobrutalist') {
-    ctx.fillStyle = '#E5E7EB';
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, baseW, baseH);
 
-    ctx.fillStyle = '#111827';
-    drawRoundedRect(ctx, paddingX + 5, paddingY + 5, availW, baseH - (paddingY * 2), 10, true, false);
+    // Header Badge
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(paddingX + 3, paddingY + 3, 240, 24);
+    ctx.fillStyle = '#E2F952';
+    ctx.fillRect(paddingX, paddingY, 240, 24);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(paddingX, paddingY, 240, 24);
 
-    ctx.fillStyle = '#FFFFFF';
-    ctx.strokeStyle = '#111827';
-    ctx.lineWidth = 2.5;
-    drawRoundedRect(ctx, paddingX, paddingY, availW, baseH - (paddingY * 2), 10, true, true);
+    ctx.fillStyle = '#000000';
+    ctx.font = '900 10px "Space Grotesk", sans-serif';
+    ctx.fillText('★ BEANTAG SPECIALTY // BARISTA MENU ★', paddingX + 10, paddingY + 16);
 
     ctx.fillStyle = '#111827';
     ctx.font = '900 24px "Space Grotesk", sans-serif';
-    ctx.fillText('CRYO COFFEE VAULT • MENÚ', paddingX + 24, paddingY + 40);
+    ctx.fillText('CARTA DE CAFÉS & BODEGA', paddingX, paddingY + 60);
 
-    ctx.fillStyle = '#FF4B26';
-    ctx.font = '900 10.5px "Space Grotesk", sans-serif';
-    ctx.fillText(`${displayList.length} LOTES REGISTRADOS`, paddingX + 24, paddingY + 60);
+    // Hero Sticker Right
+    drawHeroAsset(ctx, 'neobrutalist', baseW - paddingX - 120, paddingY - 4, 100, 90);
 
-    let rowY = paddingY + 80;
-    const rowH = 48;
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(paddingX, paddingY + 82, availW, 3.5);
 
-    displayList.forEach((b, i) => {
-      ctx.fillStyle = '#F8FAFC';
-      ctx.strokeStyle = '#111827';
-      ctx.lineWidth = 1.5;
-      ctx.fillRect(paddingX + 20, rowY, availW - 40, rowH - 8);
-      ctx.strokeRect(paddingX + 20, rowY, availW - 40, rowH - 8);
+    let curY = paddingY + 100;
+    displayList.forEach((b, idx) => {
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(paddingX + 3, curY + 3, availW, itemH - 10);
+      ctx.fillStyle = idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC';
+      ctx.fillRect(paddingX, curY, availW, itemH - 10);
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(paddingX, curY, availW, itemH - 10);
 
-      ctx.fillStyle = '#E2F952';
-      ctx.fillRect(paddingX + 26, rowY + 8, 28, 24);
-      ctx.strokeRect(paddingX + 26, rowY + 8, 28, 24);
+      // Mini sticker
+      drawMetricAsset(ctx, 'neobrutalist', 'method', paddingX + 22, curY + (itemH - 10) / 2, 28);
 
-      ctx.fillStyle = '#111827';
-      ctx.font = '900 11px "Space Grotesk", sans-serif';
-      ctx.fillText(`0${i + 1}`, paddingX + 33, rowY + 24);
-
+      ctx.fillStyle = '#000000';
       ctx.font = '900 13px "Space Grotesk", sans-serif';
-      ctx.fillText(stripEmojis(b.batch_name || b.coffee_name || 'Café').toUpperCase(), paddingX + 66, rowY + 25);
+      ctx.fillText(`${idx + 1}. ${stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café')}`, paddingX + 46, curY + 22);
 
       ctx.fillStyle = '#64748B';
       ctx.font = '700 10px "Space Grotesk", sans-serif';
-      ctx.fillText(`${stripEmojis(b.origin || '')} • ${stripEmojis(b.process || '')}`, paddingX + 380, rowY + 25);
+      ctx.fillText(`${stripEmojis(b.origin || '')} • ${stripEmojis(b.process || '')}`, paddingX + 46, curY + 42);
 
-      ctx.fillStyle = '#111827';
-      ctx.font = '900 11px "Space Grotesk", sans-serif';
-      ctx.fillText(`${b.weight_current_g || 0}g`, paddingX + availW - 90, rowY + 25);
+      // Stock badge
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(baseW - paddingX - 106, curY + 12, 92, 26);
+      ctx.fillStyle = '#E2F952';
+      ctx.fillRect(baseW - paddingX - 108, curY + 10, 92, 26);
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(baseW - paddingX - 108, curY + 10, 92, 26);
 
-      rowY += rowH;
+      ctx.fillStyle = '#000000';
+      ctx.font = '900 10px "Space Grotesk", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${b.remaining_doses || 0} TUBOS`, baseW - paddingX - 62, curY + 27);
+      ctx.textAlign = 'left';
+
+      curY += itemH;
     });
 
-    // Footer
-    const footY = baseH - paddingY - 36;
-    ctx.fillStyle = '#111827';
-    ctx.font = '900 10px "Space Grotesk", sans-serif';
-    ctx.fillText('BEANTAG SPECIALTY CELLAR // CERTIFIED SPECIALTY ✓', paddingX + 24, footY + 16);
+    // Barcode footer
+    const footY = baseH - paddingY - 32;
+    ctx.fillStyle = '#000000';
+    ctx.font = '900 9.5px "Space Grotesk", sans-serif';
+    ctx.fillText(`BEANTAG SPECIALTY // ARCHIVE ${displayList.length} LOTES // 2027`, paddingX, footY + 16);
   }
 
   // 3. AURORA MENU
@@ -1077,113 +1023,91 @@ export function generateCoffeeMenuCardImage(batches = [], template = 'blueprint'
     ctx.fillStyle = '#08090E';
     ctx.fillRect(0, 0, baseW, baseH);
 
-    const grad = ctx.createRadialGradient(baseW * 0.8, baseH * 0.2, 0, baseW * 0.8, baseH * 0.2, 350);
-    grad.addColorStop(0, 'rgba(139, 92, 246, 0.35)');
-    grad.addColorStop(1, 'rgba(139, 92, 246, 0)');
-    ctx.fillStyle = grad;
+    const grad1 = ctx.createRadialGradient(baseW * 0.85, 100, 0, baseW * 0.85, 100, 280);
+    grad1.addColorStop(0, 'rgba(139, 92, 246, 0.4)');
+    grad1.addColorStop(1, 'rgba(139, 92, 246, 0)');
+    ctx.fillStyle = grad1;
     ctx.fillRect(0, 0, baseW, baseH);
 
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-    ctx.lineWidth = 1;
-    drawRoundedRect(ctx, paddingX, paddingY, availW, baseH - (paddingY * 2), 12, true, true);
+    drawHeroAsset(ctx, 'aurora', baseW - paddingX - 120, paddingY, 100, 90);
+
+    ctx.fillStyle = '#C084FC';
+    ctx.font = '800 10px -apple-system, sans-serif';
+    ctx.fillText('HOLOGRAPHIC CELLAR // BEANTAG VISION', paddingX, paddingY + 20);
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '800 24px -apple-system, sans-serif';
-    ctx.fillText('CRYO COFFEE VAULT', paddingX + 24, paddingY + 44);
+    ctx.font = '800 22px -apple-system, sans-serif';
+    ctx.fillText('CATÁLOGO DE CAFÉS DE ESPECIALIDAD', paddingX, paddingY + 54);
 
-    ctx.fillStyle = '#A5B4FC';
-    ctx.font = '600 11px -apple-system, sans-serif';
-    ctx.fillText(`CARTA DE CONGELADOR // ${displayList.length} LOTES REGISTRADOS`, paddingX + 24, paddingY + 66);
+    let curY = paddingY + 96;
+    displayList.forEach((b, idx) => {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      drawRoundedRect(ctx, paddingX, curY, availW, itemH - 8, 8, true, true);
 
-    let rowY = paddingY + 88;
-    const rowH = 46;
-
-    displayList.forEach((b, i) => {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-      ctx.lineWidth = 1;
-      drawRoundedRect(ctx, paddingX + 20, rowY, availW - 40, rowH - 6, 6, true, true);
-
-      ctx.fillStyle = '#38BDF8';
-      ctx.font = '800 11px -apple-system, sans-serif';
-      ctx.fillText(`0${i + 1}`, paddingX + 34, rowY + 25);
+      drawMetricAsset(ctx, 'aurora', 'method', paddingX + 24, curY + (itemH - 8) / 2, 28);
 
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '700 13px -apple-system, sans-serif';
-      ctx.fillText(stripEmojis(b.batch_name || b.coffee_name || 'Café'), paddingX + 66, rowY + 25);
+      ctx.font = '800 13px -apple-system, sans-serif';
+      ctx.fillText(`${idx + 1}. ${stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café')}`, paddingX + 48, curY + 22);
 
       ctx.fillStyle = '#94A3B8';
-      ctx.font = '500 10.5px -apple-system, sans-serif';
-      ctx.fillText(`${stripEmojis(b.origin || '')} • ${stripEmojis(b.process || '')}`, paddingX + 380, rowY + 25);
+      ctx.font = '500 10px -apple-system, sans-serif';
+      ctx.fillText(`${stripEmojis(b.origin || '')} • ${stripEmojis(b.process || '')}`, paddingX + 48, curY + 42);
 
-      ctx.fillStyle = '#34D399';
+      ctx.fillStyle = '#C084FC';
       ctx.font = '700 11px -apple-system, sans-serif';
-      ctx.fillText(`${b.weight_current_g || 0}g`, paddingX + availW - 90, rowY + 25);
+      ctx.textAlign = 'right';
+      ctx.fillText(`${b.remaining_doses || 0} Tubos`, baseW - paddingX - 20, curY + 34);
+      ctx.textAlign = 'left';
 
-      rowY += rowH;
+      curY += itemH;
     });
-
-    const footY = baseH - paddingY - 32;
-    ctx.fillStyle = '#A5B4FC';
-    ctx.font = '600 9.5px -apple-system, sans-serif';
-    ctx.fillText('BEANTAG CRYO VAULT // EXTRACTION INTELLIGENCE', paddingX + 24, footY + 16);
   }
 
   // 4. HANGTAG MENU
-  else {
+  else if (style === 'hangtag') {
     ctx.fillStyle = '#FAF7F2';
     ctx.fillRect(0, 0, baseW, baseH);
 
-    ctx.strokeStyle = '#E7E5E4';
-    ctx.lineWidth = 1.5;
-    drawRoundedRect(ctx, paddingX, paddingY, availW, baseH - (paddingY * 2), 12, false, true);
+    drawHeroAsset(ctx, 'hangtag', baseW - paddingX - 130, paddingY + 4, 110, 80);
 
-    drawMetallicEyelet(ctx, baseW / 2, paddingY + 20, 10);
+    ctx.fillStyle = '#78716C';
+    ctx.font = '600 9px Georgia, serif';
+    ctx.fillText('ATELIER DE CAFÉ // CATALOGUE DES CRUS', paddingX, paddingY + 20);
 
     ctx.fillStyle = '#1C1917';
     ctx.font = 'bold 22px Georgia, serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('CARTA DE CAFÉS DE ESPECIALIDAD', baseW / 2, paddingY + 54);
+    ctx.fillText('SÉLECTION DE BODEGA', paddingX, paddingY + 54);
 
-    ctx.fillStyle = '#78716C';
-    ctx.font = '600 9.5px -apple-system, sans-serif';
-    ctx.fillText('ROASTERY ARCHIVE // SELECCIÓN EXCLUSIVA', baseW / 2, paddingY + 70);
-    ctx.textAlign = 'left';
-
-    let rowY = paddingY + 90;
-    const rowH = 46;
-
-    displayList.forEach((b, i) => {
+    let curY = paddingY + 96;
+    displayList.forEach((b, idx) => {
       ctx.strokeStyle = '#E7E5E4';
       ctx.beginPath();
-      ctx.moveTo(paddingX + 24, rowY + rowH - 6);
-      ctx.lineTo(baseW - paddingX - 24, rowY + rowH - 6);
+      ctx.moveTo(paddingX, curY + itemH - 10);
+      ctx.lineTo(baseW - paddingX, curY + itemH - 10);
       ctx.stroke();
 
-      ctx.fillStyle = '#A8A29E';
-      ctx.font = '600 10.5px Georgia, serif';
-      ctx.fillText(`0${i + 1}.`, paddingX + 28, rowY + 24);
+      drawMetricAsset(ctx, 'hangtag', 'method', paddingX + 16, curY + 24, 24);
 
       ctx.fillStyle = '#1C1917';
       ctx.font = 'bold 13px Georgia, serif';
-      ctx.fillText(stripEmojis(b.batch_name || b.coffee_name || 'Café'), paddingX + 54, rowY + 24);
+      ctx.fillText(`0${idx + 1}. ${stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café')}`, paddingX + 38, curY + 24);
 
       ctx.fillStyle = '#78716C';
-      ctx.font = '500 10.5px -apple-system, sans-serif';
-      ctx.fillText(`${stripEmojis(b.origin || '')} • ${stripEmojis(b.process || '')}`, paddingX + 380, rowY + 24);
+      ctx.font = 'italic 10.5px Georgia, serif';
+      ctx.fillText(`${stripEmojis(b.origin || '')} — ${stripEmojis(b.process || '')}`, paddingX + 38, curY + 44);
 
       ctx.fillStyle = '#4D7C0F';
-      ctx.font = 'bold 10.5px -apple-system, sans-serif';
-      ctx.fillText(`${b.weight_current_g || 0}g`, paddingX + availW - 80, rowY + 24);
+      ctx.font = 'bold 11px Georgia, serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(`${b.remaining_doses || 0} Dosis`, baseW - paddingX - 16, curY + 32);
+      ctx.textAlign = 'left';
 
-      rowY += rowH;
+      curY += itemH;
     });
 
-    const footY = baseH - paddingY - 32;
-    ctx.fillStyle = '#78716C';
-    ctx.font = '600 9.5px -apple-system, sans-serif';
-    ctx.fillText(`CATÁLOGO DE BODEGA // ${displayList.length} LOTES // BEANTAG`, paddingX + 24, footY + 16);
+    drawBadgeAsset(ctx, 'hangtag', 'seal', baseW - paddingX - 34, baseH - paddingY - 24, 38);
   }
 
   return canvas.toDataURL('image/png', 1.0);

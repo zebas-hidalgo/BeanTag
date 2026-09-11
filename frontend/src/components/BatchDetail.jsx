@@ -110,7 +110,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   });
   const [shareStatus, setShareStatus] = useState('');
 
-  const handleShareBatchCard = (incRecipe = shareIncludeRecipe, templ = shareTemplate, scope = shareScope) => {
+  const handleShareBatchCard = async (incRecipe = shareIncludeRecipe, templ = shareTemplate, scope = shareScope) => {
     if (!batch) return;
     setShareScope(scope);
     setShareStatus('Generando imagen...');
@@ -118,7 +118,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     if (scope === 'menu') {
       const targetList = Array.isArray(batches) && batches.length > 0 ? batches : [batch];
       try {
-        const dataUrl = generateCoffeeMenuCardImage(targetList, templ);
+        const dataUrl = await generateCoffeeMenuCardImage(targetList, templ);
         setShareImage(dataUrl);
         setShareTemplate(templ);
         setShareStatus('✅ Carta de cafés generada con éxito');
@@ -155,7 +155,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     };
 
     try {
-      const dataUrl = generateRecipeCardImage(syntheticRecipe, templ, incRecipe);
+      const dataUrl = await generateRecipeCardImage(syntheticRecipe, templ, incRecipe);
       setShareImage(dataUrl);
       setShareTemplate(templ);
       setShareIncludeRecipe(incRecipe);

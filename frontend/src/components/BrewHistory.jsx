@@ -97,7 +97,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
     });
   };
 
-  const exportRecipeAsImage = (recipe, templateOverride, includeRecipeOverride) => {
+  const exportRecipeAsImage = async (recipe, templateOverride, includeRecipeOverride) => {
     const currentTpl = templateOverride || shareTemplate || 'blueprint';
     const incRecipe = includeRecipeOverride !== undefined ? includeRecipeOverride : shareIncludeRecipe;
     setShareStatus('Generando tarjeta en Ultra-HD...');
@@ -105,7 +105,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
     try {
       // Use Ultra-HD canvas engine
-      const dataUrl = generateRecipeCardImage(recipe, currentTpl, incRecipe);
+      const dataUrl = await generateRecipeCardImage(recipe, currentTpl, incRecipe);
       setShareImage(dataUrl);
       setShareStatus('✅ Tarjeta generada con éxito');
     } catch (err) {
