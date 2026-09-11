@@ -1,6 +1,6 @@
 // --- BEANTAG AESTHETIC TICKET & CARD GENERATOR (2026/2027) ---
-// Retina 2x Canvas rendering with authentic AI-generated Nanobanana/Imagen
-// visual asset kits (Blueprint, Neo-Brutalist, Holographic Aurora, Nordic Hangtag).
+// Retina 2x Canvas rendering with authentic AI-generated Nanobanana visual assets
+// with 100% aspect-ratio-preserving (contain) scaling, zero stretching, and high design polish.
 
 import {
   ensureCardAssetsLoaded,
@@ -8,6 +8,7 @@ import {
   drawMetricAsset,
   drawBadgeAsset,
   drawCardAsset,
+  drawContainedImage,
   drawBlueprintBean,
   drawNeobrutalistBean,
   drawNeobrutalistStar,
@@ -56,7 +57,7 @@ export function extractFlavorTags(notes) {
  * Translates grind description into approximate microns for technical precision
  */
 export function parseGrindToMicrons(grind) {
-  if (!grind) return 850;
+  if (!grind) return 750;
   const lower = String(grind).toLowerCase();
   const numMatch = lower.match(/(\d{3,4})\s*(?:um|µm|micr)/i);
   if (numMatch) return parseInt(numMatch[1], 10);
@@ -67,7 +68,7 @@ export function parseGrindToMicrons(grind) {
   if (lower.includes('medio grueso') || lower.includes('medio-grueso')) return 980;
   if (lower.includes('prensa') || lower.includes('french') || lower.includes('grueso') || lower.includes('cupping')) return 1100;
   if (lower.includes('cold brew')) return 1250;
-  return 850;
+  return 750;
 }
 
 /**
@@ -90,8 +91,8 @@ function drawRoundedRect(ctx, x, y, width, height, radius, fill = false, stroke 
 }
 
 /**
- * Generates an Ultra-Aesthetic Share Card (840 x 580 px @ 2x Retina = 1680 x 1160 px)
- * incorporating authentic Nanobanana visual asset kits.
+ * Generates an Ultra-Aesthetic Share Card (840 x 600 px @ 2x Retina = 1680 x 1200 px)
+ * incorporating authentic Nanobanana visual asset kits with ZERO distortion.
  */
 export async function generateRecipeCardImage(recipe, template = 'blueprint', incRecipe = true) {
   const style = normalizeCardStyle(template);
@@ -102,7 +103,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
   const canvas = document.createElement('canvas');
   const scaleFactor = 2;
   const baseW = 840;
-  const baseH = 580;
+  const baseH = 600;
 
   canvas.width = baseW * scaleFactor;
   canvas.height = baseH * scaleFactor;
@@ -156,19 +157,19 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
   const tempStr = recipe.temp ? `${recipe.temp}°C` : '93°C';
   const timeStr = recipe.time ? `${recipe.time}` : '02:45';
 
-  const paddingX = 36;
-  const paddingY = 32;
+  const paddingX = 40;
+  const paddingY = 36;
   const availW = baseW - (paddingX * 2);
 
   // =========================================================================
-  // 1. STYLE: BLUEPRINT TÉCNICO
+  // 1. STYLE: BLUEPRINT TÉCNICO (SWISS ARCHITECTURAL CYANOTYPE)
   // =========================================================================
   if (style === 'blueprint') {
     // Deep Cyanotype Background
-    ctx.fillStyle = '#07192F';
+    ctx.fillStyle = '#061528';
     ctx.fillRect(0, 0, baseW, baseH);
 
-    // Millimeter Grid
+    // Fine Millimeter Grid
     ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
     ctx.lineWidth = 1;
     const gridSize = 20;
@@ -177,7 +178,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     for (let y = 0; y <= baseH; y += gridSize) { ctx.moveTo(0, y); ctx.lineTo(baseW, y); }
     ctx.stroke();
 
-    // Outer Technical Border with corner registration marks
+    // Outer Technical Drafting Border
     ctx.strokeStyle = '#38BDF8';
     ctx.lineWidth = 1.5;
     const bx = paddingX - 10;
@@ -186,11 +187,11 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     const bh = baseH - (paddingY * 2) + 20;
     ctx.strokeRect(bx, by, bw, bh);
 
-    // Corner crosshairs (+)
+    // Corner Crosshairs (+)
     const drawCross = (cx, cy) => {
       ctx.beginPath();
-      ctx.moveTo(cx - 6, cy); ctx.lineTo(cx + 6, cy);
-      ctx.moveTo(cx, cy - 6); ctx.lineTo(cx, cy + 6);
+      ctx.moveTo(cx - 7, cy); ctx.lineTo(cx + 7, cy);
+      ctx.moveTo(cx, cy - 7); ctx.lineTo(cx, cy + 7);
       ctx.stroke();
     };
     drawCross(bx, by);
@@ -198,21 +199,21 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     drawCross(bx, by + bh);
     drawCross(bx + bw, by + bh);
 
-    // Header Left
+    // Top Header Left
     ctx.fillStyle = '#38BDF8';
     ctx.font = '700 8.5px "JetBrains Mono", monospace';
-    ctx.fillText(`// PATENT SPEC: COFFEA ARABICA VAR. ${variety.toUpperCase()}`, paddingX, paddingY + 12);
+    ctx.fillText(`// ARCHIVAL PATENT SPECIFICATION // COFFEA ARABICA VAR. ${variety.toUpperCase()}`, paddingX, paddingY + 14);
 
     ctx.fillStyle = '#FFFFFF';
-    drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 40, availW - 190, 24, '"JetBrains Mono", monospace', '900');
+    drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 44, availW - 200, 26, '"JetBrains Mono", monospace', '900');
 
     ctx.fillStyle = '#93C5FD';
-    ctx.font = '700 10.5px "JetBrains Mono", monospace';
-    ctx.fillText(`${origin.toUpperCase()} • ${process.toUpperCase()} • ${altitude} • ROAST: ${roaster.toUpperCase()}`, paddingX, paddingY + 62);
+    ctx.font = '700 11px "JetBrains Mono", monospace';
+    ctx.fillText(`${origin.toUpperCase()} • ${process.toUpperCase()} • ${altitude} • ROASTER: ${roaster.toUpperCase()}`, paddingX, paddingY + 68);
 
-    // Header Right: HERO CAD SCHEMATIC CONTAINER
+    // Top Right Hero Viewport: CAD Bean Anatomy (PROPORTIONALLY CONTAINED)
     const heroBoxW = 160;
-    const heroBoxH = 88;
+    const heroBoxH = 100;
     const heroBoxX = baseW - paddingX - heroBoxW;
     const heroBoxY = paddingY - 4;
 
@@ -221,31 +222,36 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.lineWidth = 1.2;
     drawRoundedRect(ctx, heroBoxX, heroBoxY, heroBoxW, heroBoxH, 6, true, true);
 
-    // Draw the authentic CAD Bean cross-section schematic
-    drawHeroAsset(ctx, 'blueprint', heroBoxX + 15, heroBoxY + 4, 130, 60);
+    // Viewport Label
+    ctx.fillStyle = '#7DD3FC';
+    ctx.font = '700 7.5px "JetBrains Mono", monospace';
+    ctx.fillText('FIG. 1: BEAN ANATOMY', heroBoxX + 8, heroBoxY + 14);
+
+    // Draw the 440x440 CAD Coffee Bean cross-section schematic with ZERO distortion
+    drawHeroAsset(ctx, 'blueprint', heroBoxX + 10, heroBoxY + 16, heroBoxW - 20, heroBoxH - 38);
 
     ctx.fillStyle = '#4ADE80';
     ctx.font = '800 8.5px "JetBrains Mono", monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(`SCA: ${scaScore}★ // PASSED`, heroBoxX + (heroBoxW / 2), heroBoxY + heroBoxH - 8);
+    ctx.fillText(`SCA: ${scaScore}★ [PASSED]`, heroBoxX + (heroBoxW / 2), heroBoxY + heroBoxH - 8);
     ctx.textAlign = 'left';
 
     // Divider Line
     ctx.strokeStyle = '#38BDF8';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(paddingX, paddingY + 92);
-    ctx.lineTo(baseW - paddingX, paddingY + 92);
+    ctx.moveTo(paddingX, paddingY + 104);
+    ctx.lineTo(baseW - paddingX, paddingY + 104);
     ctx.stroke();
 
     // Body: Recipe vs Bean Only
     if (incRecipe) {
-      // 4 Metric Boxes with Authentic CAD Icons
-      const metricY = paddingY + 104;
+      // 4 Metric Parameter Boxes
+      const metricY = paddingY + 118;
       const cols = 4;
       const gap = 12;
       const colW = (availW - (gap * (cols - 1))) / cols;
-      const colH = 76;
+      const colH = 82;
 
       const metrics = [
         { type: 'method', lbl: 'MÉTODO CAD', val: methodStr.toUpperCase(), sub: 'CONICAL 60°' },
@@ -261,20 +267,20 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.lineWidth = 1;
         drawRoundedRect(ctx, x, metricY, colW, colH, 6, true, true);
 
-        // Draw dedicated CAD icon in top-right of box
-        drawMetricAsset(ctx, 'blueprint', m.type, x + colW - 22, metricY + 22, 34);
+        // Draw dedicated CAD icon (36x36, contained, never stretched)
+        drawMetricAsset(ctx, 'blueprint', m.type, x + colW - 24, metricY + 24, 34);
 
         ctx.fillStyle = '#7DD3FC';
         ctx.font = '800 8.5px "JetBrains Mono", monospace';
-        ctx.fillText(m.lbl, x + 10, metricY + 18);
+        ctx.fillText(m.lbl, x + 10, metricY + 20);
 
         ctx.fillStyle = '#FFFFFF';
         ctx.font = '900 13px "JetBrains Mono", monospace';
-        drawTruncatedText(m.val, x + 10, metricY + 42, colW - 44);
+        drawTruncatedText(m.val, x + 10, metricY + 44, colW - 46);
 
         ctx.fillStyle = '#38BDF8';
-        ctx.font = '700 8px "JetBrains Mono", monospace';
-        ctx.fillText(m.sub, x + 10, metricY + 62);
+        ctx.font = '700 8.5px "JetBrains Mono", monospace';
+        ctx.fillText(m.sub, x + 10, metricY + 66);
       });
 
       // Pour Timeline Progress Bar
@@ -283,7 +289,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.strokeStyle = '#38BDF8';
       ctx.lineWidth = 1;
       ctx.setLineDash([3, 3]);
-      drawRoundedRect(ctx, paddingX, flowY, availW, 52, 6, true, true);
+      drawRoundedRect(ctx, paddingX, flowY, availW, 54, 6, true, true);
       ctx.setLineDash([]);
 
       ctx.fillStyle = '#7DD3FC';
@@ -295,7 +301,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillText(`TOTAL: ${waterG}g (${ratioStr})`, paddingX + availW - 140, flowY + 16);
 
       // Progress bar
-      const barY = flowY + 26;
+      const barY = flowY + 27;
       const barW = availW - 32;
       ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
       drawRoundedRect(ctx, paddingX + 16, barY, barW, 10, 5, true, false);
@@ -308,69 +314,25 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       drawRoundedRect(ctx, paddingX + 16 + (barW * 0.6), barY, barW * 0.4, 10, 5, true, false);
 
       // Sensory Descriptors
-      const notesY = flowY + 68;
+      const notesY = flowY + 70;
       ctx.fillStyle = 'rgba(56, 189, 248, 0.05)';
-      ctx.fillRect(paddingX, notesY, availW, 44);
+      ctx.fillRect(paddingX, notesY, availW, 46);
       ctx.fillStyle = '#38BDF8';
-      ctx.fillRect(paddingX, notesY, 4, 44);
+      ctx.fillRect(paddingX, notesY, 4, 46);
 
       ctx.fillStyle = '#7DD3FC';
       ctx.font = '800 8.5px "JetBrains Mono", monospace';
-      ctx.fillText('SENSORY DESCRIPTORS & TASTING PROFILE:', paddingX + 14, notesY + 15);
+      ctx.fillText('SENSORY PROFILE & CUPPING DESCRIPTORS:', paddingX + 14, notesY + 16);
 
       ctx.fillStyle = '#FFFFFF';
       ctx.font = '800 12px "JetBrains Mono", monospace';
-      const cleanNotes = flavorTags.length > 0 ? flavorTags.join(' • ') : notesStr;
-      drawTruncatedText(cleanNotes, paddingX + 14, notesY + 33, availW - 28);
-
-    } else {
-      // Bean Only layout with 4 big blocks & CAD illustrations
-      const bodyY = paddingY + 110;
-      const bodyH = 220;
-      const colW = (availW - 16) / 2;
-
-      // Left Box: Origin & Terroir
-      ctx.fillStyle = 'rgba(14, 165, 233, 0.08)';
-      ctx.strokeStyle = '#38BDF8';
-      drawRoundedRect(ctx, paddingX, bodyY, colW, bodyH, 8, true, true);
-      ctx.fillStyle = '#38BDF8';
-      ctx.font = '800 9.5px "JetBrains Mono", monospace';
-      ctx.fillText('// TERROIR & HARVEST SPEC', paddingX + 16, bodyY + 24);
-
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = '800 13px "JetBrains Mono", monospace';
-      ctx.fillText(`VARIEDAD: ${variety.toUpperCase()}`, paddingX + 16, bodyY + 54);
-      ctx.fillText(`PROCESO: ${process.toUpperCase()}`, paddingX + 16, bodyY + 80);
-      ctx.fillText(`ALTITUD: ${altitude}`, paddingX + 16, bodyY + 106);
-      ctx.fillText(`ORIGEN: ${origin.toUpperCase()}`, paddingX + 16, bodyY + 132);
-      ctx.fillText(`TOSTADOR: ${roaster.toUpperCase()}`, paddingX + 16, bodyY + 158);
-
-      // Right Box: Sensory Notes & CAD Scale
-      const rX = paddingX + colW + 16;
-      ctx.fillStyle = 'rgba(14, 165, 233, 0.08)';
-      ctx.strokeStyle = '#38BDF8';
-      drawRoundedRect(ctx, rX, bodyY, colW, bodyH, 8, true, true);
-      ctx.fillStyle = '#38BDF8';
-      ctx.font = '800 9.5px "JetBrains Mono", monospace';
-      ctx.fillText('// SENSORY CUPPING EVALUATION', rX + 16, bodyY + 24);
-
-      ctx.fillStyle = '#4ADE80';
-      ctx.font = '900 16px "JetBrains Mono", monospace';
-      ctx.fillText(`CALIDAD: SCA ${scaScore}★ PASSED`, rX + 16, bodyY + 58);
-
-      // Draw CAD dripper & water in sensory box
-      drawMetricAsset(ctx, 'blueprint', 'method', rX + colW - 40, bodyY + 58, 48);
-
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = '800 12px "JetBrains Mono", monospace';
-      flavorTags.slice(0, 4).forEach((t, i) => {
-        ctx.fillText(`[✓] ${t.toUpperCase()}`, rX + 16, bodyY + 94 + (i * 26));
-      });
+      const cleanNotes = flavorTags.length > 0 ? flavorTags.join('  •  ') : notesStr;
+      drawTruncatedText(cleanNotes, paddingX + 14, notesY + 34, availW - 28);
     }
 
     // Architectural Title Block (Bottom)
-    const tbY = baseH - paddingY - 42;
-    const tbH = 42;
+    const tbY = baseH - paddingY - 44;
+    const tbH = 44;
     ctx.strokeStyle = '#38BDF8';
     ctx.lineWidth = 1.2;
     ctx.strokeRect(paddingX, tbY, availW, tbH);
@@ -386,30 +348,57 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.stroke();
 
     ctx.fillStyle = '#7DD3FC';
-    ctx.font = '700 7px "JetBrains Mono", monospace';
-    ctx.fillText('DWG NO:', paddingX + 8, tbY + 12);
-    ctx.fillText('ROASTER / LAB:', paddingX + b1W + 8, tbY + 12);
-    ctx.fillText('SCALE / STATUS:', paddingX + b1W + b2W + 8, tbY + 12);
-    ctx.fillText('ARCHIVE SYSTEM:', paddingX + b1W + b2W + b3W + 8, tbY + 12);
+    ctx.font = '700 7.5px "JetBrains Mono", monospace';
+    ctx.fillText('DWG NO:', paddingX + 8, tbY + 14);
+    ctx.fillText('ROASTER / LAB:', paddingX + b1W + 8, tbY + 14);
+    ctx.fillText('SCALE / STATUS:', paddingX + b1W + b2W + 8, tbY + 14);
+    ctx.fillText('ARCHIVE SYSTEM:', paddingX + b1W + b2W + b3W + 8, tbY + 14);
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '800 10.5px "JetBrains Mono", monospace';
-    ctx.fillText('BT-2027-CAD', paddingX + 8, tbY + 30);
-    drawTruncatedText(roaster.toUpperCase(), paddingX + b1W + 8, tbY + 30, b2W - 16);
-    ctx.fillText('1:1 CALIBRATED', paddingX + b1W + b2W + 8, tbY + 30);
-    ctx.fillText('BEANTAG SPECIALTY', paddingX + b1W + b2W + b3W + 8, tbY + 30);
+    ctx.font = '800 11px "JetBrains Mono", monospace';
+    ctx.fillText('BT-2027-V60', paddingX + 8, tbY + 32);
+    drawTruncatedText(roaster.toUpperCase(), paddingX + b1W + 8, tbY + 32, b2W - 16);
+    ctx.fillText('1:1 CALIBRATED', paddingX + b1W + b2W + 8, tbY + 32);
+    ctx.fillText('BEANTAG SPECIALTY', paddingX + b1W + b2W + b3W + 8, tbY + 32);
   }
 
   // =========================================================================
-  // 2. STYLE: NEO-BRUTALIST POP (TOKYO STREETWEAR)
+  // 2. STYLE: NEO-BRUTALIST POP (TOKYO STREETWEAR ROASTERY)
   // =========================================================================
   else if (style === 'neobrutalist') {
     // Pure White Background
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, baseW, baseH);
 
+    // Torn Paper Zig-Zag Cuts at Top & Bottom (Kissaten Order Slip)
+    const toothW = 14;
+    const toothH = 7;
+    ctx.fillStyle = '#F4F4F5';
+
+    // Top Zig-Zag
+    ctx.beginPath();
+    for (let x = 0; x < baseW; x += toothW) {
+      ctx.lineTo(x + toothW / 2, toothH);
+      ctx.lineTo(Math.min(baseW, x + toothW), 0);
+    }
+    ctx.lineTo(baseW, toothH);
+    ctx.lineTo(0, toothH);
+    ctx.closePath();
+    ctx.fill();
+
+    // Bottom Zig-Zag
+    ctx.beginPath();
+    for (let x = 0; x < baseW; x += toothW) {
+      ctx.lineTo(x + toothW / 2, baseH - toothH);
+      ctx.lineTo(Math.min(baseW, x + toothW), baseH);
+    }
+    ctx.lineTo(baseW, baseH - toothH);
+    ctx.lineTo(0, baseH - toothH);
+    ctx.closePath();
+    ctx.fill();
+
     // Header Pill Badge (Top Left)
-    const badgeW = 260;
+    const badgeW = 270;
     const badgeH = 26;
     ctx.fillStyle = '#000000';
     ctx.fillRect(paddingX + 3, paddingY + 3, badgeW, badgeH);
@@ -421,14 +410,14 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
     ctx.fillStyle = '#000000';
     ctx.font = '900 10.5px "Space Grotesk", sans-serif';
-    ctx.fillText('★ TOKYO STREETWEAR // ROASTERY ★', paddingX + 12, paddingY + 17);
+    ctx.fillText('★ TOKYO STREETWEAR // BARISTA ORDER ★', paddingX + 12, paddingY + 17);
 
-    // Huge Brutalist Title
+    // Massive Bold Title
     ctx.fillStyle = '#111827';
-    drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 68, availW - 200, 32, '"Space Grotesk", sans-serif', '900');
+    drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 70, availW - 200, 30, '"Space Grotesk", sans-serif', '900');
 
     // Tags Bar
-    const tagY = paddingY + 84;
+    const tagY = paddingY + 88;
     const tags = [
       { text: origin.toUpperCase(), bg: '#FF4B26', color: '#FFF' },
       { text: process.toUpperCase(), bg: '#FFFFFF', color: '#000' },
@@ -453,24 +442,24 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       curTagX += tw + 10;
     });
 
-    // HERO STICKER RIGHT: Cool Bean with Sunglasses + Star Badge
+    // HERO STICKER RIGHT: Cool Bean with Sunglasses (CONTAINED, NEVER STRETCHED)
     const heroBoxX = baseW - paddingX - 160;
-    const heroBoxY = paddingY - 6;
-    drawHeroAsset(ctx, 'neobrutalist', heroBoxX, heroBoxY, 110, 100);
-    drawBadgeAsset(ctx, 'neobrutalist', 'star', heroBoxX + 130, heroBoxY + 36, 48);
+    const heroBoxY = paddingY - 4;
+    drawHeroAsset(ctx, 'neobrutalist', heroBoxX, heroBoxY, 110, 110);
+    drawBadgeAsset(ctx, 'neobrutalist', 'star', heroBoxX + 126, heroBoxY + 36, 44);
 
-    // Thick Divider
+    // Thick Black Divider
     ctx.fillStyle = '#000000';
-    ctx.fillRect(paddingX, paddingY + 118, availW, 3.5);
+    ctx.fillRect(paddingX, paddingY + 122, availW, 3.5);
 
     // Body
     if (incRecipe) {
       // 4 Bento Metric Boxes with Hard Black Drop Shadows & Pop Stickers
-      const metricY = paddingY + 132;
+      const metricY = paddingY + 138;
       const cols = 4;
       const gap = 14;
       const colW = (availW - (gap * (cols - 1))) / cols;
-      const colH = 88;
+      const colH = 92;
 
       const metrics = [
         { type: 'method', lbl: 'MÉTODO', val: methodStr.toUpperCase(), bg: '#E2F952' },
@@ -481,7 +470,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       metrics.forEach((m, i) => {
         const x = paddingX + i * (colW + gap);
-        // Hard 4px shadow
+        // Hard 4px solid shadow
         ctx.fillStyle = '#000000';
         ctx.fillRect(x + 4, metricY + 4, colW, colH);
 
@@ -492,25 +481,24 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.lineWidth = 2.5;
         ctx.strokeRect(x, metricY, colW, colH);
 
-        // Draw dedicated sticker icon inside each box
-        drawMetricAsset(ctx, 'neobrutalist', m.type, x + colW - 24, metricY + 26, 38);
+        // Dedicated sticker icon (CONTAINED, NEVER STRETCHED)
+        drawMetricAsset(ctx, 'neobrutalist', m.type, x + colW - 24, metricY + 28, 38);
 
         ctx.fillStyle = m.valColor || '#000000';
-        ctx.font = '900 9px "Space Grotesk", sans-serif';
-        ctx.fillText(m.lbl, x + 10, metricY + 20);
+        ctx.font = '900 9.5px "Space Grotesk", sans-serif';
+        ctx.fillText(m.lbl, x + 10, metricY + 22);
 
-        ctx.font = '900 13px "Space Grotesk", sans-serif';
-        drawTruncatedText(m.val, x + 10, metricY + 50, colW - 36);
+        ctx.font = '900 13.5px "Space Grotesk", sans-serif';
+        drawTruncatedText(m.val, x + 10, metricY + 52, colW - 36);
 
-        // Little bottom badge
-        ctx.fillStyle = '#000000';
+        ctx.fillStyle = m.valColor || '#000000';
         ctx.font = '800 8.5px monospace';
-        ctx.fillText(i === 1 ? `RATIO ${ratioStr}` : 'SPECIALTY', x + 10, metricY + 74);
+        ctx.fillText(i === 1 ? `RATIO ${ratioStr}` : 'SPECIALTY', x + 10, metricY + 76);
       });
 
       // Flavor Notes Stickers Bento
       const notesY = metricY + colH + 16;
-      const notesH = 80;
+      const notesH = 82;
 
       ctx.fillStyle = '#000000';
       ctx.fillRect(paddingX + 4, notesY + 4, availW, notesH);
@@ -524,9 +512,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.font = '900 10.5px "Space Grotesk", sans-serif';
       ctx.fillText('⚡ PERFIL SENSORIAL // POP STICKERS:', paddingX + 16, notesY + 24);
 
-      // Render flavor pills
+      // Render colorful flavor pills
       let pillX = paddingX + 16;
-      const pillY = notesY + 38;
+      const pillY = notesY + 40;
       const pillColors = ['#E2F952', '#FF4B26', '#D8B4FE', '#67E8F9', '#FED7AA'];
 
       const displayTags = flavorTags.length > 0 ? flavorTags : ['Notas Limpias', 'Balance', 'Dulzor Frutal'];
@@ -565,12 +553,12 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     });
 
     ctx.fillStyle = '#000000';
-    ctx.font = '900 9.5px "Space Grotesk", sans-serif';
+    ctx.font = '900 10px "Space Grotesk", sans-serif';
     ctx.fillText(`BEANTAG SPECIALTY // ARCHIVE 2027 // SCA: ${scaScore}★`, curBarX + 18, bcY + 17);
   }
 
   // =========================================================================
-  // 3. STYLE: HOLOGRAPHIC AURORA (VISIONOS DARK GLASS)
+  // 3. STYLE: HOLOGRAPHIC AURORA (APPLE VISIONOS DARK GLASS)
   // =========================================================================
   else if (style === 'aurora') {
     // Obsidian Dark Base
@@ -599,29 +587,29 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // Header Left
     ctx.fillStyle = '#C084FC';
     ctx.font = '800 9px -apple-system, sans-serif';
-    ctx.fillText('HOLOGRAPHIC EXTRACTION // BEANTAG VISION', paddingX, paddingY + 12);
+    ctx.fillText('HOLOGRAPHIC EXTRACTION // BEANTAG VISION', paddingX, paddingY + 14);
 
     ctx.fillStyle = '#FFFFFF';
-    drawFittedText(coffeeName, paddingX, paddingY + 44, availW - 220, 28, '-apple-system, sans-serif', '800');
+    drawFittedText(coffeeName, paddingX, paddingY + 46, availW - 220, 28, '-apple-system, sans-serif', '800');
 
     ctx.fillStyle = '#94A3B8';
     ctx.font = '500 11px -apple-system, sans-serif';
-    ctx.fillText(`${origin} • ${process} • ${altitude} • ${roaster}`, paddingX, paddingY + 68);
+    ctx.fillText(`${origin} • ${process} • ${altitude} • ${roaster}`, paddingX, paddingY + 70);
 
-    // HERO 3D HOLOGRAPHIC GLASS BEAN (Top Right)
+    // HERO 3D HOLOGRAPHIC GLASS BEAN (CONTAINED, NEVER STRETCHED)
     const heroBoxX = baseW - paddingX - 160;
     const heroBoxY = paddingY - 4;
-    drawHeroAsset(ctx, 'aurora', heroBoxX, heroBoxY, 105, 95);
-    drawBadgeAsset(ctx, 'aurora', 'star', heroBoxX + 115, heroBoxY + 36, 44);
+    drawHeroAsset(ctx, 'aurora', heroBoxX, heroBoxY, 110, 100);
+    drawBadgeAsset(ctx, 'aurora', 'star', heroBoxX + 120, heroBoxY + 36, 44);
 
     // Body
     if (incRecipe) {
       // 4 Frosted Glass Metric Tiles with Glowing Neon Icons
-      const metricY = paddingY + 98;
+      const metricY = paddingY + 106;
       const cols = 4;
       const gap = 12;
       const colW = (availW - (gap * (cols - 1))) / cols;
-      const colH = 82;
+      const colH = 84;
 
       const metrics = [
         { type: 'method', lbl: 'MÉTODO', val: methodStr, sub: 'V60 60°' },
@@ -637,7 +625,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.lineWidth = 1;
         drawRoundedRect(ctx, x, metricY, colW, colH, 10, true, true);
 
-        // Draw dedicated 3D aurora icon
+        // Draw dedicated 3D aurora icon (CONTAINED)
         drawMetricAsset(ctx, 'aurora', m.type, x + colW - 24, metricY + 24, 38);
 
         ctx.fillStyle = '#A78BFA';
@@ -650,7 +638,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
         ctx.fillStyle = '#38BDF8';
         ctx.font = '600 8.5px -apple-system, sans-serif';
-        ctx.fillText(m.sub, x + 12, metricY + 66);
+        ctx.fillText(m.sub, x + 12, metricY + 68);
       });
 
       // Waveform Extraction Spectrum Bar
@@ -660,7 +648,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.lineWidth = 1;
       drawRoundedRect(ctx, paddingX, waveY, availW, 54, 10, true, true);
 
-      // Draw Waveform visual
+      // Draw Waveform visual (CONTAINED)
       drawBadgeAsset(ctx, 'aurora', 'wave', paddingX + 50, waveY + 27, 44);
 
       ctx.fillStyle = '#E2E8F0';
@@ -697,12 +685,12 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // Footer
     const footY = baseH - paddingY - 24;
     ctx.fillStyle = '#94A3B8';
-    ctx.font = '500 9px -apple-system, sans-serif';
+    ctx.font = '500 9.5px -apple-system, sans-serif';
     ctx.fillText(`SCA CUPSCORE: ${scaScore}★ • CALIBRACIÓN HOLOGRÁFICA 2027 • BEANTAG`, paddingX, footY + 12);
   }
 
   // =========================================================================
-  // 4. STYLE: HANGTAG NÓRDICO (SEY / TIM WENDELBOE ATELIER)
+  // 4. STYLE: HANGTAG NÓRDICO (TIM WENDELBOE / SEY ATELIER)
   // =========================================================================
   else if (style === 'hangtag') {
     // Ivory Cotton Paper Background
@@ -716,7 +704,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
     // Realistic Metallic Bronze Eyelet at Top Center
     const eyeletX = baseW / 2;
-    const eyeletY = paddingY + 2;
+    const eyeletY = paddingY + 4;
     const eyeletR = 10;
 
     ctx.save();
@@ -740,38 +728,38 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.fillStyle = '#78716C';
     ctx.font = '600 8.5px Georgia, serif';
     ctx.textAlign = 'center';
-    ctx.fillText('ATELIER DE CAFÉ // ÉDITION LIMITÉE', baseW / 2, paddingY + 30);
+    ctx.fillText('ATELIER DE CAFÉ // ÉDITION LIMITÉE', baseW / 2, paddingY + 32);
     ctx.textAlign = 'left';
 
     // Main Serif Title
     ctx.fillStyle = '#1C1917';
-    drawFittedText(coffeeName, paddingX, paddingY + 68, availW - 220, 26, 'Georgia, serif', 'bold');
+    drawFittedText(coffeeName, paddingX, paddingY + 70, availW - 220, 26, 'Georgia, serif', 'bold');
 
     ctx.fillStyle = '#78716C';
     ctx.font = 'italic 11.5px Georgia, serif';
-    ctx.fillText(`${origin} — ${producer || roaster} — ${altitude}`, paddingX, paddingY + 92);
+    ctx.fillText(`${origin} — ${producer || roaster} — ${altitude}`, paddingX, paddingY + 94);
 
-    // HERO BOTANICAL ENGRAVING (Top Right)
-    const heroBoxX = baseW - paddingX - 170;
+    // HERO BOTANICAL ENGRAVING (CONTAINED, NEVER STRETCHED)
+    const heroBoxX = baseW - paddingX - 160;
     const heroBoxY = paddingY + 12;
-    drawHeroAsset(ctx, 'hangtag', heroBoxX, heroBoxY, 130, 95);
+    drawHeroAsset(ctx, 'hangtag', heroBoxX, heroBoxY, 120, 95);
 
     // Delicate Divider
     ctx.strokeStyle = '#D6D3D1';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(paddingX, paddingY + 112);
-    ctx.lineTo(baseW - paddingX, paddingY + 112);
+    ctx.moveTo(paddingX, paddingY + 116);
+    ctx.lineTo(baseW - paddingX, paddingY + 116);
     ctx.stroke();
 
     // Body
     if (incRecipe) {
       // 4 Metric Columns with Delicate Engravings
-      const metricY = paddingY + 126;
+      const metricY = paddingY + 130;
       const cols = 4;
       const gap = 16;
       const colW = (availW - (gap * (cols - 1))) / cols;
-      const colH = 82;
+      const colH = 84;
 
       const metrics = [
         { type: 'method', lbl: 'MÉTHODE', val: methodStr, sub: 'Extraction douce' },
@@ -786,7 +774,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.lineWidth = 1;
         ctx.strokeRect(x, metricY, colW, colH);
 
-        // Draw dedicated vintage engraving icon
+        // Draw dedicated vintage engraving icon (CONTAINED)
         drawMetricAsset(ctx, 'hangtag', m.type, x + colW - 24, metricY + 24, 34);
 
         ctx.fillStyle = '#78716C';
@@ -795,11 +783,11 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
         ctx.fillStyle = '#1C1917';
         ctx.font = 'bold 12.5px Georgia, serif';
-        drawTruncatedText(m.val, x + 10, metricY + 44, colW - 36);
+        drawTruncatedText(m.val, x + 10, metricY + 46, colW - 36);
 
         ctx.fillStyle = '#A8A29E';
         ctx.font = 'italic 8.5px Georgia, serif';
-        ctx.fillText(m.sub, x + 10, metricY + 68);
+        ctx.fillText(m.sub, x + 10, metricY + 70);
       });
 
       // Botanical Tasting Quote
@@ -835,7 +823,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
 /**
  * Generates an Ultra-HD visual Specialty Coffee Menu Card (Cellar Inventory)
- * incorporating authentic Nanobanana visual asset kits.
+ * incorporating authentic Nanobanana visual asset kits with ZERO distortion.
  */
 export async function generateCoffeeMenuCardImage(batches, template = 'blueprint') {
   const style = normalizeCardStyle(template);
@@ -853,7 +841,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
   const headerH = 150;
   const itemH = 68;
   const footerH = 90;
-  const baseH = Math.max(580, headerH + (displayList.length * itemH) + footerH);
+  const baseH = Math.max(600, headerH + (displayList.length * itemH) + footerH);
 
   canvas.width = baseW * scaleFactor;
   canvas.height = baseH * scaleFactor;
@@ -862,12 +850,12 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
   ctx.scale(scaleFactor, scaleFactor);
 
   const paddingX = 40;
-  const paddingY = 32;
+  const paddingY = 36;
   const availW = baseW - (paddingX * 2);
 
   // 1. BLUEPRINT MENU
   if (style === 'blueprint') {
-    ctx.fillStyle = '#07192F';
+    ctx.fillStyle = '#061528';
     ctx.fillRect(0, 0, baseW, baseH);
 
     ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
@@ -879,8 +867,8 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
     ctx.lineWidth = 1.5;
     ctx.strokeRect(paddingX - 10, paddingY - 10, availW + 20, baseH - (paddingY * 2) + 20);
 
-    // Hero Schematic in Header
-    drawHeroAsset(ctx, 'blueprint', baseW - paddingX - 130, paddingY + 6, 110, 64);
+    // Hero Schematic in Header (CONTAINED)
+    drawHeroAsset(ctx, 'blueprint', baseW - paddingX - 120, paddingY + 6, 100, 70);
 
     ctx.fillStyle = '#38BDF8';
     ctx.font = '800 11px "JetBrains Mono", monospace';
@@ -898,8 +886,8 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
     ctx.strokeStyle = '#38BDF8';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(paddingX, paddingY + 86);
-    ctx.lineTo(baseW - paddingX, paddingY + 86);
+    ctx.moveTo(paddingX, paddingY + 88);
+    ctx.lineTo(baseW - paddingX, paddingY + 88);
     ctx.stroke();
 
     let curY = paddingY + 104;
@@ -966,7 +954,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
     ctx.font = '900 24px "Space Grotesk", sans-serif';
     ctx.fillText('CARTA DE CAFÉS & BODEGA', paddingX, paddingY + 60);
 
-    // Hero Sticker Right
+    // Hero Sticker Right (CONTAINED)
     drawHeroAsset(ctx, 'neobrutalist', baseW - paddingX - 120, paddingY - 4, 100, 90);
 
     ctx.fillStyle = '#000000';

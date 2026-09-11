@@ -1,6 +1,6 @@
 // --- BEANTAG AESTHETIC TICKET ASSET & ICON KITS (2026/2027) ---
 // High-resolution visual assets generated with Nanobanana / Imagen
-// with seamless Canvas 2D rendering and vector fallbacks.
+// with 100% aspect-ratio-preserving (contain) Canvas 2D rendering and vector fallbacks.
 
 // 1. BLUEPRINT CAD ASSETS
 import blueprintHeroSrc from '../assets/cards/blueprint_hero.png';
@@ -109,13 +109,19 @@ export async function ensureCardAssetsLoaded(style = 'blueprint') {
 }
 
 /**
- * Draws an asset image if loaded, with optional rotation, shadow, and fit options
+ * Mathematical contain image drawer: NEVER distorts or stretches an image.
+ * Maintains natural aspect ratio and centers image within (dx, dy, dWidth, dHeight).
  */
-export function drawCardAsset(ctx, assetKey, x, y, width, height, options = {}) {
-  const img = loadedImageCache[assetKey];
-  if (!img || !img.complete || img.naturalWidth === 0) {
-    return false; // Not ready, fallback can be called by caller
-  }
+export function drawContainedImage(ctx, img, dx, dy, dWidth, dHeight, options = {}) {
+  if (!img || !img.complete || img.naturalWidth === 0) return false;
+
+  const imgW = img.naturalWidth;
+  const imgH = img.naturalHeight;
+  const scale = Math.min(dWidth / imgW, dHeight / imgH);
+  const renderW = imgW * scale;
+  const renderH = imgH * scale;
+  const renderX = dx + (dWidth - renderW) / 2;
+  const renderY = dy + (dHeight - renderH) / 2;
 
   ctx.save();
 
@@ -127,13 +133,13 @@ export function drawCardAsset(ctx, assetKey, x, y, width, height, options = {}) 
   }
 
   if (options.rotation) {
-    const cx = x + width / 2;
-    const cy = y + height / 2;
+    const cx = renderX + renderW / 2;
+    const cy = renderY + renderH / 2;
     ctx.translate(cx, cy);
     ctx.rotate(options.rotation);
-    ctx.drawImage(img, -width / 2, -height / 2, width, height);
+    ctx.drawImage(img, -renderW / 2, -renderH / 2, renderW, renderH);
   } else {
-    ctx.drawImage(img, x, y, width, height);
+    ctx.drawImage(img, renderX, renderY, renderW, renderH);
   }
 
   ctx.restore();
@@ -141,24 +147,35 @@ export function drawCardAsset(ctx, assetKey, x, y, width, height, options = {}) 
 }
 
 /**
- * Draws Hero visual illustration for the given card style
+ * Draws an asset image if loaded with STRICT aspect ratio preservation
+ */
+export function drawCardAsset(ctx, assetKey, x, y, width, height, options = {}) {
+  const img = loadedImageCache[assetKey];
+  if (!img || !img.complete || img.naturalWidth === 0) {
+    return false;
+  }
+  return drawContainedImage(ctx, img, x, y, width, height, options);
+}
+
+/**
+ * Draws Hero visual illustration with 100% natural proportions (ZERO stretching)
  */
 export function drawHeroAsset(ctx, style, x, y, width, height) {
   const heroKey = `${style}_hero`;
   const drawn = drawCardAsset(ctx, heroKey, x, y, width, height, {
     shadowColor: style === 'neobrutalist' ? '#000000' : (style === 'aurora' ? 'rgba(139, 92, 246, 0.4)' : undefined),
-    shadowOffsetX: style === 'neobrutalist' ? 5 : 0,
-    shadowOffsetY: style === 'neobrutalist' ? 5 : 0,
-    shadowBlur: style === 'aurora' ? 16 : 0,
-    rotation: style === 'neobrutalist' ? 0.05 : 0
+    shadowOffsetX: style === 'neobrutalist' ? 4 : 0,
+    shadowOffsetY: style === 'neobrutalist' ? 4 : 0,
+    shadowBlur: style === 'aurora' ? 14 : 0,
+    rotation: style === 'neobrutalist' ? 0.04 : 0
   });
 
   if (!drawn) {
     // Vector fallback
-    if (style === 'blueprint') drawBlueprintBean(ctx, x + width / 2, y + height / 2, width * 0.4);
-    else if (style === 'neobrutalist') drawNeobrutalistBean(ctx, x + width / 2, y + height / 2, width * 0.35);
-    else if (style === 'aurora') drawAuroraBean(ctx, x + width / 2, y + height / 2, width * 0.4);
-    else if (style === 'hangtag') drawHangtagBotanical(ctx, x + width / 2, y + height / 2, width * 0.45);
+    if (style === 'blueprint') drawBlueprintBean(ctx, x + width / 2, y + height / 2, Math.min(width, height) * 0.4);
+    else if (style === 'neobrutalist') drawNeobrutalistBean(ctx, x + width / 2, y + height / 2, Math.min(width, height) * 0.35);
+    else if (style === 'aurora') drawAuroraBean(ctx, x + width / 2, y + height / 2, Math.min(width, height) * 0.4);
+    else if (style === 'hangtag') drawHangtagBotanical(ctx, x + width / 2, y + height / 2, Math.min(width, height) * 0.45);
   }
 }
 
@@ -197,7 +214,7 @@ export function drawMetricAsset(ctx, style, metricType, x, y, size = 32) {
 }
 
 /**
- * Draws badges (e.g. Star, Seal, Flame)
+ * Draws badges (e.g. Star, Seal, Flame) with strict aspect ratio
  */
 export function drawBadgeAsset(ctx, style, badgeType, x, y, size = 40) {
   let assetKey = '';
@@ -213,8 +230,8 @@ export function drawBadgeAsset(ctx, style, badgeType, x, y, size = 40) {
 
   const drawn = assetKey ? drawCardAsset(ctx, assetKey, x - size / 2, y - size / 2, size, size) : false;
   if (!drawn) {
-    if (style === 'neobrutalist' && badgeType === 'star') drawNeobrutalistStar(ctx, x, y, size * 0.45);
-    else if (style === 'hangtag' && badgeType === 'seal') drawHangtagSeal(ctx, x, y, size * 0.5);
+    if (style === 'neobrutalist' && badgeType === 'star') drawNeobrutalistStar(ctx, x, y, 5, size * 0.45, size * 0.22);
+    else if (style === 'hangtag' && badgeType === 'seal') drawHangtagSeal(ctx, x, y, size * 0.45);
   }
 }
 
