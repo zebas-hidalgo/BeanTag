@@ -877,18 +877,19 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
             </div>
 
             {/* Live Image Preview */}
-            <div style={{ textAlign: 'center', backgroundColor: '#F1F5F9', borderRadius: '10px', padding: '6px', overflow: 'hidden', maxHeight: '52vh', overflowY: 'auto' }}>
+            <div style={{ textAlign: 'center', backgroundColor: 'var(--bg-canvas, #F1F5F9)', borderRadius: '12px', padding: '8px', overflowY: 'auto', maxHeight: 'calc(75vh - 170px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {menuShareImage && (
                 <img 
                   src={menuShareImage} 
                   alt="Carta de cafés de especialidad" 
                   style={{
                     maxWidth: '100%',
+                    maxHeight: 'calc(75vh - 190px)',
                     height: 'auto',
-                    borderRadius: '4px', 
+                    borderRadius: '6px', 
                     display: 'block',
                     margin: '0 auto',
-                    boxShadow: '0 4px 14px rgba(0,0,0,0.12)'
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.14)'
                   }} 
                 />
               )}

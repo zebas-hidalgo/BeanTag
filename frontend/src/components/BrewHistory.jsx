@@ -711,16 +711,18 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               </div>
             </div>
 
-            <div style={{ textAlign: 'center', backgroundColor: '#E2E8F0', borderRadius: '8px', padding: '6px', overflow: 'hidden' }}>
+            <div style={{ textAlign: 'center', backgroundColor: 'var(--bg-canvas, #F1F5F9)', borderRadius: '12px', padding: '8px', overflowY: 'auto', maxHeight: 'calc(75vh - 170px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <img 
                 src={shareImage} 
                 alt="Ticket de café POS" 
                 style={{
                   maxWidth: '100%',
+                  maxHeight: 'calc(75vh - 190px)',
                   height: 'auto',
-                  borderRadius: '2px', 
+                  borderRadius: '6px', 
                   display: 'block',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                  margin: '0 auto',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.14)'
                 }} 
               />
             </div>
