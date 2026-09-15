@@ -9,7 +9,7 @@ import {
   drawHeroAsset,
   drawMetricAsset,
   drawBadgeAsset
-} from './ticketIconKits';
+} from './ticketIconKits.js';
 
 /**
  * Normalizes template names to the 4 official styles:
@@ -1505,9 +1505,9 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
   const baseW = 540;
 
   const headerH = 130;
-  const itemH = 76;
+  const itemH = 102;
   const footerH = 70;
-  const baseH = Math.max(760, headerH + (displayList.length * itemH) + footerH);
+  const baseH = Math.max(840, headerH + (displayList.length * itemH) + footerH);
 
   canvas.width = baseW * scaleFactor;
   canvas.height = baseH * scaleFactor;
@@ -1557,34 +1557,95 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
 
     let curY = paddingY + 92;
     displayList.forEach((b, idx) => {
+      const cardH = itemH - 10;
       ctx.fillStyle = 'rgba(14, 165, 233, 0.08)';
       ctx.strokeStyle = '#38BDF8';
       ctx.lineWidth = 1;
-      drawRoundedRect(ctx, paddingX, curY, availW, itemH - 10, 6, true, true);
+      drawRoundedRect(ctx, paddingX, curY, availW, cardH, 6, true, true);
 
-      drawMetricAsset(ctx, 'blueprint', 'method', paddingX + 22, curY + (itemH - 10) / 2, 34);
+      // Method icon vertically centered in item box
+      drawMetricAsset(ctx, 'blueprint', 'method', paddingX + 22, curY + cardH / 2, 34);
+
+      // Line 1: Title & Stock Badge
+      const idxStr = idx + 1 < 10 ? `0${idx + 1}.` : `${idx + 1}.`;
+      const rawName = stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café');
+      const name = rawName.length > 30 ? rawName.slice(0, 30) + '…' : rawName;
 
       ctx.fillStyle = '#7DD3FC';
-      ctx.font = '900 10.5px "JetBrains Mono", monospace';
-      ctx.fillText(`0${idx + 1}.`, paddingX + 46, curY + 22);
+      ctx.font = '900 13px "JetBrains Mono", monospace';
+      ctx.fillText(idxStr, paddingX + 46, curY + 20);
+      const idxW = ctx.measureText(idxStr).width + 6;
 
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '900 12.5px "JetBrains Mono", monospace';
-      const name = stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café');
-      ctx.fillText(name.length > 22 ? name.slice(0, 22) + '…' : name, paddingX + 72, curY + 22);
+      ctx.fillText(name, paddingX + 46 + idxW, curY + 20);
 
-      ctx.fillStyle = '#93C5FD';
-      ctx.font = '700 9px "JetBrains Mono", monospace';
-      ctx.fillText(`${stripEmojis(b.origin || '')} • ${stripEmojis(b.process || '')}`, paddingX + 46, curY + 44);
+      // Stock Badge in top-right corner
+      const doseCount = b.remaining_doses !== undefined && b.remaining_doses !== null ? b.remaining_doses : 0;
+      const doseBadgeText = doseCount > 0
+        ? `${doseCount} TUBOS`
+        : (b.remaining_weight_g || b.weight_current_g
+            ? `~${Math.round(b.remaining_weight_g || b.weight_current_g)}g`
+            : `${doseCount} TUBOS`);
 
-      const doseText = `${b.remaining_doses || 0} TUBOS`;
+      const badgeW = 76;
+      const badgeH = 22;
+      const badgeX = baseW - paddingX - badgeW - 8;
+      const badgeY = curY + 8;
+
       ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
-      ctx.fillRect(baseW - paddingX - 84, curY + 16, 76, 24);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, 4, true, true);
+
       ctx.fillStyle = '#38BDF8';
       ctx.font = '900 9.5px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(doseText, baseW - paddingX - 46, curY + 32);
+      ctx.fillText(doseBadgeText, badgeX + badgeW / 2, badgeY + 14.5);
       ctx.textAlign = 'left';
+
+      // Line 2: Roaster, Origin & Altitude
+      const roasterStr = stripEmojis(b.roaster || 'Specialty');
+      const originStr = stripEmojis(b.origin || '');
+      const altStr = b.altitude ? ` (${stripEmojis(String(b.altitude))}${String(b.altitude).toLowerCase().includes('m') ? '' : 'm'})` : '';
+      const line2Text = originStr ? `${roasterStr} • ${originStr}${altStr}` : `${roasterStr}${altStr}`;
+
+      ctx.fillStyle = '#93C5FD';
+      ctx.font = '700 9.5px "JetBrains Mono", monospace';
+      ctx.fillText(line2Text, paddingX + 46, curY + 36);
+
+      // Line 3: Variety, Process & SCA Score
+      const varietyStr = stripEmojis(b.variety || 'Variedad Arábica');
+      const processStr = stripEmojis(b.process || 'Proceso Artesanal');
+      const scaStr = b.sca_score ? ` | SCA ${b.sca_score}` : '';
+      const line3Text = `${varietyStr} • ${processStr}${scaStr}`;
+
+      ctx.fillStyle = '#38BDF8';
+      ctx.font = '700 9px "JetBrains Mono", monospace';
+      ctx.fillText(line3Text, paddingX + 46, curY + 51);
+
+      // Line 4: Flavor Notes Pills
+      const rawNotes = b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '';
+      const parsedTags = extractFlavorTags(rawNotes).slice(0, 4);
+      const tags = parsedTags.length > 0 ? parsedTags : ['Notas Limpias', 'Balance'];
+
+      let pillX = paddingX + 46;
+      const pillY = curY + 63;
+      const pillH = 18;
+
+      ctx.font = '800 8.5px "JetBrains Mono", monospace';
+      tags.forEach(tag => {
+        const tw = ctx.measureText(tag).width;
+        const pw = tw + 12;
+        if (pillX + pw <= baseW - paddingX - 8) {
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+          ctx.lineWidth = 1;
+          drawRoundedRect(ctx, pillX, pillY, pw, pillH, 4, true, true);
+          ctx.fillStyle = '#E0F2FE';
+          ctx.fillText(tag, pillX + 6, pillY + 12.5);
+          pillX += pw + 6;
+        }
+      });
 
       curY += itemH;
     });
@@ -1624,38 +1685,103 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
 
     let curY = paddingY + 86;
     displayList.forEach((b, idx) => {
+      const cardH = itemH - 12;
       ctx.fillStyle = '#000000';
-      ctx.fillRect(paddingX + 3, curY + 3, availW, itemH - 12);
+      ctx.fillRect(paddingX + 3, curY + 3, availW, cardH);
       ctx.fillStyle = idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC';
-      ctx.fillRect(paddingX, curY, availW, itemH - 12);
+      ctx.fillRect(paddingX, curY, availW, cardH);
       ctx.strokeStyle = '#000000';
       ctx.lineWidth = 2;
-      ctx.strokeRect(paddingX, curY, availW, itemH - 12);
+      ctx.strokeRect(paddingX, curY, availW, cardH);
 
-      drawMetricAsset(ctx, 'neobrutalist', 'method', paddingX + 22, curY + (itemH - 12) / 2, 34);
+      // Method icon vertically centered in item box
+      drawMetricAsset(ctx, 'neobrutalist', 'method', paddingX + 22, curY + cardH / 2, 34);
 
-      ctx.fillStyle = '#000000';
-      ctx.font = '900 12px "Space Grotesk", sans-serif';
-      const name = stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café');
-      ctx.fillText(`${idx + 1}. ${name.length > 20 ? name.slice(0, 20) + '…' : name}`, paddingX + 46, curY + 22);
-
-      ctx.fillStyle = '#64748B';
-      ctx.font = '700 9.5px "Space Grotesk", sans-serif';
-      ctx.fillText(`${stripEmojis(b.origin || '')} • ${stripEmojis(b.process || '')}`, paddingX + 46, curY + 42);
+      // Line 1: Title & Stock Badge
+      const idxStr = idx + 1 < 10 ? `0${idx + 1}.` : `${idx + 1}.`;
+      const rawName = stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café');
+      const name = rawName.length > 30 ? rawName.slice(0, 30) + '…' : rawName;
 
       ctx.fillStyle = '#000000';
-      ctx.fillRect(baseW - paddingX - 82, curY + 14, 76, 24);
+      ctx.font = '900 13px "Space Grotesk", sans-serif';
+      ctx.fillText(`${idxStr} ${name}`, paddingX + 46, curY + 20);
+
+      // Stock Badge in top-right corner
+      const doseCount = b.remaining_doses !== undefined && b.remaining_doses !== null ? b.remaining_doses : 0;
+      const doseBadgeText = doseCount > 0
+        ? `${doseCount} TUBOS`
+        : (b.remaining_weight_g || b.weight_current_g
+            ? `~${Math.round(b.remaining_weight_g || b.weight_current_g)}g`
+            : `${doseCount} TUBOS`);
+
+      const badgeW = 76;
+      const badgeH = 22;
+      const badgeX = baseW - paddingX - badgeW - 8;
+      const badgeY = curY + 8;
+
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(badgeX + 2, badgeY + 2, badgeW, badgeH);
       ctx.fillStyle = '#D4FF00';
-      ctx.fillRect(baseW - paddingX - 84, curY + 12, 76, 24);
+      ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
       ctx.strokeStyle = '#000000';
       ctx.lineWidth = 1.5;
-      ctx.strokeRect(baseW - paddingX - 84, curY + 12, 76, 24);
+      ctx.strokeRect(badgeX, badgeY, badgeW, badgeH);
 
       ctx.fillStyle = '#000000';
       ctx.font = '900 9.5px "Space Grotesk", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`${b.remaining_doses || 0} TUBOS`, baseW - paddingX - 46, curY + 28);
+      ctx.fillText(doseBadgeText, badgeX + badgeW / 2, badgeY + 15);
       ctx.textAlign = 'left';
+
+      // Line 2: Roaster, Origin & Altitude
+      const roasterStr = stripEmojis(b.roaster || 'Specialty');
+      const originStr = stripEmojis(b.origin || '');
+      const altStr = b.altitude ? ` (${stripEmojis(String(b.altitude))}${String(b.altitude).toLowerCase().includes('m') ? '' : 'm'})` : '';
+      const line2Text = originStr ? `${roasterStr} • ${originStr}${altStr}` : `${roasterStr}${altStr}`;
+
+      ctx.fillStyle = '#475569';
+      ctx.font = '700 9.5px "Space Grotesk", sans-serif';
+      ctx.fillText(line2Text, paddingX + 46, curY + 36);
+
+      // Line 3: Variety, Process & SCA Score
+      const varietyStr = stripEmojis(b.variety || 'Variedad Arábica');
+      const processStr = stripEmojis(b.process || 'Proceso Artesanal');
+      const scaStr = b.sca_score ? ` | SCA ${b.sca_score}` : '';
+      const line3Text = `${varietyStr} • ${processStr}${scaStr}`;
+
+      ctx.fillStyle = '#0F172A';
+      ctx.font = '700 9px "Space Grotesk", sans-serif';
+      ctx.fillText(line3Text, paddingX + 46, curY + 51);
+
+      // Line 4: Flavor Notes Pills
+      const rawNotes = b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '';
+      const parsedTags = extractFlavorTags(rawNotes).slice(0, 4);
+      const tags = parsedTags.length > 0 ? parsedTags : ['Notas Limpias', 'Balance'];
+      const pillColors = ['#D4FF00', '#FED7AA', '#E9D5FF', '#BAE6FD'];
+
+      let pillX = paddingX + 46;
+      const pillY = curY + 63;
+      const pillH = 18;
+
+      ctx.font = '900 8.5px "Space Grotesk", sans-serif';
+      tags.forEach((tag, tIdx) => {
+        const tagUpper = tag.toUpperCase();
+        const tw = ctx.measureText(tagUpper).width;
+        const pw = tw + 12;
+        if (pillX + pw <= baseW - paddingX - 8) {
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(pillX + 1.5, pillY + 1.5, pw, pillH);
+          ctx.fillStyle = pillColors[tIdx % pillColors.length];
+          ctx.fillRect(pillX, pillY, pw, pillH);
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 1.2;
+          ctx.strokeRect(pillX, pillY, pw, pillH);
+
+          ctx.fillStyle = '#000000';
+          ctx.fillText(tagUpper, pillX + 6, pillY + 12.5);
+          pillX += pw + 6;
+        }
+      });
 
       curY += itemH;
     });
@@ -1681,38 +1807,112 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
     drawHeroAsset(ctx, 'aurora', baseW - paddingX - 72, paddingY + 6, menuHeroDim, menuHeroDim);
 
     ctx.fillStyle = '#C084FC';
-    ctx.font = '800 9px -apple-system, sans-serif';
+    ctx.font = '800 9px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.fillText('HOLOGRAPHIC CELLAR // BEANTAG VISION', paddingX, paddingY + 18);
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '800 19px -apple-system, sans-serif';
+    ctx.font = '800 19px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.fillText('CATÁLOGO DE CAFÉS ESPECIALES', paddingX, paddingY + 44);
 
     let curY = paddingY + 84;
     displayList.forEach((b, idx) => {
+      const cardH = itemH - 12;
       ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      drawRoundedRect(ctx, paddingX, curY, availW, itemH - 12, 8, true, true);
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, paddingX, curY, availW, cardH, 8, true, true);
 
-      drawMetricAsset(ctx, 'aurora', 'method', paddingX + 22, curY + (itemH - 12) / 2, 34);
+      // Method icon vertically centered in item box
+      drawMetricAsset(ctx, 'aurora', 'method', paddingX + 22, curY + cardH / 2, 34);
 
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = '800 12.5px -apple-system, sans-serif';
-      const name = stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café');
-      ctx.fillText(`${idx + 1}. ${name.length > 20 ? name.slice(0, 20) + '…' : name}`, paddingX + 46, curY + 22);
-
-      ctx.fillStyle = '#94A3B8';
-      ctx.font = '500 9.5px -apple-system, sans-serif';
-      ctx.fillText(`${stripEmojis(b.origin || '')} • ${stripEmojis(b.process || '')}`, paddingX + 46, curY + 42);
+      // Line 1: Title & Stock Badge
+      const idxStr = idx + 1 < 10 ? `0${idx + 1}.` : `${idx + 1}.`;
+      const rawName = stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café');
+      const name = rawName.length > 30 ? rawName.slice(0, 30) + '…' : rawName;
 
       ctx.fillStyle = '#C084FC';
-      ctx.font = '700 10.5px -apple-system, sans-serif';
-      ctx.textAlign = 'right';
-      ctx.fillText(`${b.remaining_doses || 0} Tubos`, baseW - paddingX - 16, curY + 32);
+      ctx.font = '800 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText(idxStr, paddingX + 46, curY + 20);
+      const idxW = ctx.measureText(idxStr).width + 6;
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(name, paddingX + 46 + idxW, curY + 20);
+
+      // Stock Badge in top-right corner
+      const doseCount = b.remaining_doses !== undefined && b.remaining_doses !== null ? b.remaining_doses : 0;
+      const doseBadgeText = doseCount > 0
+        ? `${doseCount} TUBOS`
+        : (b.remaining_weight_g || b.weight_current_g
+            ? `~${Math.round(b.remaining_weight_g || b.weight_current_g)}g`
+            : `${doseCount} TUBOS`);
+
+      const badgeW = 76;
+      const badgeH = 22;
+      const badgeX = baseW - paddingX - badgeW - 8;
+      const badgeY = curY + 8;
+
+      ctx.fillStyle = 'rgba(192, 132, 252, 0.15)';
+      ctx.strokeStyle = 'rgba(192, 132, 252, 0.4)';
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, 11, true, true);
+
+      ctx.fillStyle = '#E9D5FF';
+      ctx.font = '800 9.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(doseBadgeText, badgeX + badgeW / 2, badgeY + 14.5);
       ctx.textAlign = 'left';
+
+      // Line 2: Roaster, Origin & Altitude
+      const roasterStr = stripEmojis(b.roaster || 'Specialty');
+      const originStr = stripEmojis(b.origin || '');
+      const altStr = b.altitude ? ` (${stripEmojis(String(b.altitude))}${String(b.altitude).toLowerCase().includes('m') ? '' : 'm'})` : '';
+      const line2Text = originStr ? `${roasterStr} • ${originStr}${altStr}` : `${roasterStr}${altStr}`;
+
+      ctx.fillStyle = '#94A3B8';
+      ctx.font = '600 9.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText(line2Text, paddingX + 46, curY + 36);
+
+      // Line 3: Variety, Process & SCA Score
+      const varietyStr = stripEmojis(b.variety || 'Variedad Arábica');
+      const processStr = stripEmojis(b.process || 'Proceso Artesanal');
+      const scaStr = b.sca_score ? ` | SCA ${b.sca_score}` : '';
+      const line3Text = `${varietyStr} • ${processStr}${scaStr}`;
+
+      ctx.fillStyle = '#CBD5E1';
+      ctx.font = '600 9px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText(line3Text, paddingX + 46, curY + 51);
+
+      // Line 4: Flavor Notes Pills
+      const rawNotes = b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '';
+      const parsedTags = extractFlavorTags(rawNotes).slice(0, 4);
+      const tags = parsedTags.length > 0 ? parsedTags : ['Notas Limpias', 'Balance'];
+
+      let pillX = paddingX + 46;
+      const pillY = curY + 63;
+      const pillH = 18;
+
+      ctx.font = '700 8.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      tags.forEach(tag => {
+        const tw = ctx.measureText(tag).width;
+        const pw = tw + 14;
+        if (pillX + pw <= baseW - paddingX - 8) {
+          ctx.fillStyle = 'rgba(168, 85, 247, 0.16)';
+          ctx.strokeStyle = 'rgba(216, 180, 254, 0.3)';
+          ctx.lineWidth = 1;
+          drawRoundedRect(ctx, pillX, pillY, pw, pillH, 8, true, true);
+          ctx.fillStyle = '#F3E8FF';
+          ctx.fillText(tag, pillX + 7, pillY + 12.5);
+          pillX += pw + 6;
+        }
+      });
 
       curY += itemH;
     });
+
+    const footY = baseH - paddingY - 24;
+    ctx.fillStyle = '#C084FC';
+    ctx.font = '700 8.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText(`BEANTAG VISION // ARCHIVE ${displayList.length} LOTES`, paddingX, footY + 12);
   }
 
   // 4. HANGTAG MENU
@@ -1733,28 +1933,93 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
 
     let curY = paddingY + 84;
     displayList.forEach((b, idx) => {
+      const cardH = itemH - 12;
       ctx.strokeStyle = '#DDD7CD';
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(paddingX, curY + itemH - 12);
-      ctx.lineTo(baseW - paddingX, curY + itemH - 12);
+      ctx.moveTo(paddingX, curY + cardH);
+      ctx.lineTo(baseW - paddingX, curY + cardH);
       ctx.stroke();
 
-      drawMetricAsset(ctx, 'hangtag', 'method', paddingX + 20, curY + (itemH - 12) / 2, 30);
+      // Method icon vertically centered in item box
+      drawMetricAsset(ctx, 'hangtag', 'method', paddingX + 20, curY + cardH / 2, 30);
+
+      // Line 1: Title & Stock Badge
+      const idxStr = idx + 1 < 10 ? `0${idx + 1}.` : `${idx + 1}.`;
+      const rawName = stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café');
+      const name = rawName.length > 30 ? rawName.slice(0, 30) + '…' : rawName;
 
       ctx.fillStyle = '#141210';
-      ctx.font = 'bold 12.5px "Playfair Display", Georgia, serif';
-      const name = stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café');
-      ctx.fillText(`0${idx + 1}. ${name.length > 20 ? name.slice(0, 20) + '…' : name}`, paddingX + 42, curY + 22);
+      ctx.font = 'bold 13px "Playfair Display", Georgia, serif';
+      ctx.fillText(`${idxStr} ${name}`, paddingX + 44, curY + 20);
+
+      // Stock Badge in top-right corner
+      const doseCount = b.remaining_doses !== undefined && b.remaining_doses !== null ? b.remaining_doses : 0;
+      const doseBadgeText = doseCount > 0
+        ? `${doseCount} TUBOS`
+        : (b.remaining_weight_g || b.weight_current_g
+            ? `~${Math.round(b.remaining_weight_g || b.weight_current_g)}g`
+            : `${doseCount} TUBOS`);
+
+      const badgeW = 76;
+      const badgeH = 20;
+      const badgeX = baseW - paddingX - badgeW - 6;
+      const badgeY = curY + 8;
+
+      ctx.fillStyle = 'rgba(63, 98, 18, 0.08)';
+      ctx.strokeStyle = 'rgba(63, 98, 18, 0.25)';
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, 4, true, true);
+
+      ctx.fillStyle = '#3F6212';
+      ctx.font = 'bold 9px "Playfair Display", Georgia, serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(doseBadgeText, badgeX + badgeW / 2, badgeY + 13.5);
+      ctx.textAlign = 'left';
+
+      // Line 2: Roaster, Origin & Altitude
+      const roasterStr = stripEmojis(b.roaster || 'Specialty');
+      const originStr = stripEmojis(b.origin || '');
+      const altStr = b.altitude ? ` (${stripEmojis(String(b.altitude))}${String(b.altitude).toLowerCase().includes('m') ? '' : 'm'})` : '';
+      const line2Text = originStr ? `${roasterStr} • ${originStr}${altStr}` : `${roasterStr}${altStr}`;
 
       ctx.fillStyle = '#57534E';
       ctx.font = 'italic 9.5px "Playfair Display", Georgia, serif';
-      ctx.fillText(`${stripEmojis(b.origin || '')} — ${stripEmojis(b.process || '')}`, paddingX + 42, curY + 42);
+      ctx.fillText(line2Text, paddingX + 44, curY + 36);
 
-      ctx.fillStyle = '#3F6212';
-      ctx.font = 'bold 10.5px "Playfair Display", Georgia, serif';
-      ctx.textAlign = 'right';
-      ctx.fillText(`${b.remaining_doses || 0} Dosis`, baseW - paddingX - 14, curY + 32);
-      ctx.textAlign = 'left';
+      // Line 3: Variety, Process & SCA Score
+      const varietyStr = stripEmojis(b.variety || 'Variedad Arábica');
+      const processStr = stripEmojis(b.process || 'Proceso Artesanal');
+      const scaStr = b.sca_score ? ` | SCA ${b.sca_score}` : '';
+      const line3Text = `${varietyStr} • ${processStr}${scaStr}`;
+
+      ctx.fillStyle = '#78716C';
+      ctx.font = 'bold 9px "Playfair Display", Georgia, serif';
+      ctx.fillText(line3Text, paddingX + 44, curY + 51);
+
+      // Line 4: Flavor Notes Pills
+      const rawNotes = b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '';
+      const parsedTags = extractFlavorTags(rawNotes).slice(0, 4);
+      const tags = parsedTags.length > 0 ? parsedTags : ['Notas Limpias', 'Balance'];
+
+      let pillX = paddingX + 44;
+      const pillY = curY + 63;
+      const pillH = 18;
+
+      ctx.font = 'italic 8.5px "Playfair Display", Georgia, serif';
+      tags.forEach(tag => {
+        const tw = ctx.measureText(tag).width;
+        const pw = tw + 12;
+        if (pillX + pw <= baseW - paddingX - 8) {
+          ctx.fillStyle = 'rgba(120, 113, 108, 0.1)';
+          ctx.strokeStyle = 'rgba(120, 113, 108, 0.25)';
+          ctx.lineWidth = 0.8;
+          drawRoundedRect(ctx, pillX, pillY, pw, pillH, 4, true, true);
+          ctx.fillStyle = '#292524';
+          ctx.fillText(tag, pillX + 6, pillY + 12.5);
+          pillX += pw + 6;
+        }
+      });
 
       curY += itemH;
     });
@@ -1779,20 +2044,26 @@ export function generateCoffeeMenuText(batches) {
 
   targetList.forEach((b, idx) => {
     const num = (idx + 1).toString().padStart(2, '0');
-    const name = b.batch_name || b.name || b.coffee_name || 'Café de Especialidad';
-    const roaster = b.roaster ? ` • ${b.roaster}` : '';
-    const origin = b.origin ? `🌍 Origen: ${b.origin}` : '';
-    const altitude = b.altitude ? ` (${b.altitude}m)` : '';
-    const variety = b.variety ? `🌾 Variedad: ${b.variety}` : '';
-    const process = b.process ? ` | Proceso: ${b.process}` : '';
-    const notes = b.roaster_notes ? `✨ Notas: ${b.roaster_notes}` : '';
-    const doses = b.remaining_doses !== undefined ? `📦 Stock: ${b.remaining_doses} tubos (~${Math.round(b.remaining_weight_g || b.remaining_doses * (parseFloat(b.dose_weight) || 20))}g)` : (b.weight_current_g ? `📦 Stock: ${b.weight_current_g}g` : '');
+    const name = stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café de Especialidad');
+    const roaster = b.roaster ? ` • ${stripEmojis(b.roaster)}` : '';
+    const origin = b.origin ? stripEmojis(b.origin) : '';
+    const altitude = b.altitude ? ` (${stripEmojis(String(b.altitude))}${String(b.altitude).toLowerCase().includes('m') ? '' : 'm'})` : '';
+    const variety = b.variety ? stripEmojis(b.variety) : '';
+    const process = b.process ? (variety ? ` • ${stripEmojis(b.process)}` : stripEmojis(b.process)) : '';
+    const sca = b.sca_score ? ` | SCA ${b.sca_score}` : '';
+    const rawNotes = stripEmojis(b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '');
+
+    const doseCount = b.remaining_doses !== undefined && b.remaining_doses !== null ? b.remaining_doses : 0;
+    const estWeight = Math.round(b.remaining_weight_g || (doseCount * (parseFloat(b.dose_weight) || 20)));
+    const doses = doseCount > 0
+      ? `${doseCount} tubos (~${estWeight}g)`
+      : (b.weight_current_g ? `${b.weight_current_g}g` : `${doseCount} tubos (~${estWeight}g)`);
 
     text += `*${num}. ${name}*${roaster}\n`;
-    if (origin || altitude) text += `   ${origin}${altitude}\n`;
-    if (variety || process) text += `   ${variety}${process}\n`;
-    if (notes) text += `   ${notes}\n`;
-    if (doses) text += `   ${doses}\n`;
+    if (origin || altitude) text += `   🌍 ${origin}${altitude}`.trimEnd() + '\n';
+    if (variety || process || sca) text += `   🌾 ${variety}${process}${sca}`.trimEnd() + '\n';
+    if (rawNotes) text += `   ✨ Notas: ${rawNotes}\n`;
+    if (doses) text += `   📦 Stock: ${doses}\n`;
     text += `\n`;
   });
 
