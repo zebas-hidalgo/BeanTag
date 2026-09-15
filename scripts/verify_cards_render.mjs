@@ -64,6 +64,7 @@ const mockCtx = {
   quadraticCurveTo: (cpx, cpy, x, y) => mockOps.push(`quadraticCurveTo(${cpx},${cpy},${x},${y})`),
   bezierCurveTo: (cp1x, cp1y, cp2x, cp2y, x, y) => mockOps.push(`bezierCurveTo(${cp1x},${cp1y},${cp2x},${cp2y},${x},${y})`),
   arc: (x, y, r, sa, ea) => mockOps.push(`arc(${x},${y},${r})`),
+  ellipse: (x, y, rx, ry, rot, sa, ea) => mockOps.push('ellipse'),
   rect: (x, y, w, h) => mockOps.push(`rect(${x},${y},${w},${h})`),
   fillRect: (x, y, w, h) => mockOps.push(`fillRect(${x},${y},${w},${h})`),
   strokeRect: (x, y, w, h) => mockOps.push(`strokeRect(${x},${y},${w},${h})`),
@@ -89,6 +90,7 @@ global.window.removeEventListener = () => {};
 
 global.document = {
   nodeType: 9,
+  documentElement: { setAttribute: () => {}, removeAttribute: () => {}, style: {} },
   addEventListener: () => {},
   removeEventListener: () => {},
   fonts: {
@@ -167,13 +169,20 @@ global.CustomEvent = class {
   }
 };
 
-global.location = { href: 'http://localhost' };
+global.location = {
+  href: 'http://localhost/',
+  origin: 'http://localhost',
+  pathname: '/',
+  search: '',
+  hash: ''
+};
 global.localStorage = {
   getItem: () => null,
   setItem: () => {},
   removeItem: () => {},
   clear: () => {}
 };
+global.fetch = async () => ({ ok: true, json: async () => [] });
 
 // 3. Test Fixtures
 const sampleRecipe = {
@@ -235,7 +244,8 @@ async function verify() {
       const dataUrl = await window.__generateRecipeCardImage(sampleRecipe, style, true);
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
-      const passed = isValidDataUrl && opsCount > 20;
+      const hasDrawImage = mockOps.includes('drawImage');
+      const passed = isValidDataUrl && opsCount > 20 && hasDrawImage;
 
       if (!passed) hasFailure = true;
 
@@ -263,7 +273,8 @@ async function verify() {
       const dataUrl = await window.__generateRecipeCardImage(sampleRecipe, style, false);
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
-      const passed = isValidDataUrl && opsCount > 20;
+      const hasDrawImage = mockOps.includes('drawImage');
+      const passed = isValidDataUrl && opsCount > 20 && hasDrawImage;
 
       if (!passed) hasFailure = true;
 
@@ -293,7 +304,8 @@ async function verify() {
       const dataUrl = await window.__generateCoffeeMenuCardImage(sampleBatches, style);
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
-      const passed = isValidDataUrl && opsCount > 20;
+      const hasDrawImage = mockOps.includes('drawImage');
+      const passed = isValidDataUrl && opsCount > 20 && hasDrawImage;
 
       if (!passed) hasFailure = true;
 
