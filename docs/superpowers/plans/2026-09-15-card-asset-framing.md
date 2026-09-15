@@ -20,7 +20,7 @@
 - Test: `scripts/test_asset_processing.py`
 - Modify: `frontend/src/assets/cards/*.png` (21 PNG files)
 
-- [ ] **Step 1: Write the unit test script for asset processing**
+- [x] **Step 1: Write the unit test script for asset processing**
 
 ```python
 # scripts/test_asset_processing.py
@@ -52,12 +52,12 @@ if __name__ == "__main__":
     test_all_assets_square_and_transparent()
 ```
 
-- [ ] **Step 2: Run test to verify it fails on current raw assets**
+- [x] **Step 2: Run test to verify it fails on current raw assets**
 
 Run: `python3 scripts/test_asset_processing.py`
 Expected: FAIL (e.g. non-square dimensions like 320x430 or opaque corners).
 
-- [ ] **Step 3: Write the asset processing script**
+- [x] **Step 3: Write the asset processing script**
 
 ```python
 # scripts/process_card_assets.py
@@ -135,12 +135,12 @@ if __name__ == "__main__":
     process_all_assets()
 ```
 
-- [ ] **Step 4: Execute processing script and re-run test to verify PASS**
+- [x] **Step 4: Execute processing script and re-run test to verify PASS**
 
 Run: `python3 scripts/process_card_assets.py && python3 scripts/test_asset_processing.py`
 Expected: PASS (all 21 assets are 440x440 square, RGBA, corner alpha = 0).
 
-- [ ] **Step 5: Commit processed assets**
+- [x] **Step 5: Commit processed assets**
 
 ```bash
 git add scripts/process_card_assets.py scripts/test_asset_processing.py frontend/src/assets/cards/*.png
@@ -154,7 +154,7 @@ git commit -m "feat: process card assets to 1:1 square RGBA with clean alpha mas
 **Files:**
 - Modify: `frontend/src/utils/ticketIconKits.js:160-220`
 
-- [ ] **Step 1: Update `drawHeroAsset` with dedicated architectural backings**
+- [x] **Step 1: Update `drawHeroAsset` with dedicated architectural backings**
 
 Update `drawHeroAsset` in `frontend/src/utils/ticketIconKits.js` to draw style-specific framing behind the hero:
 - **Blueprint**: Draws a subtle circular radial glow `rgba(0, 210, 255, 0.15)`, a dashed circular boundary `setLineDash([4, 4])`, and 4 corner crosshairs with label `[CAD-PAT.01]`.
@@ -162,15 +162,15 @@ Update `drawHeroAsset` in `frontend/src/utils/ticketIconKits.js` to draw style-s
 - **Aurora**: Draws a visionOS radial glow with violet-magenta gradient (`rgba(168, 85, 247, 0.3) -> transparent`) and soft blur.
 - **Hangtag**: Draws a circular embossed seal ring in sepia `rgba(44, 24, 16, 0.08)`.
 
-- [ ] **Step 2: Update `drawMetricAsset` with strict square centering**
+- [x] **Step 2: Update `drawMetricAsset` with strict square centering**
 
 Ensure `drawMetricAsset` draws the asset exactly in square aspect ratio without offsets.
 
-- [ ] **Step 3: Verify with unit test or browser rendering**
+- [x] **Step 3: Verify with unit test or browser rendering**
 
 Run test to verify exports and syntax.
 
-- [ ] **Step 4: Commit `ticketIconKits.js`**
+- [x] **Step 4: Commit `ticketIconKits.js`**
 
 ```bash
 git add frontend/src/utils/ticketIconKits.js
@@ -184,7 +184,7 @@ git commit -m "feat(cards): add architectural framing backings and strict 1:1 me
 **Files:**
 - Modify: `frontend/src/utils/cardGenerator.js`
 
-- [ ] **Step 1: Audit and align Hero dimensions and vertical positioning**
+- [x] **Step 1: Audit and align Hero dimensions and vertical positioning**
 
 Ensure Hero image bounds in:
 - `renderBlueprintCard` / `renderBlueprintBeanCard`
@@ -193,11 +193,11 @@ Ensure Hero image bounds in:
 - `renderHangtagCard` / `renderHangtagBeanCard`
 are positioned with generous breathing room and appropriate aspect bounding boxes (`dWidth == dHeight`).
 
-- [ ] **Step 2: Audit metric icon centering in parameter grids**
+- [x] **Step 2: Audit metric icon centering in parameter grids**
 
 Ensure metric box call sites in all 4 styles pass square dimension bounds and center icons inside their badges.
 
-- [ ] **Step 3: Commit `cardGenerator.js`**
+- [x] **Step 3: Commit `cardGenerator.js`**
 
 ```bash
 git add frontend/src/utils/cardGenerator.js
@@ -211,16 +211,16 @@ git commit -m "feat(cards): integrate refined framing and metric alignment in ca
 **Files:**
 - Create: `scripts/verify_cards_render.mjs`
 
-- [ ] **Step 1: Write headless rendering test for all 8 card variants**
+- [x] **Step 1: Write headless rendering test for all 8 card variants**
 
 Create a script that instantiates `cardGenerator.js`, runs all 8 styles (4 styles × 2 modes: solo grano vs recipe), and checks that canvas output produces valid high-resolution image data.
 
-- [ ] **Step 2: Run frontend build**
+- [x] **Step 2: Run frontend build**
 
 Run: `cd frontend && npm run build`
 Expected: Build succeeds with 0 errors.
 
-- [ ] **Step 3: Commit verification script**
+- [x] **Step 3: Commit verification script**
 
 ```bash
 git add scripts/verify_cards_render.mjs
@@ -231,14 +231,14 @@ git commit -m "test(cards): add automated card rendering verification script"
 
 ### Task 5: Remote VPS Deployment & Live Verification
 
-- [ ] **Step 1: Push changes to GitHub repository**
+- [x] **Step 1: Push changes to GitHub repository**
 
 Run: `git push origin main`
 
-- [ ] **Step 2: Pull and build on VPS (`5.189.152.68`)**
+- [x] **Step 2: Pull and build on VPS (`5.189.152.68`)**
 
 Connect via Zerker / SSH, run `git pull`, `cd frontend && npm run build`, and `pm2 restart beantag`.
 
-- [ ] **Step 3: Verify live endpoint**
+- [x] **Step 3: Verify live endpoint**
 
 Verify HTTP 200 status and healthy service response on `http://5.189.152.68`.
