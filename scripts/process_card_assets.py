@@ -24,7 +24,7 @@ HERO_BG_COLORS = {
 
 def remove_background(img: Image.Image, bg_color: tuple, tolerance: float = 35.0) -> Image.Image:
     img = img.convert("RGBA")
-    data = img.get_flattened_data() if hasattr(img, "get_flattened_data") else img.getdata()
+    data = img.getdata()
     new_data = []
     br, bg, bb = bg_color[:3]
     for item in data:
@@ -68,7 +68,8 @@ def process_all_assets():
 
     for filename in files:
         filepath = os.path.join(CARDS_DIR, filename)
-        img = Image.open(filepath).convert("RGBA")
+        with Image.open(filepath) as raw_img:
+            img = raw_img.convert("RGBA")
 
         # 1. Background removal if hero or opaque metric
         if filename in HERO_BG_COLORS:
