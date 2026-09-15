@@ -277,7 +277,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.textAlign = 'left';
 
       // Centered Large CAD Bean Illustration
-      drawHeroAsset(ctx, 'blueprint', paddingX + (availW / 2) - 80, heroY + 22, 160, 105);
+      const heroDim = 130;
+      drawHeroAsset(ctx, 'blueprint', paddingX + (availW / 2) - heroDim / 2, heroY + 10, heroDim, heroDim);
 
       // Dimension Cota Lines
       ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
@@ -421,7 +422,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillText(`SCA: ${scaScore}★ [PASSED]`, paddingX + availW - 12, heroBoxY + 16);
       ctx.textAlign = 'left';
 
-      drawHeroAsset(ctx, 'blueprint', paddingX + (availW / 2) - 60, heroBoxY + 22, 120, 80);
+      const heroDim = 95;
+      drawHeroAsset(ctx, 'blueprint', paddingX + (availW / 2) - heroDim / 2, heroBoxY + 12, heroDim, heroDim);
 
       // 4 Extraction Parameter Bento Tiles (2x2) with LARGE ICONS
       const bentoY = heroBoxY + heroBoxH + 14;
@@ -821,7 +823,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.lineWidth = 2.5;
       ctx.strokeRect(paddingX, heroBoxY, availW, heroBoxH);
 
-      drawHeroAsset(ctx, 'neobrutalist', paddingX + 20, heroBoxY + 8, 100, 100);
+      drawHeroAsset(ctx, 'neobrutalist', paddingX + 20, heroBoxY + 7, 100, 100);
       drawBadgeAsset(ctx, 'neobrutalist', 'star', paddingX + 116, heroBoxY + 14, 40);
 
       ctx.fillStyle = '#000000';
@@ -1004,7 +1006,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       drawRoundedRect(ctx, paddingX, heroY, availW, heroH, 12, true, true);
 
       // Centered 3D Glass Bean
-      drawHeroAsset(ctx, 'aurora', paddingX + (availW / 2) - 65, heroY + 10, 130, 95);
+      const heroDim = 120;
+      drawHeroAsset(ctx, 'aurora', paddingX + (availW / 2) - heroDim / 2, heroY + 6, heroDim, heroDim);
       drawBadgeAsset(ctx, 'aurora', 'star', paddingX + (availW / 2) + 65, heroY + 20, 38);
 
       ctx.fillStyle = '#C084FC';
@@ -1134,7 +1137,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.lineWidth = 1;
       drawRoundedRect(ctx, paddingX, heroBoxY, availW, heroBoxH, 12, true, true);
 
-      drawHeroAsset(ctx, 'aurora', paddingX + (availW / 2) - 55, heroBoxY + 10, 110, 80);
+      const heroDim = 95;
+      drawHeroAsset(ctx, 'aurora', paddingX + (availW / 2) - heroDim / 2, heroBoxY + 6, heroDim, heroDim);
       drawBadgeAsset(ctx, 'aurora', 'star', paddingX + (availW / 2) + 50, heroBoxY + 20, 36);
 
       ctx.fillStyle = '#A78BFA';
@@ -1328,7 +1332,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.lineWidth = 1;
       ctx.strokeRect(paddingX, heroY, availW, heroH);
 
-      drawHeroAsset(ctx, 'hangtag', paddingX + (availW / 2) - 65, heroY + 10, 130, 105);
+      const heroDim = 125;
+      drawHeroAsset(ctx, 'hangtag', paddingX + (availW / 2) - heroDim / 2, heroY + 6, heroDim, heroDim);
 
       ctx.fillStyle = '#57534E';
       ctx.font = 'italic 8.5px "Playfair Display", Georgia, serif';
@@ -1406,7 +1411,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.lineWidth = 1;
       ctx.strokeRect(paddingX, heroBoxY, availW, heroBoxH);
 
-      drawHeroAsset(ctx, 'hangtag', paddingX + (availW / 2) - 55, heroBoxY + 8, 110, 80);
+      const heroDim = 95;
+      drawHeroAsset(ctx, 'hangtag', paddingX + (availW / 2) - heroDim / 2, heroBoxY + 6, heroDim, heroDim);
 
       ctx.fillStyle = '#57534E';
       ctx.font = 'italic 8px "Playfair Display", Georgia, serif';
@@ -1533,7 +1539,8 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
     ctx.lineWidth = 1.5;
     ctx.strokeRect(paddingX - 8, paddingY - 8, availW + 16, baseH - (paddingY * 2) + 16);
 
-    drawHeroAsset(ctx, 'blueprint', baseW - paddingX - 85, paddingY + 6, 75, 60);
+    const menuHeroDim = 60;
+    drawHeroAsset(ctx, 'blueprint', baseW - paddingX - 78, paddingY + 6, menuHeroDim, menuHeroDim);
 
     ctx.fillStyle = '#38BDF8';
     ctx.font = '800 9px "JetBrains Mono", monospace';
@@ -1615,7 +1622,8 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
     ctx.font = '900 20px "Space Grotesk", sans-serif';
     ctx.fillText('CARTA DE CAFÉS EN BODEGA', paddingX, paddingY + 54);
 
-    drawHeroAsset(ctx, 'neobrutalist', baseW - paddingX - 70, paddingY + 28, 65, 55);
+    const menuHeroDim = 56;
+    drawHeroAsset(ctx, 'neobrutalist', baseW - paddingX - 66, paddingY + 28, menuHeroDim, menuHeroDim);
 
     ctx.fillStyle = '#000000';
     ctx.fillRect(paddingX, paddingY + 72, availW, 3);
@@ -1675,7 +1683,8 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
     ctx.fillStyle = grad1;
     ctx.fillRect(0, 0, baseW, baseH);
 
-    drawHeroAsset(ctx, 'aurora', baseW - paddingX - 80, paddingY + 6, 75, 60);
+    const menuHeroDim = 60;
+    drawHeroAsset(ctx, 'aurora', baseW - paddingX - 72, paddingY + 6, menuHeroDim, menuHeroDim);
 
     ctx.fillStyle = '#C084FC';
     ctx.font = '800 9px -apple-system, sans-serif';
@@ -1717,7 +1726,8 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
     ctx.fillStyle = '#F8F5EE';
     ctx.fillRect(0, 0, baseW, baseH);
 
-    drawHeroAsset(ctx, 'hangtag', baseW - paddingX - 80, paddingY + 6, 75, 60);
+    const menuHeroDim = 60;
+    drawHeroAsset(ctx, 'hangtag', baseW - paddingX - 72, paddingY + 6, menuHeroDim, menuHeroDim);
 
     ctx.fillStyle = '#57534E';
     ctx.font = '700 8.5px "Playfair Display", Georgia, serif';
@@ -1735,7 +1745,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
       ctx.lineTo(baseW - paddingX, curY + itemH - 12);
       ctx.stroke();
 
-      drawMetricAsset(ctx, 'hangtag', 'method', paddingX + 20, curY + 24, 30);
+      drawMetricAsset(ctx, 'hangtag', 'method', paddingX + 20, curY + (itemH - 12) / 2, 30);
 
       ctx.fillStyle = '#141210';
       ctx.font = 'bold 12.5px "Playfair Display", Georgia, serif';
