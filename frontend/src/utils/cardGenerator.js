@@ -8,15 +8,7 @@ import {
   ensureCardAssetsLoaded,
   drawHeroAsset,
   drawMetricAsset,
-  drawBadgeAsset,
-  drawCardAsset,
-  drawContainedImage,
-  drawBlueprintBean,
-  drawNeobrutalistBean,
-  drawNeobrutalistStar,
-  drawAuroraBean,
-  drawHangtagBotanical,
-  drawHangtagSeal
+  drawBadgeAsset
 } from './ticketIconKits';
 
 /**
@@ -638,7 +630,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.strokeRect(paddingX, heroY, availW, heroH);
 
       // Mascot on Left
-      drawHeroAsset(ctx, 'neobrutalist', paddingX + 20, heroY + 15, 115, 115);
+      const heroDim = 115;
+      drawHeroAsset(ctx, 'neobrutalist', paddingX + 20, heroY + 15, heroDim, heroDim);
       drawBadgeAsset(ctx, 'neobrutalist', 'star', paddingX + 130, heroY + 15, 42);
 
       // Callout on Right
@@ -823,7 +816,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.lineWidth = 2.5;
       ctx.strokeRect(paddingX, heroBoxY, availW, heroBoxH);
 
-      drawHeroAsset(ctx, 'neobrutalist', paddingX + 20, heroBoxY + 7, 100, 100);
+      const heroDim = 100;
+      drawHeroAsset(ctx, 'neobrutalist', paddingX + 20, heroBoxY + 7, heroDim, heroDim);
       drawBadgeAsset(ctx, 'neobrutalist', 'star', paddingX + 116, heroBoxY + 14, 40);
 
       ctx.fillStyle = '#000000';
@@ -1411,7 +1405,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.lineWidth = 1;
       ctx.strokeRect(paddingX, heroBoxY, availW, heroBoxH);
 
-      const heroDim = 95;
+      const heroDim = 88;
       drawHeroAsset(ctx, 'hangtag', paddingX + (availW / 2) - heroDim / 2, heroBoxY + 6, heroDim, heroDim);
 
       ctx.fillStyle = '#57534E';
