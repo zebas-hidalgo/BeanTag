@@ -158,24 +158,151 @@ export function drawCardAsset(ctx, assetKey, x, y, width, height, options = {}) 
 }
 
 /**
- * Draws Hero visual illustration with 100% natural proportions (ZERO stretching)
+ * Utility: Draws rounded rectangle path
+ */
+function drawRoundedRectPath(ctx, rx, ry, rw, rh, rad) {
+  const r = Math.min(rad, rw / 2, rh / 2);
+  ctx.beginPath();
+  ctx.moveTo(rx + r, ry);
+  ctx.lineTo(rx + rw - r, ry);
+  ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + r);
+  ctx.lineTo(rx + rw, ry + rh - r);
+  ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - r, ry + rh);
+  ctx.lineTo(rx + r, ry + rh);
+  ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rh - r);
+  ctx.lineTo(rx, ry + r);
+  ctx.quadraticCurveTo(rx, ry, rx + r, ry);
+  ctx.closePath();
+}
+
+/**
+ * Draws Hero visual illustration with style-specific architectural backings and zero stretching
  */
 export function drawHeroAsset(ctx, style, x, y, width, height) {
+  const cx = x + width / 2;
+  const cy = y + height / 2;
+  const minDim = Math.min(width, height);
   const heroKey = `${style}_hero`;
-  const drawn = drawCardAsset(ctx, heroKey, x, y, width, height, {
-    shadowColor: style === 'neobrutalist' ? '#000000' : (style === 'aurora' ? 'rgba(139, 92, 246, 0.4)' : undefined),
-    shadowOffsetX: style === 'neobrutalist' ? 4 : 0,
-    shadowOffsetY: style === 'neobrutalist' ? 4 : 0,
-    shadowBlur: style === 'aurora' ? 14 : 0,
-    rotation: style === 'neobrutalist' ? 0.04 : 0
-  });
 
+  // 1. Style-specific architectural backings BEFORE drawing the asset
+  if (style === 'blueprint') {
+    ctx.save();
+    const radius = minDim * 0.48;
+    // a) Soft radial gradient behind the hero
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    grad.addColorStop(0, 'rgba(0, 210, 255, 0.15)');
+    grad.addColorStop(1, 'rgba(0, 210, 255, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // b) Delicate CAD calibration circle with dashed line
+    const calibRadius = radius * 0.92;
+    ctx.strokeStyle = 'rgba(0, 210, 255, 0.35)';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.arc(cx, cy, calibRadius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // c) 4 micro crosshair ticks at the cardinal points (N, S, E, W) of the circle
+    ctx.setLineDash([]);
+    const tickLen = 4;
+    ctx.beginPath();
+    // North
+    ctx.moveTo(cx, cy - calibRadius - tickLen);
+    ctx.lineTo(cx, cy - calibRadius + tickLen);
+    // South
+    ctx.moveTo(cx, cy + calibRadius - tickLen);
+    ctx.lineTo(cx, cy + calibRadius + tickLen);
+    // West
+    ctx.moveTo(cx - calibRadius - tickLen, cy);
+    ctx.lineTo(cx - calibRadius + tickLen, cy);
+    // East
+    ctx.moveTo(cx + calibRadius - tickLen, cy);
+    ctx.lineTo(cx + calibRadius + tickLen, cy);
+    ctx.stroke();
+
+    ctx.restore();
+  } else if (style === 'neobrutalist') {
+    ctx.save();
+    // Die-cut sticker background shape centered at cx, cy
+    const stickerSize = minDim * 0.95;
+    const cornerRad = Math.min(18, stickerSize * 0.18);
+    const sx = cx - stickerSize / 2;
+    const sy = cy - stickerSize / 2;
+
+    // Solid offset shadow: fill #111111 at offset (+4px, +4px)
+    ctx.fillStyle = '#111111';
+    drawRoundedRectPath(ctx, sx + 4, sy + 4, stickerSize, stickerSize, cornerRad);
+    ctx.fill();
+
+    // Base sticker body: fill #FFFFFF, stroke #111111 with lineWidth: 2.5
+    ctx.fillStyle = '#FFFFFF';
+    ctx.strokeStyle = '#111111';
+    ctx.lineWidth = 2.5;
+    drawRoundedRectPath(ctx, sx, sy, stickerSize, stickerSize, cornerRad);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.restore();
+  } else if (style === 'aurora') {
+    ctx.save();
+    const radius = minDim * 0.52;
+    // VisionOS diffuse radial glow behind the hero
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    grad.addColorStop(0, 'rgba(168, 85, 247, 0.35)');
+    grad.addColorStop(0.65, 'rgba(6, 182, 212, 0.12)');
+    grad.addColorStop(1, 'rgba(6, 182, 212, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  } else if (style === 'hangtag') {
+    ctx.save();
+    const radius = minDim * 0.46;
+    // Embossed seal ring behind the botanical hero: subtle border rgba(44, 24, 16, 0.08), lineWidth 1.5
+    ctx.strokeStyle = 'rgba(44, 24, 16, 0.08)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Concentric inner ring rgba(44, 24, 16, 0.04)
+    ctx.strokeStyle = 'rgba(44, 24, 16, 0.04)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius - 4, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // 2. Draw transparent hero image centered in (x, y, width, height)
+  let drawn = false;
+  if (style === 'neobrutalist') {
+    const stickerSize = minDim * 0.95;
+    const heroSize = stickerSize * 0.88;
+    drawn = drawCardAsset(ctx, heroKey, cx - heroSize / 2, cy - heroSize / 2, heroSize, heroSize);
+  } else if (style === 'aurora') {
+    drawn = drawCardAsset(ctx, heroKey, x, y, width, height, {
+      shadowColor: 'rgba(168, 85, 247, 0.5)',
+      shadowBlur: 16
+    });
+  } else {
+    // Blueprint and Hangtag
+    drawn = drawCardAsset(ctx, heroKey, x, y, width, height);
+  }
+
+  // 3. Keep existing vector fallback if asset image is not loaded
   if (!drawn) {
-    // Vector fallback
-    if (style === 'blueprint') drawBlueprintBean(ctx, x + width / 2, y + height / 2, Math.min(width, height) * 0.4);
-    else if (style === 'neobrutalist') drawNeobrutalistBean(ctx, x + width / 2, y + height / 2, Math.min(width, height) * 0.35);
-    else if (style === 'aurora') drawAuroraBean(ctx, x + width / 2, y + height / 2, Math.min(width, height) * 0.4);
-    else if (style === 'hangtag') drawHangtagBotanical(ctx, x + width / 2, y + height / 2, Math.min(width, height) * 0.45);
+    if (style === 'blueprint') drawBlueprintBean(ctx, cx, cy, minDim * 0.4);
+    else if (style === 'neobrutalist') drawNeobrutalistBean(ctx, cx, cy, minDim * 0.35);
+    else if (style === 'aurora') drawAuroraBean(ctx, cx, cy, minDim * 0.4);
+    else if (style === 'hangtag') drawHangtagBotanical(ctx, cx, cy, minDim * 0.45);
   }
 }
 
