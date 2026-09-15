@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Plus, Zap, Snowflake, CheckCircle2, Mountain, Sparkles, Loader2, Compass, Share2, ClipboardCopy, X, Layers, FileText, MoreHorizontal, ChevronRight } from 'lucide-react';
 import { RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
@@ -11,41 +11,8 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
   const [sommelierLoading, setSommelierLoading] = useState(false);
   const [sommelierResult, setSommelierResult] = useState(null);
 
-  // Card View Style: 'editorial' | 'list' | 'archive'
-  const [cardStyle, setCardStyle] = useState(() => {
-    try {
-      return localStorage.getItem('beantag-inventory-style') || 'editorial';
-    } catch (e) {
-      return 'editorial';
-    }
-  });
-
-  useEffect(() => {
-    const handleStyleSync = () => {
-      try {
-        const saved = localStorage.getItem('beantag-inventory-style') || 'editorial';
-        setCardStyle(saved);
-      } catch (e) {}
-    };
-
-    window.addEventListener('beantag-inventory-style-changed', handleStyleSync);
-    window.addEventListener('storage', handleStyleSync);
-    return () => {
-      window.removeEventListener('beantag-inventory-style-changed', handleStyleSync);
-      window.removeEventListener('storage', handleStyleSync);
-    };
-  }, []);
-
-  const handleCardStyleChange = (style) => {
-    setCardStyle(style);
-    try {
-      localStorage.setItem('beantag-inventory-style', style);
-      window.dispatchEvent(new Event('beantag-inventory-style-changed'));
-    } catch (e) {}
-    if (navigator.vibrate) {
-      try { navigator.vibrate(8); } catch (err) {}
-    }
-  };
+  // Card View Style locked to editorial layout
+  const cardStyle = 'editorial';
 
   // Quick Action Context Menu State
   const [contextBatch, setContextBatch] = useState(null);
@@ -346,37 +313,11 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
         </button>
       </div>
 
-      {/* 2.1 View Style Selector */}
+      {/* 2.1 Batch Counter */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', padding: '0 2px' }}>
         <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          {filteredBatches.length} {filteredBatches.length === 1 ? 'Lote' : 'Lotes'}
+          {filteredBatches.length} {filteredBatches.length === 1 ? 'Lote en bodega' : 'Lotes en bodega'}
         </span>
-        <div className="inventory-view-selector">
-          <button 
-            type="button"
-            className={`inventory-view-btn ${cardStyle === 'editorial' ? 'active' : ''}`}
-            onClick={() => handleCardStyleChange('editorial')}
-            title="Estilo Editorial (Nordic)"
-          >
-            🏷️ Editorial
-          </button>
-          <button 
-            type="button"
-            className={`inventory-view-btn ${cardStyle === 'list' ? 'active' : ''}`}
-            onClick={() => handleCardStyleChange('list')}
-            title="Estilo Lista (Compacto)"
-          >
-            📋 Lista
-          </button>
-          <button 
-            type="button"
-            className={`inventory-view-btn ${cardStyle === 'archive' ? 'active' : ''}`}
-            onClick={() => handleCardStyleChange('archive')}
-            title="Estilo Archivo (Técnico / Lab)"
-          >
-            📐 Archivo
-          </button>
-        </div>
       </div>
 
       {/* 3. Empty State */}
