@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
-import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw, Filter, Zap, Droplet, Coffee } from 'lucide-react';
+import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw, Filter, Zap, Droplet, Coffee, Edit3 } from 'lucide-react';
 import { stripEmojis, RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage } from '../utils/cardGenerator';
@@ -24,6 +24,22 @@ const getMethodLucideIcon = (methodName, size = 18) => {
 export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batches, showToast }) {
   const [history, setHistory] = useState(null); // null = loading, [] = empty
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [editingRecipe, setEditingRecipe] = useState(null);
+  const [editForm, setEditForm] = useState({
+    method: '',
+    grind: '',
+    ratio: '',
+    brew_time: '',
+    temperature: '',
+    sensory_balance: '',
+    sensory_body: '',
+    sensory_extraction: '',
+    notes: '',
+    rating: 0,
+    dose_in_g: '',
+    dose_out_g: ''
+  });
+  const [savingEdit, setSavingEdit] = useState(false);
   const [shareImage, setShareImage] = useState(null);
   const [shareStatus, setShareStatus] = useState('');
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(true);
@@ -256,6 +272,58 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
         .catch(err => {
           alert(err.message);
         });
+    }
+  };
+
+  const handleOpenEdit = (recipe) => {
+    if (!recipe) return;
+    setEditingRecipe(recipe);
+    setEditForm({
+      method: recipe.method || '',
+      grind: recipe.grind || '',
+      ratio: recipe.ratio || '',
+      brew_time: recipe.brew_time || '',
+      temperature: recipe.temperature || '',
+      sensory_balance: recipe.sensory_balance || '',
+      sensory_body: recipe.sensory_body || '',
+      sensory_extraction: recipe.sensory_extraction || '',
+      notes: recipe.notes || '',
+      rating: recipe.rating || 0,
+      dose_in_g: recipe.dose_in_g !== undefined && recipe.dose_in_g !== null ? recipe.dose_in_g : '',
+      dose_out_g: recipe.dose_out_g !== undefined && recipe.dose_out_g !== null ? recipe.dose_out_g : ''
+    });
+  };
+
+  const handleSaveEdit = async (e) => {
+    if (e) e.preventDefault();
+    if (!editingRecipe) return;
+    setSavingEdit(true);
+
+    try {
+      const token = localStorage.getItem('beantag-token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(apiUrl(`api/recipes/${editingRecipe.id}`), {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(editForm)
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al actualizar receta');
+
+      // Updates history state immutably
+      setHistory(prev => (Array.isArray(prev) ? prev.map(r => r.id === editingRecipe.id ? data.recipe : r) : [data.recipe]));
+      // Updates selectedRecipe so the open detail view reflects the changes immediately
+      setSelectedRecipe(data.recipe);
+      // Closes modal
+      setEditingRecipe(null);
+      if (showToast) showToast('Bitácora actualizada con éxito');
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -624,6 +692,15 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   <Trash2 size={12} strokeWidth={2.5} />
                   Eliminar
                 </button>
+                <button 
+                  type="button" 
+                  className="btn-candy" 
+                  style={{ padding: '8px 10px', margin: 0, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }} 
+                  onClick={() => handleOpenEdit(selectedRecipe)}
+                >
+                  <Edit3 size={12} strokeWidth={2.5} />
+                  Editar
+                </button>
                 <button type="button" className="btn-candy" style={{ padding: '8px 10px', margin: 0, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => exportRecipeAsImage(selectedRecipe, 'receipt', shareIncludeRecipe)}>
                   <ImageIcon size={12} strokeWidth={2.5} />
                   Exportar Ticket
@@ -633,6 +710,198 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal / Vista de Edición de Receta */}
+      {editingRecipe && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(26, 5, 5, 0.55)',
+          zIndex: 120, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '16px', boxSizing: 'border-box'
+        }} onClick={() => setEditingRecipe(null)}>
+          <div className="candy-card static" style={{
+            maxWidth: '420px', width: '100%', maxHeight: '90vh', overflowY: 'auto',
+            padding: '20px', boxSizing: 'border-box',
+            boxShadow: '8px 8px 0px var(--border-color)',
+            animation: 'soft-pop 250ms var(--transition-spring)'
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', margin: 0, textTransform: 'uppercase' }}>
+                ✏️ Editar Bitácora
+              </h3>
+              <button type="button" onClick={() => setEditingRecipe(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Método</label>
+                <input
+                  type="text"
+                  className="candy-input"
+                  value={editForm.method}
+                  onChange={(e) => setEditForm({ ...editForm, method: e.target.value })}
+                  required
+                  style={{ width: '100%', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Molienda</label>
+                  <input
+                    type="text"
+                    className="candy-input"
+                    placeholder="Ej: J-Max 2.4.0"
+                    value={editForm.grind}
+                    onChange={(e) => setEditForm({ ...editForm, grind: e.target.value })}
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Ratio</label>
+                  <input
+                    type="text"
+                    className="candy-input"
+                    placeholder="Ej: 1:16"
+                    value={editForm.ratio}
+                    onChange={(e) => setEditForm({ ...editForm, ratio: e.target.value })}
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Tiempo</label>
+                  <input
+                    type="text"
+                    className="candy-input"
+                    placeholder="Ej: 2:45"
+                    value={editForm.brew_time}
+                    onChange={(e) => setEditForm({ ...editForm, brew_time: e.target.value })}
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Temperatura</label>
+                  <input
+                    type="text"
+                    className="candy-input"
+                    placeholder="Ej: 93°C"
+                    value={editForm.temperature}
+                    onChange={(e) => setEditForm({ ...editForm, temperature: e.target.value })}
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Dosis In (g)</label>
+                  <input
+                    type="text"
+                    className="candy-input"
+                    placeholder="Ej: 15.0"
+                    value={editForm.dose_in_g}
+                    onChange={(e) => setEditForm({ ...editForm, dose_in_g: e.target.value })}
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Dosis Out (g)</label>
+                  <input
+                    type="text"
+                    className="candy-input"
+                    placeholder="Ej: 240.0"
+                    value={editForm.dose_out_g}
+                    onChange={(e) => setEditForm({ ...editForm, dose_out_g: e.target.value })}
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              {/* Sensory Evaluation Selection */}
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Extracción</label>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {['Sub', 'En Punto', 'Sobre'].map(ext => (
+                    <button
+                      key={ext}
+                      type="button"
+                      onClick={() => setEditForm({ ...editForm, sensory_extraction: editForm.sensory_extraction === ext ? '' : ext })}
+                      style={{
+                        flex: 1, padding: '6px', fontSize: '11px', fontWeight: 'bold', borderRadius: '6px',
+                        border: editForm.sensory_extraction === ext ? '2px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        background: editForm.sensory_extraction === ext ? 'var(--bg-header)' : '#FFF',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {ext === 'Sub' ? 'Sub-ext' : ext === 'Sobre' ? 'Sobre-ext' : '🧪 En Punto'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Balance Sensorial</label>
+                <input
+                  type="text"
+                  className="candy-input"
+                  placeholder="Ej: Acidez brillante, Equilibrado, Dulzor predominante"
+                  value={editForm.sensory_balance}
+                  onChange={(e) => setEditForm({ ...editForm, sensory_balance: e.target.value })}
+                  style={{ width: '100%', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Cuerpo</label>
+                <input
+                  type="text"
+                  className="candy-input"
+                  placeholder="Ej: Sedoso, Jugoso, Ligero, Cremoso"
+                  value={editForm.sensory_body}
+                  onChange={(e) => setEditForm({ ...editForm, sensory_body: e.target.value })}
+                  style={{ width: '100%', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Notas de Cata / Observaciones</label>
+                <textarea
+                  className="candy-input"
+                  rows="3"
+                  placeholder="Observaciones de la extracción y notas de sabor..."
+                  value={editForm.notes}
+                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                  style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <button
+                  type="button"
+                  className="btn-candy"
+                  style={{ flex: 1, padding: '10px' }}
+                  onClick={() => setEditingRecipe(null)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingEdit}
+                  className="btn-candy primary"
+                  style={{ flex: 1, padding: '10px' }}
+                >
+                  {savingEdit ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
