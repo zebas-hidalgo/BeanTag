@@ -290,7 +290,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
       notes: recipe.notes || '',
       rating: recipe.rating || 0,
       dose_in_g: recipe.dose_in_g !== undefined && recipe.dose_in_g !== null ? recipe.dose_in_g : '',
-      dose_out_g: recipe.dose_out_g !== undefined && recipe.dose_out_g !== null ? recipe.dose_out_g : ''
+      dose_out_g: recipe.dose_out_g !== undefined && recipe.dose_out_g !== null ? recipe.dose_out_g : '',
+      espresso_pressure: recipe.espresso_pressure ?? null,
+      espresso_preinfusion: recipe.espresso_preinfusion ?? null
     });
   };
 
@@ -321,7 +323,11 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
       setEditingRecipe(null);
       if (showToast) showToast('Bitácora actualizada con éxito');
     } catch (err) {
-      alert(err.message);
+      if (showToast) {
+        showToast(err.message, 'error');
+      } else {
+        alert(err.message);
+      }
     } finally {
       setSavingEdit(false);
     }
