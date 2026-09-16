@@ -377,6 +377,74 @@ app.put('/api/batches/:id', async (req, res) => {
   }
 });
 
+// Update brew recipe
+app.put('/api/recipes/:id', async (req, res) => {
+  const {
+    method, ratio, grind, temperature, brew_time, rating, notes,
+    sensory_balance, sensory_body, sensory_extraction,
+    dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion
+  } = req.body;
+
+  if (!method) {
+    return res.status(400).json({ error: 'El método es obligatorio' });
+  }
+
+  try {
+    const db = await getDb();
+    const recipe = await db.get(
+      'SELECT r.id, r.batch_id, b.user_id FROM recipes r JOIN batches b ON r.batch_id = b.id WHERE r.id = ?',
+      req.params.id
+    );
+
+    if (!recipe) {
+      return res.status(404).json({ error: 'Receta no encontrada' });
+    }
+
+    if (recipe.user_id !== null && (!req.user || req.user.id !== recipe.user_id)) {
+      return res.status(403).json({ error: 'Solo el propietario puede editar esta receta.' });
+    }
+
+    await db.run(
+      `UPDATE recipes 
+       SET method = ?, ratio = ?, grind = ?, temperature = ?, brew_time = ?, 
+           rating = ?, notes = ?, sensory_balance = ?, sensory_body = ?, sensory_extraction = ?,
+           dose_in_g = ?, dose_out_g = ?, espresso_pressure = ?, espresso_preinfusion = ?
+       WHERE id = ?`,
+      [
+        method, ratio, grind, temperature, brew_time,
+        rating !== undefined && rating !== null && rating !== '' ? parseInt(rating, 10) : null,
+        notes, sensory_balance, sensory_body, sensory_extraction,
+        dose_in_g !== undefined && dose_in_g !== null && dose_in_g !== '' ? parseFloat(dose_in_g) : null,
+        dose_out_g !== undefined && dose_out_g !== null && dose_out_g !== '' ? parseFloat(dose_out_g) : null,
+        espresso_pressure !== undefined && espresso_pressure !== null && espresso_pressure !== '' ? parseFloat(espresso_pressure) : null,
+        espresso_preinfusion !== undefined && espresso_preinfusion !== null && espresso_preinfusion !== '' ? parseFloat(espresso_preinfusion) : null,
+        req.params.id
+      ]
+    );
+
+    const updatedRecipe = await db.get(`
+      SELECT r.*, 
+             b.name as batch_name, 
+             b.variety as batch_variety,
+             b.producer as batch_producer,
+             b.altitude as batch_altitude,
+             b.origin as batch_origin,
+             b.roaster as batch_roaster,
+             b.roast_level as batch_roast_level,
+             b.roaster_notes as batch_roaster_notes,
+             b.roast_date as batch_roast_date,
+             b.process as batch_process
+      FROM recipes r 
+      JOIN batches b ON r.batch_id = b.id 
+      WHERE r.id = ?
+    `, req.params.id);
+
+    res.json({ success: true, recipe: updatedRecipe });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Delete recipe
 app.delete('/api/recipes/:id', async (req, res) => {
   try {
@@ -911,10 +979,14 @@ app.get('*', (req, res) => {
 });
 
 // Initialize DB and start listening
-initDb().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Backend de BeanTag corriendo en el puerto ${PORT}`);
+if (require.main === module) {
+  initDb().then(() => {
+    app.listen(PORT, () => {
+      console.log(`Backend de BeanTag corriendo en el puerto ${PORT}`);
+    });
+  }).catch(err => {
+    console.error('Error al inicializar la base de datos:', err);
   });
-}).catch(err => {
-  console.error('Error al inicializar la base de datos:', err);
-});
+}
+
+module.exports = app;
