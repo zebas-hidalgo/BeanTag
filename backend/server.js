@@ -389,6 +389,13 @@ app.put('/api/recipes/:id', async (req, res) => {
     return res.status(400).json({ error: 'El método es obligatorio' });
   }
 
+  const parseNum = (val) => (val !== undefined && val !== null && val !== '' && !isNaN(parseFloat(val))) ? parseFloat(val) : null;
+  const parseRating = (val) => {
+    if (val === undefined || val === null || val === '') return null;
+    const r = parseInt(val, 10);
+    return (!isNaN(r) && r >= 1 && r <= 5) ? r : null;
+  };
+
   try {
     const db = await getDb();
     const recipe = await db.get(
@@ -412,12 +419,12 @@ app.put('/api/recipes/:id', async (req, res) => {
        WHERE id = ?`,
       [
         method, ratio, grind, temperature, brew_time,
-        rating !== undefined && rating !== null && rating !== '' ? parseInt(rating, 10) : null,
+        parseRating(rating),
         notes, sensory_balance, sensory_body, sensory_extraction,
-        dose_in_g !== undefined && dose_in_g !== null && dose_in_g !== '' ? parseFloat(dose_in_g) : null,
-        dose_out_g !== undefined && dose_out_g !== null && dose_out_g !== '' ? parseFloat(dose_out_g) : null,
-        espresso_pressure !== undefined && espresso_pressure !== null && espresso_pressure !== '' ? parseFloat(espresso_pressure) : null,
-        espresso_preinfusion !== undefined && espresso_preinfusion !== null && espresso_preinfusion !== '' ? parseFloat(espresso_preinfusion) : null,
+        parseNum(dose_in_g),
+        parseNum(dose_out_g),
+        parseNum(espresso_pressure),
+        parseNum(espresso_preinfusion),
         req.params.id
       ]
     );
