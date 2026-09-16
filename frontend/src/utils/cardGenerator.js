@@ -187,30 +187,36 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       size -= 1;
       ctx.font = `${weight} ${size}px ${fontName}`;
     }
-    ctx.fillText(str, x, y);
+    if (ctx.measureText(str).width > maxWidth) {
+      drawTruncatedText(str, x, y, maxWidth);
+    } else {
+      ctx.fillText(str, x, y);
+    }
   };
 
-  // Coffee & recipe attributes
-  const coffeeName = stripEmojis(recipe.batch_name || recipe.coffee_name || recipe.name || 'Café de Especialidad');
-  const origin = stripEmojis(recipe.origin || recipe.batch_origin || 'Boquete, Panamá');
-  const roaster = stripEmojis(recipe.roaster || recipe.batch_roaster || 'Tostaduría Artesanal');
-  const producer = stripEmojis(recipe.producer || recipe.batch_producer || 'Productor Artesanal');
-  const process = stripEmojis(recipe.process || recipe.batch_process || 'Lavado');
-  const variety = stripEmojis(recipe.variety || recipe.batch_variety || 'Geisha / Heirloom');
-  const altitude = recipe.altitude || recipe.batch_altitude ? `${stripEmojis(String(recipe.altitude || recipe.batch_altitude)).replace('m', '')}m` : '1.850m';
-  const notesStr = recipe.flavor_notes || recipe.notes || recipe.roaster_notes || recipe.batch_roaster_notes || 'Notas limpias, florales, balance y dulzor';
-  const flavorTags = extractFlavorTags(notesStr);
-  const scaScore = recipe.sca_score || recipe.score || 89.5;
-  const dosesStr = recipe.remaining_doses !== undefined ? `${recipe.remaining_doses} TUBOS EN CAVA` : 'LOTE LIMITADO';
+  const rec = recipe || {};
 
-  const methodStr = stripEmojis(recipe.method || 'V60 Conical');
-  const coffeeG = recipe.coffee_grams || recipe.dose_in_g || 15;
-  const waterG = recipe.water_grams || 240;
-  const ratioStr = recipe.ratio || `1:${(waterG / (coffeeG || 1)).toFixed(1)}`;
-  const grindStr = stripEmojis(recipe.grind_size || recipe.grind || 'Medio-Fino');
+  // Coffee & recipe attributes
+  const coffeeName = stripEmojis(rec.batch_name || rec.coffee_name || rec.name || 'Café de Especialidad');
+  const origin = stripEmojis(rec.origin || rec.batch_origin || 'Boquete, Panamá');
+  const roaster = stripEmojis(rec.roaster || rec.batch_roaster || 'Tostaduría Artesanal');
+  const producer = stripEmojis(rec.producer || rec.batch_producer || 'Productor Artesanal');
+  const process = stripEmojis(rec.process || rec.batch_process || 'Lavado');
+  const variety = stripEmojis(rec.variety || rec.batch_variety || 'Geisha / Heirloom');
+  const altitude = rec.altitude || rec.batch_altitude ? `${stripEmojis(String(rec.altitude || rec.batch_altitude)).replace('m', '')}m` : '1.850m';
+  const notesStr = rec.flavor_notes || rec.notes || rec.roaster_notes || rec.batch_roaster_notes || 'Notas limpias, florales, balance y dulzor';
+  const flavorTags = extractFlavorTags(notesStr);
+  const scaScore = rec.sca_score || rec.score || 89.5;
+  const dosesStr = rec.remaining_doses !== undefined ? `${rec.remaining_doses} TUBOS EN CAVA` : 'LOTE LIMITADO';
+
+  const methodStr = stripEmojis(rec.method || 'V60 Conical');
+  const coffeeG = rec.coffee_grams || rec.dose_in_g || 15;
+  const waterG = rec.water_grams || 240;
+  const ratioStr = rec.ratio || `1:${(waterG / (coffeeG || 1)).toFixed(1)}`;
+  const grindStr = stripEmojis(rec.grind_size || rec.grind || 'Medio-Fino');
   const microns = parseGrindToMicrons(grindStr);
-  const tempStr = recipe.temp || recipe.temperature ? `${String(recipe.temp || recipe.temperature).replace('°C', '')}°C` : '93°C';
-  const timeStr = recipe.time || recipe.brew_time ? `${stripEmojis(String(recipe.time || recipe.brew_time)).replace(' min', '')}` : '02:45';
+  const tempStr = rec.temp || rec.temperature ? `${String(rec.temp || rec.temperature).replace('°C', '')}°C` : '93°C';
+  const timeStr = rec.time || rec.brew_time ? `${stripEmojis(String(rec.time || rec.brew_time)).replace(' min', '')}` : '02:45';
 
   const paddingX = 26;
   const paddingY = 26;
