@@ -244,8 +244,8 @@ async function verify() {
       const dataUrl = await window.__generateRecipeCardImage(sampleRecipe, style, true);
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
-      const hasDrawImage = mockOps.includes('drawImage');
-      const passed = isValidDataUrl && opsCount > 20 && hasDrawImage;
+      const hasNoDrawImage = !mockOps.includes('drawImage');
+      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage;
 
       if (!passed) hasFailure = true;
 
@@ -273,8 +273,8 @@ async function verify() {
       const dataUrl = await window.__generateRecipeCardImage(sampleRecipe, style, false);
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
-      const hasDrawImage = mockOps.includes('drawImage');
-      const passed = isValidDataUrl && opsCount > 20 && hasDrawImage;
+      const hasNoDrawImage = !mockOps.includes('drawImage');
+      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage;
 
       if (!passed) hasFailure = true;
 
@@ -304,8 +304,8 @@ async function verify() {
       const dataUrl = await window.__generateCoffeeMenuCardImage(sampleBatches, style);
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
-      const hasDrawImage = mockOps.includes('drawImage');
-      const passed = isValidDataUrl && opsCount > 20 && hasDrawImage;
+      const hasNoDrawImage = !mockOps.includes('drawImage');
+      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage;
 
       if (!passed) hasFailure = true;
 
