@@ -1239,113 +1239,63 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.fillStyle = '#F8F5EE';
     ctx.fillRect(0, 0, baseW, baseH);
 
-    // Authentic Chamfered Hangtag Corners
-    const chamfer = 24;
-    ctx.fillStyle = '#F1EDE4';
-    ctx.beginPath();
-    ctx.moveTo(chamfer, 0);
-    ctx.lineTo(baseW - chamfer, 0);
-    ctx.lineTo(baseW, chamfer);
-    ctx.lineTo(baseW, baseH);
-    ctx.lineTo(0, baseH);
-    ctx.lineTo(0, chamfer);
-    ctx.closePath();
-    ctx.fill();
+    // Natural Cotton Canvas Body
+    ctx.fillStyle = '#FAF8F5';
+    ctx.fillRect(0, 0, baseW, baseH);
 
-    // Subtle Double Frame
-    ctx.strokeStyle = '#DDD7CD';
-    ctx.lineWidth = 1.2;
-    ctx.strokeRect(paddingX - 10, paddingY - 10, availW + 20, baseH - (paddingY * 2) + 20);
+    // Single Refined Hairline Border
+    ctx.strokeStyle = '#E5E0D8';
+    ctx.lineWidth = 1;
+    drawRoundedRect(ctx, paddingX - 8, paddingY - 8, availW + 16, baseH - (paddingY * 2) + 16, 8, false, true);
 
-    ctx.strokeStyle = '#E7E2D8';
-    ctx.lineWidth = 0.8;
-    ctx.strokeRect(paddingX - 6, paddingY - 6, availW + 12, baseH - (paddingY * 2) + 12);
-
-    // 1. Realistic 3D Metallic Brass Eyelet + String at Top Center
-    const eyeletX = baseW / 2;
-    const eyeletY = paddingY + 8;
-    const eyeletR = 10;
-
-    ctx.save();
-    // Hanging loop twine string
-    ctx.strokeStyle = '#C4B5A5';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(eyeletX, eyeletY - eyeletR);
-    ctx.lineTo(eyeletX, 0);
-    ctx.stroke();
-
-    // Drop shadow
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.18)';
-    ctx.shadowBlur = 6;
-    ctx.shadowOffsetY = 2;
-
-    // Brass outer ring
-    ctx.fillStyle = '#A8A29E';
-    ctx.beginPath();
-    ctx.arc(eyeletX, eyeletY, eyeletR + 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.shadowColor = 'transparent';
-    ctx.fillStyle = '#D6D3D1';
-    ctx.beginPath();
-    ctx.arc(eyeletX, eyeletY, eyeletR, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Central hole
-    ctx.fillStyle = '#1C1917';
-    ctx.beginPath();
-    ctx.arc(eyeletX, eyeletY, eyeletR - 4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    // 2. Editorial Top Label
-    ctx.fillStyle = '#57534E';
-    ctx.font = '700 8.5px "Playfair Display", Georgia, serif';
+    // 1. Refined Editorial Top Seal & Micro-Header
+    ctx.fillStyle = '#78716C';
+    ctx.font = '800 8.5px "Playfair Display", Georgia, serif';
     ctx.textAlign = 'center';
-    ctx.fillText('ATELIER DE CAFÉ // ÉDITION LIMITÉE', baseW / 2, paddingY + 36);
+    ctx.fillText('BEANTAG SPECIALTY ATELIER // ARCHIVO DE FINCA', baseW / 2, paddingY + 18);
     ctx.textAlign = 'left';
 
-    // 3. Main Serif Title (WCAG AAA High-Contrast Charcoal)
-    ctx.fillStyle = '#141210';
-    drawFittedText(coffeeName, paddingX, paddingY + 68, availW, 25, '"Playfair Display", Georgia, serif', 'bold');
+    // 2. Main Serif Title (WCAG AAA High-Contrast Charcoal)
+    ctx.fillStyle = '#1C1917';
+    drawFittedText(coffeeName, paddingX, paddingY + 48, availW, 27, '"Playfair Display", Georgia, serif', 'bold');
 
-    ctx.fillStyle = '#44403C';
-    ctx.font = 'italic 11px "Playfair Display", Georgia, serif';
-    drawTruncatedText(`${origin} — ${producer || roaster} — ${altitude}`, paddingX, paddingY + 90, availW);
+    // Terroir Subtitle
+    ctx.fillStyle = '#57534E';
+    ctx.font = 'italic 10.5px "Playfair Display", Georgia, serif';
+    drawTruncatedText(`${origin} — ${producer || roaster}${altitude ? ' — ' + altitude : ''}`, paddingX, paddingY + 70, availW);
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
     // -----------------------------------------------------------------------
     if (!incRecipe) {
       // Large Centered Botanical Lithograph
-      const heroY = paddingY + 102;
-      const heroH = 145;
+      const heroY = paddingY + 84;
+      const heroH = 138;
 
-      ctx.strokeStyle = '#DDD7CD';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(paddingX, heroY, availW, heroH);
+      ctx.strokeStyle = '#E5E0D8';
+      ctx.lineWidth = 0.8;
+      drawRoundedRect(ctx, paddingX, heroY, availW, heroH, 6, false, true);
 
-      const heroDim = 125;
+      const heroDim = 118;
       drawHeroAsset(ctx, 'hangtag', paddingX + (availW / 2) - heroDim / 2, heroY + 6, heroDim, heroDim);
 
-      ctx.fillStyle = '#57534E';
+      ctx.fillStyle = '#78716C';
       ctx.font = 'italic 8.5px "Playfair Display", Georgia, serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`HERBARIUM // COFFEA ARABICA VAR. ${variety.toUpperCase()} // SCA ${scaScore}★`, baseW / 2, heroY + heroH - 10);
+      ctx.fillText(`HERBARIUM BOTANIQUE // COFFEA ARABICA VAR. ${variety.toUpperCase()} // SCA ${scaScore}★`, baseW / 2, heroY + heroH - 8);
       ctx.textAlign = 'left';
 
       // Terroir Ledger Matrix (2x2)
-      const matY = heroY + heroH + 14;
-      const matGap = 10;
+      const matY = heroY + heroH + 12;
+      const matGap = 8;
       const colW = (availW - matGap) / 2;
-      const colH = 68;
+      const colH = 64;
 
       const terroirItems = [
-        { lbl: 'DOMAINE & PRODUCTEUR', val: producer, sub: origin },
-        { lbl: 'ALTITUDE & TERROIR', val: altitude, sub: 'TERROIR VOLCANIQUE' },
-        { lbl: 'VARIÉTÉ BOTANIQUE', val: variety, sub: 'SÉLECTION PARCELLAIRE' },
-        { lbl: 'FERMENTATION & MÉTHODE', val: process, sub: 'PROCESSUS NATUREL' }
+        { lbl: 'ORIGEN & FINCA', val: origin, sub: producer || roaster },
+        { lbl: 'ALTITUD & TERROIR', val: altitude || '1800m', sub: 'Terroir de Altura' },
+        { lbl: 'VARIEDAD BOTÁNICA', val: variety || 'Arábica', sub: 'Lote Seleccionado' },
+        { lbl: 'PROCESO & FERMENTACIÓN', val: process || 'Lavado', sub: 'Cosecha Manual' }
       ];
 
       terroirItems.forEach((t, i) => {
@@ -1354,43 +1304,69 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         const mx = paddingX + col * (colW + matGap);
         const my = matY + row * (colH + matGap);
 
-        ctx.strokeStyle = '#DDD7CD';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(mx, my, colW, colH);
-
-        ctx.fillStyle = '#57534E';
-        ctx.font = '700 8px "Playfair Display", Georgia, serif';
-        ctx.fillText(t.lbl, mx + 10, my + 16);
-
-        ctx.fillStyle = '#141210';
-        ctx.font = 'bold 12px "Playfair Display", Georgia, serif';
-        drawTruncatedText(t.val, mx + 10, my + 38, colW - 20);
+        ctx.fillStyle = '#F5F2EB';
+        ctx.strokeStyle = '#E5E0D8';
+        ctx.lineWidth = 0.8;
+        drawRoundedRect(ctx, mx, my, colW, colH, 5, true, true);
 
         ctx.fillStyle = '#78716C';
+        ctx.font = '700 7.5px "Playfair Display", Georgia, serif';
+        ctx.fillText(t.lbl, mx + 10, my + 15);
+
+        ctx.fillStyle = '#1C1917';
+        ctx.font = 'bold 11.5px "Playfair Display", Georgia, serif';
+        drawTruncatedText(t.val, mx + 10, my + 36, colW - 20);
+
+        ctx.fillStyle = '#8C827A';
         ctx.font = 'italic 8px "Playfair Display", Georgia, serif';
-        drawTruncatedText(t.sub, mx + 10, my + 56, colW - 20);
+        drawTruncatedText(t.sub, mx + 10, my + 52, colW - 20);
       });
 
-      // Poetic Tasting Quote Box
-      const quoteY = matY + (colH * 2) + matGap + 12;
-      const quoteH = 88;
+      // Sensory Notes Pills Section
+      const notesBoxY = matY + (colH * 2) + matGap + 10;
+      ctx.fillStyle = '#78716C';
+      ctx.font = '800 8.5px "Playfair Display", Georgia, serif';
+      ctx.fillText('NOTAS SENSORIALES // PERFIL EN TAZA', paddingX, notesBoxY + 12);
 
+      const sensoryPillY = notesBoxY + 22;
+      let pillX = paddingX;
+      const pillH = 22;
+      const displayNotes = flavorTags.length > 0 ? flavorTags.slice(0, 5) : ['Notas Limpias', 'Balance', 'Dulzor Natural'];
+
+      displayNotes.forEach((tag) => {
+        ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
+        const textW = ctx.measureText(tag).width;
+        const pillW = textW + 16;
+        if (pillX + pillW > paddingX + availW) return;
+
+        ctx.fillStyle = 'rgba(120, 53, 15, 0.06)';
+        ctx.strokeStyle = 'rgba(120, 53, 15, 0.2)';
+        ctx.lineWidth = 0.8;
+        drawRoundedRect(ctx, pillX, sensoryPillY, pillW, pillH, 4, true, true);
+
+        ctx.fillStyle = '#78350F';
+        ctx.fillText(tag, pillX + 8, sensoryPillY + 15);
+
+        pillX += pillW + 6;
+      });
+
+      // Cellar Vacuum Sealed Doses Bar
+      const cellarY = sensoryPillY + pillH + 12;
       ctx.fillStyle = '#F2EFE7';
-      ctx.strokeStyle = '#DDD7CD';
-      drawRoundedRect(ctx, paddingX, quoteY, availW, quoteH, 6, true, true);
-
-      ctx.fillStyle = '#292524';
-      ctx.font = 'italic 11.5px "Playfair Display", Georgia, serif';
-      const quoteText = `« Notes de dégustation: ${flavorTags.length > 0 ? flavorTags.join(', ') : notesStr}. Une tasse d'une pureté exceptionnelle et équilibre remarquable. »`;
-      drawTruncatedText(quoteText, paddingX + 14, quoteY + 28, availW - 28);
-
-      ctx.fillStyle = '#44403C';
-      ctx.font = '700 9px "Playfair Display", Georgia, serif';
-      ctx.fillText(`ÉVALUATION SENSORIELLE: SCA ${scaScore}★ // SÉLECTION EXCLUSIVE`, paddingX + 14, quoteY + 54);
+      ctx.strokeStyle = '#E5E0D8';
+      ctx.lineWidth = 0.8;
+      drawRoundedRect(ctx, paddingX, cellarY, availW, 30, 4, true, true);
 
       ctx.fillStyle = '#3F6212';
-      ctx.font = 'bold 9px "Playfair Display", Georgia, serif';
-      ctx.fillText(`❄️ CAVE BEANTAG: ${dosesStr} • EMBALLÉ SOUS VIDE`, paddingX + 14, quoteY + 74);
+      ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
+      ctx.fillText(`❄️ CAVA BEANTAG: ${dosesStr} • DOSIS CONGELADAS AL VACÍO`, paddingX + 12, cellarY + 19);
+
+      if (scaScore && scaScore !== '—') {
+        ctx.fillStyle = '#78350F';
+        ctx.textAlign = 'right';
+        ctx.fillText(`SCA ${scaScore}★`, paddingX + availW - 12, cellarY + 19);
+        ctx.textAlign = 'left';
+      }
     }
 
     // -----------------------------------------------------------------------
@@ -1398,33 +1374,33 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // -----------------------------------------------------------------------
     else {
       // Hero Botanical Viewport
-      const heroBoxY = paddingY + 104;
-      const heroBoxH = 108;
+      const heroBoxY = paddingY + 84;
+      const heroBoxH = 100;
 
-      ctx.strokeStyle = '#DDD7CD';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(paddingX, heroBoxY, availW, heroBoxH);
+      ctx.strokeStyle = '#E5E0D8';
+      ctx.lineWidth = 0.8;
+      drawRoundedRect(ctx, paddingX, heroBoxY, availW, heroBoxH, 6, false, true);
 
-      const heroDim = 88;
-      drawHeroAsset(ctx, 'hangtag', paddingX + (availW / 2) - heroDim / 2, heroBoxY + 6, heroDim, heroDim);
+      const heroDim = 84;
+      drawHeroAsset(ctx, 'hangtag', paddingX + (availW / 2) - heroDim / 2, heroBoxY + 4, heroDim, heroDim);
 
-      ctx.fillStyle = '#57534E';
+      ctx.fillStyle = '#78716C';
       ctx.font = 'italic 8px "Playfair Display", Georgia, serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`HERBARIUM // COFFEA ARABICA VAR. ${variety.toUpperCase()}`, baseW / 2, heroBoxY + heroBoxH - 8);
+      ctx.fillText(`HERBARIUM // PROTOCOLO DE EXTRACCIÓN // COFFEA ARABICA VAR. ${variety.toUpperCase()}`, baseW / 2, heroBoxY + heroBoxH - 6);
       ctx.textAlign = 'left';
 
-      // 4 Metric Boxes (2x2) with LARGE ICONS
-      const bentoY = heroBoxY + heroBoxH + 14;
-      const bentoGap = 10;
+      // 4 Metric Tiles (2x2) with Prominent Centered Icons
+      const bentoY = heroBoxY + heroBoxH + 12;
+      const bentoGap = 8;
       const colW = (availW - bentoGap) / 2;
-      const colH = 76;
+      const colH = 70;
 
       const metrics = [
-        { type: 'method', lbl: 'MÉTHODE', val: methodStr, sub: 'Extraction douce' },
-        { type: 'dose', lbl: 'DOSAGE', val: `${coffeeG}g / ${waterG}g`, sub: `Ratio ${ratioStr}` },
-        { type: 'grind', lbl: 'MOUTÚRE', val: `${microns} µm`, sub: 'Calibrée' },
-        { type: 'time', lbl: 'TEMPS / TEMP', val: `${timeStr}`, sub: tempStr }
+        { type: 'method', lbl: 'MÉTODO', val: methodStr, sub: 'Extracción de filtro' },
+        { type: 'dose', lbl: 'DOSIS / AGUA', val: `${coffeeG}g / ${waterG}g`, sub: `Ratio ${ratioStr}` },
+        { type: 'grind', lbl: 'MOLIENDA', val: `${microns} µm`, sub: 'Calibración barista' },
+        { type: 'time', lbl: 'TIEMPO & TEMP', val: `${timeStr}`, sub: tempStr }
       ];
 
       metrics.forEach((m, idx) => {
@@ -1433,53 +1409,65 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         const mx = paddingX + col * (colW + bentoGap);
         const my = bentoY + row * (colH + bentoGap);
 
-        ctx.strokeStyle = '#DDD7CD';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(mx, my, colW, colH);
+        ctx.fillStyle = '#F5F2EB';
+        ctx.strokeStyle = '#E5E0D8';
+        ctx.lineWidth = 0.8;
+        drawRoundedRect(ctx, mx, my, colW, colH, 5, true, true);
 
-        // Prominent 38px Icon on Left
-        drawMetricAsset(ctx, 'hangtag', m.type, mx + 24, my + 38, 38);
-
-        ctx.fillStyle = '#57534E';
-        ctx.font = '700 8px "Playfair Display", Georgia, serif';
-        ctx.fillText(m.lbl, mx + 50, my + 20);
-
-        ctx.fillStyle = '#141210';
-        ctx.font = 'bold 12.5px "Playfair Display", Georgia, serif';
-        drawTruncatedText(m.val, mx + 50, my + 42, colW - 56);
+        // Prominent Centered 34px Metric Icon
+        drawMetricAsset(ctx, 'hangtag', m.type, mx + 24, my + 35, 34);
 
         ctx.fillStyle = '#78716C';
-        ctx.font = 'italic 8.5px "Playfair Display", Georgia, serif';
-        ctx.fillText(m.sub, mx + 50, my + 62);
+        ctx.font = '700 7.5px "Playfair Display", Georgia, serif';
+        ctx.fillText(m.lbl, mx + 48, my + 18);
+
+        ctx.fillStyle = '#1C1917';
+        ctx.font = 'bold 12px "Playfair Display", Georgia, serif';
+        drawTruncatedText(m.val, mx + 48, my + 38, colW - 54);
+
+        ctx.fillStyle = '#8C827A';
+        ctx.font = 'italic 8px "Playfair Display", Georgia, serif';
+        drawTruncatedText(m.sub, mx + 48, my + 56, colW - 54);
       });
 
-      // Botanical Tasting Quote Box
-      const quoteY = bentoY + (colH * 2) + bentoGap + 14;
-      const quoteH = 68;
+      // Sensory Notes Pills Section
+      const notesBoxY = bentoY + (colH * 2) + bentoGap + 10;
+      ctx.fillStyle = '#78716C';
+      ctx.font = '800 8.5px "Playfair Display", Georgia, serif';
+      ctx.fillText('NOTAS SENSORIALES // PERFIL EN TAZA', paddingX, notesBoxY + 12);
 
-      ctx.fillStyle = '#F2EFE7';
-      ctx.strokeStyle = '#DDD7CD';
-      drawRoundedRect(ctx, paddingX, quoteY, availW, quoteH, 6, true, true);
+      const sensoryPillY = notesBoxY + 22;
+      let pillX = paddingX;
+      const pillH = 22;
+      const displayNotes = flavorTags.length > 0 ? flavorTags.slice(0, 5) : ['Notas Limpias', 'Balance', 'Claridad'];
 
-      ctx.fillStyle = '#292524';
-      ctx.font = 'italic 11px "Playfair Display", Georgia, serif';
-      const quoteText = `« Notes de dégustation: ${flavorTags.length > 0 ? flavorTags.join(', ') : notesStr}. Une tasse d'une pureté remarquable. »`;
-      drawTruncatedText(quoteText, paddingX + 14, quoteY + 28, availW - 28);
+      displayNotes.forEach((tag) => {
+        ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
+        const textW = ctx.measureText(tag).width;
+        const pillW = textW + 16;
+        if (pillX + pillW > paddingX + availW) return;
 
-      ctx.fillStyle = '#44403C';
-      ctx.font = '700 9px "Playfair Display", Georgia, serif';
-      ctx.fillText(`ÉVALUATION SENSORIELLE: SCA ${scaScore}★ // SÉLECTION EXCLUSIVE`, paddingX + 14, quoteY + 52);
+        ctx.fillStyle = 'rgba(120, 53, 15, 0.06)';
+        ctx.strokeStyle = 'rgba(120, 53, 15, 0.2)';
+        ctx.lineWidth = 0.8;
+        drawRoundedRect(ctx, pillX, sensoryPillY, pillW, pillH, 4, true, true);
+
+        ctx.fillStyle = '#78350F';
+        ctx.fillText(tag, pillX + 8, sensoryPillY + 15);
+
+        pillX += pillW + 6;
+      });
     }
 
     // Roastery Wax Seal Stamp & Atelier Footer
-    const sealX = baseW - paddingX - 32;
-    const sealY = baseH - paddingY - 32;
-    drawBadgeAsset(ctx, 'hangtag', 'seal', sealX, sealY, 46);
+    const sealX = baseW - paddingX - 30;
+    const sealY = baseH - paddingY - 28;
+    drawBadgeAsset(ctx, 'hangtag', 'seal', sealX, sealY, 44);
 
-    const footY = baseH - paddingY - 26;
-    ctx.fillStyle = '#57534E';
-    ctx.font = '600 8.5px "Playfair Display", Georgia, serif';
-    ctx.fillText(`BEANTAG ATELIER // ARCHIVE ${new Date().getFullYear()} // LOT ARTISANAL`, paddingX, footY + 12);
+    const footY = baseH - paddingY - 22;
+    ctx.fillStyle = '#78716C';
+    ctx.font = '600 8px "Playfair Display", Georgia, serif';
+    ctx.fillText(`BEANTAG SPECIALTY ATELIER // ARCHIVO ${new Date().getFullYear()} // LOT ARTISANAL`, paddingX, footY + 12);
   }
 
   return canvas.toDataURL('image/png', 1.0);
