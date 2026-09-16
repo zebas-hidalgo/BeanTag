@@ -19,7 +19,7 @@
 **Files:**
 - Modify: `frontend/src/components/Inventory.jsx:345-385`
 
-- [ ] **Step 1: Remove `inventory-view-selector` and lock `cardStyle` to `editorial`**
+- [x] **Step 1: Remove `inventory-view-selector` and lock `cardStyle` to `editorial`**
 
 In `frontend/src/components/Inventory.jsx`:
 - Remove the `div.inventory-view-selector` buttons (`[🏷️ Editorial] [📋 Lista] [📐 Archivo]`).
@@ -27,12 +27,12 @@ In `frontend/src/components/Inventory.jsx`:
 - Remove `handleCardStyleChange` and unnecessary localStorage reading for view switching.
 - Retain the clean batch counter: `{filteredBatches.length} {filteredBatches.length === 1 ? "Lote en bodega" : "Lotes en bodega"}`.
 
-- [ ] **Step 2: Verify frontend compilation**
+- [x] **Step 2: Verify frontend compilation**
 
 Run: `cd frontend && npm run build`
 Expected: Build succeeds with 0 errors.
 
-- [ ] **Step 3: Commit changes**
+- [x] **Step 3: Commit changes**
 
 ```bash
 git add frontend/src/components/Inventory.jsx
@@ -46,7 +46,7 @@ git commit -m "refactor(inventory): remove visual style selector and lock to edi
 **Files:**
 - Modify: `frontend/src/utils/cardGenerator.js:1520-1803`
 
-- [ ] **Step 1: Enrich `generateCoffeeMenuCardImage` layout**
+- [x] **Step 1: Enrich `generateCoffeeMenuCardImage` layout**
 
 In `frontend/src/utils/cardGenerator.js`:
 - In the item rendering loop for each coffee batch:
@@ -57,7 +57,7 @@ In `frontend/src/utils/cardGenerator.js`:
   - Draw remaining tube doses badge in the top-right of the coffee item box.
   - Ensure adaptive item height (`itemH = 110` or dynamic calculation based on batch count) so cards never overlap.
 
-- [ ] **Step 2: Enrich `generateCoffeeMenuText` for WhatsApp/Telegram sharing**
+- [x] **Step 2: Enrich `generateCoffeeMenuText` for WhatsApp/Telegram sharing**
 
 In `frontend/src/utils/cardGenerator.js`:
 - Fix flavor notes extraction:
@@ -69,12 +69,12 @@ In `frontend/src/utils/cardGenerator.js`:
   - Flavor Notes (with emoji `✨`)
   - Stock in tubes and estimated grams
 
-- [ ] **Step 3: Test execution and verify syntax**
+- [x] **Step 3: Test execution and verify syntax**
 
 Run: `node -e "import(./frontend/src/utils/cardGenerator.js)"`
 Expected: Imports cleanly without syntax errors.
 
-- [ ] **Step 4: Commit changes**
+- [x] **Step 4: Commit changes**
 
 ```bash
 git add frontend/src/utils/cardGenerator.js
@@ -88,7 +88,7 @@ git commit -m "feat(cards): enrich coffee menu card and text share with full ter
 **Files:**
 - Modify: `frontend/src/utils/cardGenerator.js:1250-1490`
 
-- [ ] **Step 1: Refactor `renderHangtagBeanCard` (Solo Grano)**
+- [x] **Step 1: Refactor `renderHangtagBeanCard` (Solo Grano)**
 
 In `frontend/src/utils/cardGenerator.js`:
 - Canvas background: Warm ivory `#FAF8F5`.
@@ -99,19 +99,19 @@ In `frontend/src/utils/cardGenerator.js`:
 - Sensory pills: Prominent flavor notes with rounded badges in soft amber-tinted background (`rgba(120, 53, 15, 0.06)`).
 - Cellar status: Clean tube count badge at bottom.
 
-- [ ] **Step 2: Refactor `renderHangtagCard` (Con Receta)**
+- [x] **Step 2: Refactor `renderHangtagCard` (Con Receta)**
 
 In `frontend/src/utils/cardGenerator.js`:
 - Maintain the identical refined Editorial Atelier visual language.
 - Extraction parameters grid: 4 horizontal tiles with 1:1 metric icons, clear labels (MÉTODO, DOSIS, RATIO, TIEMPO), and exact vertical centering without boxy clunkiness.
 - Sensory notes: Full flavor tags displayed prominently below the recipe parameters.
 
-- [ ] **Step 3: Run frontend build**
+- [x] **Step 3: Run frontend build**
 
 Run: `cd frontend && npm run build`
 Expected: Build succeeds with 0 errors.
 
-- [ ] **Step 4: Commit changes**
+- [x] **Step 4: Commit changes**
 
 ```bash
 git add frontend/src/utils/cardGenerator.js
@@ -125,16 +125,16 @@ git commit -m "feat(cards): elevate editorial atelier tickets with refined hairl
 **Files:**
 - Modify: `scripts/verify_cards_render.mjs`
 
-- [ ] **Step 1: Update verification assertions for enriched menu and editorial cards**
+- [x] **Step 1: Update verification assertions for enriched menu and editorial cards**
 
 Update `scripts/verify_cards_render.mjs` to ensure the new rendering elements (notes pills, full metadata text lines) execute and produce high-resolution data URLs for all 12 card configurations.
 
-- [ ] **Step 2: Run verification test suite**
+- [x] **Step 2: Run verification test suite**
 
 Run: `npm run test:cards`
 Expected: 12 / 12 tests PASS.
 
-- [ ] **Step 3: Commit verification test updates**
+- [x] **Step 3: Commit verification test updates**
 
 ```bash
 git add scripts/verify_cards_render.mjs
@@ -145,14 +145,14 @@ git commit -m "test(cards): update verification suite for enriched menu and edit
 
 ### Task 5: Remote VPS Deployment & Live Verification
 
-- [ ] **Step 1: Push changes to GitHub repository**
+- [x] **Step 1: Push changes to GitHub repository**
 
 Run: `git push origin main`
 
-- [ ] **Step 2: Pull and build on VPS (`5.189.152.68`)**
+- [x] **Step 2: Pull and build on VPS (`5.189.152.68`)**
 
 Connect via Zerker, run `cd /var/www/beantag && git pull`, `cd frontend && npm run build`, and `pm2 restart beantag`.
 
-- [ ] **Step 3: Verify live endpoint**
+- [x] **Step 3: Verify live endpoint**
 
 Verify HTTP 200 status on `http://5.189.152.68/beantag/`.
