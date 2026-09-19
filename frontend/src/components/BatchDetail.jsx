@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers, SlidersHorizontal } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText } from '../utils/cardGenerator';
@@ -303,6 +303,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       setMethod('AeroPress');
     } else if (recMethod.includes('prensa') || recMethod.includes('francesa')) {
       setMethod('Prensa Francesa');
+    } else if (recMethod.includes('pulsar')) {
+      setMethod('NextLevel Pulsar Mini');
     }
 
     if (aiRecommendation.ratio && aiRecommendation.ratio.includes('1:')) {
@@ -364,7 +366,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   const handleApplyFamousRecipe = (famous) => {
     setMethod(famous.method);
+    const effectiveDose = famous.defaultDose || (famous.method === 'NextLevel Pulsar Mini' ? 15 : doseInG);
+    if (famous.defaultDose || famous.method === 'NextLevel Pulsar Mini') {
+      setDoseInG(effectiveDose);
+    }
     if (famous.ratioVal) setRatioVal(famous.ratioVal);
+    else if (famous.method === 'NextLevel Pulsar Mini') setRatioVal(16.6);
     if (famous.temperature) setWaterTemp(famous.temperature);
     if (famous.brewTime) setBrewTime(famous.brewTime);
     if (famous.grinderSettings?.jmax) {
@@ -379,7 +386,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       setComandanteClicks(famous.grinderSettings.comandante.clicks);
     }
 
-    const calculatedPours = famous.calculatePours ? famous.calculatePours(doseInG) : [];
+    const calculatedPours = famous.calculatePours ? famous.calculatePours(effectiveDose) : [];
     const pourSummary = calculatedPours.length > 0 
       ? ` | Vertidos: ${calculatedPours.map(p => `${p.label} (${p.water_g}g)`).join(' → ')}`
       : '';
@@ -393,7 +400,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     setAiRecommendation({
       method: famous.method,
       ratio: famous.ratio,
-      water_total_g: Math.round(doseInG * (famous.ratioVal || 15)),
+      water_total_g: Math.round(effectiveDose * (famous.ratioVal || 15)),
       temperature: famous.temperature,
       brew_time: famous.brewTime,
       grind: famous.grind,
@@ -426,14 +433,17 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           // If prefillRecipe or last recipe is available, pre-populate parameters
           const targetRecipe = prefillRecipe || (data.recipes && data.recipes.length > 0 ? data.recipes[0] : null);
           if (targetRecipe) {
-            setMethod(targetRecipe.method || 'V60 (Filtrado)');
+            const loadedMethod = targetRecipe.method || 'V60 (Filtrado)';
+            setMethod(loadedMethod);
             
             // Try parsing ratio
             if (targetRecipe.ratio && targetRecipe.ratio.includes('1:')) {
               const ratioMatch = targetRecipe.ratio.match(/1:([0-9.]+)/);
               if (ratioMatch) {
-                setRatioVal(parseFloat(ratioMatch[1]) || 15.0);
+                setRatioVal(parseFloat(ratioMatch[1]) || (loadedMethod === 'NextLevel Pulsar Mini' ? 16.6 : 15.0));
               }
+            } else if (loadedMethod === 'NextLevel Pulsar Mini') {
+              setRatioVal(16.6);
             }
             
             // Try parsing J-Max grind settings (format: "J-Max: R.N.C")
@@ -447,7 +457,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             }
 
             // Pre-populate new fields
-            setDoseInG(targetRecipe.dose_in_g !== null && targetRecipe.dose_in_g !== undefined ? targetRecipe.dose_in_g : parseFloat(data.dose_weight) || 20.0);
+            const defaultDoseForMethod = loadedMethod === 'NextLevel Pulsar Mini' ? 15.0 : (parseFloat(data.dose_weight) || 20.0);
+            setDoseInG(targetRecipe.dose_in_g !== null && targetRecipe.dose_in_g !== undefined ? targetRecipe.dose_in_g : defaultDoseForMethod);
             setDoseOutG(targetRecipe.dose_out_g !== null && targetRecipe.dose_out_g !== undefined ? targetRecipe.dose_out_g : 36.0);
             setWaterTemp(targetRecipe.temperature ? parseInt(targetRecipe.temperature) || 93 : 93);
             setEspressoPressure(targetRecipe.espresso_pressure !== null && targetRecipe.espresso_pressure !== undefined ? targetRecipe.espresso_pressure : 9);
@@ -896,7 +907,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 { id: 'V60 (Filtrado)', lucide: <Filter size={18} strokeWidth={2.3} />, label: 'V60' },
                 { id: 'Espresso', lucide: <Zap size={18} strokeWidth={2.3} />, label: 'Espresso' },
                 { id: 'AeroPress', lucide: <Droplet size={18} strokeWidth={2.3} />, label: 'AeroPress' },
-                { id: 'Prensa Francesa', lucide: <Coffee size={18} strokeWidth={2.3} />, label: 'Prensa' }
+                { id: 'Prensa Francesa', lucide: <Coffee size={18} strokeWidth={2.3} />, label: 'Prensa' },
+                { id: 'NextLevel Pulsar Mini', lucide: <SlidersHorizontal size={18} strokeWidth={2.3} />, label: 'Pulsar Mini' }
               ].map(m => {
                 const isActive = method === m.id;
                 return (
@@ -906,6 +918,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     onClick={() => {
                       if (navigator.vibrate) navigator.vibrate(8);
                       setMethod(m.id);
+                      if (m.id === 'NextLevel Pulsar Mini') {
+                        if (!doseInG || doseInG === 20.0) setDoseInG(15.0);
+                        if (!ratioVal || ratioVal === 15.0) setRatioVal(16.6);
+                      }
                     }}
                     className={`cupertino-segmented-btn ${isActive ? 'active' : ''}`}
                     style={{
@@ -934,7 +950,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               </div>
 
               <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none' }}>
-                {FAMOUS_RECIPES.map((famous) => {
+                {(method === 'NextLevel Pulsar Mini'
+                  ? FAMOUS_RECIPES.filter(famous => famous.method === 'NextLevel Pulsar Mini' || famous.id.includes('pulsar'))
+                  : FAMOUS_RECIPES.filter(famous => famous.method === method).length > 0
+                    ? FAMOUS_RECIPES.filter(famous => famous.method === method)
+                    : FAMOUS_RECIPES
+                ).map((famous) => {
                   const isSelected = selectedFamousRecipe === famous.id;
                   return (
                     <button
@@ -1025,6 +1046,15 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {aiRecommendation.pours.map((p, idx) => (
                         <div key={idx} style={{ padding: '8px 10px', background: 'var(--bg-card)', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '11px' }}>
+                          {p.valve === 'closed' && (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FED7D7', color: '#9B2C2C', border: '1px solid #FEB2B2', marginBottom: '4px' }}>🔒 VÁLVULA CERRADA (Bloom + Inmersión)</div>
+                          )}
+                          {p.valve === 'open' && (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#C6F6D5', color: '#22543D', border: '1px solid #9AE6B4', marginBottom: '4px' }}>🔓 VÁLVULA ABIERTA (Percolación)</div>
+                          )}
+                          {p.valve === 'half' && (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FEFCBF', color: '#744210', border: '1px solid #F6E05E', marginBottom: '4px' }}>⚡ VÁLVULA MEDIA (Flujo Regulado 50%)</div>
+                          )}
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: 'var(--color-crimson)' }}>
                             <span>{p.step}. {p.label} (+{p.water_g || p.water}g)</span>
                             <span style={{ fontFamily: 'var(--font-mono)' }}>⏱️ {p.time}</span>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
-import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw, Filter, Zap, Droplet, Coffee, Edit3 } from 'lucide-react';
+import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw, Filter, Zap, Droplet, Coffee, Edit3, SlidersHorizontal } from 'lucide-react';
 import { stripEmojis, RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage } from '../utils/cardGenerator';
@@ -14,6 +14,7 @@ const METHOD_ICONS = {
 
 const getMethodLucideIcon = (methodName, size = 18) => {
   const m = (methodName || '').toLowerCase();
+  if (m.includes('pulsar')) return <SlidersHorizontal size={size} color="var(--color-crimson)" />;
   if (m.includes('v60') || m.includes('filtrado')) return <Filter size={size} color="var(--color-crimson)" />;
   if (m.includes('espresso') || m.includes('expresso')) return <Zap size={size} color="var(--color-crimson)" />;
   if (m.includes('aero') || m.includes('press')) return <Droplet size={size} color="var(--color-crimson)" />;
@@ -344,6 +345,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
       const notes = (recipe.notes || '').toLowerCase();
       const method = (recipe.method || '').toLowerCase();
       
+      if (term === 'pulsar' || term === 'pulsar mini') {
+        if (method.includes('pulsar')) return true;
+      }
+      
       return batchName.includes(term) || roaster.includes(term) || origin.includes(term) || notes.includes(term) || method.includes(term);
     }
     return true;
@@ -396,8 +401,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
           {/* Quick Method Filters */}
           <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }} className="hide-scrollbar">
-            {['Todos', 'V60', 'Espresso', 'AeroPress', 'Kalita', 'Chemex', 'Prensa'].map((m) => {
-              const isSelected = (m === 'Todos' && !searchTerm) || (searchTerm.toLowerCase() === m.toLowerCase());
+            {['Todos', 'V60', 'Espresso', 'AeroPress', 'Pulsar Mini', 'Prensa'].map((m) => {
+              const isSelected = (m === 'Todos' && !searchTerm) || 
+                (m === 'Pulsar Mini' && (searchTerm.toLowerCase() === 'pulsar mini' || searchTerm.toLowerCase() === 'pulsar')) ||
+                (searchTerm.toLowerCase() === m.toLowerCase());
               return (
                 <button
                   key={m}
@@ -748,12 +755,40 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 <label style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Método</label>
                 <input
                   type="text"
+                  list="edit-method-list"
                   className="candy-input"
                   value={editForm.method}
                   onChange={(e) => setEditForm({ ...editForm, method: e.target.value })}
                   required
                   style={{ width: '100%', boxSizing: 'border-box' }}
                 />
+                <datalist id="edit-method-list">
+                  <option value="V60 (Filtrado)" />
+                  <option value="Espresso" />
+                  <option value="AeroPress" />
+                  <option value="NextLevel Pulsar Mini" />
+                  <option value="Prensa Francesa" />
+                </datalist>
+                <div style={{ display: 'flex', gap: '4px', marginTop: '6px', flexWrap: 'wrap' }}>
+                  {['V60 (Filtrado)', 'Espresso', 'AeroPress', 'NextLevel Pulsar Mini', 'Prensa Francesa'].map(m => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setEditForm({ ...editForm, method: m })}
+                      style={{
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        border: editForm.method === m ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        background: editForm.method === m ? 'var(--bg-header)' : '#FFF',
+                        fontSize: '9.5px',
+                        fontWeight: '700',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {m === 'NextLevel Pulsar Mini' ? 'Pulsar Mini' : m}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>

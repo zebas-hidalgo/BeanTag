@@ -209,7 +209,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
   const scaScore = rec.sca_score || rec.score || 89.5;
   const dosesStr = rec.remaining_doses !== undefined ? `${rec.remaining_doses} TUBOS EN CAVA` : 'LOTE LIMITADO';
 
-  const methodStr = stripEmojis(rec.method || 'V60 Conical');
+  const rawMethodStr = stripEmojis(rec.method || 'V60 Conical');
+  const methodStr = rawMethodStr.toLowerCase().includes('pulsar')
+    ? 'PULSAR MINI // NO-BYPASS'
+    : rawMethodStr;
   const coffeeG = rec.coffee_grams || rec.dose_in_g || 15;
   const waterG = rec.water_grams || 240;
   const ratioStr = rec.ratio || `1:${(waterG / (coffeeG || 1)).toFixed(1)}`;

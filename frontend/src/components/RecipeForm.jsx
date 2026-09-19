@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Filter, Zap, X } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Filter, Zap, X, SlidersHorizontal } from 'lucide-react';
 
 export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, prefillRecipe, onBack }) {
   const [method, setMethod] = useState('V60 (Filtrado)');
@@ -30,7 +30,13 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
   useEffect(() => {
     const targetRecipe = prefillRecipe || (batch && batch.recipes && batch.recipes.length > 0 ? batch.recipes[0] : null);
     if (targetRecipe) {
-      setMethod(targetRecipe.method || 'V60 (Filtrado)');
+      if (targetRecipe.method) {
+        const recMethod = targetRecipe.method.toLowerCase();
+        if (recMethod.includes('pulsar')) setMethod('NextLevel Pulsar Mini');
+        else setMethod(targetRecipe.method);
+      } else {
+        setMethod('V60 (Filtrado)');
+      }
       if (targetRecipe.ratio && targetRecipe.ratio.includes('1:')) {
         const rm = targetRecipe.ratio.match(/1:([0-9.]+)/);
         if (rm) setRatioVal(parseFloat(rm[1]) || 15.0);
@@ -134,6 +140,7 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
     else if (recMethod.includes('espresso') || recMethod.includes('expresso')) setMethod('Espresso');
     else if (recMethod.includes('aero') || recMethod.includes('press')) setMethod('AeroPress');
     else if (recMethod.includes('prensa') || recMethod.includes('francesa')) setMethod('Prensa Francesa');
+    else if (recMethod.includes('pulsar')) setMethod('NextLevel Pulsar Mini');
 
     if (aiRecommendation.jmax_rot !== undefined) setJmaxRot(parseInt(aiRecommendation.jmax_rot) || 0);
     if (aiRecommendation.jmax_num !== undefined) setJmaxNum(parseInt(aiRecommendation.jmax_num) || 0);
@@ -238,18 +245,30 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
             { id: 'V60 (Filtrado)', lucide: <Filter size={24} />, label: 'V60' },
             { id: 'Espresso', lucide: <Zap size={24} />, label: 'Espresso' },
             { id: 'AeroPress', lucide: <Droplet size={24} />, label: 'AeroPress' },
-            { id: 'Prensa Francesa', lucide: <Coffee size={24} />, label: 'Prensa' }
+            { id: 'Prensa Francesa', lucide: <Coffee size={24} />, label: 'Prensa' },
+            { id: 'NextLevel Pulsar Mini', lucide: <SlidersHorizontal size={24} />, label: 'Pulsar Mini' }
           ].map(m => (
             <div 
               key={m.id} 
               role="button"
               tabIndex={0}
               aria-label={`Seleccionar método ${m.label}`}
-              onClick={() => { setMethod(m.id); if (navigator.vibrate) navigator.vibrate(40); }} 
+              onClick={() => {
+                setMethod(m.id);
+                if (m.id === 'NextLevel Pulsar Mini') {
+                  if (doseInG === 20.0 || !doseInG) setDoseInG(15.0);
+                  if (ratioVal === 15.0 || !ratioVal) setRatioVal(16.6);
+                }
+                if (navigator.vibrate) navigator.vibrate(40);
+              }} 
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   setMethod(m.id);
+                  if (m.id === 'NextLevel Pulsar Mini') {
+                    if (doseInG === 20.0 || !doseInG) setDoseInG(15.0);
+                    if (ratioVal === 15.0 || !ratioVal) setRatioVal(16.6);
+                  }
                   if (navigator.vibrate) navigator.vibrate(40);
                 }
               }}
@@ -340,6 +359,15 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {aiRecommendation.pours.map(p => (
                       <div key={p.step || p.label} style={{ padding: '8px 10px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        {p.valve === 'closed' && (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FED7D7', color: '#9B2C2C', border: '1px solid #FEB2B2', marginBottom: '4px', width: 'fit-content' }}>🔒 VÁLVULA CERRADA (Bloom + Inmersión)</div>
+                        )}
+                        {p.valve === 'open' && (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#C6F6D5', color: '#22543D', border: '1px solid #9AE6B4', marginBottom: '4px', width: 'fit-content' }}>🔓 VÁLVULA ABIERTA (Percolación)</div>
+                        )}
+                        {p.valve === 'half' && (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FEFCBF', color: '#744210', border: '1px solid #F6E05E', marginBottom: '4px', width: 'fit-content' }}>⚡ VÁLVULA MEDIA (Flujo Regulado 50%)</div>
+                        )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '10.5px', fontWeight: '900', color: 'var(--color-crimson)' }}>
                             Paso {p.step}: {p.label}
