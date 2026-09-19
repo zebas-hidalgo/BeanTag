@@ -135,7 +135,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
       return;
     }
 
-    const model = localStorage.getItem('gemini-model') || 'gemini-3.7-flash';
+    const model = localStorage.getItem('gemini-model') || 'gemini-2.0-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
     setSommelierLoading(true);
@@ -168,7 +168,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
       setSommelierResult(data);
       if (showToast) showToast('¡Recomendación del Sommelier lista! ☕✨', { type: 'success', duration: 2500 });
     } catch (err) {
-      if (showToast) showToast('Error al conectar con Gemini 3.7.', { type: 'error', duration: 3000 });
+      if (showToast) showToast('Error al conectar con el Sommelier IA.', { type: 'error', duration: 3000 });
     } finally {
       setSommelierLoading(false);
     }
@@ -251,7 +251,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '800', color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
               <Compass size={15} />
-              <span>Recomendación Sommelier (Gemini 3.7)</span>
+              <span>Recomendación Sommelier (Gemini AI)</span>
             </div>
             {sommelierResult.badge && (
               <span style={{ fontSize: '10px', background: 'rgba(188, 84, 73, 0.08)', border: '1px solid rgba(188, 84, 73, 0.2)', color: 'var(--color-crimson)', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold' }}>

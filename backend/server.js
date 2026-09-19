@@ -5,6 +5,17 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { OAuth2Client } = require('google-auth-library');
 const { initDb, getDb } = require('./database');
+const {
+  VALID_GEMINI_MODELS,
+  DEFAULT_GEMINI_MODEL,
+  FALLBACK_GEMINI_MODEL,
+  sanitizeModel,
+  clicksToJMax,
+  jMaxToClicks,
+  computeOfflineRecipe,
+  computeOfflineTuning,
+  callGeminiWithRetry
+} = require('./aiEngine');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -623,40 +634,43 @@ app.get('/manifest.json', (req, res) => {
   });
 });
 
-// --- GEMINI 3.7 AI CORE ENGINE ---
+// --- GEMINI AI CORE ENGINE (WITH RESILIENT FALLBACK) ---
 
 function getGeminiConfig(req) {
   const apiKey = req.headers['x-gemini-key'];
-  const requestedModel = req.headers['x-gemini-model'] || 'gemini-3.7-flash';
+  const requestedModel = req.headers['x-gemini-model'];
   const enableThinking = req.headers['x-gemini-thinking'] === 'true' || req.headers['x-gemini-thinking'] === true;
 
-  // Ensure model is a valid Gemini model
-  const model = requestedModel.includes('gemini') ? requestedModel : 'gemini-3.7-flash';
+  // Sanitize model to valid Google AI Studio IDs (e.g. gemini-2.0-flash, gemini-1.5-flash)
+  const model = sanitizeModel(requestedModel);
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const generationConfig = {
     responseMimeType: 'application/json'
   };
 
-  if (enableThinking && model.includes('3.7')) {
+  if (enableThinking && model.includes('thinking')) {
     generationConfig.thinkingConfig = {
       thinkingBudget: 2048
     };
   }
 
-  return { apiKey, model, url, generationConfig };
+  return { apiKey, model, url, generationConfig, enableThinking };
 }
 
-// 1. AI Recommendation Endpoint (Gemini 3.7 Thinking & Physics of Grinding)
+// 1. AI Recommendation Endpoint (Gemini 2.0 Flash + Offline Barista Engine Fallback)
 app.post('/api/recommend-recipe', async (req, res) => {
-  const { apiKey, model, url, generationConfig } = getGeminiConfig(req);
-  if (!apiKey) {
-    return res.status(400).json({ error: 'Falta la clave API de Gemini en las cabeceras' });
-  }
-
+  const { apiKey, model, enableThinking } = getGeminiConfig(req);
   const { origin, variety, process, altitude, roast_level, roaster_notes, method, dose_in_g } = req.body;
   const dose = parseFloat(dose_in_g) || 20.0;
   const targetMethod = method || 'V60 (Filtrado)';
+
+  // If no API key is provided, gracefully serve the offline barista calculation
+  if (!apiKey) {
+    const offlineRec = computeOfflineRecipe({ origin, variety, process, altitude, roast_level, roaster_notes, method: targetMethod, dose_in_g: dose });
+    offlineRec.notes = `${offlineRec.notes} (Modo Barista Offline - Configura tu API Key en Ajustes para activar Gemini)`;
+    return res.json(offlineRec);
+  }
 
   const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad y experto en física de molienda e hidrodinámica de extracción.
 Analiza meticulosamente este lote de café de especialidad:
@@ -674,11 +688,13 @@ REGLAS MECÁNICAS EXACTAS PARA MOLINOS PRINCIPALES:
    - Espresso: 1.2.5 a 1.4.2 (~830-1160 µm). Base habitual: 1.3.5.
    - AeroPress/Moka: 1.8.0 a 2.1.0 (~1500-1670 µm).
    - V60/Filtrado: 2.3.0 a 2.7.0 (~1850-2200 µm). Base habitual: 2.4.5.
+   - NextLevel Pulsar Mini: 2.2.0 a 2.4.0 (~1750-1950 µm). Base habitual: 2.3.0.
    - Prensa Francesa: 3.0.0 a 3.5.0 (~2370-2800 µm).
 2. FEMOBOOK A2 (18 µm/clic, 40 clics/rotación, muelas cónicas heptagonales 38mm, motor a bajas RPM):
    - Espresso: 3 a 10 clics desde cero (Base: 5 a 8 clics).
    - Moka Pot: 12 a 18 clics.
    - AeroPress: 25 a 45 clics.
+   - NextLevel Pulsar Mini: 48 a 58 clics.
    - Pour-Over / V60: 50 a 75 clics (~1.25 a 1.85 rotaciones, Base habitual: 58-62 clics = 1.5 rotaciones).
    - Kalita / Chemex: 65 a 85 clics.
    - Prensa Francesa / Cold Brew: 85 a 110 clics.
@@ -693,26 +709,26 @@ AJUSTES FÍSICOS CIENTÍFICOS OBLIGATORIOS:
 Genera un JSON con esta estructura exacta:
 {
   "method": "${targetMethod}",
-  "ratio": "${targetMethod === 'Espresso' ? '1:2.2' : '1:15'}",
-  "water_total_g": ${targetMethod === 'Espresso' ? Math.round(dose * 2.2) : Math.round(dose * 15)},
-  "grind": "${targetMethod === 'Espresso' ? 'Espresso Fino (1.3.5)' : 'Medio-Fino (2.4.5)'}",
+  "ratio": "${targetMethod === 'Espresso' ? '1:2.2' : (targetMethod.includes('Pulsar') ? '1:16' : '1:15')}",
+  "water_total_g": ${targetMethod === 'Espresso' ? Math.round(dose * 2.2) : (targetMethod.includes('Pulsar') ? Math.round(dose * 16) : Math.round(dose * 15))},
+  "grind": "${targetMethod === 'Espresso' ? 'Espresso Fino (1.3.5)' : (targetMethod.includes('Pulsar') ? 'Medio No-Bypass (2.3.0)' : 'Medio-Fino (2.4.5)')}",
   "grind_microns": "${targetMethod === 'Espresso' ? '1100 µm' : '1980 µm'}",
   "grind_adjustment_reason": "Explicación física concisa del ajuste según tueste, proceso y altitud (máx 20 palabras)",
   "jmax_rot": ${targetMethod === 'Espresso' ? 1 : (targetMethod.includes('Prensa') ? 3 : (targetMethod.includes('Aero') ? 1 : 2))},
-  "jmax_num": ${targetMethod === 'Espresso' ? 3 : (targetMethod.includes('Prensa') ? 2 : (targetMethod.includes('Aero') ? 9 : 4))},
-  "jmax_click": ${targetMethod === 'Espresso' ? 5 : (targetMethod.includes('Prensa') ? 0 : (targetMethod.includes('Aero') ? 0 : 5))},
+  "jmax_num": ${targetMethod === 'Espresso' ? 3 : (targetMethod.includes('Prensa') ? 2 : (targetMethod.includes('Aero') ? 9 : (targetMethod.includes('Pulsar') ? 3 : 4)))},
+  "jmax_click": ${targetMethod === 'Espresso' ? 5 : (targetMethod.includes('Prensa') ? 0 : (targetMethod.includes('Aero') ? 0 : (targetMethod.includes('Pulsar') ? 0 : 5)))},
   "grinders": {
-    "jmax": "${targetMethod === 'Espresso' ? '1.3.5 (1 Rot. 3 Núm. 5 Clics)' : '2.4.5 (2 Rot. 4 Núm. 5 Clics)'}",
-    "femobook_a2": "${targetMethod === 'Espresso' ? '7 clics' : (targetMethod.includes('Prensa') ? '95 clics (2.3 Rot.)' : (targetMethod.includes('Aero') ? '35 clics' : '60 clics (1.5 Rot.)'))}",
-    "comandante": "${targetMethod === 'Espresso' ? '8-10 clics' : '22-24 clics'}",
-    "timemore": "${targetMethod === 'Espresso' ? '8-9 clics' : '16-18 clics'}",
-    "baratza": "${targetMethod === 'Espresso' ? 'Ajuste 4-6' : 'Ajuste 14-16'}"
+    "jmax": "${targetMethod === 'Espresso' ? '1.3.5 (1 Rot. 3 Núm. 5 Clics)' : (targetMethod.includes('Pulsar') ? '2.3.0 (2 Rot. 3 Núm. 0 Clics)' : '2.4.5 (2 Rot. 4 Núm. 5 Clics)')}",
+    "femobook_a2": "${targetMethod === 'Espresso' ? '7 clics' : (targetMethod.includes('Prensa') ? '95 clics (2.3 Rot.)' : (targetMethod.includes('Aero') ? '35 clics' : (targetMethod.includes('Pulsar') ? '54 clics (1.35 Rot.)' : '60 clics (1.5 Rot.)')))}",
+    "comandante": "${targetMethod === 'Espresso' ? '8-10 clics' : (targetMethod.includes('Pulsar') ? '20-21 clics' : '22-24 clics')}",
+    "timemore": "${targetMethod === 'Espresso' ? '8-9 clics' : (targetMethod.includes('Pulsar') ? '15-16 clics' : '16-18 clics')}",
+    "baratza": "${targetMethod === 'Espresso' ? 'Ajuste 4-6' : (targetMethod.includes('Pulsar') ? 'Ajuste 13' : 'Ajuste 14-16')}"
   },
-  "temperature": ${targetMethod === 'Espresso' ? 92 : 93},
-  "brew_time": "${targetMethod === 'Espresso' ? '28s' : '2:30 min'}",
+  "temperature": ${targetMethod === 'Espresso' ? 92 : (targetMethod.includes('Pulsar') ? 94 : 93)},
+  "brew_time": "${targetMethod === 'Espresso' ? '28s' : (targetMethod.includes('Pulsar') ? '3:20 min' : '2:30 min')}",
   "pours": [
-    { "step": 1, "label": "${targetMethod === 'Espresso' ? 'Pre-infusión Espresso' : 'Bloom / Pre-infusión'}", "water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 0.5) : 60}, "total_water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 0.5) : 60}, "time": "${targetMethod === 'Espresso' ? '0s - 5s' : '0:00 - 0:45'}", "description": "${targetMethod === 'Espresso' ? 'Pre-infusión a baja presión.' : 'Verter en espiral para desgasificar.'}" },
-    { "step": 2, "label": "${targetMethod === 'Espresso' ? 'Extracción Principal' : '1º Vertido Principal'}", "water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 2.2 - dose * 0.5) : Math.round(dose * 15 - 60)}, "total_water_g": ${Math.round(targetMethod === 'Espresso' ? dose * 2.2 : dose * 15)}, "time": "${targetMethod === 'Espresso' ? '5s - 28s' : '0:45 - 2:30'}", "description": "${targetMethod === 'Espresso' ? 'Rampa continua a 9 bar.' : 'Vertido continuo en pulso medio.'}" }
+    { "step": 1, "label": "${targetMethod === 'Espresso' ? 'Pre-infusión Espresso' : (targetMethod.includes('Pulsar') ? 'Bloom / Válvula Cerrada' : 'Bloom / Pre-infusión')}", "water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 0.5) : 60}, "total_water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 0.5) : 60}, "time": "${targetMethod === 'Espresso' ? '0s - 5s' : '0:00 - 0:45'}", "description": "${targetMethod === 'Espresso' ? 'Pre-infusión a baja presión.' : (targetMethod.includes('Pulsar') ? '🔒 Válvula cerrada. Saturar y agitar suave.' : 'Verter en espiral para desgasificar.')}" },
+    { "step": 2, "label": "${targetMethod === 'Espresso' ? 'Extracción Principal' : (targetMethod.includes('Pulsar') ? '1º Pulso / Válvula Media' : '1º Vertido Principal')}", "water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 2.2 - dose * 0.5) : (targetMethod.includes('Pulsar') ? Math.round((dose * 16 - 60) * 0.5) : Math.round(dose * 15 - 60))}, "total_water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 2.2) : (targetMethod.includes('Pulsar') ? Math.round(60 + (dose * 16 - 60) * 0.5) : Math.round(dose * 15))}, "time": "${targetMethod === 'Espresso' ? '5s - 28s' : (targetMethod.includes('Pulsar') ? '0:45 - 1:45' : '0:45 - 2:30')}", "description": "${targetMethod === 'Espresso' ? 'Rampa continua a 9 bar.' : (targetMethod.includes('Pulsar') ? '⚡ Válvula al 50%. Verter con dispersor.' : 'Vertido continuo en pulso medio.')}" }
   ],
   "steps": [
     "Purgar y secar el portafiltro o recipiente.",
@@ -724,40 +740,29 @@ Genera un JSON con esta estructura exacta:
 }`;
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig
-      })
-    });
-
-    if (!response.ok) {
-      const errData = await response.json();
-      return res.status(response.status).json({ error: errData.error?.message || `Error con Gemini (${model})` });
-    }
-
-    const data = await response.json();
-    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
-    const recommendation = JSON.parse(text);
+    const recommendation = await callGeminiWithRetry(prompt, apiKey, model, enableThinking);
     res.json(recommendation);
   } catch (err) {
-    res.status(500).json({ error: 'Error al procesar la recomendación: ' + err.message });
+    console.warn(`[AI Recommend Fallback] Error with Gemini (${model}): ${err.message}. Serving deterministic barista recipe.`);
+    const fallbackRec = computeOfflineRecipe({ origin, variety, process, altitude, roast_level, roaster_notes, method: targetMethod, dose_in_g: dose });
+    fallbackRec._error = err.message;
+    fallbackRec.notes = `${fallbackRec.notes} (Receta calculada localmente: servidores de Google no disponibles o saturados)`;
+    res.json(fallbackRec);
   }
 });
 
 // 2. AI Recipe Re-calibration Endpoint (Smart Tuning based on Sensory Feedback)
 app.post('/api/ai/tune-recipe', async (req, res) => {
-  const { apiKey, model, url, generationConfig } = getGeminiConfig(req);
-  if (!apiKey) {
-    return res.status(400).json({ error: 'Falta la clave API de Gemini en las cabeceras' });
-  }
-
+  const { apiKey, model, enableThinking } = getGeminiConfig(req);
   const { method, dose_in_g, ratio, temperature, jmax_rot, jmax_num, jmax_click, sensory_extraction, sensory_balance, sensory_body, user_notes, batch_name } = req.body;
   const dose = parseFloat(dose_in_g) || 20.0;
+
+  // If no API key is provided, serve offline barista tuning calculation directly
+  if (!apiKey) {
+    const offlineTune = computeOfflineTuning(req.body);
+    offlineTune.notes = `${offlineTune.notes} (Modo Barista Offline - Configura tu API Key en Ajustes)`;
+    return res.json(offlineTune);
+  }
 
   const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad. El usuario preparó una receta de "${batch_name || 'Especialidad'}" con ${method}:
 Dosis: ${dose}g, Ratio: ${ratio || '1:15'}, Temp: ${temperature || 93}°C, Molino J-Max: ${jmax_rot}.${jmax_num}.${jmax_click}.
@@ -802,30 +807,17 @@ RECALIBRA científicamente la receta para corregir los defectos (${sensory_extra
 }`;
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig
-      })
-    });
-
-    if (!response.ok) {
-      const errData = await response.json();
-      return res.status(response.status).json({ error: errData.error?.message || `Error con Gemini (${model})` });
-    }
-
-    const data = await response.json();
-    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
-    const tunedRecommendation = JSON.parse(text);
+    const tunedRecommendation = await callGeminiWithRetry(prompt, apiKey, model, enableThinking);
     res.json(tunedRecommendation);
   } catch (err) {
-    res.status(500).json({ error: 'Error al recalibrar la receta: ' + err.message });
+    console.warn(`[AI Tune Fallback] Error with Gemini (${model}): ${err.message}. Serving deterministic barista tuning.`);
+    const fallbackTune = computeOfflineTuning(req.body);
+    fallbackTune._error = err.message;
+    fallbackTune.notes = `${fallbackTune.notes} (Recalibración calculada localmente: servidores de Google no disponibles o saturados)`;
+    res.json(fallbackTune);
   }
 });
+
 
 // 3. AI Multimodal Coffee Bag / Receipt Scanner (Gemini 3.7 Vision OCR)
 app.post('/api/ai/scan-bag', async (req, res) => {

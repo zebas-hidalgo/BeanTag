@@ -245,7 +245,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       return;
     }
 
-    const model = localStorage.getItem('gemini-model') || 'gemini-3.7-flash';
+    const model = localStorage.getItem('gemini-model') || 'gemini-2.0-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
     setAiLoading(true);
@@ -280,7 +280,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     })
     .then(data => {
       setAiRecommendation(data);
-      if (showToast) showToast('¡Recomendación generada por la IA!', { type: 'success', duration: 2500 });
+      if (data._source === 'barista_fallback') {
+        if (showToast) showToast('Receta calibrada con motor Barista Offline', { type: 'info', duration: 3000 });
+      } else {
+        if (showToast) showToast('¡Recomendación generada por la IA!', { type: 'success', duration: 2500 });
+      }
     })
     .catch(err => {
       setAiError(err.message);

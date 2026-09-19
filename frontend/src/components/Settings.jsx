@@ -11,7 +11,12 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
     return localStorage.getItem('gemini-api-key') || '';
   });
   const [selectedModel, setSelectedModel] = useState(() => {
-    return localStorage.getItem('gemini-model') || 'gemini-3.7-flash';
+    const stored = localStorage.getItem('gemini-model');
+    if (!stored || stored.includes('3.7') || stored.includes('2.5')) {
+      localStorage.setItem('gemini-model', 'gemini-2.0-flash');
+      return 'gemini-2.0-flash';
+    }
+    return stored;
   });
   const [isThinkingEnabled, setIsThinkingEnabled] = useState(() => {
     return localStorage.getItem('gemini-thinking') === 'true';
@@ -313,14 +318,14 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
             <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: 0, color: 'var(--color-text)', letterSpacing: '0.5px' }}>
-              Inteligencia Artificial (Gemini 3.7 Core)
+              Inteligencia Artificial (Gemini Core)
             </h4>
             <span style={{ fontSize: '9px', background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: '900' }}>
-              v3.7 FLASH & PRO
+              GEMINI 2.0 FLASH
             </span>
           </div>
           <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
-            Potencia el escaneo de bolsas por foto (OCR), el sommelier de inventario y la calibración profunda con Thinking Mode.
+            Potencia el escaneo de bolsas por foto (OCR), el sommelier de inventario y la recomendación experta de recetas con fallback offline.
           </p>
         </div>
 
@@ -356,11 +361,9 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 onChange={(e) => handleModelChange(e.target.value)}
                 style={{ fontSize: '11px', padding: '6px 8px' }}
               >
-                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Super Rápido & Estable)</option>
+                <option value="gemini-2.0-flash">Gemini 2.0 Flash (Recomendado - Rápido & Preciso)</option>
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Super Estable)</option>
                 <option value="gemini-1.5-pro">Gemini 1.5 Pro (Alta Precisión)</option>
-                <option value="gemini-3.7-flash">Gemini 3.7 Flash (Thinking Mode)</option>
-                <option value="gemini-3.7-pro">Gemini 3.7 Pro (Máximo Razonamiento)</option>
-                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
               </select>
             </div>
 

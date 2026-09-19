@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Filter, Zap, X, SlidersHorizontal } from 'lucide-react';
+import { apiUrl } from '../utils/api';
 
 export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, prefillRecipe, onBack }) {
   const [method, setMethod] = useState('V60 (Filtrado)');
@@ -72,11 +73,11 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
       if (showToast) showToast('Configura tu clave API de Gemini en Ajustes para usar la IA.', { type: 'error', duration: 4000 });
       return;
     }
-    const model = localStorage.getItem('gemini-model') || 'gemini-3.7-flash';
+    const model = localStorage.getItem('gemini-model') || 'gemini-2.0-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
     setAiLoading(true); setAiError(''); setAiRecommendation(null);
-    fetch('api/recommend-recipe', {
+    fetch(apiUrl('api/recommend-recipe'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -90,7 +91,11 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
       return res.json();
     }).then(data => {
       setAiRecommendation(data);
-      if (showToast) showToast('¡Recomendación generada por la IA!', { type: 'success', duration: 2500 });
+      if (data._source === 'barista_fallback') {
+        if (showToast) showToast('Receta calibrada con motor Barista Offline', { type: 'info', duration: 3000 });
+      } else {
+        if (showToast) showToast('¡Recomendación generada por la IA!', { type: 'success', duration: 2500 });
+      }
     }).catch(err => {
       setAiError(err.message);
       if (showToast) showToast('Error al obtener receta de IA.', { type: 'error', duration: 4000 });
@@ -103,11 +108,11 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
       if (showToast) showToast('Configura tu clave API de Gemini en Ajustes para recalibrar.', { type: 'error', duration: 4000 });
       return;
     }
-    const model = localStorage.getItem('gemini-model') || 'gemini-3.7-flash';
+    const model = localStorage.getItem('gemini-model') || 'gemini-2.0-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
     setAiLoading(true); setAiError('');
-    fetch('api/ai/tune-recipe', {
+    fetch(apiUrl('api/ai/tune-recipe'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -276,11 +276,11 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
       return;
     }
 
-    const model = localStorage.getItem('gemini-model') || 'gemini-3.7-flash';
+    const model = localStorage.getItem('gemini-model') || 'gemini-2.0-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
     setIsScanning(true);
-    if (showToast) showToast('Analizando bolsa de café con Gemini 3.7 Vision...', { type: 'info', duration: 3000 });
+    if (showToast) showToast('Analizando bolsa de café con Gemini Vision...', { type: 'info', duration: 3000 });
 
     try {
       const reader = new FileReader();
@@ -307,7 +307,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
             return;
           }
 
-          // Autopopulate fields from Gemini 3.7 Vision
+          // Autopopulate fields from Gemini Vision
           if (data.name) setName(data.name);
           if (data.producer) setProducer(data.producer);
           if (data.origin) setOrigin(data.origin);
@@ -324,7 +324,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
 
           if (showToast) showToast('¡Bolsa escaneada y datos extraídos con éxito! ☕📸', { type: 'success', duration: 3500 });
         } catch (err) {
-          if (showToast) showToast('Error al conectar con Gemini 3.7.', { type: 'error', duration: 3500 });
+          if (showToast) showToast('Error al conectar con Gemini.', { type: 'error', duration: 3500 });
         } finally {
           setIsScanning(false);
         }
@@ -393,7 +393,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
               Identidad del Café
             </h4>
             <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
-              Gemini 3.7 Vision OCR
+              Gemini Vision OCR
             </span>
           </div>
           <div className="form-group">
