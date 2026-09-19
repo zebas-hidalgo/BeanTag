@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Filter, Zap, X, SlidersHorizontal } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Filter, Zap, X, SlidersHorizontal, Check } from 'lucide-react';
 import { apiUrl } from '../utils/api';
+import { FAMOUS_RECIPES } from '../utils/famousRecipes';
 
 export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, prefillRecipe, onBack }) {
   const [method, setMethod] = useState('V60 (Filtrado)');
@@ -27,6 +28,48 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
   const [aiLoading, setAiLoading] = useState(false);
   const [aiRecommendation, setAiRecommendation] = useState(null);
   const [aiError, setAiError] = useState('');
+
+  // Pulsar Mini interactive 3-state valve configuration
+  const [pulsarStages, setPulsarStages] = useState([
+    { step: 1, label: 'Bloom e Inmersión + WWDT', water_g: 50, valve: 'closed', time: '0:00 - 0:45', desc: 'Válvula cerrada. 50g agua y agitación WWDT suave para saturar homogéneamente.' },
+    { step: 2, label: '1º Vertido de Percolación', water_g: 100, valve: 'open', time: '0:45 - 2:00', desc: 'Válvula abierta al 100% sobre tapa dispersora manteniendo caudal suave.' },
+    { step: 3, label: '2º Vertido Final', water_g: 100, valve: 'open', time: '2:00 - 3:30', desc: 'Drenaje continuo hasta alcanzar cama plana sin canalizaciones.' }
+  ]);
+
+  const applyPulsarPreset = (presetId) => {
+    const recipe = FAMOUS_RECIPES.find(r => r.id === presetId);
+    if (!recipe) return;
+    const dose = recipe.defaultDose || 15;
+    setDoseInG(dose);
+    setRatioVal(recipe.ratioVal || 16.6);
+    setWaterTemp(recipe.temperature || 94);
+    setBrewTime(recipe.brewTime || '3:30 min');
+    if (recipe.grinderSettings?.jmax) {
+      const s = recipe.grinderSettings.jmax;
+      if (s.rot !== undefined) setJmaxRot(s.rot);
+      if (s.num !== undefined) setJmaxNum(s.num);
+      if (s.click !== undefined) setJmaxClick(s.click);
+    }
+    const calculated = recipe.calculatePours(dose);
+    setPulsarStages(calculated.map((p, i) => ({
+      step: p.step || i + 1,
+      label: p.label,
+      water_g: p.water_g,
+      valve: p.valve || 'open',
+      time: p.time,
+      desc: p.description
+    })));
+    if (showToast) {
+      showToast(`Preset cargado: ${recipe.name}`, { type: 'success', duration: 2500 });
+    }
+  };
+
+  const handleValveChange = (index, newValve) => {
+    setPulsarStages(prev => prev.map((s, i) => i === index ? { ...s, valve: newValve } : s));
+    if (navigator.vibrate) {
+      try { navigator.vibrate(12); } catch (e) {}
+    }
+  };
 
   useEffect(() => {
     const targetRecipe = prefillRecipe || (batch && batch.recipes && batch.recipes.length > 0 ? batch.recipes[0] : null);
@@ -147,6 +190,17 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
     else if (recMethod.includes('prensa') || recMethod.includes('francesa')) setMethod('Prensa Francesa');
     else if (recMethod.includes('pulsar')) setMethod('NextLevel Pulsar Mini');
 
+    if (recMethod.includes('pulsar') && aiRecommendation.pours && aiRecommendation.pours.length > 0) {
+      setPulsarStages(aiRecommendation.pours.map((p, i) => ({
+        step: p.step || i + 1,
+        label: p.label,
+        water_g: p.water_g || p.water,
+        valve: p.valve || 'open',
+        time: p.time,
+        desc: p.description
+      })));
+    }
+
     if (aiRecommendation.jmax_rot !== undefined) setJmaxRot(parseInt(aiRecommendation.jmax_rot) || 0);
     if (aiRecommendation.jmax_num !== undefined) setJmaxNum(parseInt(aiRecommendation.jmax_num) || 0);
     if (aiRecommendation.jmax_click !== undefined) setJmaxClick(parseInt(aiRecommendation.jmax_click) || 0);
@@ -165,9 +219,22 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
   const handleRecipeSubmit = (e) => {
     e.preventDefault();
     const ratioText = method === 'Espresso' ? `1:${(doseOutG / doseInG).toFixed(1)}` : `1:${ratioVal.toFixed(1)} (${(doseInG * ratioVal).toFixed(0)}g)`;
+    
+    let finalNotes = notes.trim();
+    if (method === 'NextLevel Pulsar Mini' && pulsarStages && pulsarStages.length > 0) {
+      const valveSeq = pulsarStages.map(s => {
+        const vText = s.valve === 'closed' ? '🔒 Cerrada' : s.valve === 'half' ? '⚡ 50% Media' : '🔓 100% Abierta';
+        const lbl = (s.label || `Paso ${s.step}`).split('(')[0].trim();
+        return `${lbl}: ${vText}`;
+      }).join(' • ');
+      if (!finalNotes.includes('[Válvula:')) {
+        finalNotes = finalNotes ? `${finalNotes} | [Válvula: ${valveSeq}]` : `[Válvula: ${valveSeq}]`;
+      }
+    }
+
     onSaveRecipe({
       batch_id: batch.id, method, ratio: ratioText, grind: `J-Max: ${jmaxRot}.${jmaxNum}.${jmaxClick}`, temperature: `${waterTemp}°C`,
-      brew_time: brewTime, notes: notes.trim(), sensory_balance: sensoryBalance, sensory_body: sensoryBody, sensory_extraction: sensoryExtraction,
+      brew_time: brewTime, notes: finalNotes, sensory_balance: sensoryBalance, sensory_body: sensoryBody, sensory_extraction: sensoryExtraction,
       dose_in_g: parseFloat(doseInG), dose_out_g: method === 'Espresso' ? parseFloat(doseOutG) : null,
       espresso_pressure: method === 'Espresso' ? parseFloat(espressoPressure) : null, espresso_preinfusion: method === 'Espresso' ? parseInt(espressoPreinfusion) : null
     });
@@ -217,17 +284,23 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', textAlign: 'center' }}>
                 <div style={{ padding: '6px', backgroundColor: '#FFF5F5', border: '1px solid var(--color-crimson)', borderRadius: '4px' }}>
-                  <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-crimson)' }}>🌸 Bloom</div>
+                  <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-crimson)' }}>
+                    {method === 'NextLevel Pulsar Mini' ? '🔒 Bloom Cerrada' : '🌸 Bloom'}
+                  </div>
                   <div style={{ fontSize: '13px', fontWeight: '900', margin: '2px 0' }}>{Math.round(calcDose * 3)}g</div>
                   <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>0s - 45s</div>
                 </div>
                 <div style={{ padding: '6px', backgroundColor: 'var(--bg-canvas)', border: '1px solid var(--border-color)', borderRadius: '4px' }}>
-                  <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text)' }}>🌊 Vertido 1</div>
+                  <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text)' }}>
+                    {method === 'NextLevel Pulsar Mini' ? '⚡/🔓 Vertido 1' : '🌊 Vertido 1'}
+                  </div>
                   <div style={{ fontSize: '13px', fontWeight: '900', margin: '2px 0' }}>{Math.round(calcDose * 3 + (calcWater - calcDose * 3) * 0.5)}g</div>
                   <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>45s - 1m 20s</div>
                 </div>
                 <div style={{ padding: '6px', backgroundColor: '#F7FAFC', border: '1px solid var(--border-color)', borderRadius: '4px' }}>
-                  <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text)' }}>☕ Vertido 2</div>
+                  <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text)' }}>
+                    {method === 'NextLevel Pulsar Mini' ? '🔓 Drenaje 100%' : '☕ Vertido 2'}
+                  </div>
                   <div style={{ fontSize: '13px', fontWeight: '900', margin: '2px 0' }}>{calcWater}g</div>
                   <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)' }}>1m 20s - 2m 30s</div>
                 </div>
@@ -289,6 +362,170 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
             </div>
           ))}
         </div>
+
+        {/* Control Interactivo de Válvula Pulsar Mini (Scott Rao / Jonathan Gagné) */}
+        {method === 'NextLevel Pulsar Mini' && (
+          <div className="candy-card static" style={{ margin: '16px 0', padding: '16px', border: '2px solid var(--border-color)', backgroundColor: 'var(--bg-card)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <SlidersHorizontal size={18} color="var(--color-crimson)" />
+                <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0, color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+                  Control de Válvula de Flujo (Pulsar Mini)
+                </h4>
+              </div>
+              <span style={{ fontSize: '10px', background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 8px', borderRadius: '4px', fontWeight: '900', border: '1px solid var(--border-color)' }}>
+                NO-BYPASS
+              </span>
+            </div>
+
+            {/* Presets Bar */}
+            <div style={{ marginBottom: '14px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text-muted)', display: 'block', marginBottom: '6px' }}>
+                Presets Legendarios Barista:
+              </span>
+              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                {[
+                  { id: 'scott-rao-pulsar-mini', label: 'Scott Rao No-Bypass', badge: '1:16.6 • 94°C' },
+                  { id: 'gagne-high-extraction-mini', label: 'Jonathan Gagné 50%', badge: '1:17 • 96°C' },
+                  { id: 'pulsar-mini-concentrate', label: 'Pulsar Concentrado', badge: '1:14 • 92°C' }
+                ].map(preset => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => applyPulsarPreset(preset.id)}
+                    className="btn-candy"
+                    style={{
+                      margin: 0,
+                      fontSize: '11px',
+                      padding: '8px 12px',
+                      minHeight: '44px',
+                      flexShrink: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      justifyContent: 'center',
+                      gap: '2px'
+                    }}
+                  >
+                    <strong style={{ fontSize: '11.5px' }}>{preset.label}</strong>
+                    <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>{preset.badge}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Etapas y Selector de Válvula de 3 Estados */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <label className="barista-label">
+                Posición de la Válvula por Etapa de Extracción:
+              </label>
+              {pulsarStages.map((stage, idx) => (
+                <div 
+                  key={stage.step || idx}
+                  style={{
+                    padding: '12px',
+                    backgroundColor: 'var(--barista-bg-surface, var(--bg-canvas))',
+                    border: '1.5px solid var(--border-color)',
+                    borderRadius: '10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text)' }}>
+                      Etapa {stage.step}: {stage.label} (+{stage.water_g}g)
+                    </span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
+                      ⏱️ {stage.time}
+                    </span>
+                  </div>
+
+                  {/* Selector de 3 Estados */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleValveChange(idx, 'closed')}
+                      style={{
+                        minHeight: '44px',
+                        padding: '6px 8px',
+                        borderRadius: '8px',
+                        fontSize: '11px',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        border: stage.valve === 'closed' ? '2px solid #EF4444' : '1px solid var(--border-color)',
+                        backgroundColor: stage.valve === 'closed' ? '#FEE2E2' : 'var(--bg-card)',
+                        color: stage.valve === 'closed' ? '#991B1B' : 'var(--color-text-muted)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <span>🔒</span>
+                      <span>Cerrada</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleValveChange(idx, 'half')}
+                      style={{
+                        minHeight: '44px',
+                        padding: '6px 8px',
+                        borderRadius: '8px',
+                        fontSize: '11px',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        border: stage.valve === 'half' ? '2px solid #F59E0B' : '1px solid var(--border-color)',
+                        backgroundColor: stage.valve === 'half' ? '#FEF3C7' : 'var(--bg-card)',
+                        color: stage.valve === 'half' ? '#92400E' : 'var(--color-text-muted)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <span>⚡</span>
+                      <span>50% Media</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleValveChange(idx, 'open')}
+                      style={{
+                        minHeight: '44px',
+                        padding: '6px 8px',
+                        borderRadius: '8px',
+                        fontSize: '11px',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        border: stage.valve === 'open' ? '2px solid #10B981' : '1px solid var(--border-color)',
+                        backgroundColor: stage.valve === 'open' ? '#D1FAE5' : 'var(--bg-card)',
+                        color: stage.valve === 'open' ? '#065F46' : 'var(--color-text-muted)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <span>🔓</span>
+                      <span>100% Abierta</span>
+                    </button>
+                  </div>
+
+                  {stage.desc && (
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', lineHeight: 1.3 }}>
+                      {stage.desc}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <details className="bento-accordion" style={{ margin: '16px 0' }}>
           <summary className="bento-accordion-header" style={{ padding: '12px 14px' }}>

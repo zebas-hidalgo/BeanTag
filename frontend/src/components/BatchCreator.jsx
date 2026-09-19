@@ -352,13 +352,17 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
         style={{ display: 'none' }} 
       />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <button className="btn-candy" onClick={handleCancel} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <X size={16} strokeWidth={2.5} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+        <button 
+          className="btn-candy" 
+          onClick={handleCancel} 
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', minHeight: '44px', padding: '10px 16px', fontSize: '13px' }}
+        >
+          <X size={18} strokeWidth={2.5} />
           Cancelar
         </button>
 
-        {/* Gemini 3.7 Camera Scan Trigger */}
+        {/* Gemini Camera Scan Trigger */}
         {!batchToEdit && (
           <button 
             type="button" 
@@ -368,80 +372,82 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: '6px', 
+              gap: '8px', 
               margin: 0, 
-              fontSize: '11px', 
-              padding: '6px 12px',
-              backgroundColor: 'var(--color-crimson)'
+              fontSize: '13px', 
+              minHeight: '44px',
+              padding: '10px 16px',
+              backgroundColor: 'var(--color-crimson)',
+              fontWeight: 'bold'
             }}
           >
-            {isScanning ? <Loader2 size={14} className="spin" /> : <Camera size={14} />}
+            {isScanning ? <Loader2 size={16} className="spin" /> : <Camera size={16} />}
             <span>{isScanning ? 'Escaneando...' : '📸 Escanear Bolsa (IA)'}</span>
           </button>
         )}
       </div>
 
-      <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 14px 0', fontSize: '16px' }}>
+      <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 16px 0', fontSize: '18px' }}>
         {batchToEdit ? 'Editar Lote' : 'Registrar Lote'}
       </h2>
       
       <form onSubmit={handleSubmit}>
         {/* Sección 1 — Identidad del Café */}
-        <div className="candy-card static" style={{ cursor: 'default' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: 0, color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
+        <div className="candy-card static" style={{ cursor: 'default', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: 0, color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
               Identidad del Café
             </h4>
-            <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
+            <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
               Gemini Vision OCR
             </span>
           </div>
           <div className="form-group">
-            <label>Nombre del Café</label>
-            <input className="candy-input" value={name} onChange={(e) => setName(e.target.value)} type="text" required placeholder="Ej. Pink Bourbon" />
+            <label className="barista-label">Nombre del Café</label>
+            <input className="candy-input" value={name} onChange={(e) => setName(e.target.value)} type="text" required placeholder="Ej. Pink Bourbon" style={{ minHeight: '44px', fontSize: '13px' }} />
           </div>
           
           <div className="form-group">
-            <label>Productor / Finca</label>
-            <input className="candy-input" value={producer} onChange={(e) => setProducer(e.target.value)} type="text" required placeholder="Ej. Nestor Lasso / El Diviso" />
+            <label className="barista-label">Productor / Finca</label>
+            <input className="candy-input" value={producer} onChange={(e) => setProducer(e.target.value)} type="text" required placeholder="Ej. Nestor Lasso / El Diviso" style={{ minHeight: '44px', fontSize: '13px' }} />
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label>Origen</label>
-              <input className="candy-input" value={origin} onChange={(e) => setOrigin(e.target.value)} type="text" placeholder="Ej. Colombia" />
+              <label className="barista-label">Origen</label>
+              <input className="candy-input" value={origin} onChange={(e) => setOrigin(e.target.value)} type="text" placeholder="Ej. Colombia" style={{ minHeight: '44px', fontSize: '13px' }} />
             </div>
             <div className="form-group">
-              <label>Varietal</label>
-              <input className="candy-input" value={variety} onChange={(e) => setVariety(e.target.value)} type="text" placeholder="Ej. Bourbon" />
+              <label className="barista-label">Varietal</label>
+              <input className="candy-input" value={variety} onChange={(e) => setVariety(e.target.value)} type="text" placeholder="Ej. Bourbon" style={{ minHeight: '44px', fontSize: '13px' }} />
             </div>
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label>Altitud</label>
-              <input className="candy-input" value={altitude} onChange={(e) => setAltitude(e.target.value)} type="text" placeholder="Ej. 1800 msnm" />
+              <label className="barista-label">Altitud</label>
+              <input className="candy-input" value={altitude} onChange={(e) => setAltitude(e.target.value)} type="text" placeholder="Ej. 1800 msnm" style={{ minHeight: '44px', fontSize: '13px' }} />
             </div>
             <div className="form-group">
-              <label>Proceso</label>
-              <input className="candy-input" value={process} onChange={(e) => setProcess(e.target.value)} type="text" placeholder="Ej. Anaeróbico" />
+              <label className="barista-label">Proceso</label>
+              <input className="candy-input" value={process} onChange={(e) => setProcess(e.target.value)} type="text" placeholder="Ej. Anaeróbico" style={{ minHeight: '44px', fontSize: '13px' }} />
             </div>
           </div>
         </div>
 
         {/* Sección 2 — Perfil de Tueste & Notas de Cata */}
-        <div className="candy-card static" style={{ cursor: 'default' }}>
-          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 12px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
+        <div className="candy-card static" style={{ cursor: 'default', marginBottom: '14px' }}>
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 14px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
             Perfil de Tueste & Notas de Cata
           </h4>
           <div className="form-row">
             <div className="form-group">
-              <label>Tostador</label>
-              <input className="candy-input" value={roaster} onChange={(e) => setRoaster(e.target.value)} type="text" placeholder="Ej. Coffee Circular" />
+              <label className="barista-label">Tostador</label>
+              <input className="candy-input" value={roaster} onChange={(e) => setRoaster(e.target.value)} type="text" placeholder="Ej. Coffee Circular" style={{ minHeight: '44px', fontSize: '13px' }} />
             </div>
             <div className="form-group">
-              <label>Tueste</label>
-              <select className="candy-input" value={roastLevel} onChange={(e) => setRoastLevel(e.target.value)}>
+              <label className="barista-label">Tueste</label>
+              <select className="candy-input" value={roastLevel} onChange={(e) => setRoastLevel(e.target.value)} style={{ minHeight: '44px', fontSize: '13px' }}>
                 <option value="Claro">Claro</option>
                 <option value="Medio">Medio</option>
                 <option value="Oscuro">Oscuro</option>
@@ -451,48 +457,48 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
 
           <div className="form-row">
             <div className="form-group">
-              <label>Fecha de Tueste</label>
-              <input className="candy-input" value={roastDate} onChange={(e) => setRoastDate(e.target.value)} type="date" />
+              <label className="barista-label">Fecha de Tueste</label>
+              <input className="candy-input" value={roastDate} onChange={(e) => setRoastDate(e.target.value)} type="date" style={{ minHeight: '44px', fontSize: '13px' }} />
             </div>
             <div className="form-group">
-              <label>Fecha de Congelado</label>
-              <input className="candy-input" value={freezeDate} onChange={(e) => setFreezeDate(e.target.value)} type="date" />
+              <label className="barista-label">Fecha de Congelado</label>
+              <input className="candy-input" value={freezeDate} onChange={(e) => setFreezeDate(e.target.value)} type="date" style={{ minHeight: '44px', fontSize: '13px' }} />
             </div>
           </div>
 
           <div className="form-group" style={{ marginTop: '16px' }}>
-            <label style={{ marginBottom: '12px', display: 'block', fontWeight: '900', textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.5px', color: 'var(--color-crimson)' }}>
+            <label className="barista-label" style={{ marginBottom: '12px' }}>
               Notas de Cata (Rueda de Sabores SCA)
             </label>
             
             {/* Selection Summary */}
             {selectedFlavorTags.length > 0 && (
-              <div style={{ marginBottom: '12px', padding: '10px', backgroundColor: '#F8FAFC', border: '2px solid #000000', borderRadius: '6px', boxShadow: '2px 2px 0px #000000' }}>
-                <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 'bold', textTransform: 'uppercase', display: 'block', marginBottom: '6px', letterSpacing: '0.5px' }}>
+              <div style={{ marginBottom: '14px', padding: '12px', backgroundColor: 'var(--barista-bg-surface, var(--bg-card))', border: '1.5px solid var(--barista-border-hairline, var(--border-color))', borderRadius: '10px', boxShadow: 'var(--barista-shadow-card)' }}>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 'bold', textTransform: 'uppercase', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>
                   Seleccionados ({selectedFlavorTags.length}):
                 </span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {(Array.isArray(selectedFlavorTags) ? selectedFlavorTags : []).map((tag, i) => {
                     const colors = getScaColorForNote(tag);
                     return (
                       <span key={i} style={{
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '4px',
-                        padding: '4px 8px',
+                        gap: '6px',
+                        padding: '6px 10px',
                         backgroundColor: colors.bg,
                         color: colors.text,
                         border: `1.5px solid ${colors.border}`,
-                        borderRadius: '6px',
-                        fontSize: '10.5px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
                         fontWeight: '800'
                       }}>
-                        {getScaIcon(tag, 11, 2.5)}
+                        {getScaIcon(tag, 13, 2.5)}
                         {stripEmojis(tag)}
                         <button 
                           type="button" 
                           onClick={() => toggleFlavorTag(tag)}
-                          style={{ background: 'none', border: 'none', color: colors.text, cursor: 'pointer', padding: '0 0 0 4px', fontWeight: '900', fontSize: '12px', display: 'flex', alignItems: 'center' }}
+                          style={{ background: 'none', border: 'none', color: colors.text, cursor: 'pointer', padding: '0 0 0 4px', fontWeight: '900', fontSize: '14px', display: 'flex', alignItems: 'center', minWidth: '24px', minHeight: '24px', justifyContent: 'center' }}
                         >
                           ×
                         </button>
@@ -507,8 +513,8 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
             <div style={{ 
               display: 'flex', 
               overflowX: 'auto', 
-              gap: '6px', 
-              marginBottom: '12px',
+              gap: '8px', 
+              marginBottom: '14px', 
               paddingBottom: '6px',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none'
@@ -521,23 +527,24 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                     type="button"
                     onClick={() => setActiveTab(catGroup.category)}
                     style={{
-                      padding: '6px 12px',
+                      padding: '10px 16px',
+                      minHeight: '44px',
                       fontFamily: 'var(--font-heading)',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: 'bold',
-                      border: '1.5px solid var(--border-color)',
-                      borderRadius: '8px',
+                      border: isActive ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
+                      borderRadius: '10px',
                       whiteSpace: 'nowrap',
-                      backgroundColor: isActive ? 'var(--bg-header)' : '#FFFFFF',
+                      backgroundColor: isActive ? 'var(--bg-header)' : 'var(--bg-card)',
                       color: 'var(--color-text)',
                       cursor: 'pointer',
-                      transition: 'all 0.1s ease',
+                      transition: 'all 0.15s ease',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '4px'
+                      gap: '6px'
                     }}
                   >
-                    {getScaIcon(catGroup.category, 12, 2.5)}
+                    {getScaIcon(catGroup.category, 14, 2.5)}
                     {catGroup.category}
                   </button>
                 );
@@ -550,24 +557,24 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
               if (!activeCatGroup) return null;
               return (
                 <div style={{
-                  padding: '12px',
-                  backgroundColor: '#FFFFFF',
-                  border: '1.5px solid var(--border-color)',
+                  padding: '14px',
+                  backgroundColor: 'var(--barista-bg-surface, var(--bg-card))',
+                  border: '1.5px solid var(--barista-border-hairline, var(--border-color))',
                   borderRadius: '12px'
                 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {activeCatGroup.subcategories.map((sub, sIdx) => (
                       <div key={sIdx} style={{ 
                         display: 'flex', 
                         flexDirection: 'column', 
-                        gap: '6px', 
-                        paddingTop: sIdx > 0 ? '8px' : '0', 
-                        borderTop: sIdx > 0 ? '1px dashed #E2E8F0' : 'none' 
+                        gap: '8px', 
+                        paddingTop: sIdx > 0 ? '10px' : '0', 
+                        borderTop: sIdx > 0 ? '1px dashed var(--border-color)' : 'none' 
                       }}>
-                        <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
                           {sub.name}
                         </span>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                           {sub.tags.map((tag, tIdx) => {
                             const isSelected = selectedFlavorTags.some(t => stripEmojis(t) === tag);
                             const colors = getScaColorForNote(tag);
@@ -576,23 +583,24 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                                 key={tIdx}
                                 type="button"
                                 style={{
-                                  padding: '5px 9px',
+                                  padding: '8px 12px',
+                                  minHeight: '40px',
                                   fontFamily: 'var(--font-heading)',
-                                  fontSize: '11px',
-                                  border: isSelected ? `2px solid ${colors.border}` : '1px solid var(--border-color)',
-                                  borderRadius: '6px',
+                                  fontSize: '12px',
+                                  border: isSelected ? `2px solid ${colors.border}` : '1.5px solid var(--border-color)',
+                                  borderRadius: '8px',
                                   cursor: 'pointer',
-                                  backgroundColor: isSelected ? colors.bg : '#FFFFFF',
+                                  backgroundColor: isSelected ? colors.bg : 'var(--bg-card)',
                                   color: isSelected ? colors.text : 'var(--color-text)',
-                                  transition: 'all 0.1s ease',
+                                  transition: 'all 0.15s ease',
                                   fontWeight: '800',
                                   display: 'flex',
                                   alignItems: 'center',
-                                  gap: '4px'
+                                  gap: '6px'
                                 }}
                                 onClick={() => toggleFlavorTag(tag)}
                               >
-                                {getScaIcon(tag, 11, 2.5)}
+                                {getScaIcon(tag, 13, 2.5)}
                                 {tag}
                               </button>
                             );
@@ -606,38 +614,38 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
             })()}
           </div>
 
-          <div className="form-group">
-            <label>Notas de Cata Adicionales</label>
-            <input className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Fresa, chocolate, cuerpo sedoso" />
+          <div className="form-group" style={{ marginTop: '14px' }}>
+            <label className="barista-label">Notas de Cata Adicionales</label>
+            <input className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Fresa, chocolate, cuerpo sedoso" style={{ minHeight: '44px', fontSize: '13px' }} />
           </div>
         </div>
 
         {/* Sección 3 — Dosificación */}
-        <div className="candy-card static" style={{ cursor: 'default' }}>
-          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '10px', textTransform: 'uppercase', margin: '0 0 12px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
+        <div className="candy-card static" style={{ cursor: 'default', marginBottom: '14px' }}>
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 14px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
             Dosificación
           </h4>
           <div className="form-row">
             <div className="form-group">
-              <label>Cantidad de Tubos</label>
-              <div className="mono-stepper compact">
-                <button type="button" className="stepper-btn" onClick={() => setTotalDoses(d => Math.max(1, d - 1))}>-</button>
-                <div className="stepper-value">{totalDoses}</div>
-                <button type="button" className="stepper-btn" onClick={() => setTotalDoses(d => d + 1)}>+</button>
+              <label className="barista-label">Cantidad de Tubos</label>
+              <div className="mono-stepper compact" style={{ minHeight: '44px' }}>
+                <button type="button" className="stepper-btn" style={{ minHeight: '44px', minWidth: '44px', fontSize: '18px' }} onClick={() => setTotalDoses(d => Math.max(1, d - 1))}>-</button>
+                <div className="stepper-value" style={{ fontSize: '15px', fontWeight: 'bold' }}>{totalDoses}</div>
+                <button type="button" className="stepper-btn" style={{ minHeight: '44px', minWidth: '44px', fontSize: '18px' }} onClick={() => setTotalDoses(d => d + 1)}>+</button>
               </div>
             </div>
             <div className="form-group">
-              <label>Gramos por Tubo</label>
-              <input className="candy-input" value={doseWeight} onChange={(e) => setDoseWeight(e.target.value)} type="text" />
+              <label className="barista-label">Gramos por Tubo</label>
+              <input className="candy-input" value={doseWeight} onChange={(e) => setDoseWeight(e.target.value)} type="text" style={{ minHeight: '44px', fontSize: '13px' }} />
             </div>
           </div>
-          <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-crimson)', marginTop: '8px', textAlign: 'center' }}>
+          <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-crimson)', marginTop: '10px', textAlign: 'center' }}>
             Inventario Inicial Calculado: {(totalDoses * (parseFloat(doseWeight) || 20.0)).toFixed(0)}g
           </div>
         </div>
 
-        <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-          <Save size={18} strokeWidth={2.5} />
+        <button type="submit" className="btn-candy primary" style={{ width: '100%', minHeight: '48px', marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '15px', fontWeight: 'bold' }}>
+          <Save size={20} strokeWidth={2.5} />
           {batchToEdit ? 'Guardar Cambios' : 'Crear Lote y Obtener Link'}
         </button>
       </form>

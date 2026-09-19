@@ -26,11 +26,11 @@
   --transition-spring: cubic-bezier(0.32, 0.72, 0, 1);
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* ☕ Precision Barista Tech Design Tokens (Laboratorio de Precisión) */
-  --barista-bg-canvas: #090D14;
-  --barista-bg-surface: #0F172A;
-  --barista-bg-elevated: #1E293B;
-  --barista-bg-subtle: rgba(30, 41, 59, 0.5);
+  /* ☕ Precision Barista Tech Design Tokens */
+  --barista-bg-canvas: #F8FAFC;
+  --barista-bg-surface: #FFFFFF;
+  --barista-bg-elevated: #F1F5F9;
+  --barista-bg-subtle: rgba(241, 245, 249, 0.8);
 
   --barista-accent-honey: #D97706;
   --barista-accent-honey-hover: #B45309;
@@ -39,18 +39,18 @@
   --barista-accent-mint: #10B981;
   --barista-accent-mint-subtle: rgba(16, 185, 129, 0.12);
 
-  --barista-accent-cryo: #38BDF8;
-  --barista-accent-cryo-subtle: rgba(56, 189, 248, 0.12);
+  --barista-accent-cryo: #0284C7;
+  --barista-accent-cryo-subtle: rgba(2, 132, 199, 0.12);
 
   --barista-accent-danger: #EF4444;
   --barista-accent-danger-subtle: rgba(239, 68, 68, 0.12);
 
-  --barista-text-primary: #F8FAFC;
-  --barista-text-secondary: #94A3B8;
+  --barista-text-primary: #0F172A;
+  --barista-text-secondary: #475569;
   --barista-text-muted: #64748B;
-  --barista-text-disabled: #475569;
+  --barista-text-disabled: #94A3B8;
 
-  --barista-border-hairline: rgba(148, 163, 184, 0.14);
+  --barista-border-hairline: rgba(60, 60, 67, 0.12);
   --barista-border-active: rgba(217, 119, 6, 0.45);
   --barista-border-focus: #D97706;
 
@@ -69,56 +69,74 @@
   --barista-space-24: 24px;
   --barista-space-32: 32px;
 
-  --barista-shadow-card: 0 4px 16px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--barista-border-hairline);
-  --barista-shadow-elevated: 0 10px 30px -4px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--barista-border-hairline);
+  --barista-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px var(--barista-border-hairline);
+  --barista-shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--barista-border-hairline);
   --barista-shadow-honey: 0 4px 14px var(--barista-accent-honey-glow);
 }
 
-/* 🌑 True OLED Pure Dark Mode (#000000) */
+/* 🌑 True OLED Pure Dark Mode (#000000 Pitch Black / Neutral Charcoal - No Muddy Blue) */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]):not([data-theme="espresso"]):not([data-theme="matcha"]):not([data-theme="cyber"]):not([data-theme="sakura"]):not([data-theme="caramel"]):not([data-theme="frost"]) {
     --bg-canvas: #000000;
-    --bg-card: #1C1C1E;
+    --bg-card: #121214;
     --color-crimson: #E06C60;
     --color-honey: #F59E0B;
-    --border-color: rgba(84, 84, 88, 0.36);
+    --border-color: rgba(255, 255, 255, 0.14);
     --color-text: #FFFFFF;
-    --color-text-muted: #8E8E93;
-    --bg-header: rgba(0, 0, 0, 0.82);
+    --color-text-muted: #A1A1AA;
+    --bg-header: rgba(0, 0, 0, 0.88);
     --color-header-text: #FFFFFF;
-    --sheet-bg: rgba(28, 28, 30, 0.94);
-    --segmented-bg: rgba(118, 118, 128, 0.24);
-    --segmented-active: #2C2C2E;
-    --card-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+    --sheet-bg: rgba(18, 18, 20, 0.96);
+    --segmented-bg: rgba(255, 255, 255, 0.1);
+    --segmented-active: #27272A;
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
 
-    --barista-bg-canvas: #090D14;
-    --barista-bg-surface: #0F172A;
-    --barista-bg-elevated: #1E293B;
-    --barista-text-primary: #F8FAFC;
-    --barista-text-secondary: #94A3B8;
+    --barista-bg-canvas: #000000;
+    --barista-bg-surface: #121214;
+    --barista-bg-elevated: #1C1C1E;
+    --barista-bg-subtle: rgba(255, 255, 255, 0.06);
+    --barista-accent-cryo: #38BDF8;
+    --barista-accent-cryo-subtle: rgba(56, 189, 248, 0.14);
+    --barista-text-primary: #FFFFFF;
+    --barista-text-secondary: #D4D4D8;
+    --barista-text-muted: #A1A1AA;
+    --barista-text-disabled: #52525B;
+    --barista-border-hairline: rgba(255, 255, 255, 0.12);
+    --barista-border-active: rgba(217, 119, 6, 0.6);
+    --barista-shadow-card: 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--barista-border-hairline);
+    --barista-shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--barista-border-hairline);
   }
 }
 
 [data-theme="dark"] {
   --bg-canvas: #000000 !important;
-  --bg-card: #1C1C1E !important;
+  --bg-card: #121214 !important;
   --color-crimson: #E06C60 !important;
   --color-honey: #F59E0B !important;
-  --border-color: rgba(84, 84, 88, 0.36) !important;
+  --border-color: rgba(255, 255, 255, 0.14) !important;
   --color-text: #FFFFFF !important;
-  --color-text-muted: #8E8E93 !important;
-  --bg-header: rgba(0, 0, 0, 0.82) !important;
+  --color-text-muted: #A1A1AA !important;
+  --bg-header: rgba(0, 0, 0, 0.88) !important;
   --color-header-text: #FFFFFF !important;
-  --sheet-bg: rgba(28, 28, 30, 0.94) !important;
-  --segmented-bg: rgba(118, 118, 128, 0.24) !important;
-  --segmented-active: #2C2C2E !important;
-  --card-shadow: 0 6px 24px rgba(0, 0, 0, 0.45) !important;
+  --sheet-bg: rgba(18, 18, 20, 0.96) !important;
+  --segmented-bg: rgba(255, 255, 255, 0.1) !important;
+  --segmented-active: #27272A !important;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
 
-  --barista-bg-canvas: #090D14 !important;
-  --barista-bg-surface: #0F172A !important;
-  --barista-bg-elevated: #1E293B !important;
-  --barista-text-primary: #F8FAFC !important;
-  --barista-text-secondary: #94A3B8 !important;
+  --barista-bg-canvas: #000000 !important;
+  --barista-bg-surface: #121214 !important;
+  --barista-bg-elevated: #1C1C1E !important;
+  --barista-bg-subtle: rgba(255, 255, 255, 0.06) !important;
+  --barista-accent-cryo: #38BDF8 !important;
+  --barista-accent-cryo-subtle: rgba(56, 189, 248, 0.14) !important;
+  --barista-text-primary: #FFFFFF !important;
+  --barista-text-secondary: #D4D4D8 !important;
+  --barista-text-muted: #A1A1AA !important;
+  --barista-text-disabled: #52525B !important;
+  --barista-border-hairline: rgba(255, 255, 255, 0.12) !important;
+  --barista-border-active: rgba(217, 119, 6, 0.6) !important;
+  --barista-shadow-card: 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--barista-border-hairline) !important;
+  --barista-shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--barista-border-hairline) !important;
 }
 
 /* Genjutsu & Cupertino Motion Principles */
@@ -702,7 +720,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 
 .barista-btn-secondary:hover {
   border-color: var(--barista-border-active);
-  background-color: rgba(30, 41, 59, 0.85);
+  background-color: var(--barista-bg-subtle, rgba(255, 255, 255, 0.08));
 }
 
 .barista-btn-secondary:active {

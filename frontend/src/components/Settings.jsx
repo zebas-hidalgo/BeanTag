@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet } from 'lucide-react';
+import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
 import NfcToolsModal from './NfcToolsModal';
 import { apiUrl } from '../utils/api';
 
@@ -12,7 +12,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   });
   const [selectedModel, setSelectedModel] = useState(() => {
     const stored = localStorage.getItem('gemini-model');
-    if (!stored || stored.includes('3.7') || stored.includes('2.5')) {
+    if (!stored || stored.includes('3.7') || stored === 'gemini-1.5-flash') {
       localStorage.setItem('gemini-model', 'gemini-2.0-flash');
       return 'gemini-2.0-flash';
     }
@@ -21,6 +21,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   const [isThinkingEnabled, setIsThinkingEnabled] = useState(() => {
     return localStorage.getItem('gemini-thinking') === 'true';
   });
+  const [testingGemini, setTestingGemini] = useState(false);
+  const [geminiTestResult, setGeminiTestResult] = useState(null);
   const [defaultGrinder, setDefaultGrinder] = useState(() => {
     return localStorage.getItem('default-grinder') || 'jmax';
   });
@@ -59,6 +61,34 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
     localStorage.setItem('default-grinder', defaultGrinder);
     if (showToast) {
       showToast('Configuración guardada correctamente.', { type: 'success', duration: 2500 });
+    }
+  };
+
+  const handleTestGemini = async () => {
+    setTestingGemini(true);
+    setGeminiTestResult(null);
+    try {
+      const res = await fetch(apiUrl('api/test-gemini'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiKey: apiKey.trim() || undefined,
+          model: selectedModel || undefined
+        })
+      });
+      const data = await res.json();
+      setGeminiTestResult(data);
+      if (data.success) {
+        if (showToast) showToast(`✅ Conexión con Gemini exitosa (${data.model})`, { type: 'success', duration: 3000 });
+      } else {
+        if (showToast) showToast(`❌ Error: ${data.message || data.error}`, { type: 'error', duration: 4000 });
+      }
+    } catch (err) {
+      const fail = { success: false, error: 'network_error', message: `Fallo de conexión con el servidor: ${err.message}` };
+      setGeminiTestResult(fail);
+      if (showToast) showToast('Error de conexión con el servidor.', { type: 'error', duration: 3500 });
+    } finally {
+      setTestingGemini(false);
     }
   };
 
@@ -313,81 +343,146 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         </div>
       </div>
 
-      {/* Inteligencia Artificial (Gemini 3.7 Core) */}
+      {/* Inteligencia Artificial (Gemini Core) */}
       <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: 0, color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+            <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0, color: 'var(--color-text)', letterSpacing: '0.5px' }}>
               Inteligencia Artificial (Gemini Core)
             </h4>
-            <span style={{ fontSize: '9px', background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: '900' }}>
-              GEMINI 2.0 FLASH
+            <span style={{ fontSize: '10px', background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '3px 8px', borderRadius: '6px', fontWeight: '900', border: '1px solid var(--border-color)' }}>
+              {selectedModel.toUpperCase()}
             </span>
           </div>
-          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
-            Potencia el escaneo de bolsas por foto (OCR), el sommelier de inventario y la recomendación experta de recetas con fallback offline.
+          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 14px 0', lineHeight: 1.4 }}>
+            Potencia el escaneo OCR de bolsas con cámara, el sommelier de inventario y la recomendación experta de recetas con fallback offline.
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {/* API Key Input */}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <input 
-              type="password" 
-              className="candy-input" 
-              value={apiKey} 
-              onChange={(e) => setApiKey(e.target.value)} 
-              placeholder="Introduce tu clave API (AIzaSy...)"
-              style={{ flex: 1, boxSizing: 'border-box', fontFamily: 'var(--font-mono)', minWidth: 0 }}
-            />
-            <button 
-              onClick={handleSaveKey} 
-              className="btn-candy primary"
-              style={{ margin: 0, padding: '10px 14px', fontSize: '11px', whiteSpace: 'nowrap' }}
-            >
-              Guardar
-            </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {/* API Key Input + Action Buttons */}
+          <div>
+            <label className="barista-label" style={{ marginBottom: '6px' }}>Clave API de Google AI Studio</label>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch', flexWrap: 'wrap' }}>
+              <input 
+                type="password" 
+                className="candy-input" 
+                value={apiKey} 
+                onChange={(e) => setApiKey(e.target.value)} 
+                placeholder="Introduce tu clave API (AIzaSy...)"
+                style={{ flex: 1, boxSizing: 'border-box', fontFamily: 'var(--font-mono)', minWidth: '180px', minHeight: '44px', fontSize: '13px' }}
+              />
+              <button 
+                onClick={handleSaveKey} 
+                className="btn-candy primary"
+                style={{ margin: 0, padding: '10px 18px', fontSize: '13px', whiteSpace: 'nowrap', minHeight: '44px', fontWeight: 'bold' }}
+              >
+                Guardar
+              </button>
+              <button 
+                onClick={handleTestGemini} 
+                disabled={testingGemini}
+                className="btn-candy"
+                style={{ 
+                  margin: 0, 
+                  padding: '10px 16px', 
+                  fontSize: '13px', 
+                  whiteSpace: 'nowrap', 
+                  minHeight: '44px', 
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                {testingGemini ? <Loader2 size={16} className="spin" /> : <Activity size={16} color="var(--color-crimson)" />}
+                <span>{testingGemini ? 'Probando...' : 'Probar Conexión'}</span>
+              </button>
+            </div>
           </div>
 
+          {/* Test Status Feedback Pill */}
+          {geminiTestResult && (
+            <div 
+              style={{
+                padding: '10px 14px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '8px',
+                backgroundColor: geminiTestResult.success ? 'var(--barista-accent-mint-subtle, #ECFDF5)' : 'var(--barista-accent-danger-subtle, #FEF2F2)',
+                border: geminiTestResult.success ? '1.5px solid #10B981' : '1.5px solid #EF4444',
+                color: geminiTestResult.success ? '#065F46' : '#991B1B'
+              }}
+            >
+              {geminiTestResult.success ? (
+                <CheckCircle2 size={18} style={{ flexShrink: 0, marginTop: '1px', color: '#10B981' }} />
+              ) : (
+                <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '1px', color: '#EF4444' }} />
+              )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
+                <span style={{ fontWeight: '800' }}>
+                  {geminiTestResult.success ? 'Conexión Exitosa con Gemini' : 'Error de Conexión'}
+                </span>
+                <span style={{ fontSize: '11px', lineHeight: 1.35 }}>
+                  {geminiTestResult.message || geminiTestResult.error}
+                </span>
+                {geminiTestResult.latency_ms && (
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', opacity: 0.85, marginTop: '2px' }}>
+                    ⏱️ Latencia: {geminiTestResult.latency_ms}ms • Modelo: {geminiTestResult.model}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Model Selector & Thinking Config */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
             <div>
-              <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px' }}>
-                Modelo Gemini
+              <label className="barista-label" style={{ marginBottom: '6px' }}>
+                Modelo de Inteligencia Artificial
               </label>
               <select 
                 className="candy-input" 
                 value={selectedModel} 
                 onChange={(e) => handleModelChange(e.target.value)}
-                style={{ fontSize: '11px', padding: '6px 8px' }}
+                style={{ fontSize: '12px', padding: '10px 12px', minHeight: '44px', width: '100%' }}
               >
                 <option value="gemini-2.0-flash">Gemini 2.0 Flash (Recomendado - Rápido & Preciso)</option>
-                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Super Estable)</option>
-                <option value="gemini-1.5-pro">Gemini 1.5 Pro (Alta Precisión)</option>
+                <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash-Lite (Ultra Rápido & Eficiente)</option>
+                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Última Generación)</option>
+                <option value="gemini-1.5-flash-latest">Gemini 1.5 Flash (Super Estable)</option>
+                <option value="gemini-1.5-pro-latest">Gemini 1.5 Pro (Máximo Razonamiento)</option>
               </select>
             </div>
 
             <div>
-              <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px' }}>
-                Thinking Mode (Razonamiento)
+              <label className="barista-label" style={{ marginBottom: '6px' }}>
+                Modo Pensamiento (Thinking)
               </label>
               <button
                 type="button"
                 onClick={handleToggleThinking}
                 style={{
                   width: '100%',
-                  padding: '7px 8px',
-                  borderRadius: '6px',
-                  border: isThinkingEnabled ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                  backgroundColor: isThinkingEnabled ? 'var(--bg-header)' : '#FFFFFF',
+                  minHeight: '44px',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: isThinkingEnabled ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
+                  backgroundColor: isThinkingEnabled ? 'var(--bg-header)' : 'var(--bg-card)',
                   color: 'var(--color-text)',
-                  fontSize: '11px',
+                  fontSize: '12px',
                   fontWeight: 'bold',
                   cursor: 'pointer',
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
                 }}
               >
-                {isThinkingEnabled ? '🧠 Modo Pensamiento: ACTIVO' : '⚡ Modo Rápido (Off)'}
+                {isThinkingEnabled ? '🧠 Razonamiento: ACTIVO' : '⚡ Modo Rápido (Off)'}
               </button>
             </div>
           </div>
@@ -396,7 +491,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             href="https://aistudio.google.com/app/apikey" 
             target="_blank" 
             rel="noopener noreferrer" 
-            style={{ fontSize: '10px', color: 'var(--color-crimson)', textDecoration: 'underline', fontWeight: 'bold' }}
+            style={{ fontSize: '11px', color: 'var(--color-crimson)', textDecoration: 'underline', fontWeight: 'bold' }}
           >
             Obtener clave API gratuita en Google AI Studio →
           </a>
@@ -413,89 +508,77 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-          <button
-            type="button"
-            onClick={() => { setDefaultGrinder('jmax'); localStorage.setItem('default-grinder', 'jmax'); if (showToast) showToast('Molino predeterminado: 1Zpresso J-Max', { type: 'info', duration: 2000 }); }}
-            style={{
-              padding: '10px 8px',
-              borderRadius: '8px',
-              border: defaultGrinder === 'jmax' ? '2px solid var(--color-crimson)' : '1px solid var(--border-color)',
-              backgroundColor: defaultGrinder === 'jmax' ? 'var(--bg-header)' : '#FFFFFF',
-              color: 'var(--color-text)',
-              cursor: 'pointer',
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '3px'
-            }}
-          >
-            <strong style={{ fontSize: '11.5px' }}>1Zpresso J-Max</strong>
-            <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>8.8 µm / clic</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => { setDefaultGrinder('femobook'); localStorage.setItem('default-grinder', 'femobook'); if (showToast) showToast('Molino predeterminado: Femobook A2', { type: 'info', duration: 2000 }); }}
-            style={{
-              padding: '10px 8px',
-              borderRadius: '8px',
-              border: defaultGrinder === 'femobook' ? '2px solid var(--color-crimson)' : '1px solid var(--border-color)',
-              backgroundColor: defaultGrinder === 'femobook' ? 'var(--bg-header)' : '#FFFFFF',
-              color: 'var(--color-text)',
-              cursor: 'pointer',
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '3px'
-            }}
-          >
-            <strong style={{ fontSize: '11.5px' }}>Femobook A2</strong>
-            <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>18 µm • 40 c/rot</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => { setDefaultGrinder('comandante'); localStorage.setItem('default-grinder', 'comandante'); if (showToast) showToast('Molino predeterminado: Comandante C40', { type: 'info', duration: 2000 }); }}
-            style={{
-              padding: '10px 8px',
-              borderRadius: '8px',
-              border: defaultGrinder === 'comandante' ? '2px solid var(--color-crimson)' : '1px solid var(--border-color)',
-              backgroundColor: defaultGrinder === 'comandante' ? 'var(--bg-header)' : '#FFFFFF',
-              color: 'var(--color-text)',
-              cursor: 'pointer',
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '3px'
-            }}
-          >
-            <strong style={{ fontSize: '11.5px' }}>Comandante C40</strong>
-            <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>30 µm / clic</span>
-          </button>
+          {[
+            { id: 'jmax', name: '1Zpresso J-Max', desc: '8.8 µm / clic' },
+            { id: 'femobook', name: 'Femobook A2', desc: '18 µm • 40 c/rot' },
+            { id: 'comandante', name: 'Comandante C40', desc: '30 µm / clic' }
+          ].map((grinder) => {
+            const isActive = defaultGrinder === grinder.id;
+            return (
+              <button
+                key={grinder.id}
+                type="button"
+                onClick={() => { 
+                  setDefaultGrinder(grinder.id); 
+                  localStorage.setItem('default-grinder', grinder.id); 
+                  if (showToast) showToast(`Molino predeterminado: ${grinder.name}`, { type: 'info', duration: 2000 }); 
+                }}
+                style={{
+                  minHeight: '48px',
+                  padding: '10px 8px',
+                  borderRadius: '10px',
+                  border: isActive ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
+                  backgroundColor: isActive ? 'var(--bg-header)' : 'var(--bg-card)',
+                  color: 'var(--color-text)',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  gap: '3px',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <strong style={{ fontSize: '12px' }}>{grinder.name}</strong>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>{grinder.desc}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Backup and restore section */}
       <div className="candy-card static" style={{ padding: '20px', cursor: 'default' }}>
-        <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', textTransform: 'uppercase', margin: '0 0 12px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
+        <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 8px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
           Copia de Seguridad
         </h4>
         <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 16px 0', lineHeight: 1.4 }}>
           Exporta tu bitácora o restaura un respaldo en cualquier dispositivo.
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="btn-candy" style={{ margin: 0, fontSize: '11px', padding: '10px 14px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={handleExportBackup}>
-              <Download size={14} strokeWidth={2.5} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button 
+              className="btn-candy" 
+              style={{ margin: 0, fontSize: '12px', padding: '10px 14px', minHeight: '44px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
+              onClick={handleExportBackup}
+            >
+              <Download size={16} strokeWidth={2.5} />
               JSON Backup
             </button>
-            <button className="btn-candy" style={{ margin: 0, fontSize: '11px', padding: '10px 14px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={handleExportCsv}>
-              <FileSpreadsheet size={14} strokeWidth={2.5} />
+            <button 
+              className="btn-candy" 
+              style={{ margin: 0, fontSize: '12px', padding: '10px 14px', minHeight: '44px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
+              onClick={handleExportCsv}
+            >
+              <FileSpreadsheet size={16} strokeWidth={2.5} />
               Exportar CSV
             </button>
           </div>
-          <label className="btn-candy primary" style={{ margin: 0, fontSize: '11.5px', padding: '12px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', boxSizing: 'border-box' }}>
-            <Upload size={16} strokeWidth={2.5} />
+          <label 
+            className="btn-candy primary" 
+            style={{ margin: 0, fontSize: '12px', padding: '12px 14px', minHeight: '44px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', boxSizing: 'border-box', fontWeight: 'bold' }}
+          >
+            <Upload size={18} strokeWidth={2.5} />
             Cargar Respaldo JSON
             <input 
               type="file" 
@@ -509,19 +592,19 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
 
       {/* Herramientas WebNFC */}
       <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginTop: '14px' }}>
-        <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+        <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
           Gestión Avanzada WebNFC
         </h4>
-        <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 12px 0', lineHeight: 1.4 }}>
+        <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 14px 0', lineHeight: 1.4 }}>
           Diagnostica etiquetas, borra registros nulos o clona lotes en serie a múltiples tubos/frascos.
         </p>
         <button
           type="button"
           className="btn-candy primary"
           onClick={() => setShowNfcModal(true)}
-          style={{ width: '100%', margin: 0, padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+          style={{ width: '100%', margin: 0, minHeight: '44px', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '13px', fontWeight: 'bold' }}
         >
-          <Nfc size={16} />
+          <Nfc size={18} />
           Abrir Herramientas WebNFC
         </button>
       </div>

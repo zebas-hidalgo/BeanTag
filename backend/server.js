@@ -658,6 +658,33 @@ function getGeminiConfig(req) {
   return { apiKey, model, url, generationConfig, enableThinking };
 }
 
+// 0. AI Connection Diagnostic Probe Endpoint
+app.post('/api/test-gemini', async (req, res) => {
+  const apiKey = req.headers['x-gemini-key'] || req.body?.apiKey;
+  const requestedModel = req.headers['x-gemini-model'] || req.body?.model;
+
+  if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
+    return res.status(400).json({ success: false, error: 'No se ingresó ninguna clave API de Gemini.' });
+  }
+
+  const model = sanitizeModel(requestedModel);
+  try {
+    const probePrompt = 'Responde exclusivamente con el JSON: {"status":"ok","echo":"barista_ok"}';
+    const result = await callGeminiWithRetry(probePrompt, apiKey.trim(), model, false);
+    return res.json({
+      success: true,
+      model: result._model || model,
+      message: 'Conexión exitosa con Google Gemini AI 🧠'
+    });
+  } catch (err) {
+    console.warn(`[Gemini Probe Failed] ${err.message}`);
+    return res.status(err.status || 400).json({
+      success: false,
+      error: err.message || 'Error al conectar con Google AI Studio'
+    });
+  }
+});
+
 // 1. AI Recommendation Endpoint (Gemini 2.0 Flash + Offline Barista Engine Fallback)
 app.post('/api/recommend-recipe', async (req, res) => {
   const { apiKey, model, enableThinking } = getGeminiConfig(req);

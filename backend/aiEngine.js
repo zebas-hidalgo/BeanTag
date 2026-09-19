@@ -6,12 +6,14 @@
 
 const VALID_GEMINI_MODELS = [
   'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-1.5-pro'
+  'gemini-2.0-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-1.5-flash-latest',
+  'gemini-1.5-pro-latest'
 ];
 
 const DEFAULT_GEMINI_MODEL = 'gemini-2.0-flash';
-const FALLBACK_GEMINI_MODEL = 'gemini-1.5-flash';
+const FALLBACK_GEMINI_MODEL = 'gemini-2.0-flash-lite';
 
 /**
  * Sanitizes model name: maps deprecated/invalid model names to supported Google AI Studio models.
@@ -21,8 +23,11 @@ function sanitizeModel(requestedModel) {
     return DEFAULT_GEMINI_MODEL;
   }
   const clean = requestedModel.trim().toLowerCase();
-  if (clean.includes('3.7') || clean.includes('2.5')) {
-    return DEFAULT_GEMINI_MODEL;
+  if (clean === 'gemini-1.5-flash') {
+    return 'gemini-1.5-flash-latest';
+  }
+  if (clean === 'gemini-1.5-pro') {
+    return 'gemini-1.5-pro-latest';
   }
   if (VALID_GEMINI_MODELS.includes(clean)) {
     return clean;
@@ -347,6 +352,11 @@ function computeOfflineTuning(data) {
  * Executes a Gemini prompt with retry on 503/429 and automatic fallback to secondary model.
  */
 async function callGeminiWithRetry(prompt, apiKey, initialModel, enableThinking = false) {
+  if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
+    throw new Error('No se ha configurado una clave API de Gemini válida.');
+  }
+
+  const cleanKey = apiKey.trim();
   const modelToTry = sanitizeModel(initialModel);
   const models = [modelToTry];
   if (modelToTry !== FALLBACK_GEMINI_MODEL) {
@@ -356,11 +366,11 @@ async function callGeminiWithRetry(prompt, apiKey, initialModel, enableThinking 
   let lastError = null;
 
   for (const currentModel of models) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${cleanKey}`;
     const generationConfig = { responseMimeType: 'application/json' };
 
     // Only inject thinkingConfig on models that explicitly support it
-    if (enableThinking && currentModel.includes('thinking')) {
+    if (enableThinking && (currentModel.includes('thinking') || currentModel.includes('2.0-flash'))) {
       generationConfig.thinkingConfig = { thinkingBudget: 2048 };
     }
 
@@ -388,20 +398,33 @@ async function callGeminiWithRetry(prompt, apiKey, initialModel, enableThinking 
           return parsed;
         }
 
+        const errData = await response.json().catch(() => ({}));
+        const errMsg = errData.error?.message || `HTTP ${response.status} (${currentModel})`;
+        console.warn(`[Gemini Attempt] Model ${currentModel} (attempt ${attempt}) returned ${response.status}: ${errMsg}`);
+
+        // Auth or Permission Errors (400, 401, 403): do not cascade with the same broken key
+        if (response.status === 400 || response.status === 401 || response.status === 403) {
+          const err = new Error(`Error de autenticación con Google AI (${response.status}): ${errMsg}`);
+          err.status = response.status;
+          throw err;
+        }
+
         // Check if retryable (503 Service Unavailable, 429 Rate Limit)
         if ((response.status === 503 || response.status === 429) && attempt === 1) {
-          console.warn(`[Gemini Retry] Model ${currentModel} returned ${response.status}. Retrying in 1000ms...`);
-          await new Promise(r => setTimeout(r, 1000));
+          console.warn(`[Gemini Retry] Rate limit or service busy on ${currentModel}. Retrying in 800ms...`);
+          await new Promise(r => setTimeout(r, 800));
           continue;
         }
 
-        const errData = await response.json().catch(() => ({}));
-        lastError = new Error(errData.error?.message || `HTTP ${response.status} (${currentModel})`);
+        lastError = new Error(errMsg);
         break; // break retry loop to try next model in cascade
       } catch (networkErr) {
+        if (networkErr.status === 400 || networkErr.status === 401 || networkErr.status === 403) {
+          throw networkErr;
+        }
         lastError = networkErr;
         if (attempt === 1) {
-          await new Promise(r => setTimeout(r, 1000));
+          await new Promise(r => setTimeout(r, 800));
           continue;
         }
         break;
