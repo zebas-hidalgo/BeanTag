@@ -151,17 +151,19 @@ export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
     ctx.fill();
   }
 
-  // 5. Axis Labels
+  // 5. Axis Labels with quadrant-aware alignment to prevent vertex collisions
   ctx.font = '700 7px "JetBrains Mono", monospace';
   ctx.fillStyle = s === 'blueprint'
     ? '#93C5FD'
     : (s === 'kissaten' ? '#52525B' : (s === 'diner' ? '#0E7490' : '#18181B'));
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
   for (let i = 0; i < numAxes; i++) {
     const angle = -Math.PI / 2 + (i * 2 * Math.PI) / numAxes;
-    const lx = cx + (radius + 12) * Math.cos(angle);
-    const ly = cy + (radius + 10) * Math.sin(angle);
+    const cosA = Math.cos(angle);
+    const sinA = Math.sin(angle);
+    ctx.textAlign = Math.abs(cosA) < 0.25 ? 'center' : (cosA > 0 ? 'left' : 'right');
+    ctx.textBaseline = Math.abs(sinA) < 0.25 ? 'middle' : (sinA > 0 ? 'top' : 'bottom');
+    const lx = cx + (radius + 8) * cosA;
+    const ly = cy + (radius + 6) * sinA;
     ctx.fillText(labels[i], lx, ly);
   }
 
@@ -180,17 +182,26 @@ export function parseSensoryEvaluation(batch, recipe) {
   const extractionRaw = r.sensory_extraction || b.sensory_extraction;
   const ratingRaw = r.rating || b.rating;
 
-  if (!balanceRaw && !bodyRaw && !extractionRaw && !ratingRaw) {
-    return null; // Return null so fallback mode triggers (no fake data!)
+  // Strict check: At least one actual sensory attribute must be evaluated (rating alone is not sensory!)
+  if (!balanceRaw && !bodyRaw && !extractionRaw) {
+    return null;
   }
 
   const mapAttr = (val) => {
-    if (typeof val === 'number') return Math.max(1, Math.min(5, val));
+    if (typeof val === 'number' && Number.isFinite(val)) return Math.max(1, Math.min(5, val));
     if (!val) return 3;
     const s = String(val).toLowerCase();
-    if (s.includes('over') || s.includes('heavy') || s.includes('alta') || s.includes('intenso')) return 4.5;
-    if (s.includes('balanced') || s.includes('balanceado') || s.includes('medium') || s.includes('medio')) return 5;
-    if (s.includes('under') || s.includes('light') || s.includes('ligero') || s.includes('bajo')) return 2.5;
+    // High / Over / Heavy extraction & body
+    if (s.includes('sobre') || s.includes('over') || s.includes('heavy') || s.includes('alta') || s.includes('intenso') || s.includes('pesado')) return 4.5;
+    // Sweet / Balanced / Medium / En Punto (gold standard)
+    if (s.includes('en punto') || s.includes('balanced') || s.includes('balanceado') || s.includes('medium') || s.includes('medio') || s.includes('dulce')) return 5.0;
+    // Silky body
+    if (s.includes('sedoso') || s.includes('silky')) return 4.2;
+    // Low / Under / Light / Acid
+    if (s.includes('sub') || s.includes('under') || s.includes('light') || s.includes('ligero') || s.includes('bajo') || s.includes('ácido') || s.includes('acido')) return 2.5;
+    // Bitter
+    if (s.includes('amargo') || s.includes('bitter')) return 2.0;
+
     const n = parseFloat(val);
     return isNaN(n) ? 3 : Math.max(1, Math.min(5, n));
   };
@@ -198,7 +209,7 @@ export function parseSensoryEvaluation(batch, recipe) {
   const balance = mapAttr(balanceRaw);
   const body = mapAttr(bodyRaw);
   const extraction = mapAttr(extractionRaw);
-  const rating = typeof ratingRaw === 'number' ? ratingRaw : (parseFloat(ratingRaw) || 4);
+  const rating = typeof ratingRaw === 'number' && Number.isFinite(ratingRaw) ? ratingRaw : (parseFloat(ratingRaw) || 4);
   const sweetness = (balance + rating) / 2;
 
   return { balance, body, extraction, rating, sweetness };
