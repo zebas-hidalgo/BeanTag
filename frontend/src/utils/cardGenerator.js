@@ -771,21 +771,14 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       drawTruncatedText(subtitleStr.toUpperCase(), paddingX, paddingY + 66, availW);
     }
 
-    ctx.strokeStyle = '#38BDF8';
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.moveTo(paddingX, paddingY + 78);
-    ctx.lineTo(baseW - paddingX, paddingY + 78);
-    ctx.stroke();
-
-    drawTicketNotchesAndPerforation(ctx, pad, cardW, 120, style, '#0B192C');
+    drawTicketNotchesAndPerforation(ctx, pad, cardW, paddingY + 78, style, '#0B192C');
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
     // -----------------------------------------------------------------------
     if (!incRecipe) {
       // 1. Spec Header Strip
-      const specBoxY = paddingY + 84;
+      const specBoxY = paddingY + 98;
       const specBoxH = 32;
       ctx.fillStyle = 'rgba(14, 165, 233, 0.08)';
       ctx.strokeStyle = '#38BDF8';
@@ -925,7 +918,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // -----------------------------------------------------------------------
     else {
       // 1. Protocol Spec Strip
-      const specBoxY = paddingY + 84;
+      const specBoxY = paddingY + 98;
       const specBoxH = 32;
       ctx.fillStyle = 'rgba(14, 165, 233, 0.08)';
       ctx.strokeStyle = '#38BDF8';
@@ -1199,14 +1192,14 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       }
     });
 
-    drawTicketNotchesAndPerforation(ctx, pad, cardW, 140, style, '#F1F5F9');
+    drawTicketNotchesAndPerforation(ctx, 0, baseW, 130, style, '#F1F5F9');
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
     // -----------------------------------------------------------------------
     if (!incRecipe) {
       // 1. Roastery Spec Strip
-      const stripY = paddingY + 118;
+      const stripY = paddingY + 128;
       const stripH = 40;
 
       ctx.fillStyle = '#000000';
@@ -1354,7 +1347,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // -----------------------------------------------------------------------
     else {
       // 1. Barista Order Strip
-      const stripY = paddingY + 118;
+      const stripY = paddingY + 128;
       const stripH = 40;
 
       ctx.fillStyle = '#000000';
@@ -1581,25 +1574,14 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.font = '700 10.5px "Space Grotesk", sans-serif';
     drawTruncatedText((subtitleStr || 'Café de Especialidad').toUpperCase(), paddingX, paddingY + 68, availW);
 
-    // Retro separator with centered atomic star
-    ctx.strokeStyle = '#C92A2A';
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.moveTo(paddingX, paddingY + 78);
-    ctx.lineTo(paddingX + (availW / 2) - 16, paddingY + 78);
-    ctx.moveTo(paddingX + (availW / 2) + 16, paddingY + 78);
-    ctx.lineTo(baseW - paddingX, paddingY + 78);
-    ctx.stroke();
-    drawDinerAtomicStar(ctx, paddingX + (availW / 2), paddingY + 78, 6, '#C92A2A');
-
-    drawTicketNotchesAndPerforation(ctx, pad, cardW, 132, style, '#FDFBF7');
+    drawTicketNotchesAndPerforation(ctx, pad, cardW, paddingY + 78, style, '#FDFBF7');
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
     // -----------------------------------------------------------------------
     if (!incRecipe) {
       // 1. Table Specification Banner
-      const specBoxY = paddingY + 88;
+      const specBoxY = paddingY + 98;
       const specBoxH = 34;
 
       ctx.fillStyle = '#FFFBEB';
@@ -1741,7 +1723,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // -----------------------------------------------------------------------
     else {
       // 1. Order Ticket Spec Banner
-      const specBoxY = paddingY + 88;
+      const specBoxY = paddingY + 98;
       const specBoxH = 34;
 
       ctx.fillStyle = '#FFFBEB';
@@ -1925,21 +1907,14 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     const terroirSub = [origin, (producer || roaster), altitude].filter(Boolean).join(' — ');
     drawTruncatedText(terroirSub || '珈琲豆 • Specialty Coffee', paddingX, paddingY + 68, availW - 48);
 
-    ctx.strokeStyle = '#E4E4E7';
-    ctx.lineWidth = 0.8;
-    ctx.beginPath();
-    ctx.moveTo(paddingX, paddingY + 78);
-    ctx.lineTo(baseW - paddingX, paddingY + 78);
-    ctx.stroke();
-
-    drawTicketNotchesAndPerforation(ctx, pad, cardW, 120, style, '#EFECE6');
+    drawTicketNotchesAndPerforation(ctx, pad, cardW, paddingY + 78, style, '#EFECE6');
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
     // -----------------------------------------------------------------------
     if (!incRecipe) {
       // 1. Specification Header Strip
-      const stripY = paddingY + 86;
+      const stripY = paddingY + 98;
       const stripH = 34;
 
       ctx.fillStyle = '#FBF9F5';
@@ -2078,7 +2053,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // -----------------------------------------------------------------------
     else {
       // 1. Extraction Protocol Header Strip
-      const stripY = paddingY + 86;
+      const stripY = paddingY + 98;
       const stripH = 34;
 
       ctx.fillStyle = '#FBF9F5';
