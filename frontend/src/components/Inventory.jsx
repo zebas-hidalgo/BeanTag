@@ -21,8 +21,8 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
     try {
       const pref = localStorage.getItem('beantag-share-style');
       if (pref === 'neobrutalist') return 'neobrutalist';
-      if (pref === 'aurora') return 'aurora';
-      if (pref === 'hangtag') return 'hangtag';
+      if (pref === 'diner' || pref === 'aurora') return 'diner';
+      if (pref === 'kissaten' || pref === 'hangtag') return 'kissaten';
       return 'blueprint';
     } catch (e) {
       return 'blueprint';
@@ -512,80 +512,100 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
           backgroundColor: 'rgba(0, 0, 0, 0.85)',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
-          zIndex: 11000, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '12px', boxSizing: 'border-box'
+          zIndex: 11000, 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'flex-start',
+          padding: '16px 12px', 
+          boxSizing: 'border-box',
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch'
         }} onClick={() => { setShowMenuShareModal(false); setMenuShareStatus(''); }}>
           <div className="candy-card static animate-entrance" style={{
             maxWidth: '480px', width: '100%',
-            maxHeight: '92vh',
+            maxHeight: 'calc(100dvh - 32px)',
+            margin: 'auto 0',
             padding: '16px', boxSizing: 'border-box',
             boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
             display: 'flex', flexDirection: 'column', gap: '10px',
-            overflowY: 'auto'
+            overflow: 'hidden'
           }} onClick={(e) => e.stopPropagation()}>
             
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: 0, fontWeight: '800', color: 'var(--color-text)' }}>
-                  📋 Carta de Cafés • Menú en Cava
-                </h3>
-                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                  {availableBatches.length > 0 ? availableBatches.length : safeBatches.length} lotes de especialidad disponibles
-                </span>
-              </div>
-              <button 
-                type="button" 
-                onClick={() => setShowMenuShareModal(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--color-text-muted)' }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Template Selector */}
-            <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-              <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
-              {[
-                { id: 'blueprint', label: '📐 Blueprint' },
-                { id: 'neobrutalist', label: '⚡ Neo-Pop' },
-                { id: 'aurora', label: '🔮 Aurora' },
-                { id: 'hangtag', label: '🏷️ Hangtag' }
-              ].map(t => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => {
-                    try { localStorage.setItem('beantag-share-style', t.id); } catch (e) {}
-                    handleOpenMenuShare(t.id);
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '5px 8px',
-                    fontSize: '10px',
-                    borderRadius: '6px',
-                    border: menuShareTemplate === t.id ? '1px solid var(--color-crimson)' : 'none',
-                    backgroundColor: menuShareTemplate === t.id ? '#FFFFFF' : 'transparent',
-                    fontWeight: menuShareTemplate === t.id ? '800' : '500',
-                    color: menuShareTemplate === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
-                    boxShadow: menuShareTemplate === t.id ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
-                    cursor: 'pointer'
-                  }}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: 0, fontWeight: '800', color: 'var(--color-text)' }}>
+                    📋 Carta de Cafés • Menú en Cava
+                  </h3>
+                  <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                    {availableBatches.length > 0 ? availableBatches.length : safeBatches.length} lotes de especialidad disponibles
+                  </span>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => setShowMenuShareModal(false)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--color-text-muted)' }}
                 >
-                  {t.label}
+                  <X size={20} />
                 </button>
-              ))}
+              </div>
+
+              {/* Template Selector */}
+              <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
+                {[
+                  { id: 'blueprint', label: '📐 Blueprint' },
+                  { id: 'neobrutalist', label: '⚡ Brutalismo' },
+                  { id: 'diner', label: '📻 Retro 50s' },
+                  { id: 'kissaten', label: '🍵 Kissaten' }
+                ].map(t => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => {
+                      try { localStorage.setItem('beantag-share-style', t.id); } catch (e) {}
+                      handleOpenMenuShare(t.id);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '5px 8px',
+                      fontSize: '10px',
+                      borderRadius: '6px',
+                      border: menuShareTemplate === t.id ? '1px solid var(--color-crimson)' : 'none',
+                      backgroundColor: menuShareTemplate === t.id ? '#FFFFFF' : 'transparent',
+                      fontWeight: menuShareTemplate === t.id ? '800' : '500',
+                      color: menuShareTemplate === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
+                      boxShadow: menuShareTemplate === t.id ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Live Image Preview */}
-            <div style={{ textAlign: 'center', backgroundColor: 'var(--bg-canvas, #F1F5F9)', borderRadius: '12px', padding: '8px', overflowY: 'auto', maxHeight: 'calc(75vh - 170px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{
+              textAlign: 'center',
+              backgroundColor: 'var(--bg-canvas, #F1F5F9)',
+              borderRadius: '12px',
+              padding: '8px',
+              overflowY: 'auto',
+              flex: '1 1 auto',
+              minHeight: '140px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
               {menuShareImage && (
                 <img 
                   src={menuShareImage} 
                   alt="Carta de cafés de especialidad" 
                   style={{
                     maxWidth: '100%',
-                    maxHeight: 'calc(75vh - 190px)',
+                    maxHeight: 'calc(70dvh - 180px)',
                     height: 'auto',
                     borderRadius: '6px', 
                     display: 'block',
@@ -606,18 +626,19 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                 padding: '6px 12px',
                 fontSize: '11.5px',
                 fontWeight: '600',
-                textAlign: 'center'
+                textAlign: 'center',
+                flexShrink: 0
               }}>
                 {menuShareStatus}
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '4px' }}>
+            {/* Action Buttons (Pinned Footer) */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: 'auto', flexShrink: 0, paddingTop: '4px' }}>
               <button 
                 type="button" 
                 className="btn-candy" 
-                style={{ padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', fontWeight: '700' }} 
+                style={{ minHeight: '44px', padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', fontWeight: '700' }} 
                 onClick={handleCopyMenuText}
               >
                 <ClipboardCopy size={15} strokeWidth={2.2} />
@@ -627,7 +648,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
               <button 
                 type="button" 
                 className="btn-candy primary" 
-                style={{ padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', fontWeight: '700' }} 
+                style={{ minHeight: '44px', padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', fontWeight: '700' }} 
                 onClick={handleNativeMenuShare}
               >
                 <Share2 size={15} strokeWidth={2.2} />

@@ -101,8 +101,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     try {
       const pref = localStorage.getItem('beantag-share-style');
       if (pref === 'neobrutalist') return 'neobrutalist';
-      if (pref === 'aurora') return 'aurora';
-      if (pref === 'hangtag') return 'hangtag';
+      if (pref === 'diner' || pref === 'aurora') return 'diner';
+      if (pref === 'kissaten' || pref === 'hangtag') return 'kissaten';
       return 'blueprint';
     } catch (e) {
       return 'blueprint';
@@ -1721,18 +1721,25 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           backgroundColor: 'rgba(0, 0, 0, 0.85)',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
-          zIndex: 11000, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '12px', boxSizing: 'border-box'
+          zIndex: 11000, 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'flex-start',
+          padding: '16px 12px', 
+          boxSizing: 'border-box',
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch'
         }} onClick={() => { setShareImage(null); setShareStatus(''); }}>
           <div className="candy-card static animate-entrance" style={{
             maxWidth: '480px', width: '100%',
-            maxHeight: '92vh',
+            maxHeight: 'calc(100dvh - 32px)',
+            margin: 'auto 0',
             padding: '16px', boxSizing: 'border-box',
             boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
             display: 'flex', flexDirection: 'column', gap: '10px',
-            overflowY: 'auto'
+            overflow: 'hidden'
           }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
               
               {/* Row 1: Scope Selector (Ficha de este café vs Carta Completa) */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
@@ -1816,9 +1823,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
                 {[
                   { id: 'blueprint', label: '📐 Blueprint' },
-                  { id: 'neobrutalist', label: '⚡ Neo-Pop' },
-                  { id: 'aurora', label: '🔮 Aurora' },
-                  { id: 'hangtag', label: '🏷️ Hangtag' }
+                  { id: 'neobrutalist', label: '⚡ Brutalismo' },
+                  { id: 'diner', label: '📻 Retro 50s' },
+                  { id: 'kissaten', label: '🍵 Kissaten' }
                 ].map(t => (
                   <button
                     key={t.id}
@@ -1847,13 +1854,24 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               </div>
             </div>
 
-            <div style={{ textAlign: 'center', backgroundColor: 'var(--bg-canvas, #F1F5F9)', borderRadius: '12px', padding: '8px', overflowY: 'auto', maxHeight: 'calc(75vh - 170px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{
+              textAlign: 'center',
+              backgroundColor: 'var(--bg-canvas, #F1F5F9)',
+              borderRadius: '12px',
+              padding: '8px',
+              overflowY: 'auto',
+              flex: '1 1 auto',
+              minHeight: '140px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
               <img 
                 src={shareImage} 
                 alt="Ticket de café POS o Carta" 
                 style={{
                   maxWidth: '100%',
-                  maxHeight: 'calc(75vh - 190px)',
+                  maxHeight: 'calc(70dvh - 180px)',
                   height: 'auto',
                   borderRadius: '6px', 
                   display: 'block',
@@ -1872,30 +1890,31 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 padding: '6px 12px',
                 fontSize: '11.5px',
                 fontWeight: '600',
-                textAlign: 'center'
+                textAlign: 'center',
+                flexShrink: 0
               }}>
                 {shareStatus}
               </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '2px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: 'auto', flexShrink: 0, paddingTop: '4px' }}>
               <button 
                 type="button" 
                 className="btn-candy" 
-                style={{ padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', fontWeight: '700' }} 
+                style={{ minHeight: '44px', padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '700' }} 
                 onClick={handleCopyShareText}
               >
-                <ClipboardCopy size={15} strokeWidth={2.2} />
+                <ClipboardCopy size={16} strokeWidth={2.2} />
                 Copiar Texto (WhatsApp)
               </button>
 
               <button 
                 type="button" 
                 className="btn-candy primary" 
-                style={{ padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', fontWeight: '700' }} 
+                style={{ minHeight: '44px', padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '700' }} 
                 onClick={handleNativeShare}
               >
-                <Share2 size={15} strokeWidth={2.2} />
+                <Share2 size={16} strokeWidth={2.2} />
                 Compartir PNG (2x)
               </button>
             </div>

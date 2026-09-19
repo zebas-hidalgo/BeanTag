@@ -213,7 +213,7 @@ const sampleBatches = [
   { batch_name: 'Chiroso Finca Los Alpes', origin: 'Colombia', process: 'Lavado Frío', remaining_doses: 6, roaster: 'Los Alpes' }
 ];
 
-const STYLES = ['blueprint', 'neobrutalist', 'aurora', 'hangtag'];
+const STYLES = ['blueprint', 'neobrutalist', 'diner', 'kissaten'];
 
 async function verify() {
   const bundleUrl = pathToFileURL(latestBundle.fullPath).href;

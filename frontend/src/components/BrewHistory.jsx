@@ -41,8 +41,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
     try {
       const pref = localStorage.getItem('beantag-share-style');
       if (pref === 'neobrutalist') return 'neobrutalist';
-      if (pref === 'aurora') return 'aurora';
-      if (pref === 'hangtag') return 'hangtag';
+      if (pref === 'diner' || pref === 'aurora') return 'diner';
+      if (pref === 'kissaten' || pref === 'hangtag') return 'kissaten';
       return 'blueprint';
     } catch (e) {
       return 'blueprint';
@@ -948,17 +948,27 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '12px', boxSizing: 'border-box'
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          zIndex: 11000, 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'flex-start',
+          padding: '16px 12px', 
+          boxSizing: 'border-box',
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch'
         }} onClick={() => { setShareImage(null); setShareStatus(''); }}>
-          <div className="candy-card static" style={{
+          <div className="candy-card static animate-entrance" style={{
             maxWidth: '480px', width: '100%',
+            maxHeight: 'calc(100dvh - 32px)',
+            margin: 'auto 0',
             padding: '16px', boxSizing: 'border-box',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
-            animation: 'soft-pop 250ms var(--transition-spring)',
-            display: 'flex', flexDirection: 'column', gap: '10px'
+            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+            display: 'flex', flexDirection: 'column', gap: '10px',
+            overflow: 'hidden'
           }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0 }}>
                   🧾 Ticket Barista • {selectedRecipe?.batch_name}
@@ -987,9 +997,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
                 {[
                   { id: 'blueprint', label: '📐 Blueprint' },
-                  { id: 'neobrutalist', label: '⚡ Neo-Pop' },
-                  { id: 'aurora', label: '🔮 Aurora' },
-                  { id: 'hangtag', label: '🏷️ Hangtag' }
+                  { id: 'neobrutalist', label: '⚡ Brutalismo' },
+                  { id: 'diner', label: '📻 Retro 50s' },
+                  { id: 'kissaten', label: '🍵 Kissaten' }
                 ].map(t => (
                   <button
                     key={t.id}
@@ -1005,9 +1015,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       fontSize: '9.5px',
                       borderRadius: '4px',
                       border: (shareTemplate || 'blueprint') === t.id ? '1.5px solid var(--color-crimson)' : 'none',
-                      backgroundColor: (shareTemplate || 'blueprint') === t.id ? 'var(--bg-header)' : 'transparent',
+                      backgroundColor: (shareTemplate || 'blueprint') === t.id ? '#FFFFFF' : 'transparent',
                       fontWeight: (shareTemplate || 'blueprint') === t.id ? '900' : 'normal',
-                      color: 'var(--color-text)',
+                      color: (shareTemplate || 'blueprint') === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
                       cursor: 'pointer'
                     }}
                   >
@@ -1017,13 +1027,24 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               </div>
             </div>
 
-            <div style={{ textAlign: 'center', backgroundColor: 'var(--bg-canvas, #F1F5F9)', borderRadius: '12px', padding: '8px', overflowY: 'auto', maxHeight: 'calc(75vh - 170px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{
+              textAlign: 'center',
+              backgroundColor: 'var(--bg-canvas, #F1F5F9)',
+              borderRadius: '12px',
+              padding: '8px',
+              overflowY: 'auto',
+              flex: '1 1 auto',
+              minHeight: '140px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
               <img 
                 src={shareImage} 
                 alt="Ticket de café POS" 
                 style={{
                   maxWidth: '100%',
-                  maxHeight: 'calc(75vh - 190px)',
+                  maxHeight: 'calc(70dvh - 180px)',
                   height: 'auto',
                   borderRadius: '6px', 
                   display: 'block',
@@ -1043,17 +1064,18 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 fontSize: '11px',
                 fontWeight: 'bold',
                 textAlign: 'center',
-                fontFamily: 'var(--font-heading)'
+                fontFamily: 'var(--font-heading)',
+                flexShrink: 0
               }}>
                 {shareStatus}
               </div>
             )}
 
-            <div style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginTop: 'auto', flexShrink: 0, paddingTop: '4px' }}>
               <button 
                 type="button" 
                 className="btn-candy primary" 
-                style={{ flex: 1, padding: '9px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px' }} 
+                style={{ flex: 1, minHeight: '44px', padding: '9px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px' }} 
                 onClick={handleNativeShare}
               >
                 <Share2 size={15} strokeWidth={2.5} />
@@ -1062,7 +1084,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               <button 
                 type="button" 
                 className="btn-candy" 
-                style={{ padding: '9px 14px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px' }} 
+                style={{ minHeight: '44px', padding: '9px 14px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px' }} 
                 onClick={() => setShareImage(null)}
               >
                 <X size={15} strokeWidth={2.5} />
