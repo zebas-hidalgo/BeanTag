@@ -229,5 +229,184 @@ export const FAMOUS_RECIPES = [
       'Añadir 100g - 120g de agua caliente a la taza para el balance perfecto.'
     ],
     notes: 'Cuerpo sedoso, explosión aromática dulce y acidez aterciopelada.'
+  },
+  {
+    id: 'scott-rao-pulsar-mini',
+    name: 'Scott Rao Pulsar Mini',
+    author: 'Scott Rao (Consultor & Autor)',
+    badge: '🏆 Protocolo No-Bypass',
+    method: 'NextLevel Pulsar Mini',
+    description: 'Inmersión inicial con válvula cerrada y WWDT suave, seguida de percolación continua con tapa de dispersión.',
+    ratio: '1:16.6',
+    ratioVal: 16.6,
+    defaultDose: 15,
+    temperature: 94,
+    brewTime: '3:30 min',
+    grind: 'Media (Rao Pulsar Mini)',
+    grindMicrons: 1900,
+    grinderSettings: {
+      jmax: { rot: 2, num: 4, click: 5, text: '2.4.5 (~1900 µm)' },
+      femobook: { clicks: 62, text: '62 clics (1.55 Rot.)' },
+      comandante: { clicks: 24, text: '24 clics' }
+    },
+    calculatePours: (dose) => {
+      const totalWater = Math.round(dose * (250 / 15));
+      const bloom = Math.round(dose * (50 / 15));
+      const remaining = totalWater - bloom;
+      const pour1 = Math.round(remaining / 2);
+      const pour2 = totalWater - bloom - pour1;
+      return [
+        {
+          step: 1,
+          label: 'Bloom e Inmersión + WWDT (Válvula Cerrada)',
+          water_g: bloom,
+          total_water_g: bloom,
+          time: '0:00 - 0:45',
+          valve: 'closed',
+          description: `Con válvula cerrada, verter ${bloom}g de agua y realizar agitación suave con aguja WWDT para saturar homogéneamente sin compactar.`
+        },
+        {
+          step: 2,
+          label: '1º Vertido de Percolación (Válvula Abierta)',
+          water_g: pour1,
+          total_water_g: bloom + pour1,
+          time: '0:45 - 2:00',
+          valve: 'open',
+          description: `Abrir válvula por completo y verter ${pour1}g a través de la tapa de dispersión manteniendo un nivel suave sobre la cama.`
+        },
+        {
+          step: 3,
+          label: '2º Vertido Final (Válvula Abierta)',
+          water_g: pour2,
+          total_water_g: totalWater,
+          time: '2:00 - 3:30',
+          valve: 'open',
+          description: `Verter los últimos ${pour2}g hasta alcanzar ${totalWater}g y dejar drenar completamente hasta cama plana.`
+        }
+      ];
+    },
+    steps: [
+      'Cerrar la válvula completamente y colocar filtro de papel humedecido en el Pulsar Mini.',
+      'Añadir 15g de café molido medio y nivelar con cuidado.',
+      'Verter 50g de agua a 94°C y hacer WWDT suave por 15s para desgasificación uniforme sin compactar.',
+      'A los 0:45 abrir la válvula por completo y verter 100g sobre la tapa de dispersión.',
+      'A los 2:00 verter los últimos 100g hasta 250g y esperar a que el lecho drene completamente con lecho plano.'
+    ],
+    notes: 'Protocolo estándar Rao sin bypass: taza limpia, balance acidez-dulzor sobresaliente y reproducibilidad perfecta.'
+  },
+  {
+    id: 'gagne-high-extraction-mini',
+    name: 'Jonathan Gagné High Extraction',
+    author: 'Jonathan Gagné (The Physics of Filter Coffee)',
+    badge: '🔬 Max Extraction (23%+)',
+    method: 'NextLevel Pulsar Mini',
+    description: 'Bloom prolongado de 1 minuto en inmersión total y percolación regulada a medio flujo para tuestes nórdicos ultra-claros.',
+    ratio: '1:17',
+    ratioVal: 17,
+    defaultDose: 15,
+    temperature: 96,
+    brewTime: '4:15 min',
+    grind: 'Fina-Media (Gagné Micro)',
+    grindMicrons: 1750,
+    grinderSettings: {
+      jmax: { rot: 2, num: 3, click: 0, text: '2.3.0 (~1750 µm)' },
+      femobook: { clicks: 55, text: '55 clics (1.38 Rot.)' },
+      comandante: { clicks: 21, text: '21 clics' }
+    },
+    calculatePours: (dose) => {
+      const totalWater = Math.round(dose * 17);
+      const bloom = Math.round(dose * 4);
+      const pour1 = Math.round(dose * (100 / 15));
+      const pour2 = totalWater - bloom - pour1;
+      return [
+        {
+          step: 1,
+          label: 'Bloom Prolongado (Válvula Cerrada)',
+          water_g: bloom,
+          total_water_g: bloom,
+          time: '0:00 - 1:00',
+          valve: 'closed',
+          description: `Con válvula cerrada, verter ${bloom}g a 96°C para una inmersión completa de 1 minuto.`
+        },
+        {
+          step: 2,
+          label: 'Percolación Lenta (Válvula 50%)',
+          water_g: pour1,
+          total_water_g: bloom + pour1,
+          time: '1:00 - 2:30',
+          valve: 'half',
+          description: `Abrir la válvula al 50% para restringir el caudal y verter ${pour1}g lentamente sobre la tapa de dispersión.`
+        },
+        {
+          step: 3,
+          label: 'Vertido Final (Válvula Abierta)',
+          water_g: pour2,
+          total_water_g: totalWater,
+          time: '2:30 - 4:15',
+          valve: 'open',
+          description: `Abrir la válvula completamente y verter los últimos ${pour2}g hasta ${totalWater}g; dejar drenar hasta secar.`
+        }
+      ];
+    },
+    steps: [
+      'Válvula cerrada. Poner filtro mojado y añadir café molienda fina-media.',
+      'Bloom de 60g de agua casi hirviendo (96°C) durante 1 minuto entero.',
+      'Ajustar la válvula a media apertura (50%) para regular la velocidad de percolación y evitar canalización.',
+      'Verter 100g manteniendo una columna de agua baja sobre el café.',
+      'Abrir válvula al 100% para el vertido final de 95g y dejar drenar.'
+    ],
+    notes: 'Extracción extrema superando el 23% EY, brillantez cristalina y acidez muy refinada para tuestes ligeros.'
+  },
+  {
+    id: 'pulsar-mini-concentrate',
+    name: 'Pulsar Mini Concentrado',
+    author: 'Extracción Corta de Alta Densidad',
+    badge: '🍯 Dulzor & Textura Sedosa',
+    method: 'NextLevel Pulsar Mini',
+    description: 'Ratio corto 1:14 con mayor tiempo de contacto para resaltar mieles, cuerpo denso y notas dulces profundas.',
+    ratio: '1:14',
+    ratioVal: 14,
+    defaultDose: 18,
+    temperature: 92,
+    brewTime: '3:15 min',
+    grind: 'Media-Gruesa',
+    grindMicrons: 2050,
+    grinderSettings: {
+      jmax: { rot: 2, num: 6, click: 0, text: '2.6.0 (~2050 µm)' },
+      femobook: { clicks: 68, text: '68 clics (1.70 Rot.)' },
+      comandante: { clicks: 26, text: '26 clics' }
+    },
+    calculatePours: (dose) => {
+      const totalWater = Math.round(dose * 14);
+      const bloom = Math.round(dose * (60 / 18));
+      const pour1 = totalWater - bloom;
+      return [
+        {
+          step: 1,
+          label: 'Inmersión Saturada (Válvula Cerrada)',
+          water_g: bloom,
+          total_water_g: bloom,
+          time: '0:00 - 0:45',
+          valve: 'closed',
+          description: `Válvula cerrada: verter ${bloom}g a 92°C saturando todo el lecho para una inmersión densa.`
+        },
+        {
+          step: 2,
+          label: 'Vertido Continuo (Válvula Abierta)',
+          water_g: pour1,
+          total_water_g: totalWater,
+          time: '0:45 - 3:15',
+          valve: 'open',
+          description: `Abrir válvula completamente y verter ${pour1}g de manera continua hasta alcanzar ${totalWater}g.`
+        }
+      ];
+    },
+    steps: [
+      'Moler 18g en punto medio-grueso para permitir flujo sostenido.',
+      'Válvula cerrada. Verter 60g de agua a 92°C y esperar 45 segundos de saturación.',
+      'Abrir válvula al 100% y verter gradualmente los 192g restantes sobre el dispersor.',
+      'Drenaje constante para una extracción concentrada y melosa.'
+    ],
+    notes: 'Cuerpo denso, textura sedosa y notas acarameladas de alta concentración.'
   }
 ];
