@@ -61,6 +61,151 @@ export function parseGrindToMicrons(grind) {
 }
 
 /**
+ * Draws a 5-axis Mini SCA Sensory Radar Chart on the given Canvas context
+ */
+export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
+  if (!sensoryData) return false;
+  const s = normalizeCardStyle(style);
+  const {
+    balance = 3,
+    body = 3,
+    extraction = 3,
+    rating = 4,
+    sweetness = 3.5
+  } = sensoryData;
+
+  const values = [extraction, sweetness, body, balance, rating];
+  const labels = ['ACIDEZ', 'DULZOR', 'CUERPO', 'BALANCE', 'FINAL'];
+  const numAxes = 5;
+
+  ctx.save();
+
+  // 1. Concentric Guide Pentagons (33%, 66%, 100%)
+  [0.33, 0.66, 1.0].forEach(level => {
+    ctx.beginPath();
+    for (let i = 0; i < numAxes; i++) {
+      const angle = -Math.PI / 2 + (i * 2 * Math.PI) / numAxes;
+      const x = cx + radius * level * Math.cos(angle);
+      const y = cy + radius * level * Math.sin(angle);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = s === 'blueprint'
+      ? 'rgba(56, 189, 248, 0.3)'
+      : (s === 'neobrutalist' ? 'rgba(0,0,0,0.2)' : (s === 'diner' ? 'rgba(14, 116, 144, 0.25)' : 'rgba(24, 24, 27, 0.2)'));
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+  // 2. Radial Spines
+  for (let i = 0; i < numAxes; i++) {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / numAxes;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + radius * Math.cos(angle), cy + radius * Math.sin(angle));
+    ctx.stroke();
+  }
+
+  // 3. Data Polygon
+  ctx.beginPath();
+  for (let i = 0; i < numAxes; i++) {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / numAxes;
+    const normVal = Math.max(1, Math.min(5, values[i])) / 5.0;
+    const r = normVal * radius;
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+
+  // Themed Fill & Stroke
+  if (s === 'blueprint') {
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+    ctx.strokeStyle = '#38BDF8';
+  } else if (s === 'neobrutalist') {
+    ctx.fillStyle = 'rgba(255, 230, 0, 0.5)';
+    ctx.strokeStyle = '#000000';
+  } else if (s === 'diner') {
+    ctx.fillStyle = 'rgba(14, 116, 144, 0.25)';
+    ctx.strokeStyle = '#0E7490';
+  } else {
+    ctx.fillStyle = 'rgba(220, 38, 38, 0.15)';
+    ctx.strokeStyle = '#DC2626';
+  }
+  ctx.lineWidth = s === 'neobrutalist' ? 2 : 1.5;
+  ctx.fill();
+  ctx.stroke();
+
+  // 4. Vertex Points
+  for (let i = 0; i < numAxes; i++) {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / numAxes;
+    const normVal = Math.max(1, Math.min(5, values[i])) / 5.0;
+    const r = normVal * radius;
+    ctx.beginPath();
+    ctx.arc(cx + r * Math.cos(angle), cy + r * Math.sin(angle), 2.5, 0, 2 * Math.PI);
+    ctx.fillStyle = s === 'diner'
+      ? '#C92A2A'
+      : (s === 'kissaten' ? '#DC2626' : (s === 'blueprint' ? '#38BDF8' : '#000000'));
+    ctx.fill();
+  }
+
+  // 5. Axis Labels
+  ctx.font = '700 7px "JetBrains Mono", monospace';
+  ctx.fillStyle = s === 'blueprint'
+    ? '#93C5FD'
+    : (s === 'kissaten' ? '#52525B' : (s === 'diner' ? '#0E7490' : '#18181B'));
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < numAxes; i++) {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / numAxes;
+    const lx = cx + (radius + 12) * Math.cos(angle);
+    const ly = cy + (radius + 10) * Math.sin(angle);
+    ctx.fillText(labels[i], lx, ly);
+  }
+
+  ctx.restore();
+  return true;
+}
+
+/**
+ * Helper to parse sensory evaluation data from batch and recipe
+ */
+export function parseSensoryEvaluation(batch, recipe) {
+  const r = recipe || {};
+  const b = batch || {};
+  const balanceRaw = r.sensory_balance || b.sensory_balance;
+  const bodyRaw = r.sensory_body || b.sensory_body;
+  const extractionRaw = r.sensory_extraction || b.sensory_extraction;
+  const ratingRaw = r.rating || b.rating;
+
+  if (!balanceRaw && !bodyRaw && !extractionRaw && !ratingRaw) {
+    return null; // Return null so fallback mode triggers (no fake data!)
+  }
+
+  const mapAttr = (val) => {
+    if (typeof val === 'number') return Math.max(1, Math.min(5, val));
+    if (!val) return 3;
+    const s = String(val).toLowerCase();
+    if (s.includes('over') || s.includes('heavy') || s.includes('alta') || s.includes('intenso')) return 4.5;
+    if (s.includes('balanced') || s.includes('balanceado') || s.includes('medium') || s.includes('medio')) return 5;
+    if (s.includes('under') || s.includes('light') || s.includes('ligero') || s.includes('bajo')) return 2.5;
+    const n = parseFloat(val);
+    return isNaN(n) ? 3 : Math.max(1, Math.min(5, n));
+  };
+
+  const balance = mapAttr(balanceRaw);
+  const body = mapAttr(bodyRaw);
+  const extraction = mapAttr(extractionRaw);
+  const rating = typeof ratingRaw === 'number' ? ratingRaw : (parseFloat(ratingRaw) || 4);
+  const sweetness = (balance + rating) / 2;
+
+  return { balance, body, extraction, rating, sweetness };
+}
+
+
+/**
  * Asynchronous Font Loading Barrier:
  * Prevents HTML5 Canvas from drawing with fallback system fonts
  */
@@ -626,7 +771,13 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     }
   };
 
-  const drawWrappedText = (text, x, y, maxWidth, lineHeight = 15, maxLines = 3) => {
+  const drawWrappedText = (...args) => {
+    let text, x, y, maxWidth, lineHeight, maxLines;
+    if (args[0] && typeof args[0] === 'object' && typeof args[0].fillText === 'function') {
+      [, text, x, y, maxWidth, lineHeight = 15, maxLines = 3] = args;
+    } else {
+      [text, x, y, maxWidth, lineHeight = 15, maxLines = 3] = args;
+    }
     const words = String(text || '').trim().split(/\s+/);
     if (words.length === 0 || words[0] === '') return 0;
     let line = '';
@@ -657,6 +808,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
   };
 
   const rec = recipe || {};
+  const batch = rec.batch || rec;
+  const sensoryData = parseSensoryEvaluation(batch, rec);
 
   // Coffee & recipe attributes (STRICT TRUTH: only what the user entered, no fabricated values!)
   const coffeeName = stripEmojis(rec.batch_name || rec.coffee_name || rec.name || 'Café');
@@ -855,11 +1008,14 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.font = '800 8.5px "JetBrains Mono", monospace';
       ctx.fillText('NOTAS DE CATA & PERFIL SENSORIAL DEL TOSTADOR:', paddingX + 12, notesY + 20);
 
+      const hasRadar = sensoryData !== null;
+      const contentW = hasRadar ? availW - 146 : availW - 24;
+
       // Real tasting description text
       if (notesStr) {
         ctx.fillStyle = '#E0F2FE';
         ctx.font = '700 10.5px "JetBrains Mono", monospace';
-        drawWrappedText(notesStr, paddingX + 12, notesY + 40, availW - 24, 16, 3);
+        drawWrappedText(notesStr, paddingX + 12, notesY + 40, contentW, 16, 3);
       } else {
         ctx.fillStyle = '#64748B';
         ctx.font = 'italic 10px "JetBrains Mono", monospace';
@@ -876,7 +1032,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         flavorTags.slice(0, 5).forEach((tag) => {
           const tw = ctx.measureText(tag.toUpperCase()).width;
           const pw = tw + 16;
-          if (pillX + pw <= paddingX + availW - 12) {
+          if (pillX + pw <= paddingX + contentW) {
             ctx.fillStyle = 'rgba(56, 189, 248, 0.18)';
             ctx.strokeStyle = '#38BDF8';
             ctx.lineWidth = 1;
@@ -887,6 +1043,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
             pillX += pw + 8;
           }
         });
+      }
+
+      if (hasRadar) {
+        drawSensoryRadarChart(ctx, paddingX + availW - 68, notesY + 74, 36, sensoryData, style);
       }
 
       // 4. Cellar Vault Strip
@@ -1056,6 +1216,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.font = '800 8px "JetBrains Mono", monospace';
       ctx.fillText('DESCRIPTORES SENSORIALES DEL CAFÉ:', paddingX + 12, notesY + 18);
 
+      const hasRadar = sensoryData !== null;
+      const contentW = hasRadar ? availW - 116 : availW - 12;
+
       if (flavorTags.length > 0) {
         let pillX = paddingX + 12;
         const pillY = notesY + 30;
@@ -1063,7 +1226,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
           ctx.font = '800 9.5px "JetBrains Mono", monospace';
           const tw = ctx.measureText(tag.toUpperCase()).width;
           const pw = tw + 16;
-          if (pillX + pw <= paddingX + availW - 12) {
+          if (pillX + pw <= paddingX + contentW) {
             ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
             ctx.strokeStyle = '#38BDF8';
             ctx.lineWidth = 1;
@@ -1077,11 +1240,15 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       } else if (notesStr) {
         ctx.fillStyle = '#BAE6FD';
         ctx.font = '700 9px "JetBrains Mono", monospace';
-        drawTruncatedText(notesStr, paddingX + 12, notesY + 44, availW - 24);
+        drawTruncatedText(notesStr, paddingX + 12, notesY + 44, hasRadar ? availW - 120 : availW - 24);
       } else {
         ctx.fillStyle = '#64748B';
         ctx.font = 'italic 8.5px "JetBrains Mono", monospace';
         ctx.fillText('Sin descriptores sensoriales registrados.', paddingX + 12, notesY + 44);
+      }
+
+      if (hasRadar) {
+        drawSensoryRadarChart(ctx, paddingX + availW - 55, notesY + 38, 23, sensoryData, style);
       }
     }
 
@@ -1290,11 +1457,14 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.font = '900 10px "Space Grotesk", sans-serif';
       ctx.fillText('⚡ PERFIL SENSORIAL // NOTAS DE CATA:', paddingX + 14, specY + 22);
 
+      const hasRadar = sensoryData !== null;
+      const contentW = hasRadar ? availW - 146 : availW - 28;
+
       // Authentic roaster notes text
       ctx.fillStyle = '#18181B';
       ctx.font = '700 10.5px "Space Grotesk", sans-serif';
       const actualNotes = notesStr ? `"${notesStr}"` : 'Sin notas de cata registradas para este lote.';
-      const linesDrawn = drawWrappedText(ctx, actualNotes, paddingX + 14, specY + 42, availW - 28, 17, 3);
+      const linesDrawn = drawWrappedText(actualNotes, paddingX + 14, specY + 42, contentW, 17, 3);
 
       // Flavor stickers below text
       if (flavorTags.length > 0) {
@@ -1307,7 +1477,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
           ctx.font = '900 9.5px "Space Grotesk", sans-serif';
           const pw = ctx.measureText(tag.toUpperCase()).width + 16;
 
-          if (pillX + pw < paddingX + availW - 14) {
+          if (pillX + pw < paddingX + contentW) {
             ctx.fillStyle = '#000000';
             ctx.fillRect(pillX + 2, pillY + 2, pw, 22);
             ctx.fillStyle = bgCol;
@@ -1322,6 +1492,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
             pillX += pw + 8;
           }
         });
+      }
+
+      if (hasRadar) {
+        drawSensoryRadarChart(ctx, paddingX + availW - 70, specY + 75, 36, sensoryData, style);
       }
 
       // 4. Cellar vault pill
@@ -1438,6 +1612,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.font = '900 10px "Space Grotesk", sans-serif';
       ctx.fillText('⚡ NOTAS DE CATA // SENSORY STICKERS:', paddingX + 12, notesY + 20);
 
+      const hasRadar = sensoryData !== null;
+      const contentW = hasRadar ? availW - 116 : availW - 12;
+
       let pillX = paddingX + 12;
       const pillY = notesY + 34;
       const pillColors = ['#D4FF00', '#FF3B14', '#D8B4FE', '#67E8F9', '#FED7AA'];
@@ -1448,7 +1625,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
           ctx.font = '900 9.5px "Space Grotesk", sans-serif';
           const pw = ctx.measureText(tag.toUpperCase()).width + 16;
 
-          if (pillX + pw < paddingX + availW - 12) {
+          if (pillX + pw < paddingX + contentW) {
             ctx.fillStyle = '#000000';
             ctx.fillRect(pillX + 2, pillY + 2, pw, 24);
             ctx.fillStyle = bgCol;
@@ -1466,7 +1643,11 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       } else {
         ctx.fillStyle = '#71717A';
         ctx.font = '600 9px "Space Grotesk", sans-serif';
-        ctx.fillText(notesStr ? `"${notesStr.slice(0, 60)}..."` : 'Sin notas de cata adicionales especificadas', pillX, pillY + 16);
+        ctx.fillText(notesStr ? `"${notesStr.slice(0, hasRadar ? 36 : 60)}..."` : 'Sin notas de cata adicionales especificadas', pillX, pillY + 16);
+      }
+
+      if (hasRadar) {
+        drawSensoryRadarChart(ctx, paddingX + availW - 55, notesY + 40, 24, sensoryData, style);
       }
 
       // 4. Barista Pour Timeline Strip
@@ -1661,10 +1842,13 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.font = '800 8.5px "Space Grotesk", sans-serif';
       ctx.fillText('★ SENSORY NOTES // TASTING DESCRIPTORS ★', paddingX + 14, notesBoxY + 20);
 
+      const hasRadar = sensoryData !== null;
+      const contentW = hasRadar ? availW - 146 : availW - 28;
+
       ctx.fillStyle = '#292524';
       ctx.font = '600 10.5px "Space Grotesk", sans-serif';
       const actualNotes = notesStr ? `"${notesStr}"` : 'Notas de cata tradicionales de café de especialidad.';
-      const linesDrawn = drawWrappedText(ctx, actualNotes, paddingX + 14, notesBoxY + 40, availW - 28, 17, 3);
+      const linesDrawn = drawWrappedText(actualNotes, paddingX + 14, notesBoxY + 40, contentW, 17, 3);
 
       // Flavor pills
       if (flavorTags.length > 0) {
@@ -1676,7 +1860,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
           ctx.font = '800 9.5px "Space Grotesk", sans-serif';
           const tw = ctx.measureText(tag).width;
           const pw = tw + 18;
-          if (pillX + pw <= paddingX + availW - 14) {
+          if (pillX + pw <= paddingX + contentW) {
             ctx.fillStyle = '#FEF3C7';
             ctx.strokeStyle = '#C92A2A';
             ctx.lineWidth = 1;
@@ -1687,6 +1871,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
             pillX += pw + 8;
           }
         });
+      }
+
+      if (hasRadar) {
+        drawSensoryRadarChart(ctx, paddingX + availW - 70, notesBoxY + 75, 36, sensoryData, style);
       }
 
       // 4. Vault Stock Bar
@@ -1823,6 +2011,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.font = '800 8.5px "Space Grotesk", sans-serif';
       ctx.fillText('CUPPING TASTE NOTES // PERFIL SENSORIAL:', paddingX + 14, notesY + 18);
 
+      const hasRadar = sensoryData !== null;
+      const contentW = hasRadar ? availW - 116 : availW - 14;
+
       let pillX = paddingX + 14;
       const pillY = notesY + 32;
 
@@ -1831,7 +2022,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
           ctx.font = '800 9.5px "Space Grotesk", sans-serif';
           const tw = ctx.measureText(tag).width;
           const pw = tw + 18;
-          if (pillX + pw <= paddingX + availW - 14) {
+          if (pillX + pw <= paddingX + contentW) {
             ctx.fillStyle = '#FEF3C7';
             ctx.strokeStyle = '#C92A2A';
             ctx.lineWidth = 1;
@@ -1845,7 +2036,11 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       } else {
         ctx.fillStyle = '#78716C';
         ctx.font = '600 9.5px "Space Grotesk", sans-serif';
-        ctx.fillText(notesStr ? `"${notesStr.slice(0, 55)}..."` : 'Sin notas sensoriales adicionales registradas', pillX, pillY + 16);
+        ctx.fillText(notesStr ? `"${notesStr.slice(0, hasRadar ? 36 : 55)}..."` : 'Sin notas sensoriales adicionales registradas', pillX, pillY + 16);
+      }
+
+      if (hasRadar) {
+        drawSensoryRadarChart(ctx, paddingX + availW - 55, notesY + 40, 24, sensoryData, style);
       }
 
       // 5. Stock & Vault bar
@@ -1990,10 +2185,13 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.font = 'bold 8.5px "Playfair Display", Georgia, serif';
       ctx.fillText('風味特性 // SENSORY NOTES // PERFIL EN TAZA', paddingX + 14, notesBoxY + 20);
 
+      const hasRadar = sensoryData !== null;
+      const contentW = hasRadar ? availW - 146 : availW - 28;
+
       ctx.fillStyle = '#27272A';
       ctx.font = 'italic 10.5px "Playfair Display", Georgia, serif';
       const actualNotes = notesStr ? `« ${notesStr} »` : 'Café de especialidad con notas sutiles y balance limpio.';
-      const linesDrawn = drawWrappedText(ctx, actualNotes, paddingX + 14, notesBoxY + 40, availW - 28, 17, 3);
+      const linesDrawn = drawWrappedText(actualNotes, paddingX + 14, notesBoxY + 40, contentW, 17, 3);
 
       // Flavor pills in natural rice paper aesthetic
       if (flavorTags.length > 0) {
@@ -2005,7 +2203,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
           ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
           const textW = ctx.measureText(tag).width;
           const pillW = textW + 18;
-          if (pillX + pillW <= paddingX + availW - 14) {
+          if (pillX + pillW <= paddingX + contentW) {
             ctx.fillStyle = 'rgba(24, 24, 27, 0.04)';
             ctx.strokeStyle = '#D4D4D8';
             ctx.lineWidth = 0.8;
@@ -2016,6 +2214,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
             pillX += pillW + 8;
           }
         });
+      }
+
+      if (hasRadar) {
+        drawSensoryRadarChart(ctx, paddingX + availW - 70, notesBoxY + 75, 36, sensoryData, style);
       }
 
       // 4. Vault Stock Bar
@@ -2170,6 +2372,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.font = 'bold 8.5px "Playfair Display", Georgia, serif';
       ctx.fillText('風味特性 // SENSORY NOTES // PERFIL EN TAZA', paddingX + 12, notesBoxY + 18);
 
+      const hasRadar = sensoryData !== null;
+      const contentW = hasRadar ? availW - 116 : availW - 12;
+
       const sensoryPillY = notesBoxY + 30;
       let pillX = paddingX + 12;
       const pillH = 24;
@@ -2179,7 +2384,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
           ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
           const textW = ctx.measureText(tag).width;
           const pillW = textW + 18;
-          if (pillX + pillW <= paddingX + availW - 12) {
+          if (pillX + pillW <= paddingX + contentW) {
             ctx.fillStyle = 'rgba(24, 24, 27, 0.04)';
             ctx.strokeStyle = '#D4D4D8';
             ctx.lineWidth = 0.8;
@@ -2193,7 +2398,11 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       } else {
         ctx.fillStyle = '#71717A';
         ctx.font = 'italic 9px "Playfair Display", Georgia, serif';
-        ctx.fillText(notesStr ? `« ${notesStr.slice(0, 60)}... »` : 'Sin notas sensoriales adicionales especificadas', pillX, sensoryPillY + 16);
+        ctx.fillText(notesStr ? `« ${notesStr.slice(0, hasRadar ? 36 : 60)}... »` : 'Sin notas sensoriales adicionales especificadas', pillX, sensoryPillY + 16);
+      }
+
+      if (hasRadar) {
+        drawSensoryRadarChart(ctx, paddingX + availW - 55, notesBoxY + 40, 24, sensoryData, style);
       }
 
       // 5. Stock & Cellar Bar

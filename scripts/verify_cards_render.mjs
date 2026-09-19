@@ -284,6 +284,14 @@ const sampleRecipe = {
   time: '02:45'
 };
 
+const sampleRecipeWithSensory = {
+  ...sampleRecipe,
+  sensory_balance: 'balanced',
+  sensory_body: 'medium',
+  sensory_extraction: 4.5,
+  rating: 5
+};
+
 const sampleBatches = [
   { batch_name: 'Gesha Finca Deborah Echo', origin: 'Panamá', process: 'Maceración Carbónica', remaining_doses: 12, roaster: 'Savage Coffees' },
   { batch_name: 'Pink Bourbon El Paraiso', origin: 'Colombia', process: 'Doble Fermentación', remaining_doses: 8, roaster: 'Finca El Paraiso' },
@@ -316,16 +324,17 @@ async function verify() {
 
   // A. Verify 8 Card Configurations: 4 styles x 2 modes (Con Receta, Solo Grano)
   for (const style of STYLES) {
-    // Mode 1: Con Receta (includeBrew = true)
+    // Mode 1: Con Receta (includeBrew = true, with Sensory Radar Evaluation)
     try {
       mockOps.length = 0;
       mockOpsDetailed.length = 0;
-      const dataUrl = await window.__generateRecipeCardImage(sampleRecipe, style, true);
+      const dataUrl = await window.__generateRecipeCardImage(sampleRecipeWithSensory, style, true);
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
       const hasNoDrawImage = !mockOps.includes('drawImage');
       const hasPerforation = mockContext.operations.some(op => op.name === 'setLineDash') && mockContext.operations.some(op => op.name === 'arc');
-      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage && hasPerforation;
+      const hasRadarChart = mockContext.operations.some(op => op.name === 'fillText' && op.args[0] === 'ACIDEZ');
+      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage && hasPerforation && hasRadarChart;
 
       if (!passed) hasFailure = true;
 
