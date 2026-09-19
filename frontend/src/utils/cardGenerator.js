@@ -354,6 +354,61 @@ function drawKissatenTimer(ctx, cx, cy, size = 28, strokeColor = '#18181B') {
 }
 
 /**
+ * Pure vector Die-Cut Notches & Tear-Off Perforation Module
+ * Renders realistic ticket cutouts and dashed perforation line with style-specific accents.
+ */
+export function drawTicketNotchesAndPerforation(ctx, x, y, width, height, notchY, style, bgColor = '#0A0A0A') {
+  const radius = 13;
+  ctx.save();
+  
+  // Cutout arcs on left and right borders filled with outer background
+  ctx.fillStyle = bgColor;
+  ctx.beginPath();
+  ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
+  ctx.fill();
+  
+  ctx.beginPath();
+  ctx.arc(x + width, notchY, radius, Math.PI / 2, (3 * Math.PI) / 2);
+  ctx.fill();
+
+  // Outline of cutouts themed by style
+  ctx.lineWidth = style === 'neobrutalist' ? 2.5 : 1;
+  ctx.strokeStyle = style === 'diner' ? '#C92A2A' : (style === 'neobrutalist' ? '#000000' : (style === 'blueprint' ? '#38BDF8' : '#D4D4D8'));
+  
+  ctx.beginPath();
+  ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(x + width, notchY, radius, Math.PI / 2, (3 * Math.PI) / 2);
+  ctx.stroke();
+
+  // Dashed perforation line across the width
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(x + radius + 2, notchY);
+  ctx.lineTo(x + width - radius - 2, notchY);
+  ctx.stroke();
+  ctx.setLineDash([]); // Reset line dash
+
+  // Style specific decorative accents at notch terminals:
+  if (style === 'diner') {
+    ctx.font = '700 8px "Space Grotesk", sans-serif';
+    ctx.fillStyle = '#C92A2A';
+    ctx.textAlign = 'center';
+    ctx.fillText('✦', x + radius + 8, notchY + 3);
+    ctx.fillText('✦', x + width - radius - 8, notchY + 3);
+  } else if (style === 'neobrutalist') {
+    ctx.font = '900 6.5px "Space Grotesk", sans-serif';
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
+    ctx.fillText('[ TEAR // CORTE ]', x + width / 2, notchY - 4);
+  }
+
+  ctx.restore();
+}
+
+/**
  * Generates an Ultra-Aesthetic Share Card (Portrait 540 x 760 px @ 2x = 1080 x 1520 px)
  * Flawlessly balanced for both "Con Receta" and "Solo Grano" modes with pure minimalist typography.
  */
@@ -484,6 +539,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
   const paddingX = 26;
   const paddingY = 26;
   const availW = baseW - (paddingX * 2); // 488 px
+  const pad = 18;
+  const cardW = baseW - (pad * 2); // 504 px
+  const cardH = baseH - (pad * 2); // 724 px
 
   // =========================================================================
   // 1. STYLE: BLUEPRINT TÉCNICO (SWISS PATENT CYANOTYPE)
@@ -530,6 +588,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     drawCross(bx + bw, by);
     drawCross(bx, by + bh);
     drawCross(bx + bw, by + bh);
+
+    drawTicketNotchesAndPerforation(ctx, pad, pad, cardW, cardH, 185, style, '#0A0A0A');
 
     // 1. Header Spec
     ctx.fillStyle = '#38BDF8';
@@ -922,6 +982,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.lineTo(0, baseH - toothH);
     ctx.closePath();
     ctx.fill();
+
+    drawTicketNotchesAndPerforation(ctx, pad, pad, cardW, cardH, 180, style, '#0A0A0A');
 
     // 1. Top Acid Lime Header Badge
     const badgeW = availW;
@@ -1339,6 +1401,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     drawDinerAtomicStar(ctx, bx + 15, by + bh - 15, 6, '#C92A2A');
     drawDinerAtomicStar(ctx, bx + bw - 15, by + bh - 15, 6, '#C92A2A');
 
+    drawTicketNotchesAndPerforation(ctx, pad, pad, cardW, cardH, 195, style, '#0A0A0A');
+
     // 1. Header Spec
     ctx.fillStyle = '#C92A2A';
     ctx.font = '800 8.5px "Space Grotesk", sans-serif';
@@ -1674,6 +1738,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.strokeStyle = '#E4E4E7';
     ctx.lineWidth = 1;
     drawRoundedRect(ctx, bx, by, bw, bh, 6, false, true);
+
+    drawTicketNotchesAndPerforation(ctx, pad, pad, cardW, cardH, 175, style, '#0A0A0A');
 
     // 1. Authentic Vermilion Hanko Seal in Header (豆札)
     drawHankoSeal(ctx, baseW - paddingX - 16, paddingY + 28, 30, '豆札');

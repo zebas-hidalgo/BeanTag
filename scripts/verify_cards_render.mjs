@@ -44,45 +44,123 @@ console.log(`📂 Location: ${latestBundle.fullPath}`);
 
 // 2. Setup Headless Mock Browser & DOM Environment
 const mockOps = [];
-const mockCtx = {
-  fillStyle: '',
-  strokeStyle: '',
-  lineWidth: 1,
-  font: '',
-  textAlign: 'left',
-  textBaseline: 'alphabetic',
-  globalAlpha: 1.0,
-  shadowColor: '',
-  shadowBlur: 0,
-  shadowOffsetX: 0,
-  shadowOffsetY: 0,
-  setLineDash: () => {},
-  beginPath: () => mockOps.push('beginPath'),
-  closePath: () => mockOps.push('closePath'),
-  moveTo: (x, y) => mockOps.push(`moveTo(${x},${y})`),
-  lineTo: (x, y) => mockOps.push(`lineTo(${x},${y})`),
-  quadraticCurveTo: (cpx, cpy, x, y) => mockOps.push(`quadraticCurveTo(${cpx},${cpy},${x},${y})`),
-  bezierCurveTo: (cp1x, cp1y, cp2x, cp2y, x, y) => mockOps.push(`bezierCurveTo(${cp1x},${cp1y},${cp2x},${cp2y},${x},${y})`),
-  arc: (x, y, r, sa, ea) => mockOps.push(`arc(${x},${y},${r})`),
-  ellipse: (x, y, rx, ry, rot, sa, ea) => mockOps.push('ellipse'),
-  rect: (x, y, w, h) => mockOps.push(`rect(${x},${y},${w},${h})`),
-  fillRect: (x, y, w, h) => mockOps.push(`fillRect(${x},${y},${w},${h})`),
-  strokeRect: (x, y, w, h) => mockOps.push(`strokeRect(${x},${y},${w},${h})`),
-  clearRect: (x, y, w, h) => mockOps.push(`clearRect(${x},${y},${w},${h})`),
-  fill: () => mockOps.push('fill'),
-  stroke: () => mockOps.push('stroke'),
-  clip: () => mockOps.push('clip'),
-  scale: (sx, sy) => mockOps.push(`scale(${sx},${sy})`),
-  fillText: (t, x, y) => mockOps.push(`fillText(${String(t).slice(0, 15)},${x},${y})`),
-  measureText: (str) => ({ width: (String(str).length * 8) }),
-  createRadialGradient: () => ({ addColorStop: () => {} }),
-  createLinearGradient: () => ({ addColorStop: () => {} }),
-  save: () => mockOps.push('save'),
-  restore: () => mockOps.push('restore'),
-  translate: (x, y) => mockOps.push(`translate(${x},${y})`),
-  rotate: (angle) => mockOps.push(`rotate(${angle})`),
-  drawImage: () => mockOps.push('drawImage')
-};
+
+function createMockContext(ops = []) {
+  const ctx = {
+    operations: ops,
+    fillStyle: '',
+    strokeStyle: '',
+    lineWidth: 1,
+    font: '',
+    textAlign: 'left',
+    textBaseline: 'alphabetic',
+    globalAlpha: 1.0,
+    shadowColor: '',
+    shadowBlur: 0,
+    shadowOffsetX: 0,
+    shadowOffsetY: 0,
+    setLineDash: (segments) => {
+      ops.push({ name: 'setLineDash', args: [segments] });
+      mockOps.push('setLineDash');
+    },
+    beginPath: () => {
+      ops.push({ name: 'beginPath', args: [] });
+      mockOps.push('beginPath');
+    },
+    closePath: () => {
+      ops.push({ name: 'closePath', args: [] });
+      mockOps.push('closePath');
+    },
+    moveTo: (x, y) => {
+      ops.push({ name: 'moveTo', args: [x, y] });
+      mockOps.push(`moveTo(${x},${y})`);
+    },
+    lineTo: (x, y) => {
+      ops.push({ name: 'lineTo', args: [x, y] });
+      mockOps.push(`lineTo(${x},${y})`);
+    },
+    quadraticCurveTo: (cpx, cpy, x, y) => {
+      ops.push({ name: 'quadraticCurveTo', args: [cpx, cpy, x, y] });
+      mockOps.push(`quadraticCurveTo(${cpx},${cpy},${x},${y})`);
+    },
+    bezierCurveTo: (cp1x, cp1y, cp2x, cp2y, x, y) => {
+      ops.push({ name: 'bezierCurveTo', args: [cp1x, cp1y, cp2x, cp2y, x, y] });
+      mockOps.push(`bezierCurveTo(${cp1x},${cp1y},${cp2x},${cp2y},${x},${y})`);
+    },
+    arc: (x, y, r, sa, ea) => {
+      ops.push({ name: 'arc', args: [x, y, r, sa, ea] });
+      mockOps.push(`arc(${x},${y},${r})`);
+    },
+    ellipse: (x, y, rx, ry, rot, sa, ea) => {
+      ops.push({ name: 'ellipse', args: [x, y, rx, ry, rot, sa, ea] });
+      mockOps.push('ellipse');
+    },
+    rect: (x, y, w, h) => {
+      ops.push({ name: 'rect', args: [x, y, w, h] });
+      mockOps.push(`rect(${x},${y},${w},${h})`);
+    },
+    fillRect: (x, y, w, h) => {
+      ops.push({ name: 'fillRect', args: [x, y, w, h] });
+      mockOps.push(`fillRect(${x},${y},${w},${h})`);
+    },
+    strokeRect: (x, y, w, h) => {
+      ops.push({ name: 'strokeRect', args: [x, y, w, h] });
+      mockOps.push(`strokeRect(${x},${y},${w},${h})`);
+    },
+    clearRect: (x, y, w, h) => {
+      ops.push({ name: 'clearRect', args: [x, y, w, h] });
+      mockOps.push(`clearRect(${x},${y},${w},${h})`);
+    },
+    fill: () => {
+      ops.push({ name: 'fill', args: [] });
+      mockOps.push('fill');
+    },
+    stroke: () => {
+      ops.push({ name: 'stroke', args: [] });
+      mockOps.push('stroke');
+    },
+    clip: () => {
+      ops.push({ name: 'clip', args: [] });
+      mockOps.push('clip');
+    },
+    scale: (sx, sy) => {
+      ops.push({ name: 'scale', args: [sx, sy] });
+      mockOps.push(`scale(${sx},${sy})`);
+    },
+    fillText: (t, x, y) => {
+      ops.push({ name: 'fillText', args: [t, x, y] });
+      mockOps.push(`fillText(${String(t).slice(0, 15)},${x},${y})`);
+    },
+    measureText: (str) => ({ width: (String(str).length * 8) }),
+    createRadialGradient: () => ({ addColorStop: () => {} }),
+    createLinearGradient: () => ({ addColorStop: () => {} }),
+    save: () => {
+      ops.push({ name: 'save', args: [] });
+      mockOps.push('save');
+    },
+    restore: () => {
+      ops.push({ name: 'restore', args: [] });
+      mockOps.push('restore');
+    },
+    translate: (x, y) => {
+      ops.push({ name: 'translate', args: [x, y] });
+      mockOps.push(`translate(${x},${y})`);
+    },
+    rotate: (angle) => {
+      ops.push({ name: 'rotate', args: [angle] });
+      mockOps.push(`rotate(${angle})`);
+    },
+    drawImage: (...args) => {
+      ops.push({ name: 'drawImage', args });
+      mockOps.push('drawImage');
+    }
+  };
+  return ctx;
+}
+
+const mockOpsDetailed = [];
+const mockCtx = createMockContext(mockOpsDetailed);
+const mockContext = mockCtx;
 
 global.window = global;
 global.window.addEventListener = () => {};
@@ -241,11 +319,13 @@ async function verify() {
     // Mode 1: Con Receta (includeBrew = true)
     try {
       mockOps.length = 0;
+      mockOpsDetailed.length = 0;
       const dataUrl = await window.__generateRecipeCardImage(sampleRecipe, style, true);
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
       const hasNoDrawImage = !mockOps.includes('drawImage');
-      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage;
+      const hasPerforation = mockContext.operations.some(op => op.name === 'setLineDash');
+      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage && hasPerforation;
 
       if (!passed) hasFailure = true;
 
@@ -270,11 +350,13 @@ async function verify() {
     // Mode 2: Solo Grano (includeBrew = false)
     try {
       mockOps.length = 0;
+      mockOpsDetailed.length = 0;
       const dataUrl = await window.__generateRecipeCardImage(sampleRecipe, style, false);
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
       const hasNoDrawImage = !mockOps.includes('drawImage');
-      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage;
+      const hasPerforation = mockContext.operations.some(op => op.name === 'setLineDash');
+      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage && hasPerforation;
 
       if (!passed) hasFailure = true;
 
