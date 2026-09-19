@@ -25,6 +25,53 @@
 
   --transition-spring: cubic-bezier(0.32, 0.72, 0, 1);
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ☕ Precision Barista Tech Design Tokens (Laboratorio de Precisión) */
+  --barista-bg-canvas: #090D14;
+  --barista-bg-surface: #0F172A;
+  --barista-bg-elevated: #1E293B;
+  --barista-bg-subtle: rgba(30, 41, 59, 0.5);
+
+  --barista-accent-honey: #D97706;
+  --barista-accent-honey-hover: #B45309;
+  --barista-accent-honey-glow: rgba(217, 119, 6, 0.2);
+
+  --barista-accent-mint: #10B981;
+  --barista-accent-mint-subtle: rgba(16, 185, 129, 0.12);
+
+  --barista-accent-cryo: #38BDF8;
+  --barista-accent-cryo-subtle: rgba(56, 189, 248, 0.12);
+
+  --barista-accent-danger: #EF4444;
+  --barista-accent-danger-subtle: rgba(239, 68, 68, 0.12);
+
+  --barista-text-primary: #F8FAFC;
+  --barista-text-secondary: #94A3B8;
+  --barista-text-muted: #64748B;
+  --barista-text-disabled: #475569;
+
+  --barista-border-hairline: rgba(148, 163, 184, 0.14);
+  --barista-border-active: rgba(217, 119, 6, 0.45);
+  --barista-border-focus: #D97706;
+
+  --barista-radius-xs: 4px;
+  --barista-radius-sm: 8px;
+  --barista-radius-md: 12px;
+  --barista-radius-lg: 16px;
+  --barista-radius-pill: 9999px;
+
+  --barista-space-2: 2px;
+  --barista-space-4: 4px;
+  --barista-space-8: 8px;
+  --barista-space-12: 12px;
+  --barista-space-16: 16px;
+  --barista-space-20: 20px;
+  --barista-space-24: 24px;
+  --barista-space-32: 32px;
+
+  --barista-shadow-card: 0 4px 16px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--barista-border-hairline);
+  --barista-shadow-elevated: 0 10px 30px -4px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--barista-border-hairline);
+  --barista-shadow-honey: 0 4px 14px var(--barista-accent-honey-glow);
 }
 
 /* 🌑 True OLED Pure Dark Mode (#000000) */
@@ -43,6 +90,12 @@
     --segmented-bg: rgba(118, 118, 128, 0.24);
     --segmented-active: #2C2C2E;
     --card-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+
+    --barista-bg-canvas: #090D14;
+    --barista-bg-surface: #0F172A;
+    --barista-bg-elevated: #1E293B;
+    --barista-text-primary: #F8FAFC;
+    --barista-text-secondary: #94A3B8;
   }
 }
 
@@ -60,6 +113,12 @@
   --segmented-bg: rgba(118, 118, 128, 0.24) !important;
   --segmented-active: #2C2C2E !important;
   --card-shadow: 0 6px 24px rgba(0, 0, 0, 0.45) !important;
+
+  --barista-bg-canvas: #090D14 !important;
+  --barista-bg-surface: #0F172A !important;
+  --barista-bg-elevated: #1E293B !important;
+  --barista-text-primary: #F8FAFC !important;
+  --barista-text-secondary: #94A3B8 !important;
 }
 
 /* Genjutsu & Cupertino Motion Principles */
@@ -184,34 +243,35 @@ main {
   padding-bottom: calc(78px + env(safe-area-inset-bottom));
 }
 
-/* Modern Clean Specialty Coffee Card (Minimalist & Solid) */
+/* Modern Clean Specialty Coffee Card (Minimalist & Precision) */
 .candy-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
+  background-color: var(--barista-bg-surface, var(--bg-card));
+  border: 1px solid var(--barista-border-hairline, var(--border-color));
+  border-radius: var(--barista-radius-md, 14px);
   padding: 14px;
   margin-bottom: 12px;
   position: relative;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+  box-shadow: var(--barista-shadow-card, 0 1px 3px rgba(0, 0, 0, 0.03));
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
   box-sizing: border-box;
   overflow: hidden;
 }
 
 .candy-card:not(.static):hover {
-  border-color: rgba(188, 84, 73, 0.35);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-color: var(--barista-border-active, rgba(217, 119, 6, 0.45));
+  box-shadow: var(--barista-shadow-elevated, 0 4px 12px rgba(0, 0, 0, 0.05));
 }
 
 .candy-card:not(.static):active {
-  background-color: rgba(0, 0, 0, 0.02);
+  transform: scale(0.99);
+  background-color: var(--barista-bg-subtle, rgba(0, 0, 0, 0.02));
 }
 
 /* Low Stock Card */
 .candy-card.low-stock {
-  border-color: #EF4444;
-  background: linear-gradient(180deg, var(--bg-card) 0%, rgba(239, 68, 68, 0.04) 100%);
+  border-color: var(--barista-accent-danger, #EF4444);
+  background: linear-gradient(180deg, var(--barista-bg-surface, var(--bg-card)) 0%, rgba(239, 68, 68, 0.05) 100%);
 }
 
 /* 🎛️ Inventory View Style Selector */
@@ -428,83 +488,84 @@ main {
 
 /* Modern Sleek Buttons */
 .btn-candy {
-  background-color: #FFFFFF;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
+  background-color: var(--barista-bg-surface, #FFFFFF);
+  border: 1px solid var(--barista-border-hairline, var(--border-color));
+  border-radius: var(--barista-radius-md, 12px);
   padding: 10px 18px;
-  min-height: 42px;
+  min-height: 44px;
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 12.5px;
+  font-size: 13px;
   cursor: pointer;
-  color: var(--color-text);
+  color: var(--barista-text-primary, var(--color-text));
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
   transition: all 160ms var(--transition-spring);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--barista-shadow-card, 0 1px 3px rgba(0, 0, 0, 0.03));
 }
 
 .btn-candy:hover {
-  background-color: var(--bg-canvas);
-  border-color: #CBD5E1;
+  background-color: var(--barista-bg-elevated, var(--bg-canvas));
+  border-color: var(--barista-border-active, #CBD5E1);
   transform: translateY(-1px);
 }
 
 .btn-candy:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .btn-candy.primary {
-  background-color: var(--color-crimson);
-  color: #FFFFFF;
+  background-color: var(--barista-accent-honey, #D97706);
+  color: #000000;
+  font-weight: 800;
   border: none;
-  box-shadow: 0 4px 14px rgba(188, 84, 73, 0.28);
+  box-shadow: var(--barista-shadow-honey, 0 4px 14px rgba(217, 119, 6, 0.28));
 }
 
 .btn-candy.primary:hover {
-  filter: brightness(1.05);
-  box-shadow: 0 6px 18px rgba(188, 84, 73, 0.36);
+  background-color: var(--barista-accent-honey-hover, #B45309);
+  filter: brightness(1.04);
   transform: translateY(-1px);
 }
 
 .btn-candy.primary:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .btn-candy.accent {
-  background-color: rgba(188, 84, 73, 0.08);
-  color: var(--color-crimson);
-  border: 1px solid rgba(188, 84, 73, 0.25);
+  background-color: var(--barista-accent-mint-subtle, rgba(16, 185, 129, 0.12));
+  color: var(--barista-accent-mint, #10B981);
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 .btn-candy.accent:hover {
-  background-color: rgba(188, 84, 73, 0.14);
+  background-color: rgba(16, 185, 129, 0.2);
 }
 
 .app-bar-btn {
-  border: 1px solid var(--border-color);
-  background-color: #FFFFFF;
-  padding: 6px 12px;
-  min-height: 36px;
+  border: 1px solid var(--barista-border-hairline, var(--border-color));
+  background-color: var(--barista-bg-surface, #FFFFFF);
+  padding: 8px 14px;
+  min-height: 40px;
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
-  color: var(--color-text);
+  color: var(--barista-text-primary, var(--color-text));
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
   transition: all 150ms ease;
-  border-radius: 10px;
+  border-radius: var(--barista-radius-sm, 10px);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .app-bar-btn:hover {
-  background-color: var(--bg-canvas);
-  border-color: #CBD5E1;
+  background-color: var(--barista-bg-elevated, var(--bg-canvas));
+  border-color: var(--barista-border-active, #CBD5E1);
 }
 
 .app-bar-btn:active {
@@ -521,39 +582,40 @@ main {
 .form-group label {
   display: block;
   font-family: var(--font-heading);
-  font-size: 11px;
+  font-size: 12px; /* Minimum legible font size per barista ergonomics */
   font-weight: 700;
   text-transform: uppercase;
   margin-bottom: 6px;
-  color: var(--color-text-muted);
+  color: var(--barista-text-secondary, var(--color-text-muted));
   letter-spacing: 0.04em;
 }
 
 .candy-input {
   width: 100%;
-  background-color: #FFFFFF;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 11px 14px;
+  min-height: 44px;
+  background-color: var(--barista-bg-canvas, #FFFFFF);
+  border: 1px solid var(--barista-border-hairline, var(--border-color));
+  border-radius: var(--barista-radius-md, 12px);
+  padding: 10px 14px;
   font-family: var(--font-body);
   font-size: 14px;
   box-sizing: border-box;
-  color: #0F172A;
+  color: var(--barista-text-primary, #0F172A);
   transition: all 180ms ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .candy-input:focus {
   outline: none;
-  border-color: var(--color-crimson);
-  box-shadow: 0 0 0 3px rgba(188, 84, 73, 0.12);
+  border-color: var(--barista-accent-honey, var(--color-crimson));
+  box-shadow: 0 0 0 3px var(--barista-accent-honey-glow, rgba(217, 119, 6, 0.2));
 }
 
 /* Custom styling for date inputs to look clean and uniform across all browsers (including iOS Safari standalone PWA) */
 input[type="date"].candy-input {
   appearance: none;
   -webkit-appearance: none;
-  min-height: 40px;
+  min-height: 44px;
   line-height: 1.2;
   box-sizing: border-box;
 }
@@ -563,7 +625,7 @@ input[type="date"].candy-input::-webkit-date-and-time-value {
   text-align: left;
   min-height: 18px;
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 13.5px;
 }
 
 /* Styled calendar icon button inside input */
@@ -575,6 +637,260 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator {
 
 input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
+}
+
+/* =========================================================================
+   ☕ PRECISION BARISTA TECH DESIGN SYSTEM - FOUNDATIONAL COMPONENTS
+   ========================================================================= */
+
+/* 1. Primary CTA Button (48px Bar Target) */
+.barista-btn-primary {
+  min-height: 48px;
+  height: 48px;
+  background-color: var(--barista-accent-honey);
+  color: #000000;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  padding: 0 var(--barista-space-20);
+  border-radius: var(--barista-radius-md);
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--barista-space-8);
+  cursor: pointer;
+  box-shadow: var(--barista-shadow-honey);
+  transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+}
+
+.barista-btn-primary:hover {
+  background-color: var(--barista-accent-honey-hover);
+  filter: brightness(1.04);
+}
+
+.barista-btn-primary:active {
+  transform: scale(0.97);
+}
+
+/* 2. Secondary Surface Button (44px) */
+.barista-btn-secondary {
+  min-height: 44px;
+  height: 44px;
+  background-color: var(--barista-bg-elevated);
+  color: var(--barista-text-primary);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 0 var(--barista-space-16);
+  border-radius: var(--barista-radius-md);
+  border: 1px solid var(--barista-border-hairline);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--barista-space-8);
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+}
+
+.barista-btn-secondary:hover {
+  border-color: var(--barista-border-active);
+  background-color: rgba(30, 41, 59, 0.85);
+}
+
+.barista-btn-secondary:active {
+  transform: scale(0.97);
+}
+
+/* 3. Dedicated Tactile Stepper (44x44px for Wet Bar Hands) */
+.barista-btn-stepper {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  background-color: var(--barista-bg-elevated);
+  color: var(--barista-text-primary);
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 18px;
+  border-radius: var(--barista-radius-md);
+  border: 1px solid var(--barista-border-hairline);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 100ms ease, background-color 100ms ease, border-color 100ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+  touch-action: manipulation;
+}
+
+.barista-btn-stepper:hover {
+  border-color: var(--barista-border-active);
+  color: var(--barista-accent-honey);
+}
+
+.barista-btn-stepper:active {
+  transform: scale(0.95);
+  background-color: var(--barista-bg-surface);
+}
+
+/* 4. Ghost Action Button (44px) */
+.barista-btn-ghost {
+  min-height: 44px;
+  height: 44px;
+  background: transparent;
+  color: var(--barista-text-secondary);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 0 var(--barista-space-12);
+  border-radius: var(--barista-radius-sm);
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--barista-space-8);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+}
+
+.barista-btn-ghost:hover {
+  background-color: var(--barista-bg-subtle);
+  color: var(--barista-text-primary);
+}
+
+.barista-btn-ghost:active {
+  transform: scale(0.97);
+}
+
+/* 5. Danger / Alert Action Button (44px) */
+.barista-btn-danger {
+  min-height: 44px;
+  height: 44px;
+  background-color: var(--barista-accent-danger-subtle);
+  color: var(--barista-accent-danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 0 var(--barista-space-16);
+  border-radius: var(--barista-radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--barista-space-8);
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+}
+
+.barista-btn-danger:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+  border-color: var(--barista-accent-danger);
+}
+
+.barista-btn-danger:active {
+  transform: scale(0.97);
+}
+
+/* 6. Precision Laboratory Card */
+.barista-card {
+  background-color: var(--barista-bg-surface);
+  border: 1px solid var(--barista-border-hairline);
+  border-radius: var(--barista-radius-md);
+  padding: var(--barista-space-16);
+  box-shadow: var(--barista-shadow-card);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.barista-card:hover {
+  border-color: var(--barista-border-active);
+}
+
+/* 7. Precision Input (44px min-height) */
+.barista-input {
+  width: 100%;
+  min-height: 44px;
+  height: 44px;
+  background-color: var(--barista-bg-canvas);
+  color: var(--barista-text-primary);
+  border: 1px solid var(--barista-border-hairline);
+  border-radius: var(--barista-radius-md);
+  padding: 0 var(--barista-space-12);
+  font-family: var(--font-body);
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.barista-input:focus {
+  outline: none;
+  border-color: var(--barista-accent-honey);
+  box-shadow: 0 0 0 3px var(--barista-accent-honey-glow);
+}
+
+/* 8. Ergonomic Form Label (Strictly >= 12px) */
+.barista-label {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--barista-text-secondary);
+  margin-bottom: 6px;
+  user-select: none;
+}
+
+/* 9. Metric Display (JetBrains Mono 28px) */
+.barista-metric-display {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--barista-text-primary);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--barista-space-4);
+}
+
+/* 10. Sticky Mobile Bottom Bar */
+.barista-sticky-bottom {
+  position: fixed;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  left: 16px;
+  right: 16px;
+  max-width: 500px;
+  margin: 0 auto;
+  z-index: 90;
+  background: var(--barista-bg-surface);
+  border: 1px solid var(--barista-border-hairline);
+  border-radius: var(--barista-radius-lg);
+  padding: var(--barista-space-12);
+  box-shadow: var(--barista-shadow-elevated);
+  display: flex;
+  align-items: center;
+  gap: var(--barista-space-12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 /* Responsive form rows */
@@ -1440,23 +1756,28 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .filter-chip.active {
-  background-color: var(--color-crimson);
-  color: #FFFFFF;
-  border-color: var(--border-color);
-  box-shadow: 2px 2px 0px var(--border-color);
+  background-color: var(--barista-accent-honey);
+  color: #000000;
+  border-color: var(--barista-accent-honey);
+  box-shadow: var(--barista-shadow-honey);
 }
 
 /* --- UI PRO MAX DESIGN ENHANCEMENTS --- */
 
-/* 1. Universal Tactile Active Push-Down Feedback */
+/* 1. Universal Tactile Active Haptic Feedback (Scale & Soft Dampening) */
 .btn-candy:active,
 .bento-btn:active,
 .nav-item:active,
 .filter-chip:active,
-.action-btn-pill:active {
-  transform: translate(2px, 2px) !important;
-  box-shadow: 1px 1px 0px var(--border-color) !important;
-  transition: transform 50ms ease, box-shadow 50ms ease !important;
+.action-btn-pill:active,
+.barista-btn-primary:active,
+.barista-btn-secondary:active,
+.barista-btn-stepper:active,
+.barista-btn-ghost:active,
+.barista-btn-danger:active {
+  transform: scale(0.96) !important;
+  box-shadow: none !important;
+  transition: transform 70ms cubic-bezier(0.32, 0.72, 0, 1) !important;
 }
 
 /* 2. Liquid Weight Progress Bar */
