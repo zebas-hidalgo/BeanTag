@@ -915,6 +915,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   <button
                     type="button"
                     key={m.id}
+                    aria-pressed={isActive}
                     onClick={() => {
                       if (navigator.vibrate) navigator.vibrate(8);
                       setMethod(m.id);

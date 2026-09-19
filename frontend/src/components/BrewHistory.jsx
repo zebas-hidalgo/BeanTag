@@ -5,13 +5,6 @@ import { stripEmojis, RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage } from '../utils/cardGenerator';
 
-const METHOD_ICONS = {
-  'V60 (Filtrado)': `${import.meta.env.BASE_URL}icons/v60.jpg`,
-  'Espresso': `${import.meta.env.BASE_URL}icons/espresso.jpg`,
-  'AeroPress': `${import.meta.env.BASE_URL}icons/aeropress.jpg`,
-  'Prensa Francesa': `${import.meta.env.BASE_URL}icons/frenchpress.jpg`
-};
-
 const getMethodLucideIcon = (methodName, size = 18) => {
   const m = (methodName || '').toLowerCase();
   if (m.includes('pulsar')) return <SlidersHorizontal size={size} color="var(--color-crimson)" />;
@@ -409,12 +402,13 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 <button
                   key={m}
                   type="button"
+                  aria-pressed={isSelected}
                   onClick={() => setSearchTerm(m === 'Todos' ? '' : m)}
                   style={{
                     padding: '4px 10px',
                     borderRadius: '12px',
                     border: isSelected ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                    background: isSelected ? 'var(--bg-header)' : '#FFFFFF',
+                    background: isSelected ? 'var(--bg-header)' : 'var(--bg-card)',
                     color: 'var(--color-text)',
                     fontSize: '11px',
                     fontWeight: '800',
@@ -774,12 +768,14 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                     <button
                       key={m}
                       type="button"
+                      aria-pressed={editForm.method === m}
                       onClick={() => setEditForm({ ...editForm, method: m })}
                       style={{
                         padding: '2px 8px',
                         borderRadius: '6px',
                         border: editForm.method === m ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                        background: editForm.method === m ? 'var(--bg-header)' : '#FFF',
+                        background: editForm.method === m ? 'var(--bg-header)' : 'var(--bg-card)',
+                        color: 'var(--color-text)',
                         fontSize: '9.5px',
                         fontWeight: '700',
                         cursor: 'pointer'

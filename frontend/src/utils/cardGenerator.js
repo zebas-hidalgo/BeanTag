@@ -210,9 +210,43 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
   const dosesStr = rec.remaining_doses !== undefined ? `${rec.remaining_doses} TUBOS EN CAVA` : 'LOTE LIMITADO';
 
   const rawMethodStr = stripEmojis(rec.method || 'V60 Conical');
-  const methodStr = rawMethodStr.toLowerCase().includes('pulsar')
-    ? 'PULSAR MINI // NO-BYPASS'
-    : rawMethodStr;
+  const isPulsar = rawMethodStr.toLowerCase().includes('pulsar');
+  const isEspresso = rawMethodStr.toLowerCase().includes('espresso');
+  const isAero = rawMethodStr.toLowerCase().includes('aero');
+  const isFrench = rawMethodStr.toLowerCase().includes('prensa') || rawMethodStr.toLowerCase().includes('french');
+
+  const methodStr = isPulsar ? 'PULSAR MINI // NO-BYPASS' : rawMethodStr;
+
+  const methodSubBlueprint = isPulsar
+    ? 'NO-BYPASS // FLOW VALVE'
+    : isEspresso
+    ? '9 BAR // HIGH PRESSURE'
+    : isAero
+    ? 'IMMERSION // PRESSURE'
+    : isFrench
+    ? 'FULL IMMERSION // MESH'
+    : 'CONICAL 60° // FILTRO';
+
+  const methodSubNeo = isPulsar
+    ? 'NO-BYPASS // FLOW CONTROL'
+    : isEspresso
+    ? '9 BAR // EXTRACTED'
+    : isAero
+    ? 'PLUNGE // PRESSURIZED'
+    : isFrench
+    ? 'STEEP // PLUNGED'
+    : 'CONICAL 60° // ORDER READY';
+
+  const methodSubAurora = isPulsar
+    ? 'NO-BYPASS // FLOW CONTROL'
+    : isEspresso
+    ? 'ESPRESSO // 9 BAR'
+    : isAero
+    ? 'AEROPRESS // IMMERSION'
+    : isFrench
+    ? 'FRENCH PRESS // MESH'
+    : 'CONICAL 60° // CALIBRACIÓN';
+
   const coffeeG = rec.coffee_grams || rec.dose_in_g || 15;
   const waterG = rec.water_grams || 240;
   const ratioStr = rec.ratio || `1:${(waterG / (coffeeG || 1)).toFixed(1)}`;
@@ -463,7 +497,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const colH = 92;
 
       const metrics = [
-        { lbl: 'MÉTODO // EXTRACCIÓN', val: methodStr.toUpperCase(), sub: 'CONICAL 60° // FILTRO' },
+        { lbl: 'MÉTODO // EXTRACCIÓN', val: methodStr.toUpperCase(), sub: methodSubBlueprint },
         { lbl: 'RATIO & DOSIS', val: `1:${ratioStr.replace('1:', '')}`, sub: `${coffeeG}g IN ➔ ${waterG}g OUT` },
         { lbl: 'MOLIENDA // MICRONS', val: `${microns} µm`, sub: grindStr.toUpperCase() },
         { lbl: 'TIEMPO & TEMPERATURA', val: `${timeStr} MIN`, sub: `${tempStr} • CONSTANT FLOW` }
@@ -895,7 +929,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const colH = 92;
 
       const metrics = [
-        { lbl: 'MÉTODO // EXT', val: methodStr.toUpperCase(), sub: 'CONICAL 60° // ORDER READY', bg: '#D4FF00', valColor: '#000000' },
+        { lbl: 'MÉTODO // EXT', val: methodStr.toUpperCase(), sub: methodSubNeo, bg: '#D4FF00', valColor: '#000000' },
         { lbl: 'RATIO // FORMULA', val: `1:${ratioStr.replace('1:', '')}`, sub: `${coffeeG}g IN ➔ ${waterG}g OUT`, bg: '#FFFFFF', valColor: '#000000' },
         { lbl: 'MOLIENDA // CALIBRATION', val: `${microns} µm`, sub: grindStr.toUpperCase(), bg: '#FF3B14', valColor: '#FFFFFF' },
         { lbl: 'TIEMPO & TEMPERATURA', val: `${timeStr} MIN`, sub: `${tempStr} • EXTRACCIÓN ACTIVA`, bg: '#FFFFFF', valColor: '#000000' }
@@ -1238,7 +1272,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const colH = 92;
 
       const metrics = [
-        { lbl: 'MÉTODO // FILTRO', val: methodStr, sub: 'CONICAL 60° // CALIBRACIÓN' },
+        { lbl: 'MÉTODO // FILTRO', val: methodStr, sub: methodSubAurora },
         { lbl: 'RATIO // DOSIS', val: `1:${ratioStr.replace('1:', '')}`, sub: `${coffeeG}g IN ➔ ${waterG}g AGUA` },
         { lbl: 'MOLIENDA // TAMAÑO', val: `${microns} µm`, sub: grindStr },
         { lbl: 'TIEMPO & TEMPERATURA', val: `${timeStr} MIN`, sub: `${tempStr} • EXTRACCIÓN CLARA` }

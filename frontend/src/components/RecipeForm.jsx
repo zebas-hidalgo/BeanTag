@@ -252,6 +252,7 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
               key={m.id} 
               role="button"
               tabIndex={0}
+              aria-pressed={method === m.id}
               aria-label={`Seleccionar método ${m.label}`}
               onClick={() => {
                 setMethod(m.id);
