@@ -985,14 +985,14 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ fontSize: '11px', fontWeight: '900', color: isSelected ? 'var(--color-crimson)' : 'inherit' }}>
+                        <span style={{ fontSize: '12px', fontWeight: '900', color: isSelected ? 'var(--barista-accent-honey, var(--color-crimson))' : 'inherit' }}>
                           {famous.name}
                         </span>
                       </div>
-                      <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
                         {famous.badge}
                       </span>
-                      <div style={{ fontSize: '8.5px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>
                         {famous.ratio} • {famous.temperature}°C
                       </div>
                     </button>
@@ -1075,19 +1075,19 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     <div style={{ fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                         <div style={{ padding: '6px 8px', background: 'var(--bg-header)', borderRadius: '6px' }}>
-                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '10.5px' }}>1Zpresso J-Max:</strong>
+                          <strong style={{ color: 'var(--barista-accent-honey, var(--color-crimson))', display: 'block', fontSize: '11px' }}>1Zpresso J-Max:</strong>
                           <span style={{ fontSize: '12px', fontWeight: 'bold' }}>
                             {aiRecommendation.jmax_rot !== undefined ? `${aiRecommendation.jmax_rot}.${aiRecommendation.jmax_num}.${aiRecommendation.jmax_click}` : (aiRecommendation.grinders?.jmax || '1.3.5')}
                           </span>
-                          <div style={{ fontSize: '9px', color: 'var(--color-text-muted)' }}>8.8 µm/clic • 90 c/rot</div>
+                          <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>8.8 µm/clic • 90 c/rot</div>
                         </div>
 
                         <div style={{ padding: '6px 8px', background: 'var(--bg-header)', borderRadius: '6px' }}>
-                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '10.5px' }}>Femobook A2:</strong>
+                          <strong style={{ color: 'var(--barista-accent-honey, var(--color-crimson))', display: 'block', fontSize: '11px' }}>Femobook A2:</strong>
                           <span style={{ fontSize: '12px', fontWeight: 'bold' }}>
                             {aiRecommendation.grinders?.femobook_a2 || '60 clics (1.5 Rot.)'}
                           </span>
-                          <div style={{ fontSize: '9px', color: 'var(--color-text-muted)' }}>18 µm/clic • 40 c/rot</div>
+                          <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>18 µm/clic • 40 c/rot</div>
                         </div>
                       </div>
 
@@ -1489,26 +1489,26 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             {/* Evaluacion Sensorial */}
             <div className="candy-card static" style={{ marginTop: '12px', padding: '12px' }}>
               <div style={{ fontSize: '10.5px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>Evaluación Sensorial</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginBottom: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '10px' }}>
                 <div>
-                  <label style={{ fontSize: '9px' }}>Balance</label>
-                  <select className="candy-input" style={{ padding: '4px', fontSize: '11px' }} value={sensoryBalance} onChange={e => setSensoryBalance(e.target.value)}>
+                  <label className="barista-label">Balance</label>
+                  <select className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryBalance} onChange={e => setSensoryBalance(e.target.value)}>
                     <option value="Dulce">Dulce</option>
                     <option value="Ácido">Ácido</option>
                     <option value="Amargo">Amargo</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: '9px' }}>Cuerpo</label>
-                  <select className="candy-input" style={{ padding: '4px', fontSize: '11px' }} value={sensoryBody} onChange={e => setSensoryBody(e.target.value)}>
+                  <label className="barista-label">Cuerpo</label>
+                  <select className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryBody} onChange={e => setSensoryBody(e.target.value)}>
                     <option value="Ligero">Ligero</option>
                     <option value="Medio">Medio</option>
                     <option value="Sedoso">Sedoso</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: '9px' }}>Extracción</label>
-                  <select className="candy-input" style={{ padding: '4px', fontSize: '11px' }} value={sensoryExtraction} onChange={e => setSensoryExtraction(e.target.value)}>
+                  <label className="barista-label">Extracción</label>
+                  <select className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryExtraction} onChange={e => setSensoryExtraction(e.target.value)}>
                     <option value="En Punto">En Punto</option>
                     <option value="Sub">Sub (Agrio)</option>
                     <option value="Sobre">Sobre (Amargo)</option>
@@ -1517,13 +1517,13 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               </div>
 
               <div className="form-group" style={{ margin: 0 }}>
-                <label style={{ fontSize: '9px' }}>Notas de Cata de Extracción</label>
-                <input className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Muy dulzón, acidez limpia..." />
+                <label className="barista-label">Notas de Cata de Extracción</label>
+                <input className="barista-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Muy dulzón, acidez limpia..." />
               </div>
             </div>
 
             {isOwner ? (
-              <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '12px', fontSize: '14px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <button type="submit" className="barista-btn-primary" style={{ width: '100%', marginTop: '16px', minHeight: '48px', height: '48px', fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                 <Save size={18} />
                 Guardar Bitácora
               </button>
@@ -1531,8 +1531,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               <button 
                 type="button" 
                 onClick={onRequireAuth} 
-                className="btn-candy" 
-                style={{ width: '100%', marginTop: '12px', fontSize: '12.5px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: 0.9, cursor: 'pointer', background: 'var(--bg-canvas)' }}
+                className="barista-btn-secondary" 
+                style={{ width: '100%', marginTop: '14px', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: 0.9, cursor: 'pointer' }}
               >
                 🔒 Solo el propietario puede registrar extracciones {currentUser ? '' : '(Iniciar Sesión)'}
               </button>
@@ -1550,20 +1550,20 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           {/* Banner Última Configuración Exitosa */}
           {lastRecipe && (
             <div className="recipe-target-banner" style={{ marginBottom: '14px' }}>
-              <div style={{ fontSize: '9px', fontWeight: '900', color: '#E53E3E', textTransform: 'uppercase', marginBottom: '4px' }}>
+              <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--barista-accent-honey, #D97706)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>
                 Última Configuración Exitosa
               </div>
-              <div style={{ fontSize: '13px', fontWeight: '900' }}>
+              <div style={{ fontSize: '14px', fontWeight: '900', fontFamily: 'var(--font-mono)' }}>
                 {lastRecipe.method} | {lastRecipe.grind} | {lastRecipe.ratio}
               </div>
               {isOwner ? (
-                <button className="btn-candy primary" onClick={handleRepeatLastRecipe} style={{ width: '100%', marginTop: '8px', padding: '6px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                  <Zap size={12} />
+                <button className="barista-btn-primary" onClick={handleRepeatLastRecipe} style={{ width: '100%', marginTop: '10px', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <Zap size={14} />
                   ⚡ Repetir y Guardar esta Receta (-1 Tubo)
                 </button>
               ) : (
-                <button className="btn-candy" onClick={() => handleLoadRecipeToForm(lastRecipe)} style={{ width: '100%', marginTop: '8px', padding: '6px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                  <Zap size={12} />
+                <button className="barista-btn-secondary" onClick={() => handleLoadRecipeToForm(lastRecipe)} style={{ width: '100%', marginTop: '10px', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <Zap size={14} />
                   ⚡ Cargar Parámetros al Preparador
                 </button>
               )}

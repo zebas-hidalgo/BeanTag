@@ -298,36 +298,36 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
                 Asistente IA Barista ({method})
               </span>
             </div>
-            <span style={{ fontSize: '9px', fontWeight: '900', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <span style={{ fontSize: '11px', fontWeight: '800', fontFamily: 'var(--font-mono)', color: 'var(--barista-accent-honey, var(--color-crimson))', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               {doseInG}g ▼
             </span>
           </summary>
           <div style={{ padding: '14px', backgroundColor: 'var(--bg-card)' }}>
-          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0', lineHeight: 1.4 }}>Diseña o recalibra una receta completa de <strong>{method}</strong> para <strong>{doseInG}g</strong> con molienda J-Max y secuencia de vertidos.</p>
-          {aiError && <div style={{ color: '#E53E3E', fontSize: '10px', fontWeight: 'bold', marginBottom: '10px' }}>⚠️ Error: {aiError}</div>}
+          <p style={{ fontSize: '11.5px', color: 'var(--color-text-muted)', margin: '0 0 12px 0', lineHeight: 1.4 }}>Diseña o recalibra una receta completa de <strong>{method}</strong> para <strong>{doseInG}g</strong> con molienda J-Max y secuencia de vertidos.</p>
+          {aiError && <div style={{ color: '#E53E3E', fontSize: '11px', fontWeight: 'bold', marginBottom: '10px' }}>⚠️ Error: {aiError}</div>}
           {aiRecommendation ? (
-            <div style={{ padding: '14px', backgroundColor: '#FFFFFF', border: '2px solid var(--border-color)', borderRadius: '8px', marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '3px 3px 0px var(--border-color)' }}>
+            <div style={{ padding: '14px', backgroundColor: 'var(--barista-bg-surface, #FFFFFF)', border: '1px solid var(--barista-border-hairline, var(--border-color))', borderRadius: 'var(--barista-radius-md, 12px)', marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: 'var(--barista-shadow-card)' }}>
               {aiRecommendation.correction_reason && (
-                <div style={{ backgroundColor: '#FEF2F2', border: '1.5px solid #EF4444', color: '#991B1B', padding: '8px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: '700' }}>
+                <div style={{ backgroundColor: 'var(--barista-accent-danger-subtle, #FEF2F2)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#EF4444', padding: '8px 10px', borderRadius: '8px', fontSize: '11.5px', fontWeight: '700' }}>
                   🔧 Diagnóstico Recalibración: {aiRecommendation.correction_reason}
                 </div>
               )}
 
               {/* Badges de Parámetros Clave */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                <div style={{ background: 'var(--bg-canvas)', padding: '8px', borderRadius: '6px', border: '1.5px solid var(--border-color)', textAlign: 'center' }}>
-                  <div style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>Ratio / Agua</div>
-                  <div style={{ fontSize: '12px', fontWeight: '900', color: 'var(--color-crimson)' }}>
+                <div style={{ background: 'var(--barista-bg-canvas, var(--bg-canvas))', padding: '8px', borderRadius: '8px', border: '1px solid var(--barista-border-hairline, var(--border-color))', textAlign: 'center' }}>
+                  <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.04em', color: 'var(--color-text-muted)' }}>Ratio / Agua</div>
+                  <div style={{ fontSize: '13px', fontWeight: '900', color: 'var(--barista-accent-honey, var(--color-crimson))', fontFamily: 'var(--font-mono)' }}>
                     {aiRecommendation.ratio} ({aiRecommendation.water_total_g || Math.round(doseInG * (parseFloat(aiRecommendation.ratio?.split(':')[1]) || 15))}g)
                   </div>
                 </div>
-                <div style={{ background: 'var(--bg-canvas)', padding: '8px', borderRadius: '6px', border: '1.5px solid var(--border-color)', textAlign: 'center' }}>
-                  <div style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>Temperatura</div>
-                  <div style={{ fontSize: '12px', fontWeight: '900' }}>{aiRecommendation.temperature}°C</div>
+                <div style={{ background: 'var(--barista-bg-canvas, var(--bg-canvas))', padding: '8px', borderRadius: '8px', border: '1px solid var(--barista-border-hairline, var(--border-color))', textAlign: 'center' }}>
+                  <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.04em', color: 'var(--color-text-muted)' }}>Temperatura</div>
+                  <div style={{ fontSize: '13px', fontWeight: '900', fontFamily: 'var(--font-mono)' }}>{aiRecommendation.temperature}°C</div>
                 </div>
-                <div style={{ background: 'var(--bg-canvas)', padding: '8px', borderRadius: '6px', border: '1.5px solid var(--border-color)', textAlign: 'center' }}>
-                  <div style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>Tiempo Total</div>
-                  <div style={{ fontSize: '12px', fontWeight: '900' }}>{aiRecommendation.brew_time}</div>
+                <div style={{ background: 'var(--barista-bg-canvas, var(--bg-canvas))', padding: '8px', borderRadius: '8px', border: '1px solid var(--barista-border-hairline, var(--border-color))', textAlign: 'center' }}>
+                  <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.04em', color: 'var(--color-text-muted)' }}>Tiempo Total</div>
+                  <div style={{ fontSize: '13px', fontWeight: '900', fontFamily: 'var(--font-mono)' }}>{aiRecommendation.brew_time}</div>
                 </div>
               </div>
 
@@ -524,29 +524,79 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
               </div>
               <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>▼</span>
             </summary>
-            <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div className="form-group"><label style={{ fontSize: '9px' }}>Balance Sensorial (Predominante)</label><div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>{['Ácido', 'Dulce', 'Amargo'].map(b => (<button key={b} type="button" className="btn-candy" onClick={() => setSensoryBalance(b)} style={{ flex: 1, minHeight: '34px', fontSize: '11px', padding: '4px', margin: 0, backgroundColor: sensoryBalance === b ? 'var(--color-text)' : 'var(--bg-card)', color: sensoryBalance === b ? '#FFF' : 'var(--color-text)', boxShadow: sensoryBalance === b ? 'none' : '2px 2px 0px var(--border-color)', transform: sensoryBalance === b ? 'translate(1px, 1px)' : 'none' }}>{b}</button>))}</div></div>
-              <div className="form-group"><label style={{ fontSize: '9px' }}>Cuerpo / Textura</label><div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>{['Ligero', 'Medio', 'Sedoso'].map(b => (<button key={b} type="button" className="btn-candy" onClick={() => setSensoryBody(b)} style={{ flex: 1, minHeight: '34px', fontSize: '11px', padding: '4px', margin: 0, backgroundColor: sensoryBody === b ? 'var(--color-text)' : 'var(--bg-card)', color: sensoryBody === b ? '#FFF' : 'var(--color-text)', boxShadow: sensoryBody === b ? 'none' : '2px 2px 0px var(--border-color)', transform: sensoryBody === b ? 'translate(1px, 1px)' : 'none' }}>{b}</button>))}</div></div>
-              <div className="form-group"><label style={{ fontSize: '9px' }}>Nivel de Extracción</label><div style={{ display: 'flex', gap: '6px' }}>{['Sub', 'En Punto', 'Sobre'].map(b => (<button key={b} type="button" className="btn-candy" onClick={() => setSensoryExtraction(b)} style={{ flex: 1, minHeight: '34px', fontSize: '11px', padding: '4px', margin: 0, backgroundColor: sensoryExtraction === b ? 'var(--color-text)' : 'var(--bg-card)', color: sensoryExtraction === b ? '#FFF' : 'var(--color-text)', boxShadow: sensoryExtraction === b ? 'none' : '2px 2px 0px var(--border-color)', transform: sensoryExtraction === b ? 'translate(1px, 1px)' : 'none' }}>{b === 'Sub' ? 'Sub (Agrio)' : b === 'Sobre' ? 'Sobre (Amargo)' : 'En Punto'}</button>))}</div></div>
+            <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="form-group">
+                <label className="barista-label">Balance Sensorial (Predominante)</label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {['Ácido', 'Dulce', 'Amargo'].map(b => (
+                    <button 
+                      key={b} 
+                      type="button" 
+                      className={`btn-candy ${sensoryBalance === b ? 'primary' : ''}`} 
+                      onClick={() => setSensoryBalance(b)} 
+                      style={{ flex: 1, minHeight: '44px', fontSize: '13px', padding: '6px 12px', margin: 0 }}
+                    >
+                      {b}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="barista-label">Cuerpo / Textura</label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {['Ligero', 'Medio', 'Sedoso'].map(b => (
+                    <button 
+                      key={b} 
+                      type="button" 
+                      className={`btn-candy ${sensoryBody === b ? 'primary' : ''}`} 
+                      onClick={() => setSensoryBody(b)} 
+                      style={{ flex: 1, minHeight: '44px', fontSize: '13px', padding: '6px 12px', margin: 0 }}
+                    >
+                      {b}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="barista-label">Nivel de Extracción</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {['Sub', 'En Punto', 'Sobre'].map(b => (
+                    <button 
+                      key={b} 
+                      type="button" 
+                      className={`btn-candy ${sensoryExtraction === b ? 'primary' : ''}`} 
+                      onClick={() => setSensoryExtraction(b)} 
+                      style={{ flex: 1, minHeight: '44px', fontSize: '12.5px', padding: '6px 10px', margin: 0 }}
+                    >
+                      {b === 'Sub' ? 'Sub (Agrio)' : b === 'Sobre' ? 'Sobre (Amargo)' : 'En Punto'}
+                    </button>
+                  ))}
+                </div>
+              </div>
               
               {sensoryExtraction !== 'En Punto' && (
                 <button 
                   type="button" 
-                  className="btn-candy primary" 
+                  className="barista-btn-primary" 
                   onClick={handleAiTuneRecipe} 
                   disabled={aiLoading} 
-                  style={{ width: '100%', marginTop: '6px', padding: '10px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  style={{ width: '100%', marginTop: '6px', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                 >
-                  {aiLoading ? <span>Recalibrando Receta... 🧠</span> : <span>🤖 Recalibrar Receta con Gemini IA (Ajustar Molienda y Vertidos)</span>}
+                  {aiLoading ? <span>Recalibrando Receta... 🧠</span> : <span>🤖 Recalibrar Receta con Gemini IA</span>}
                 </button>
               )}
 
-              <div className="form-group" style={{ marginTop: '4px' }}><label style={{ fontSize: '9px' }}>Notas / Comentarios de Extracción</label><input className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Muy balanceado, dulzor intenso, retrogusto largo" /></div>
+              <div className="form-group" style={{ marginTop: '4px' }}>
+                <label className="barista-label">Notas / Comentarios de Extracción</label>
+                <input className="barista-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Muy balanceado, dulzor intenso, retrogusto largo" />
+              </div>
             </div>
           </details>
         </div>
 
-        <button type="submit" className="btn-candy primary" style={{ width: '100%', marginTop: '16px', fontSize: '15px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+        <button type="submit" className="barista-btn-primary" style={{ width: '100%', marginTop: '20px', minHeight: '48px', height: '48px', fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
           <Save size={20} strokeWidth={2.5} />
           Guardar Bitácora
         </button>

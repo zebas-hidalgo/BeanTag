@@ -12,17 +12,17 @@ export default function BottomNav({ currentView, setCurrentView }) {
   return (
     <nav style={{
       position: 'fixed',
-      bottom: '16px',
+      bottom: 'calc(16px + env(safe-area-inset-bottom))',
       left: '50%',
       transform: 'translateX(-50%)',
       width: 'calc(100% - 32px)',
       maxWidth: '460px',
-      background: 'rgba(255, 255, 255, 0.95)',
+      background: 'var(--barista-bg-surface, var(--sheet-bg, rgba(15, 23, 42, 0.94)))',
       backdropFilter: 'blur(16px)',
       WebkitBackdropFilter: 'blur(16px)',
-      borderRadius: '24px',
-      border: '1.5px solid var(--border-color, #A7F3D0)',
-      boxShadow: '0 12px 30px rgba(0, 0, 0, 0.08), 0 4px 15px rgba(0, 0, 0, 0.04)',
+      borderRadius: 'var(--barista-radius-pill, 9999px)',
+      border: '1px solid var(--barista-border-hairline, var(--border-color))',
+      boxShadow: 'var(--barista-shadow-elevated, 0 12px 30px rgba(0, 0, 0, 0.2))',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-around',
@@ -37,27 +37,32 @@ export default function BottomNav({ currentView, setCurrentView }) {
         return (
           <button
             key={item.id}
+            type="button"
             onClick={() => setCurrentView(item.id)}
             style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '3px',
-              padding: '6px 14px',
-              borderRadius: '16px',
-              border: isActive ? '1.5px solid var(--border-color)' : '1.5px solid transparent',
-              background: isActive ? 'var(--bg-header)' : 'transparent',
-              color: isActive ? 'var(--color-crimson)' : 'var(--color-text-muted)',
+              gap: '4px',
+              padding: '8px 16px',
+              minHeight: '44px',
+              minWidth: '64px',
+              borderRadius: 'var(--barista-radius-lg, 16px)',
+              border: isActive ? '1px solid var(--barista-border-active, var(--border-color))' : '1px solid transparent',
+              background: isActive ? 'var(--barista-bg-elevated, var(--bg-header))' : 'transparent',
+              color: isActive ? 'var(--barista-accent-honey, var(--color-crimson))' : 'var(--barista-text-secondary, var(--color-text-muted))',
               cursor: 'pointer',
-              transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-              transform: isActive ? 'scale(1.05)' : 'scale(1)'
+              transition: 'all 0.16s ease',
+              transform: isActive ? 'scale(1.04)' : 'scale(1)',
+              boxSizing: 'border-box'
             }}
           >
             <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
             <span style={{
-              fontSize: '10px',
-              fontWeight: isActive ? '800' : '500',
+              fontSize: '11px',
+              fontWeight: isActive ? '800' : '600',
+              fontFamily: 'var(--font-heading)',
               lineHeight: 1
             }}>
               {item.label}

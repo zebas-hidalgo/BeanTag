@@ -514,14 +514,16 @@ export default function App() {
             </p>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button 
-                className="candy-input" 
+                type="button"
+                className="barista-btn-secondary" 
                 style={{ flex: 1, margin: 0, textAlign: 'center' }} 
                 onClick={() => setDeleteModal({ visible: false, batchId: null, batchName: '' })}
               >
                 Cancelar
               </button>
               <button 
-                className="btn-candy primary" 
+                type="button"
+                className="barista-btn-danger" 
                 style={{ flex: 1 }} 
                 onClick={confirmDeleteBatch}
               >

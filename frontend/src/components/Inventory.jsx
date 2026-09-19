@@ -392,23 +392,26 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                     setContextBatch(batch);
                   }}
                   style={{
-                    background: 'var(--segmented-bg, rgba(120, 120, 128, 0.12))',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '50%',
-                    width: '28px',
-                    height: '28px',
+                    background: 'var(--barista-bg-elevated, var(--segmented-bg, rgba(120, 120, 128, 0.12)))',
+                    border: '1px solid var(--barista-border-hairline, var(--border-color))',
+                    borderRadius: 'var(--barista-radius-md, 12px)',
+                    width: '44px',
+                    height: '44px',
+                    minWidth: '44px',
+                    minHeight: '44px',
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    color: 'var(--color-text)',
+                    color: 'var(--barista-text-primary, var(--color-text))',
                     padding: 0,
-                    flexShrink: 0
+                    flexShrink: 0,
+                    transition: 'all 120ms ease'
                   }}
                   title="Opciones rápidas"
                   aria-label="Opciones rápidas"
                 >
-                  <MoreHorizontal size={15} />
+                  <MoreHorizontal size={18} />
                 </button>
               </div>
 
@@ -446,14 +449,17 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                 marginTop: '2px'
               }}>
                 <span style={{ 
-                  fontSize: '11.5px', 
+                  fontSize: '12px', 
                   fontFamily: 'var(--font-mono)', 
-                  fontWeight: '600',
-                  color: isLowStock ? '#EF4444' : 'var(--color-text)'
+                  fontWeight: '700',
+                  color: isLowStock ? 'var(--barista-accent-danger, #EF4444)' : 'var(--barista-accent-cryo, #38BDF8)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
                 }}>
-                  {isLowStock ? '⚠️ ' : '🧊 '}
+                  {isLowStock ? '⚠️ ' : '❄️ '}
                   {batch.remaining_doses} {batch.remaining_doses === 1 ? 'tubo' : 'tubos'}
-                  {currentWeight > 0 ? ` (${currentWeight}g)` : ''}
+                  {currentWeight > 0 ? ` (~${currentWeight}g)` : ''}
                 </span>
 
                 {firstRecipe ? (
@@ -464,19 +470,21 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                       onSelectBatch(batch, { prefillRecipe: firstRecipe });
                     }}
                     style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: 'var(--color-crimson)',
+                      background: 'var(--barista-bg-elevated, rgba(188, 84, 73, 0.08))',
+                      border: '1px solid var(--barista-border-hairline, transparent)',
+                      borderRadius: 'var(--barista-radius-sm, 8px)',
+                      color: 'var(--barista-accent-honey, var(--color-crimson))',
                       fontWeight: '700',
-                      fontSize: '11.5px',
+                      fontSize: '12px',
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '4px',
-                      padding: 0
+                      gap: '5px',
+                      padding: '6px 10px',
+                      minHeight: '36px'
                     }}
                   >
-                    <Zap size={13} strokeWidth={2.5} />
+                    <Zap size={14} strokeWidth={2.5} />
                     <span>Repetir {(firstRecipe.method || 'V60').replace(' (Filtrado)', '')} →</span>
                   </button>
                 ) : (
