@@ -261,6 +261,119 @@ function drawRoundedRect(ctx, x, y, width, height, radius, fill = false, stroke 
 }
 
 /**
+ * Method-Adaptive Extraction Timeline Module
+ * Visualizes extraction stages, timings, weights, and grind calibration
+ */
+export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, style) {
+  if (!recipeData) return;
+  const s = normalizeCardStyle(style);
+  const {
+    method = recipeData.methodStr || 'V60',
+    brew_time = recipeData.time || '2:30',
+    dose_in_g = recipeData.coffee_grams ?? 15,
+    dose_out_g = recipeData.water_grams ?? 250,
+    ratio = '1:16.6',
+    temperature = recipeData.temp || '93°C',
+    grind = recipeData.grind_size || 'Medio'
+  } = recipeData;
+
+  const isEspresso = /espresso/i.test(method);
+  const isImmersion = /french|prensa|cupping/i.test(method);
+
+  ctx.save();
+
+  // Header of extraction timeline
+  ctx.font = '800 8px "JetBrains Mono", monospace';
+  ctx.fillStyle = s === 'blueprint'
+    ? '#38BDF8'
+    : (s === 'diner' ? '#C92A2A' : (s === 'kissaten' ? '#DC2626' : '#000000'));
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  const methodLabel = `${(method || 'POUR OVER').toUpperCase()}${temperature ? ' • ' + temperature : ''}`;
+  ctx.fillText(`TIMELINE DE EXTRACCIÓN // ${methodLabel}`, x, y);
+
+  // Grind micron chip
+  const microns = parseGrindToMicrons(grind);
+  ctx.font = '700 7.5px "JetBrains Mono", monospace';
+  ctx.fillStyle = s === 'blueprint' ? '#93C5FD' : '#64748B';
+  ctx.textAlign = 'right';
+  ctx.fillText(`MOLIENDA: ${microns}µm (${grind})`, x + width, y);
+
+  const barY = y + 13;
+  const barH = 10;
+
+  // Stages calculation based on method
+  let stages = [];
+  if (isEspresso) {
+    const outG = dose_out_g ? `${dose_out_g}g` : '36g';
+    stages = [
+      { label: 'PRE-INFUSIÓN', time: '0-6s', weight: 'Baja bar', flex: 1.5, color: '#1E293B' },
+      { label: 'RAMPA 9 BAR', time: '6-24s', weight: 'Extracción', flex: 3.5, color: '#0E7490' },
+      { label: 'CORTE', time: brew_time || '28s', weight: outG, flex: 1.2, color: '#DC2626' }
+    ];
+  } else if (isImmersion) {
+    stages = [
+      { label: 'INFUSIÓN', time: '0:00 - 3:30', weight: `${dose_out_g || 250}g`, flex: 3.5, color: '#1E293B' },
+      { label: 'TURBULENCIA', time: '3:30 - 4:00', weight: 'Romper costra', flex: 1.5, color: '#3B82F6' },
+      { label: 'PRENSADO', time: brew_time || '4:30', weight: 'Filtrado', flex: 1.2, color: '#10B981' }
+    ];
+  } else {
+    // Pour-Over / Drip (V60, Chemex, Kalita, Origami, etc.)
+    const totalW = dose_out_g || (dose_in_g ? Math.round(dose_in_g * 16.6) : 250);
+    const bloomW = Math.round(totalW * 0.2);
+    const pulse1W = Math.round(totalW * 0.6);
+    stages = [
+      { label: 'BLOOM', time: '0:00 - 0:45', weight: `${bloomW}g`, flex: 1.4, color: '#18181B' },
+      { label: 'PULSO 1', time: '0:45 - 1:30', weight: `${pulse1W}g`, flex: 2.0, color: '#3B82F6' },
+      { label: 'PULSO 2', time: '1:30 - 2:00', weight: `${totalW}g`, flex: 2.0, color: '#10B981' },
+      { label: 'CAÍDA', time: brew_time || '2:45', weight: 'Drenaje', flex: 1.3, color: '#64748B' }
+    ];
+  }
+
+  const totalFlex = stages.reduce((acc, st) => acc + st.flex, 0);
+  const gap = 3;
+  const availableW = width - (gap * (stages.length - 1));
+  let curX = x;
+
+  stages.forEach((st, idx) => {
+    const segW = (st.flex / totalFlex) * availableW;
+
+    // Segment background
+    let segColor = st.color;
+    if (s === 'neobrutalist') {
+      const neoColors = ['#FFE600', '#A3E635', '#38BDF8', '#F472B6'];
+      segColor = neoColors[idx % neoColors.length];
+    } else if (s === 'blueprint') {
+      segColor = idx === 0 ? '#38BDF8' : (idx === 1 ? 'rgba(56, 189, 248, 0.7)' : (idx === 2 ? 'rgba(56, 189, 248, 0.45)' : 'rgba(56, 189, 248, 0.25)'));
+    } else if (s === 'diner') {
+      segColor = idx === 0 ? '#C92A2A' : (idx === 1 ? '#0E7490' : (idx === 2 ? '#F59E0B' : '#64748B'));
+    } else if (s === 'kissaten') {
+      segColor = idx === 0 ? '#DC2626' : (idx === 1 ? '#27272A' : (idx === 2 ? '#52525B' : '#A1A1AA'));
+    }
+
+    ctx.fillStyle = segColor;
+    ctx.strokeStyle = s === 'neobrutalist' ? '#000000' : 'transparent';
+    ctx.lineWidth = s === 'neobrutalist' ? 1.8 : 0;
+    drawRoundedRect(ctx, curX, barY, segW, barH, 2.5, true, s === 'neobrutalist');
+
+    // Time label above
+    ctx.font = '700 6.5px "JetBrains Mono", monospace';
+    ctx.fillStyle = s === 'blueprint' ? '#93C5FD' : '#64748B';
+    ctx.textAlign = 'center';
+    ctx.fillText(st.time, curX + segW / 2, barY - 3);
+
+    // Weight/Action label below
+    ctx.font = '800 7px "JetBrains Mono", monospace';
+    ctx.fillStyle = s === 'blueprint' ? '#FFFFFF' : (s === 'neobrutalist' ? '#000000' : '#18181B');
+    ctx.fillText(st.label, curX + segW / 2, barY + barH + 9);
+
+    curX += segW + gap;
+  });
+
+  ctx.restore();
+}
+
+/**
  * Pure vector drafting crosshair for Blueprint precision
  */
 function drawBlueprintCross(ctx, cx, cy, size = 5) {
@@ -1261,6 +1374,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       if (hasRadar) {
         drawSensoryRadarChart(ctx, paddingX + availW - 55, notesY + 38, 23, sensoryData, style);
       }
+
+      // 5. Extraction Timeline
+      const timelineY = notesY + notesH + 16;
+      drawExtractionTimeline(ctx, paddingX, timelineY, availW, 36, rec, style);
     }
 
     // Architectural Title Block (Bottom)
@@ -1704,6 +1821,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.font = '700 8px monospace';
         ctx.fillText(s.desc, sx + 6, sy + 24);
       });
+
+      // 5. Extraction Timeline
+      const timelineY = flowY + flowH + 16;
+      drawExtractionTimeline(ctx, paddingX, timelineY, availW, 36, rec, style);
     }
 
     // Authentic POS Barcode (Bottom)
@@ -2069,8 +2190,12 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         : '☕ BEANTAG SPECIALTY ROASTERS // EXTRACTION SPEC';
       ctx.fillText(vaultText, paddingX + 12, vaultY + 21);
 
+      // 6. Extraction Timeline
+      const timelineY = vaultY + vaultH + 14;
+      drawExtractionTimeline(ctx, paddingX, timelineY, availW, 36, rec, style);
+
       // Footer
-      const footY = vaultY + vaultH + 10;
+      const footY = timelineY + 36 + 14;
       ctx.fillStyle = '#78716C';
       ctx.font = '700 8.5px "Space Grotesk", sans-serif';
       ctx.fillText('ALL-DAY SPECIALTY COFFEE • SERVED FRESH DAILY • SATISFACTION GUARANTEED', paddingX, footY + 14);
@@ -2431,8 +2556,12 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         : '☕ 純喫茶 自家焙煎 // EXTRACTION SPEC';
       ctx.fillText(cellarText, paddingX + 12, cellarY + 21);
 
-      // 6. Tokyo Kissaten Footer
-      const footY = cellarY + cellarH + 10;
+      // 6. Extraction Timeline
+      const timelineY = cellarY + cellarH + 14;
+      drawExtractionTimeline(ctx, paddingX, timelineY, availW, 36, rec, style);
+
+      // 7. Tokyo Kissaten Footer
+      const footY = timelineY + 36 + 14;
       drawHankoSeal(ctx, baseW - paddingX - 16, footY + 12, 18, '珈琲');
       ctx.fillStyle = '#71717A';
       ctx.font = '600 8.5px "Playfair Display", Georgia, serif';

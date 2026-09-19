@@ -7,6 +7,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
+import assert from 'assert';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -334,7 +335,9 @@ async function verify() {
       const hasNoDrawImage = !mockOps.includes('drawImage');
       const hasPerforation = mockContext.operations.some(op => op.name === 'setLineDash') && mockContext.operations.some(op => op.name === 'arc');
       const hasRadarChart = mockContext.operations.some(op => op.name === 'fillText' && op.args[0] === 'ACIDEZ');
-      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage && hasPerforation && hasRadarChart;
+      const hasTimeline = mockContext.operations.some(op => op.name === 'fillText' && (op.args[0].includes('BLOOM') || op.args[0].includes('TIMELINE')));
+      assert(hasTimeline, 'Recipe card must render extraction timeline milestones');
+      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage && hasPerforation && hasRadarChart && hasTimeline;
 
       if (!passed) hasFailure = true;
 
