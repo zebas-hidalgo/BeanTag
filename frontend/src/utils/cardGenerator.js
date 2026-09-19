@@ -194,22 +194,69 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     }
   };
 
+  const drawWrappedText = (text, x, y, maxWidth, lineHeight = 15, maxLines = 3) => {
+    const words = String(text || '').trim().split(/\s+/);
+    if (words.length === 0 || words[0] === '') return 0;
+    let line = '';
+    let linesDrawn = 0;
+    let currentY = y;
+
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + (line ? ' ' : '') + words[n];
+      const testWidth = ctx.measureText(testLine).width;
+      if (testWidth > maxWidth && n > 0) {
+        linesDrawn++;
+        if (linesDrawn >= maxLines) {
+          drawTruncatedText(line, x, currentY, maxWidth);
+          return linesDrawn;
+        }
+        ctx.fillText(line, x, currentY);
+        line = words[n];
+        currentY += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    if (line.length > 0 && linesDrawn < maxLines) {
+      ctx.fillText(line, x, currentY);
+      linesDrawn++;
+    }
+    return linesDrawn;
+  };
+
   const rec = recipe || {};
 
-  // Coffee & recipe attributes
-  const coffeeName = stripEmojis(rec.batch_name || rec.coffee_name || rec.name || 'Café de Especialidad');
-  const origin = stripEmojis(rec.origin || rec.batch_origin || 'Boquete, Panamá');
-  const roaster = stripEmojis(rec.roaster || rec.batch_roaster || 'Tostaduría Artesanal');
-  const producer = stripEmojis(rec.producer || rec.batch_producer || 'Productor Artesanal');
-  const process = stripEmojis(rec.process || rec.batch_process || 'Lavado');
-  const variety = stripEmojis(rec.variety || rec.batch_variety || 'Geisha / Heirloom');
-  const altitude = rec.altitude || rec.batch_altitude ? `${stripEmojis(String(rec.altitude || rec.batch_altitude)).replace('m', '')}m` : '1.850m';
-  const notesStr = rec.flavor_notes || rec.notes || rec.roaster_notes || rec.batch_roaster_notes || 'Notas limpias, florales, balance y dulzor';
+  // Coffee & recipe attributes (STRICT TRUTH: only what the user entered, no fabricated values!)
+  const coffeeName = stripEmojis(rec.batch_name || rec.coffee_name || rec.name || 'Café');
+  const origin = stripEmojis(rec.origin || rec.batch_origin || '');
+  const roaster = stripEmojis(rec.roaster || rec.batch_roaster || '');
+  const producer = stripEmojis(rec.producer || rec.batch_producer || '');
+  const process = stripEmojis(rec.process || rec.batch_process || '');
+  const variety = stripEmojis(rec.variety || rec.batch_variety || '');
+  const rawAltitude = rec.altitude || rec.batch_altitude;
+  const altitude = rawAltitude ? `${stripEmojis(String(rawAltitude)).replace(/m$/i, '')}m` : '';
+  const roastLevel = stripEmojis(rec.roast_level || rec.roast || '');
+  const roastDate = stripEmojis(rec.roast_date || '');
+  const freezeDate = stripEmojis(rec.freeze_date || '');
+  const notesStr = stripEmojis(rec.flavor_notes || rec.roaster_notes || rec.notes || rec.batch_roaster_notes || '');
   const flavorTags = extractFlavorTags(notesStr);
-  const scaScore = rec.sca_score || rec.score || 89.5;
-  const dosesStr = rec.remaining_doses !== undefined ? `${rec.remaining_doses} TUBOS EN CAVA` : 'LOTE LIMITADO';
 
-  const rawMethodStr = stripEmojis(rec.method || 'V60 Conical');
+  // Real SCA Score ONLY - Never default to 89.5 or fabricate a score!
+  const rawSca = rec.sca_score || rec.score;
+  const scaScore = (rawSca && !isNaN(parseFloat(rawSca)) && parseFloat(rawSca) > 0) ? parseFloat(rawSca) : null;
+
+  // Real inventory tube count
+  const remainingDoses = (rec.remaining_doses !== undefined && rec.remaining_doses !== null && rec.remaining_doses !== '')
+    ? parseInt(rec.remaining_doses, 10)
+    : null;
+  const dosesStr = remainingDoses !== null ? `${remainingDoses} TUBOS EN CAVA` : '';
+
+  // Subtitle from real available attributes
+  const subtitleTokens = [roaster, origin, altitude, process].filter(Boolean);
+  const subtitleStr = subtitleTokens.join(' • ');
+
+  // Recipe parameters
+  const rawMethodStr = stripEmojis(rec.method || 'Filtrado');
   const isPulsar = rawMethodStr.toLowerCase().includes('pulsar');
   const isEspresso = rawMethodStr.toLowerCase().includes('espresso');
   const isAero = rawMethodStr.toLowerCase().includes('aero');
@@ -217,43 +264,13 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
   const methodStr = isPulsar ? 'PULSAR MINI // NO-BYPASS' : rawMethodStr;
 
-  const methodSubBlueprint = isPulsar
-    ? 'NO-BYPASS // FLOW VALVE'
-    : isEspresso
-    ? '9 BAR // HIGH PRESSURE'
-    : isAero
-    ? 'IMMERSION // PRESSURE'
-    : isFrench
-    ? 'FULL IMMERSION // MESH'
-    : 'CONICAL 60° // FILTRO';
-
-  const methodSubNeo = isPulsar
-    ? 'NO-BYPASS // FLOW CONTROL'
-    : isEspresso
-    ? '9 BAR // EXTRACTED'
-    : isAero
-    ? 'PLUNGE // PRESSURIZED'
-    : isFrench
-    ? 'STEEP // PLUNGED'
-    : 'CONICAL 60° // ORDER READY';
-
-  const methodSubAurora = isPulsar
-    ? 'NO-BYPASS // FLOW CONTROL'
-    : isEspresso
-    ? 'ESPRESSO // 9 BAR'
-    : isAero
-    ? 'AEROPRESS // IMMERSION'
-    : isFrench
-    ? 'FRENCH PRESS // MESH'
-    : 'CONICAL 60° // CALIBRACIÓN';
-
-  const coffeeG = rec.coffee_grams || rec.dose_in_g || 15;
-  const waterG = rec.water_grams || 240;
-  const ratioStr = rec.ratio || `1:${(waterG / (coffeeG || 1)).toFixed(1)}`;
-  const grindStr = stripEmojis(rec.grind_size || rec.grind || 'Medio-Fino');
+  const coffeeG = rec.coffee_grams || rec.dose_in_g || (incRecipe ? 15 : null);
+  const waterG = rec.water_grams || rec.dose_out_g || (coffeeG ? Math.round(coffeeG * 15) : null);
+  const ratioStr = rec.ratio || (coffeeG && waterG ? `1:${(waterG / coffeeG).toFixed(1)}` : '1:15');
+  const grindStr = stripEmojis(rec.grind_size || rec.grind || 'Medio');
   const microns = parseGrindToMicrons(grindStr);
   const tempStr = rec.temp || rec.temperature ? `${String(rec.temp || rec.temperature).replace('°C', '')}°C` : '93°C';
-  const timeStr = rec.time || rec.brew_time ? `${stripEmojis(String(rec.time || rec.brew_time)).replace(' min', '')}` : '02:45';
+  const timeStr = rec.time || rec.brew_time ? `${stripEmojis(String(rec.time || rec.brew_time)).replace(' min', '')}` : '2:30';
 
   const paddingX = 26;
   const paddingY = 26;
@@ -308,14 +325,16 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // 1. Header Spec
     ctx.fillStyle = '#38BDF8';
     ctx.font = '700 8.5px "JetBrains Mono", monospace';
-    ctx.fillText(incRecipe ? '// SPECIFICATION: EXTRACTION PROTOCOL' : '// SPECIFICATION: BOTANICAL TERROIR', paddingX, paddingY + 14);
+    ctx.fillText(incRecipe ? '// PROTOCOLO DE EXTRACCIÓN // BEANTAG ARCHIVE' : '// IDENTIDAD Y TERROIR // BEANTAG ARCHIVE', paddingX, paddingY + 14);
 
     ctx.fillStyle = '#FFFFFF';
     drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 44, availW, 28, '"JetBrains Mono", monospace', '900');
 
-    ctx.fillStyle = '#93C5FD';
-    ctx.font = '700 10px "JetBrains Mono", monospace';
-    drawTruncatedText(`${origin.toUpperCase()} • ${process.toUpperCase()} • ${altitude} • ${roaster.toUpperCase()}`, paddingX, paddingY + 66, availW);
+    if (subtitleStr) {
+      ctx.fillStyle = '#93C5FD';
+      ctx.font = '700 10px "JetBrains Mono", monospace';
+      drawTruncatedText(subtitleStr.toUpperCase(), paddingX, paddingY + 66, availW);
+    }
 
     ctx.strokeStyle = '#38BDF8';
     ctx.lineWidth = 1.2;
@@ -329,8 +348,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // -----------------------------------------------------------------------
     if (!incRecipe) {
       // 1. Spec Header Strip
-      const specBoxY = paddingY + 90;
-      const specBoxH = 34;
+      const specBoxY = paddingY + 84;
+      const specBoxH = 32;
       ctx.fillStyle = 'rgba(14, 165, 233, 0.08)';
       ctx.strokeStyle = '#38BDF8';
       ctx.lineWidth = 1;
@@ -338,25 +357,33 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       ctx.fillStyle = '#7DD3FC';
       ctx.font = '800 8.5px "JetBrains Mono", monospace';
-      ctx.fillText('FIG. 01 — ARCHIVAL MORPHOLOGY // SECTION A-A', paddingX + 12, specBoxY + 21);
+      ctx.fillText('FIG. 01 — ARCHIVO MORFOLÓGICO & TERROIR', paddingX + 12, specBoxY + 20);
 
-      ctx.fillStyle = '#4ADE80';
-      ctx.font = '800 9px "JetBrains Mono", monospace';
-      ctx.textAlign = 'right';
-      ctx.fillText(`SCA CUPSCORE: ${scaScore}★ [CERTIFIED]`, paddingX + availW - 12, specBoxY + 21);
-      ctx.textAlign = 'left';
+      if (scaScore !== null) {
+        ctx.fillStyle = '#4ADE80';
+        ctx.font = '800 9px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`SCA CUPSCORE: ${scaScore}★`, paddingX + availW - 12, specBoxY + 20);
+        ctx.textAlign = 'left';
+      } else if (roastLevel) {
+        ctx.fillStyle = '#93C5FD';
+        ctx.font = '800 8.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`TUESTE: ${roastLevel.toUpperCase()}`, paddingX + availW - 12, specBoxY + 20);
+        ctx.textAlign = 'left';
+      }
 
-      // 2. Terroir Matrix Boxes (2x2) with generous breathing room
-      const matY = specBoxY + specBoxH + 12;
-      const matGap = 10;
+      // 2. Terroir Matrix Boxes (2x2)
+      const matY = specBoxY + specBoxH + 10;
+      const matGap = 8;
       const colW = (availW - matGap) / 2;
-      const colH = 86;
+      const colH = 78;
 
       const terroirItems = [
-        { lbl: 'PRODUCTOR & FINCA', val: producer.toUpperCase(), sub: origin.toUpperCase() },
-        { lbl: 'ALTITUD & TERROIR', val: altitude, sub: 'VOLCANIC SOIL / MICROCLIMATE' },
-        { lbl: 'VARIEDAD BOTÁNICA', val: variety.toUpperCase(), sub: '100% ARABICA SPECIALTY' },
-        { lbl: 'BENEFICIO / PROCESO', val: process.toUpperCase(), sub: 'CONTROLLED FERMENTATION' }
+        { lbl: 'ORIGEN & FINCA', val: (origin || '—').toUpperCase(), sub: producer ? `Finca: ${producer}` : (roaster ? `Tostador: ${roaster}` : '') },
+        { lbl: 'ALTITUD', val: altitude || '—', sub: altitude ? 'Metros sobre el nivel del mar' : 'No registrada' },
+        { lbl: 'VARIEDAD BOTÁNICA', val: (variety || '—').toUpperCase(), sub: variety ? 'Variedad botánica' : 'No registrada' },
+        { lbl: 'BENEFICIO & TUESTE', val: (process || '—').toUpperCase(), sub: roastLevel ? `Tueste: ${roastLevel}` : (roastDate ? `Tostado: ${roastDate}` : '') }
       ];
 
       terroirItems.forEach((t, i) => {
@@ -378,94 +405,82 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.fillText(t.lbl, tx + 12, ty + 20);
 
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = '900 13.5px "JetBrains Mono", monospace';
-        drawTruncatedText(t.val, tx + 12, ty + 46, colW - 24);
+        ctx.font = '900 13px "JetBrains Mono", monospace';
+        drawTruncatedText(t.val, tx + 12, ty + 44, colW - 24);
 
         ctx.fillStyle = '#38BDF8';
         ctx.font = '700 8px "JetBrains Mono", monospace';
-        drawTruncatedText(t.sub, tx + 12, ty + 68, colW - 24);
+        drawTruncatedText(t.sub, tx + 12, ty + 64, colW - 24);
       });
 
-      // 3. Sensory Cupping Spectrum Bars (4 Bars)
-      const specY = matY + (colH * 2) + matGap + 12;
-      const specH = 126;
-      ctx.fillStyle = 'rgba(14, 165, 233, 0.06)';
+      // 3. Authentic Cupping Notes Box (Roaster Notes & Real Flavor Tags)
+      const notesY = matY + (colH * 2) + matGap + 10;
+      const notesH = 146;
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.06)';
       ctx.strokeStyle = '#38BDF8';
       ctx.lineWidth = 1;
-      drawRoundedRect(ctx, paddingX, specY, availW, specH, 5, true, true);
+      drawRoundedRect(ctx, paddingX, notesY, availW, notesH, 5, true, true);
 
       ctx.fillStyle = '#7DD3FC';
       ctx.font = '800 8.5px "JetBrains Mono", monospace';
-      ctx.fillText('CALIBRATED SENSORY ATTRIBUTES & CUP PROFILE:', paddingX + 12, specY + 20);
+      ctx.fillText('NOTAS DE CATA & PERFIL SENSORIAL DEL TOSTADOR:', paddingX + 12, notesY + 20);
 
-      const attrBars = [
-        { name: 'ACIDEZ', level: 0.88, desc: 'Brillante / Cítrica' },
-        { name: 'DULZOR', level: 0.92, desc: 'Panela & Miel' },
-        { name: 'CUERPO', level: 0.80, desc: 'Sedoso / Té' },
-        { name: 'BALANCE', level: 0.94, desc: 'Excepcional' }
-      ];
+      // Real tasting description text
+      if (notesStr) {
+        ctx.fillStyle = '#E0F2FE';
+        ctx.font = '700 10.5px "JetBrains Mono", monospace';
+        drawWrappedText(notesStr, paddingX + 12, notesY + 40, availW - 24, 16, 3);
+      } else {
+        ctx.fillStyle = '#64748B';
+        ctx.font = 'italic 10px "JetBrains Mono", monospace';
+        ctx.fillText('Sin notas de cata descriptivas registradas para este lote.', paddingX + 12, notesY + 44);
+      }
 
-      attrBars.forEach((a, i) => {
-        const ax = paddingX + 12;
-        const ay = specY + 42 + (i * 20);
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = '700 8.5px "JetBrains Mono", monospace';
-        ctx.fillText(a.name, ax, ay);
+      // Discrete Flavor Tag Pills (only if real tags exist!)
+      if (flavorTags.length > 0) {
+        let pillX = paddingX + 12;
+        const pillY = notesY + 98;
+        const pillH = 22;
+        ctx.font = '800 9px "JetBrains Mono", monospace';
 
-        // Bar
-        const barX = ax + 58;
-        const barW = availW - 175;
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.18)';
-        ctx.fillRect(barX, ay - 7, barW, 7);
-        ctx.fillStyle = '#38BDF8';
-        ctx.fillRect(barX, ay - 7, barW * a.level, 7);
+        flavorTags.slice(0, 5).forEach((tag) => {
+          const tw = ctx.measureText(tag.toUpperCase()).width;
+          const pw = tw + 16;
+          if (pillX + pw <= paddingX + availW - 12) {
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.18)';
+            ctx.strokeStyle = '#38BDF8';
+            ctx.lineWidth = 1;
+            drawRoundedRect(ctx, pillX, pillY, pw, pillH, 4, true, true);
 
-        ctx.fillStyle = '#93C5FD';
-        ctx.font = '700 8px "JetBrains Mono", monospace';
-        ctx.fillText(a.desc, barX + barW + 10, ay);
-      });
+            ctx.fillStyle = '#BAE6FD';
+            ctx.fillText(tag.toUpperCase(), pillX + 8, pillY + 15);
+            pillX += pw + 8;
+          }
+        });
+      }
 
-      // 4. Cupping Flavor Descriptors Box
-      const notesY = specY + specH + 12;
-      const notesH = 82;
-      ctx.fillStyle = 'rgba(56, 189, 248, 0.05)';
-      ctx.fillRect(paddingX, notesY, availW, notesH);
-      ctx.fillStyle = '#38BDF8';
-      ctx.fillRect(paddingX, notesY, 4, notesH);
-
-      ctx.fillStyle = '#7DD3FC';
-      ctx.font = '800 8.5px "JetBrains Mono", monospace';
-      ctx.fillText('NOTAS DE CATA & DESCRIPTORES SENSORIALES:', paddingX + 12, notesY + 20);
-
-      let pillX = paddingX + 12;
-      const pillY = notesY + 34;
-      const displayTags = flavorTags.length > 0 ? flavorTags : ['Notas Limpias', 'Balance', 'Dulzor Natural'];
-      displayTags.slice(0, 4).forEach((tag) => {
-        ctx.font = '800 10px "JetBrains Mono", monospace';
-        const tw = ctx.measureText(tag.toUpperCase()).width;
-        const pw = tw + 16;
-        if (pillX + pw <= paddingX + availW - 12) {
-          ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
-          ctx.strokeStyle = '#38BDF8';
-          ctx.lineWidth = 1;
-          drawRoundedRect(ctx, pillX, pillY, pw, 24, 4, true, true);
-
-          ctx.fillStyle = '#E0F2FE';
-          ctx.fillText(tag.toUpperCase(), pillX + 8, pillY + 16);
-          pillX += pw + 8;
-        }
-      });
-
-      // 5. Cellar Vault Cryo-Preservation Tag
-      const vaultY = notesY + notesH + 10;
-      ctx.fillStyle = 'rgba(74, 222, 128, 0.1)';
-      ctx.strokeStyle = '#4ADE80';
+      // 4. Cellar Vault Strip
+      const cellarY = notesY + notesH + 10;
+      const cellarH = 34;
+      ctx.fillStyle = 'rgba(14, 165, 233, 0.08)';
+      ctx.strokeStyle = '#38BDF8';
       ctx.lineWidth = 1;
-      drawRoundedRect(ctx, paddingX, vaultY, availW, 30, 4, true, true);
+      drawRoundedRect(ctx, paddingX, cellarY, availW, cellarH, 4, true, true);
 
-      ctx.fillStyle = '#4ADE80';
-      ctx.font = '800 8.5px "JetBrains Mono", monospace';
-      ctx.fillText(`❄️ CAVA BEANTAG: ${dosesStr} • VACÍO -18°C • ARCHIVAL SPECIMEN`, paddingX + 12, vaultY + 19);
+      ctx.fillStyle = '#7DD3FC';
+      ctx.font = '800 9px "JetBrains Mono", monospace';
+      const cellarText = remainingDoses !== null
+        ? `❄️ CAVA BEANTAG: ${remainingDoses} TUBOS EN CONGELADOR${freezeDate ? ' • CONGELADO EL ' + freezeDate : ''}`
+        : '❄️ ARCHIVO BEANTAG // CAVA DE ESPECIALIDAD';
+      ctx.fillText(cellarText, paddingX + 12, cellarY + 21);
+
+      if (scaScore !== null) {
+        ctx.fillStyle = '#4ADE80';
+        ctx.font = '800 9.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`SCA ${scaScore}★`, paddingX + availW - 12, cellarY + 21);
+        ctx.textAlign = 'left';
+      }
     }
 
     // -----------------------------------------------------------------------
@@ -473,8 +488,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // -----------------------------------------------------------------------
     else {
       // 1. Protocol Spec Strip
-      const specBoxY = paddingY + 90;
-      const specBoxH = 34;
+      const specBoxY = paddingY + 84;
+      const specBoxH = 32;
       ctx.fillStyle = 'rgba(14, 165, 233, 0.08)';
       ctx.strokeStyle = '#38BDF8';
       ctx.lineWidth = 1;
@@ -482,25 +497,35 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       ctx.fillStyle = '#7DD3FC';
       ctx.font = '800 8.5px "JetBrains Mono", monospace';
-      ctx.fillText('FIG. 01: EXTRACTION PROTOCOL // CALIBRATION SPEC', paddingX + 12, specBoxY + 21);
+      ctx.fillText('FIG. 01: PROTOCOLO DE EXTRACCIÓN // RECETA CALIBRADA', paddingX + 12, specBoxY + 20);
 
-      ctx.fillStyle = '#4ADE80';
-      ctx.font = '800 8.5px "JetBrains Mono", monospace';
-      ctx.textAlign = 'right';
-      ctx.fillText(`SCA: ${scaScore}★ [TARGET EXTRACTION: 19.5% - 21.5% EY]`, paddingX + availW - 12, specBoxY + 21);
-      ctx.textAlign = 'left';
+      if (scaScore !== null) {
+        ctx.fillStyle = '#4ADE80';
+        ctx.font = '800 8.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`SCA: ${scaScore}★`, paddingX + availW - 12, specBoxY + 20);
+        ctx.textAlign = 'left';
+      } else {
+        ctx.fillStyle = '#93C5FD';
+        ctx.font = '800 8px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`MÉTODO: ${methodStr.toUpperCase()}`, paddingX + availW - 12, specBoxY + 20);
+        ctx.textAlign = 'left';
+      }
 
-      // 2. 4 Extraction Parameter Bento Tiles (2x2) with PURE TYPOGRAPHY
-      const bentoY = specBoxY + specBoxH + 12;
-      const bentoGap = 10;
+      // 2. 4 Extraction Parameter Bento Tiles (2x2)
+      const bentoY = specBoxY + specBoxH + 10;
+      const bentoGap = 8;
       const colW = (availW - bentoGap) / 2;
-      const colH = 92;
+      const colH = 88;
+
+      const grindSub = microns ? `~${microns} µm` : (grindStr ? 'MOLIENDA CALIBRADA' : 'NO ESPECIFICADA');
 
       const metrics = [
-        { lbl: 'MÉTODO // EXTRACCIÓN', val: methodStr.toUpperCase(), sub: methodSubBlueprint },
-        { lbl: 'RATIO & DOSIS', val: `1:${ratioStr.replace('1:', '')}`, sub: `${coffeeG}g IN ➔ ${waterG}g OUT` },
-        { lbl: 'MOLIENDA // MICRONS', val: `${microns} µm`, sub: grindStr.toUpperCase() },
-        { lbl: 'TIEMPO & TEMPERATURA', val: `${timeStr} MIN`, sub: `${tempStr} • CONSTANT FLOW` }
+        { lbl: 'MÉTODO // EXTRACCIÓN', val: methodStr.toUpperCase(), sub: rawMethodStr.toUpperCase() },
+        { lbl: 'RATIO & DOSIS', val: ratioStr ? `1:${ratioStr.replace('1:', '')}` : '—', sub: (coffeeG && waterG) ? `${coffeeG}g IN ➔ ${waterG}g OUT` : (coffeeG ? `${coffeeG}g CAFÉ` : '') },
+        { lbl: 'MOLIENDA', val: grindStr.toUpperCase(), sub: grindSub },
+        { lbl: 'TIEMPO & TEMPERATURA', val: (timeStr && !timeStr.includes('min') && !timeStr.includes('s')) ? `${timeStr} MIN` : (timeStr || '—'), sub: tempStr ? `${tempStr} • AGUA` : 'TEMP ESTÁNDAR' }
       ];
 
       metrics.forEach((m, idx) => {
@@ -522,52 +547,76 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.font = '800 8px "JetBrains Mono", monospace';
         ctx.fillText(m.lbl, mx + 14, my + 22);
 
-        // Large crisp parameter value
+        // Parameter value
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = '900 18px "JetBrains Mono", monospace';
-        drawTruncatedText(m.val, mx + 14, my + 52, colW - 28);
+        ctx.font = '900 16px "JetBrains Mono", monospace';
+        drawTruncatedText(m.val, mx + 14, my + 50, colW - 28);
 
         // Subtitle note
         ctx.fillStyle = '#38BDF8';
-        ctx.font = '700 8.5px "JetBrains Mono", monospace';
-        drawTruncatedText(m.sub, mx + 14, my + 74, colW - 28);
+        ctx.font = '700 8px "JetBrains Mono", monospace';
+        drawTruncatedText(m.sub, mx + 14, my + 72, colW - 28);
       });
 
-      // 3. Pour Timeline Progress Bar
-      const flowY = bentoY + (colH * 2) + bentoGap + 12;
-      const flowH = 62;
+      // 3. Real Pours Timeline Strip or Barista Notes
+      const flowY = bentoY + (colH * 2) + bentoGap + 10;
+      const flowH = 68;
 
-      ctx.fillStyle = 'rgba(14, 165, 233, 0.05)';
-      ctx.strokeStyle = '#38BDF8';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([3, 3]);
-      drawRoundedRect(ctx, paddingX, flowY, availW, flowH, 5, true, true);
-      ctx.setLineDash([]);
+      if (rec.pours && Array.isArray(rec.pours) && rec.pours.length > 0) {
+        ctx.fillStyle = 'rgba(14, 165, 233, 0.05)';
+        ctx.strokeStyle = '#38BDF8';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        drawRoundedRect(ctx, paddingX, flowY, availW, flowH, 5, true, true);
+        ctx.setLineDash([]);
 
-      ctx.fillStyle = '#7DD3FC';
-      ctx.font = '700 8px "JetBrains Mono", monospace';
-      ctx.fillText('BLOOM (0:00): 45g', paddingX + 12, flowY + 18);
-      ctx.fillText('VERTIDO 2: +95g', paddingX + (availW / 2) - 35, flowY + 18);
-      ctx.fillStyle = '#4ADE80';
-      ctx.textAlign = 'right';
-      ctx.fillText(`TOTAL: ${waterG}g (RATIO ${ratioStr})`, paddingX + availW - 12, flowY + 18);
-      ctx.textAlign = 'left';
+        ctx.fillStyle = '#7DD3FC';
+        ctx.font = '800 8px "JetBrains Mono", monospace';
+        ctx.fillText('CRONOGRAMA DE VERTIDOS REAL:', paddingX + 12, flowY + 16);
 
-      const barY = flowY + 30;
-      const barW = availW - 24;
-      ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
-      drawRoundedRect(ctx, paddingX + 12, barY, barW, 9, 4, true, false);
+        ctx.fillStyle = '#4ADE80';
+        ctx.textAlign = 'right';
+        ctx.fillText(`TOTAL: ${waterG || '—'}g (RATIO ${ratioStr})`, paddingX + availW - 12, flowY + 16);
+        ctx.textAlign = 'left';
 
-      ctx.fillStyle = '#38BDF8';
-      drawRoundedRect(ctx, paddingX + 12, barY, barW * 0.22, 9, 4, true, false);
-      ctx.fillStyle = '#60A5FA';
-      drawRoundedRect(ctx, paddingX + 12 + (barW * 0.22), barY, barW * 0.38, 9, 4, true, false);
-      ctx.fillStyle = '#93C5FD';
-      drawRoundedRect(ctx, paddingX + 12 + (barW * 0.60), barY, barW * 0.40, 9, 4, true, false);
+        // Draw up to 3 pour step milestones
+        const poursToShow = rec.pours.slice(0, 3);
+        const pourColW = (availW - 24) / poursToShow.length;
+        poursToShow.forEach((p, pIdx) => {
+          const px = paddingX + 12 + (pIdx * pourColW);
+          ctx.fillStyle = '#BAE6FD';
+          ctx.font = '700 8px "JetBrains Mono", monospace';
+          drawTruncatedText(`${p.time || ''} • ${p.label || 'Vertido'}`, px, flowY + 34, pourColW - 8);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = '900 11px "JetBrains Mono", monospace';
+          drawTruncatedText(`${p.total_water_g || p.water_g}g`, px, flowY + 52);
+        });
+      } else {
+        // Barista Brew Notes / Instruction Box
+        ctx.fillStyle = 'rgba(14, 165, 233, 0.05)';
+        ctx.strokeStyle = '#38BDF8';
+        ctx.lineWidth = 1;
+        drawRoundedRect(ctx, paddingX, flowY, availW, flowH, 5, true, true);
 
-      // 4. Sensory Descriptors & Flavor Pills
-      const notesY = flowY + flowH + 12;
-      const notesH = 80;
+        ctx.fillStyle = '#7DD3FC';
+        ctx.font = '800 8px "JetBrains Mono", monospace';
+        ctx.fillText('NOTAS DE PREPARACIÓN DEL BARISTA:', paddingX + 12, flowY + 18);
+
+        const recipeNotes = stripEmojis(rec.notes || rec.user_notes || '');
+        if (recipeNotes) {
+          ctx.fillStyle = '#E0F2FE';
+          ctx.font = '700 9px "JetBrains Mono", monospace';
+          drawWrappedText(recipeNotes, paddingX + 12, flowY + 36, availW - 24, 14, 2);
+        } else {
+          ctx.fillStyle = '#64748B';
+          ctx.font = 'italic 8.5px "JetBrains Mono", monospace';
+          ctx.fillText('Extracción limpia y balanceada según parámetros de molienda.', paddingX + 12, flowY + 40);
+        }
+      }
+
+      // 4. Sensory Descriptors & Flavor Pills (only if real notes/tags exist)
+      const notesY = flowY + flowH + 10;
+      const notesH = 76;
       ctx.fillStyle = 'rgba(56, 189, 248, 0.05)';
       ctx.fillRect(paddingX, notesY, availW, notesH);
       ctx.fillStyle = '#38BDF8';
@@ -575,26 +624,35 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       ctx.fillStyle = '#7DD3FC';
       ctx.font = '800 8px "JetBrains Mono", monospace';
-      ctx.fillText('SENSORY PROFILE & CUPPING DESCRIPTORS:', paddingX + 12, notesY + 18);
+      ctx.fillText('DESCRIPTORES SENSORIALES DEL CAFÉ:', paddingX + 12, notesY + 18);
 
-      let pillX = paddingX + 12;
-      const pillY = notesY + 32;
-      const displayTags = flavorTags.length > 0 ? flavorTags : ['Notas Limpias', 'Balance', 'Claridad'];
-      displayTags.slice(0, 4).forEach((tag) => {
-        ctx.font = '800 10px "JetBrains Mono", monospace';
-        const tw = ctx.measureText(tag.toUpperCase()).width;
-        const pw = tw + 16;
-        if (pillX + pw <= paddingX + availW - 12) {
-          ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
-          ctx.strokeStyle = '#38BDF8';
-          ctx.lineWidth = 1;
-          drawRoundedRect(ctx, pillX, pillY, pw, 24, 4, true, true);
+      if (flavorTags.length > 0) {
+        let pillX = paddingX + 12;
+        const pillY = notesY + 30;
+        flavorTags.slice(0, 4).forEach((tag) => {
+          ctx.font = '800 9.5px "JetBrains Mono", monospace';
+          const tw = ctx.measureText(tag.toUpperCase()).width;
+          const pw = tw + 16;
+          if (pillX + pw <= paddingX + availW - 12) {
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+            ctx.strokeStyle = '#38BDF8';
+            ctx.lineWidth = 1;
+            drawRoundedRect(ctx, pillX, pillY, pw, 24, 4, true, true);
 
-          ctx.fillStyle = '#E0F2FE';
-          ctx.fillText(tag.toUpperCase(), pillX + 8, pillY + 16);
-          pillX += pw + 8;
-        }
-      });
+            ctx.fillStyle = '#E0F2FE';
+            ctx.fillText(tag.toUpperCase(), pillX + 8, pillY + 16);
+            pillX += pw + 8;
+          }
+        });
+      } else if (notesStr) {
+        ctx.fillStyle = '#BAE6FD';
+        ctx.font = '700 9px "JetBrains Mono", monospace';
+        drawTruncatedText(notesStr, paddingX + 12, notesY + 44, availW - 24);
+      } else {
+        ctx.fillStyle = '#64748B';
+        ctx.font = 'italic 8.5px "JetBrains Mono", monospace';
+        ctx.fillText('Sin descriptores sensoriales registrados.', paddingX + 12, notesY + 44);
+      }
     }
 
     // Architectural Title Block (Bottom)
@@ -617,10 +675,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.fillText('ARCHIVE STATUS:', paddingX + cellW * 2 + 8, tbY + 12);
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '800 10.5px "JetBrains Mono", monospace';
-    ctx.fillText('BT-2027-V60', paddingX + 8, tbY + 28);
-    drawTruncatedText(roaster.toUpperCase(), paddingX + cellW + 8, tbY + 28, cellW - 16);
-    ctx.fillText('1:1 CALIBRATED', paddingX + cellW * 2 + 8, tbY + 28);
+    ctx.font = '800 10px "JetBrains Mono", monospace';
+    drawTruncatedText(incRecipe ? 'REC-01' : 'LOT-01', paddingX + 8, tbY + 28, cellW - 16);
+    drawTruncatedText((roaster || producer || 'BEANTAG').toUpperCase(), paddingX + cellW + 8, tbY + 28, cellW - 16);
+    drawTruncatedText(dosesStr || (scaScore ? `SCA ${scaScore}★` : 'REGISTRADO'), paddingX + cellW * 2 + 8, tbY + 28, cellW - 16);
   }
 
   // =========================================================================
@@ -669,20 +727,21 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
     ctx.fillStyle = '#000000';
     ctx.font = '900 10.5px "Space Grotesk", sans-serif';
-    ctx.fillText(incRecipe ? '★ TOKYO STREETWEAR // BARISTA RECIPE ★' : '★ TOKYO SPECIALTY // BEAN ARCHIVE ★', paddingX + 12, paddingY + 17);
+    const headerTag = roaster ? `${roaster.toUpperCase()} // ARCHIVO DE CAFÉ` : 'BEANTAG // ARCHIVO DE CAFÉ';
+    ctx.fillText(incRecipe ? '★ BEANTAG // PROTOCOLO DE EXTRACCIÓN ★' : `★ ${headerTag} ★`, paddingX + 12, paddingY + 17);
 
     // 2. Massive Bold Title
     ctx.fillStyle = '#09090B';
     drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 68, availW, 30, '"Space Grotesk", sans-serif', '900');
 
-    // 3. Metadata Tag Pills with Drop Shadows
+    // 3. Metadata Tag Pills with Drop Shadows (Truthful only)
     const tagY = paddingY + 84;
     const tags = [
-      { text: origin.toUpperCase(), bg: '#FF3B14', color: '#FFF' },
-      { text: process.toUpperCase(), bg: '#FFFFFF', color: '#000' },
-      { text: altitude, bg: '#D8B4FE', color: '#000' },
-      { text: roaster.toUpperCase(), bg: '#D4FF00', color: '#000' }
-    ];
+      origin ? { text: origin.toUpperCase(), bg: '#FF3B14', color: '#FFF' } : null,
+      process ? { text: process.toUpperCase(), bg: '#FFFFFF', color: '#000' } : null,
+      altitude ? { text: altitude, bg: '#D8B4FE', color: '#000' } : null,
+      roaster ? { text: roaster.toUpperCase(), bg: '#D4FF00', color: '#000' } : null
+    ].filter(Boolean);
 
     let curTagX = paddingX;
     tags.forEach(t => {
@@ -721,25 +780,28 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       ctx.fillStyle = '#000000';
       ctx.font = '900 11px "Space Grotesk", sans-serif';
-      ctx.fillText('SHIBUYA DISTRICT // 100% ARABICA SPECIALTY', paddingX + 14, stripY + 25);
+      ctx.fillText(roaster ? `${roaster.toUpperCase()} // FICHA TÉCNICA` : 'BEANTAG SPECIALTY // FICHA TÉCNICA', paddingX + 14, stripY + 25);
 
-      const sBadgeW = 120;
-      const sBadgeH = 26;
-      const sBadgeX = paddingX + availW - sBadgeW - 8;
-      const sBadgeY = stripY + 7;
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(sBadgeX + 2, sBadgeY + 2, sBadgeW, sBadgeH);
-      ctx.fillStyle = '#D4FF00';
-      ctx.fillRect(sBadgeX, sBadgeY, sBadgeW, sBadgeH);
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(sBadgeX, sBadgeY, sBadgeW, sBadgeH);
+      // Only render SCA badge if verified score exists
+      if (scaScore !== null) {
+        const sBadgeW = 120;
+        const sBadgeH = 26;
+        const sBadgeX = paddingX + availW - sBadgeW - 8;
+        const sBadgeY = stripY + 7;
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(sBadgeX + 2, sBadgeY + 2, sBadgeW, sBadgeH);
+        ctx.fillStyle = '#D4FF00';
+        ctx.fillRect(sBadgeX, sBadgeY, sBadgeW, sBadgeH);
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(sBadgeX, sBadgeY, sBadgeW, sBadgeH);
 
-      ctx.fillStyle = '#000000';
-      ctx.font = '900 10.5px "Space Grotesk", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`SCA SCORE: ${scaScore}★`, sBadgeX + sBadgeW / 2, sBadgeY + 17);
-      ctx.textAlign = 'left';
+        ctx.fillStyle = '#000000';
+        ctx.font = '900 10.5px "Space Grotesk", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`SCA SCORE: ${scaScore}★`, sBadgeX + sBadgeW / 2, sBadgeY + 17);
+        ctx.textAlign = 'left';
+      }
 
       // 2. Terroir Bento Grid (2x2)
       const matY = stripY + stripH + 14;
@@ -748,10 +810,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const colH = 88;
 
       const terroirMetrics = [
-        { lbl: 'PRODUCTOR & FINCA', val: producer.toUpperCase(), sub: origin.toUpperCase(), bg: '#D4FF00', col: '#000' },
-        { lbl: 'ALTITUD & TERROIR', val: altitude, sub: 'VOLCANIC SOIL // HIGH ELEVATION', bg: '#FFFFFF', col: '#000' },
-        { lbl: 'VARIEDAD BOTÁNICA', val: variety.toUpperCase(), sub: '100% ARABICA SPECIALTY', bg: '#FF3B14', col: '#FFF' },
-        { lbl: 'BENEFICIO / PROCESO', val: process.toUpperCase(), sub: 'CONTROLLED FERMENTATION', bg: '#D8B4FE', col: '#000' }
+        { lbl: 'PRODUCTOR & FINCA', val: (producer || roaster || 'Origen único').toUpperCase(), sub: origin ? origin.toUpperCase() : 'ORIGEN NO ESPECIFICADO', bg: '#D4FF00', col: '#000' },
+        { lbl: 'ALTITUD', val: altitude || 'No especificada', sub: origin ? `TERROIR: ${origin.toUpperCase()}` : 'ALTITUD METROS', bg: '#FFFFFF', col: '#000' },
+        { lbl: 'VARIEDAD BOTÁNICA', val: (variety || 'Variedad botánica').toUpperCase(), sub: 'VARIEDAD COFFEA', bg: '#FF3B14', col: '#FFF' },
+        { lbl: 'BENEFICIO / PROCESO', val: (process || 'Proceso').toUpperCase(), sub: 'PROCESAMIENTO LOTE', bg: '#D8B4FE', col: '#000' }
       ];
 
       terroirMetrics.forEach((m, idx) => {
@@ -780,9 +842,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         drawTruncatedText(m.sub, mx + 12, my + 70, colW - 24);
       });
 
-      // 3. Sensory Pop Bars
+      // 3. Sensory Profile & Cupping Notes Bento (Authentic notes and tags)
       const specY = matY + (colH * 2) + matGap + 12;
-      const specH = 106;
+      const specH = 150;
 
       ctx.fillStyle = '#000000';
       ctx.fillRect(paddingX + 3.5, specY + 3.5, availW, specH);
@@ -794,83 +856,44 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       ctx.fillStyle = '#000000';
       ctx.font = '900 10px "Space Grotesk", sans-serif';
-      ctx.fillText('⚡ PERFIL SENSORIAL // ATTRIBUTE METERS:', paddingX + 12, specY + 20);
+      ctx.fillText('⚡ PERFIL SENSORIAL // NOTAS DE CATA:', paddingX + 14, specY + 22);
 
-      const neoBars = [
-        { name: 'ACIDEZ', level: 0.90, desc: 'Brillante', bg: '#D4FF00' },
-        { name: 'DULZOR', level: 0.92, desc: 'Caramelo & Miel', bg: '#FF3B14' },
-        { name: 'CUERPO', level: 0.82, desc: 'Sedoso', bg: '#D8B4FE' },
-        { name: 'BALANCE', level: 0.95, desc: 'Excepcional', bg: '#67E8F9' }
-      ];
+      // Authentic roaster notes text
+      ctx.fillStyle = '#18181B';
+      ctx.font = '700 10.5px "Space Grotesk", sans-serif';
+      const actualNotes = notesStr ? `"${notesStr}"` : 'Sin notas de cata registradas para este lote.';
+      const linesDrawn = drawWrappedText(ctx, actualNotes, paddingX + 14, specY + 42, availW - 28, 17, 3);
 
-      neoBars.forEach((a, i) => {
-        const ax = paddingX + 12;
-        const ay = specY + 38 + (i * 16);
-        ctx.fillStyle = '#000000';
-        ctx.font = '900 8.5px "Space Grotesk", sans-serif';
-        ctx.fillText(a.name, ax, ay);
+      // Flavor stickers below text
+      if (flavorTags.length > 0) {
+        let pillX = paddingX + 14;
+        const pillY = specY + 44 + (linesDrawn * 17) + 8;
+        const pillColors = ['#D4FF00', '#FF3B14', '#D8B4FE', '#67E8F9', '#FED7AA'];
 
-        const barX = ax + 56;
-        const barW = availW - 170;
-        ctx.fillStyle = '#F4F4F5';
-        ctx.fillRect(barX, ay - 7, barW, 7);
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(barX, ay - 7, barW, 7);
+        flavorTags.slice(0, 5).forEach((tag, idx) => {
+          const bgCol = pillColors[idx % pillColors.length];
+          ctx.font = '900 9.5px "Space Grotesk", sans-serif';
+          const pw = ctx.measureText(tag.toUpperCase()).width + 16;
 
-        ctx.fillStyle = a.bg;
-        ctx.fillRect(barX, ay - 7, barW * a.level, 7);
-        ctx.strokeRect(barX, ay - 7, barW * a.level, 7);
+          if (pillX + pw < paddingX + availW - 14) {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(pillX + 2, pillY + 2, pw, 22);
+            ctx.fillStyle = bgCol;
+            ctx.fillRect(pillX, pillY, pw, 22);
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 1.8;
+            ctx.strokeRect(pillX, pillY, pw, 22);
 
-        ctx.fillStyle = '#000000';
-        ctx.font = '700 8px "Space Grotesk", sans-serif';
-        ctx.fillText(a.desc, barX + barW + 8, ay);
-      });
+            ctx.fillStyle = bgCol === '#FF3B14' ? '#FFFFFF' : '#000000';
+            ctx.fillText(tag.toUpperCase(), pillX + 8, pillY + 15);
 
-      // 4. Flavor Pop Stickers Bento
-      const notesY = specY + specH + 12;
-      const notesH = 82;
+            pillX += pw + 8;
+          }
+        });
+      }
 
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(paddingX + 3.5, notesY + 3.5, availW, notesH);
-      ctx.fillStyle = '#F8FAFC';
-      ctx.fillRect(paddingX, notesY, availW, notesH);
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 2.5;
-      ctx.strokeRect(paddingX, notesY, availW, notesH);
-
-      ctx.fillStyle = '#000000';
-      ctx.font = '900 10px "Space Grotesk", sans-serif';
-      ctx.fillText('⚡ NOTAS DE CATA // POP STICKERS:', paddingX + 12, notesY + 20);
-
-      let pillX = paddingX + 12;
-      const pillY = notesY + 34;
-      const pillColors = ['#D4FF00', '#FF3B14', '#D8B4FE', '#67E8F9', '#FED7AA'];
-
-      const displayTags = flavorTags.length > 0 ? flavorTags : ['Notas Limpias', 'Balance', 'Dulzor Frutal'];
-      displayTags.slice(0, 4).forEach((tag, idx) => {
-        const bgCol = pillColors[idx % pillColors.length];
-        ctx.font = '900 10px "Space Grotesk", sans-serif';
-        const pw = ctx.measureText(tag.toUpperCase()).width + 16;
-
-        if (pillX + pw < paddingX + availW - 12) {
-          ctx.fillStyle = '#000000';
-          ctx.fillRect(pillX + 2, pillY + 2, pw, 24);
-          ctx.fillStyle = bgCol;
-          ctx.fillRect(pillX, pillY, pw, 24);
-          ctx.strokeStyle = '#000000';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(pillX, pillY, pw, 24);
-
-          ctx.fillStyle = bgCol === '#FF3B14' ? '#FFFFFF' : '#000000';
-          ctx.fillText(tag.toUpperCase(), pillX + 8, pillY + 16);
-
-          pillX += pw + 10;
-        }
-      });
-
-      // 5. Cellar vault pill
-      const vaultY = notesY + notesH + 10;
+      // 4. Cellar vault pill
+      const vaultY = specY + specH + 12;
       ctx.fillStyle = '#000000';
       ctx.fillRect(paddingX + 2, vaultY + 2, availW, 26);
       ctx.fillStyle = '#D4FF00';
@@ -881,7 +904,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       ctx.fillStyle = '#000000';
       ctx.font = '900 9px "Space Grotesk", sans-serif';
-      ctx.fillText(`❄️ BODEGA BEANTAG: ${dosesStr} • VACÍO -18°C`, paddingX + 12, vaultY + 17);
+      const cellarText = remainingDoses !== null
+        ? `❄️ BODEGA BEANTAG: ${dosesStr} • VACÍO -18°C`
+        : '☕ CAFÉ DE ESPECIALIDAD // BEANTAG ARCHIVE';
+      ctx.fillText(cellarText, paddingX + 12, vaultY + 17);
     }
 
     // -----------------------------------------------------------------------
@@ -902,25 +928,28 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       ctx.fillStyle = '#000000';
       ctx.font = '900 11px "Space Grotesk", sans-serif';
-      ctx.fillText('SHIBUYA DISTRICT // BARISTA EXTRACTION ORDER', paddingX + 14, stripY + 25);
+      ctx.fillText(roaster ? `${roaster.toUpperCase()} // RECETA DE BARISTA` : 'BEANTAG // RECETA DE BARISTA', paddingX + 14, stripY + 25);
 
-      const sBadgeW = 120;
-      const sBadgeH = 26;
-      const sBadgeX = paddingX + availW - sBadgeW - 8;
-      const sBadgeY = stripY + 7;
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(sBadgeX + 2, sBadgeY + 2, sBadgeW, sBadgeH);
-      ctx.fillStyle = '#D4FF00';
-      ctx.fillRect(sBadgeX, sBadgeY, sBadgeW, sBadgeH);
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(sBadgeX, sBadgeY, sBadgeW, sBadgeH);
+      // Only render SCA badge if verified score exists
+      if (scaScore !== null) {
+        const sBadgeW = 120;
+        const sBadgeH = 26;
+        const sBadgeX = paddingX + availW - sBadgeW - 8;
+        const sBadgeY = stripY + 7;
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(sBadgeX + 2, sBadgeY + 2, sBadgeW, sBadgeH);
+        ctx.fillStyle = '#D4FF00';
+        ctx.fillRect(sBadgeX, sBadgeY, sBadgeW, sBadgeH);
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(sBadgeX, sBadgeY, sBadgeW, sBadgeH);
 
-      ctx.fillStyle = '#000000';
-      ctx.font = '900 10.5px "Space Grotesk", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`SCA SCORE: ${scaScore}★`, sBadgeX + sBadgeW / 2, sBadgeY + 17);
-      ctx.textAlign = 'left';
+        ctx.fillStyle = '#000000';
+        ctx.font = '900 10.5px "Space Grotesk", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`SCA SCORE: ${scaScore}★`, sBadgeX + sBadgeW / 2, sBadgeY + 17);
+        ctx.textAlign = 'left';
+      }
 
       // 2. 4 Extraction Parameter Bento Tiles (2x2) with PURE TYPOGRAPHY
       const bentoY = stripY + stripH + 14;
@@ -929,10 +958,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const colH = 92;
 
       const metrics = [
-        { lbl: 'MÉTODO // EXT', val: methodStr.toUpperCase(), sub: methodSubNeo, bg: '#D4FF00', valColor: '#000000' },
+        { lbl: 'MÉTODO // EXT', val: methodStr.toUpperCase(), sub: rawMethodStr ? rawMethodStr.toUpperCase() : 'EXTRACCIÓN FILTRO', bg: '#D4FF00', valColor: '#000000' },
         { lbl: 'RATIO // FORMULA', val: `1:${ratioStr.replace('1:', '')}`, sub: `${coffeeG}g IN ➔ ${waterG}g OUT`, bg: '#FFFFFF', valColor: '#000000' },
-        { lbl: 'MOLIENDA // CALIBRATION', val: `${microns} µm`, sub: grindStr.toUpperCase(), bg: '#FF3B14', valColor: '#FFFFFF' },
-        { lbl: 'TIEMPO & TEMPERATURA', val: `${timeStr} MIN`, sub: `${tempStr} • EXTRACCIÓN ACTIVA`, bg: '#FFFFFF', valColor: '#000000' }
+        { lbl: 'MOLIENDA // CALIBRATION', val: grindStr.toUpperCase(), sub: microns ? `~${microns} µm MICRONES` : 'MOLIENDA CALIBRADA', bg: '#FF3B14', valColor: '#FFFFFF' },
+        { lbl: 'TIEMPO & TEMPERATURA', val: timeStr ? `${timeStr} MIN` : 'TIEMPO LIBRE', sub: tempStr ? `${tempStr} • EXTRACCIÓN` : 'AGUA A PUNTO', bg: '#FFFFFF', valColor: '#000000' }
       ];
 
       metrics.forEach((m, idx) => {
@@ -963,7 +992,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       // 3. Flavor Notes Pop Stickers Bento
       const notesY = bentoY + (colH * 2) + bentoGap + 12;
-      const notesH = 84;
+      const notesH = 80;
 
       ctx.fillStyle = '#000000';
       ctx.fillRect(paddingX + 3.5, notesY + 3.5, availW, notesH);
@@ -981,27 +1010,32 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const pillY = notesY + 34;
       const pillColors = ['#D4FF00', '#FF3B14', '#D8B4FE', '#67E8F9', '#FED7AA'];
 
-      const displayTags = flavorTags.length > 0 ? flavorTags : ['Notas Limpias', 'Balance', 'Dulzor Frutal'];
-      displayTags.slice(0, 4).forEach((tag, idx) => {
-        const bgCol = pillColors[idx % pillColors.length];
-        ctx.font = '900 10px "Space Grotesk", sans-serif';
-        const pw = ctx.measureText(tag.toUpperCase()).width + 16;
+      if (flavorTags.length > 0) {
+        flavorTags.slice(0, 5).forEach((tag, idx) => {
+          const bgCol = pillColors[idx % pillColors.length];
+          ctx.font = '900 9.5px "Space Grotesk", sans-serif';
+          const pw = ctx.measureText(tag.toUpperCase()).width + 16;
 
-        if (pillX + pw < paddingX + availW - 12) {
-          ctx.fillStyle = '#000000';
-          ctx.fillRect(pillX + 2, pillY + 2, pw, 24);
-          ctx.fillStyle = bgCol;
-          ctx.fillRect(pillX, pillY, pw, 24);
-          ctx.strokeStyle = '#000000';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(pillX, pillY, pw, 24);
+          if (pillX + pw < paddingX + availW - 12) {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(pillX + 2, pillY + 2, pw, 24);
+            ctx.fillStyle = bgCol;
+            ctx.fillRect(pillX, pillY, pw, 24);
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(pillX, pillY, pw, 24);
 
-          ctx.fillStyle = bgCol === '#FF3B14' ? '#FFFFFF' : '#000000';
-          ctx.fillText(tag.toUpperCase(), pillX + 8, pillY + 16);
+            ctx.fillStyle = bgCol === '#FF3B14' ? '#FFFFFF' : '#000000';
+            ctx.fillText(tag.toUpperCase(), pillX + 8, pillY + 16);
 
-          pillX += pw + 10;
-        }
-      });
+            pillX += pw + 10;
+          }
+        });
+      } else {
+        ctx.fillStyle = '#71717A';
+        ctx.font = '600 9px "Space Grotesk", sans-serif';
+        ctx.fillText(notesStr ? `"${notesStr.slice(0, 60)}..."` : 'Sin notas de cata adicionales especificadas', pillX, pillY + 16);
+      }
 
       // 4. Barista Pour Timeline Strip
       const flowY = notesY + notesH + 12;
@@ -1020,11 +1054,16 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillText('⏱ PROTOCOLO DE VERTIDO // POUR TIMELINE:', paddingX + 12, flowY + 18);
 
       const stepW = (availW - 24 - 16) / 3;
-      const steps = [
-        { title: 'BLOOM (0:00)', desc: '45g • 40 seg' },
-        { title: 'EXTRACCIÓN (0:45)', desc: '+95g continuo' },
-        { title: 'FINAL (1:30)', desc: `${waterG}g • drawdown` }
-      ];
+      const steps = (rec.pours && Array.isArray(rec.pours) && rec.pours.length > 0)
+        ? rec.pours.slice(0, 3).map((p, i) => ({
+            title: (p.title || `VERTIDO 0${i + 1}`).toUpperCase(),
+            desc: `${p.weight ? p.weight + 'g' : ''}${p.time ? ' • ' + p.time : ''}`.trim() || 'Vertido'
+          }))
+        : [
+            { title: 'DOSIS CAFÉ', desc: `${coffeeG}g molienda` },
+            { title: 'AGUA TOTAL', desc: `${waterG}g objetivo` },
+            { title: 'RATIO TAZA', desc: `1:${ratioStr.replace('1:', '')}` }
+          ];
 
       steps.forEach((s, idx) => {
         const sx = paddingX + 12 + idx * (stepW + 8);
@@ -1103,7 +1142,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
     ctx.fillStyle = '#CBD5E1';
     ctx.font = '600 10.5px -apple-system, sans-serif';
-    drawTruncatedText(`${origin} • ${process} • ${altitude} • ${roaster}`, paddingX, paddingY + 68, availW);
+    drawTruncatedText(subtitleStr || 'Café de Especialidad', paddingX, paddingY + 68, availW);
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
@@ -1121,7 +1160,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillStyle = '#C084FC';
       ctx.font = '800 9px -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`SCA CUPSCORE: ${scaScore}★ • CERTIFIED SENSORIAL CALIBRATION • COFFEA ARABICA`, paddingX + (availW / 2), specBoxY + 22);
+      const statusText = scaScore !== null
+        ? `SCA CUPSCORE: ${scaScore}★ • CALIBRACIÓN SENSORIAL • SPECIALTY COFFEE`
+        : 'ARCHIVO DE CAFÉ • CALIBRACIÓN SENSORIAL • SPECIALTY COFFEE';
+      ctx.fillText(statusText, paddingX + (availW / 2), specBoxY + 22);
       ctx.textAlign = 'left';
 
       // 2. 4 Terroir Matrix Tiles (2x2)
@@ -1131,10 +1173,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const colH = 88;
 
       const terroirMetrics = [
-        { lbl: 'ORIGEN & PRODUCTOR', val: producer, sub: origin },
-        { lbl: 'ALTITUD & TERROIR', val: altitude, sub: 'VOLCANIC SOIL // HIGH ELEVATION' },
-        { lbl: 'VARIEDAD BOTÁNICA', val: variety, sub: '100% ARABICA SPECIALTY' },
-        { lbl: 'PROCESO DE BENEFICIO', val: process, sub: 'CONTROLLED FERMENTATION' }
+        { lbl: 'ORIGEN & PRODUCTOR', val: producer || roaster || 'Origen único', sub: origin || 'ORIGEN NO ESPECIFICADO' },
+        { lbl: 'ALTITUD & TERROIR', val: altitude || 'No especificada', sub: origin ? `TERROIR: ${origin.toUpperCase()}` : 'ALTITUD METROS' },
+        { lbl: 'VARIEDAD BOTÁNICA', val: variety || 'Variedad botánica', sub: 'VARIEDAD COFFEA' },
+        { lbl: 'PROCESO DE BENEFICIO', val: process || 'Proceso', sub: 'PROCESAMIENTO LOTE' }
       ];
 
       terroirMetrics.forEach((t, i) => {
@@ -1161,9 +1203,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         drawTruncatedText(t.sub, mx + 14, my + 70, colW - 24);
       });
 
-      // 3. Sensory Frequency Spectrum Bars
+      // 3. Sensory Frequency & Cupping Notes Capsule
       const specY = matY + (colH * 2) + matGap + 12;
-      const specH = 120;
+      const specH = 150;
 
       ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
       ctx.strokeStyle = 'rgba(139, 92, 246, 0.3)';
@@ -1172,78 +1214,47 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       ctx.fillStyle = '#E2E8F0';
       ctx.font = '700 8.5px -apple-system, sans-serif';
-      ctx.fillText('ESPECTRO SENSORIAL // FRECUENCIA DE CATA:', paddingX + 14, specY + 20);
+      ctx.fillText('ESPECTRO SENSORIAL // NOTAS DE CATA:', paddingX + 14, specY + 20);
 
-      const auroraBars = [
-        { name: 'ACIDEZ', level: 0.88, desc: 'Brillante' },
-        { name: 'DULZOR', level: 0.92, desc: 'Frutal' },
-        { name: 'CUERPO', level: 0.80, desc: 'Sedoso' },
-        { name: 'BALANCE', level: 0.94, desc: 'Excepcional' }
-      ];
+      // Authentic notes text
+      ctx.fillStyle = '#CBD5E1';
+      ctx.font = '500 10.5px -apple-system, sans-serif';
+      const actualNotes = notesStr ? `"${notesStr}"` : 'Sin notas de cata registradas para este lote.';
+      const linesDrawn = drawWrappedText(ctx, actualNotes, paddingX + 14, specY + 40, availW - 28, 17, 3);
 
-      auroraBars.forEach((a, i) => {
-        const ax = paddingX + 14;
-        const ay = specY + 40 + (i * 18);
-        ctx.fillStyle = '#A78BFA';
-        ctx.font = '700 8px -apple-system, sans-serif';
-        ctx.fillText(a.name, ax, ay);
+      // Frosted flavor pills
+      if (flavorTags.length > 0) {
+        let pillX = paddingX + 14;
+        const pillY = specY + 44 + (linesDrawn * 17) + 8;
+        flavorTags.slice(0, 5).forEach((tag) => {
+          ctx.font = '700 9.5px -apple-system, sans-serif';
+          const tw = ctx.measureText(tag).width;
+          const pw = tw + 18;
+          if (pillX + pw <= paddingX + availW - 14) {
+            ctx.fillStyle = 'rgba(168, 85, 247, 0.18)';
+            ctx.strokeStyle = 'rgba(216, 180, 254, 0.35)';
+            ctx.lineWidth = 1;
+            drawRoundedRect(ctx, pillX, pillY, pw, 22, 6, true, true);
 
-        const barX = ax + 54;
-        const barW = availW - 170;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-        ctx.fillRect(barX, ay - 7, barW, 7);
+            ctx.fillStyle = '#F3E8FF';
+            ctx.fillText(tag, pillX + 9, pillY + 15);
+            pillX += pw + 8;
+          }
+        });
+      }
 
-        const barGrad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
-        barGrad.addColorStop(0, '#8B5CF6');
-        barGrad.addColorStop(0.5, '#EC4899');
-        barGrad.addColorStop(1, '#06B6D4');
-        ctx.fillStyle = barGrad;
-        ctx.fillRect(barX, ay - 7, barW * a.level, 7);
-
-        ctx.fillStyle = '#CBD5E1';
-        ctx.font = '600 8px -apple-system, sans-serif';
-        ctx.fillText(a.desc, barX + barW + 8, ay);
-      });
-
-      // 4. Aromatic Descriptors Capsule
-      const notesY = specY + specH + 12;
-      const notesH = 82;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
-      drawRoundedRect(ctx, paddingX, notesY, availW, notesH, 10, true, true);
-
-      ctx.fillStyle = '#F472B6';
-      ctx.font = '800 8px -apple-system, sans-serif';
-      ctx.fillText('NOTAS AROMÁTICAS & DESCRIPTORES:', paddingX + 14, notesY + 18);
-
-      let pillX = paddingX + 14;
-      const pillY = notesY + 32;
-      const displayTags = flavorTags.length > 0 ? flavorTags : ['Notas Limpias', 'Balance', 'Dulzor Frutal'];
-      displayTags.slice(0, 4).forEach((tag) => {
-        ctx.font = '700 10px -apple-system, sans-serif';
-        const tw = ctx.measureText(tag).width;
-        const pw = tw + 18;
-        if (pillX + pw <= paddingX + availW - 14) {
-          ctx.fillStyle = 'rgba(168, 85, 247, 0.16)';
-          ctx.strokeStyle = 'rgba(216, 180, 254, 0.35)';
-          ctx.lineWidth = 1;
-          drawRoundedRect(ctx, pillX, pillY, pw, 24, 6, true, true);
-
-          ctx.fillStyle = '#F3E8FF';
-          ctx.fillText(tag, pillX + 9, pillY + 16);
-          pillX += pw + 8;
-        }
-      });
-
-      // 5. Cryo Vault Bar
-      const vaultY = notesY + notesH + 10;
+      // 4. Cryo Vault Bar
+      const vaultY = specY + specH + 12;
       ctx.fillStyle = 'rgba(6, 182, 212, 0.1)';
       ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
       drawRoundedRect(ctx, paddingX, vaultY, availW, 30, 8, true, true);
 
       ctx.fillStyle = '#38BDF8';
       ctx.font = '700 9px -apple-system, sans-serif';
-      ctx.fillText(`❄️ CAVA BEANTAG: ${dosesStr} • VACÍO -18°C • CONSERVACIÓN HOLOGRÁFICA`, paddingX + 14, vaultY + 19);
+      const vaultText = remainingDoses !== null
+        ? `❄️ CAVA BEANTAG: ${dosesStr} • VACÍO -18°C • CONSERVACIÓN HOLOGRÁFICA`
+        : '☕ CAFÉ DE ESPECIALIDAD // BEANTAG VISION';
+      ctx.fillText(vaultText, paddingX + 14, vaultY + 19);
     }
 
     // -----------------------------------------------------------------------
@@ -1262,7 +1273,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillStyle = '#A78BFA';
       ctx.font = '700 9px -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`SCA CUPSCORE: ${scaScore}★ • CALIBRACIÓN DE EXTRACCIÓN SENSORIAL`, paddingX + (availW / 2), specBoxY + 22);
+      const statusText = scaScore !== null
+        ? `SCA CUPSCORE: ${scaScore}★ • CALIBRACIÓN DE EXTRACCIÓN SENSORIAL`
+        : 'PROTOCOLO DE EXTRACCIÓN // CALIBRACIÓN SENSORIAL';
+      ctx.fillText(statusText, paddingX + (availW / 2), specBoxY + 22);
       ctx.textAlign = 'left';
 
       // 2. 4 Frosted Glass Parameter Tiles (2x2) with PURE TYPOGRAPHY
@@ -1272,10 +1286,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const colH = 92;
 
       const metrics = [
-        { lbl: 'MÉTODO // FILTRO', val: methodStr, sub: methodSubAurora },
+        { lbl: 'MÉTODO // FILTRO', val: methodStr, sub: rawMethodStr ? rawMethodStr.toUpperCase() : 'Extracción manual' },
         { lbl: 'RATIO // DOSIS', val: `1:${ratioStr.replace('1:', '')}`, sub: `${coffeeG}g IN ➔ ${waterG}g AGUA` },
-        { lbl: 'MOLIENDA // TAMAÑO', val: `${microns} µm`, sub: grindStr },
-        { lbl: 'TIEMPO & TEMPERATURA', val: `${timeStr} MIN`, sub: `${tempStr} • EXTRACCIÓN CLARA` }
+        { lbl: 'MOLIENDA // TAMAÑO', val: grindStr, sub: microns ? `~${microns} µm` : 'Molienda calibrada' },
+        { lbl: 'TIEMPO & TEMPERATURA', val: timeStr ? `${timeStr} MIN` : 'TIEMPO LIBRE', sub: tempStr ? `${tempStr} • EXTRACCIÓN` : 'Agua a punto' }
       ];
 
       metrics.forEach((m, idx) => {
@@ -1339,22 +1353,28 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       let pillX = paddingX + 14;
       const pillY = notesY + 32;
-      const displayTags = flavorTags.length > 0 ? flavorTags : ['Notas Limpias', 'Balance', 'Claridad'];
-      displayTags.slice(0, 4).forEach((tag) => {
-        ctx.font = '700 10px -apple-system, sans-serif';
-        const tw = ctx.measureText(tag).width;
-        const pw = tw + 18;
-        if (pillX + pw <= paddingX + availW - 14) {
-          ctx.fillStyle = 'rgba(168, 85, 247, 0.16)';
-          ctx.strokeStyle = 'rgba(216, 180, 254, 0.35)';
-          ctx.lineWidth = 1;
-          drawRoundedRect(ctx, pillX, pillY, pw, 24, 6, true, true);
 
-          ctx.fillStyle = '#F3E8FF';
-          ctx.fillText(tag, pillX + 9, pillY + 16);
-          pillX += pw + 8;
-        }
-      });
+      if (flavorTags.length > 0) {
+        flavorTags.slice(0, 5).forEach((tag) => {
+          ctx.font = '700 10px -apple-system, sans-serif';
+          const tw = ctx.measureText(tag).width;
+          const pw = tw + 18;
+          if (pillX + pw <= paddingX + availW - 14) {
+            ctx.fillStyle = 'rgba(168, 85, 247, 0.16)';
+            ctx.strokeStyle = 'rgba(216, 180, 254, 0.35)';
+            ctx.lineWidth = 1;
+            drawRoundedRect(ctx, pillX, pillY, pw, 24, 6, true, true);
+
+            ctx.fillStyle = '#F3E8FF';
+            ctx.fillText(tag, pillX + 9, pillY + 16);
+            pillX += pw + 8;
+          }
+        });
+      } else {
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '600 9.5px -apple-system, sans-serif';
+        ctx.fillText(notesStr ? `"${notesStr.slice(0, 55)}..."` : 'Sin notas aromáticas adicionales registradas', pillX, pillY + 16);
+      }
     }
 
     // VisionOS Footer
@@ -1395,7 +1415,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // Terroir Subtitle
     ctx.fillStyle = '#57534E';
     ctx.font = 'italic 11px "Playfair Display", Georgia, serif';
-    drawTruncatedText(`${origin} — ${producer || roaster}${altitude ? ' — ' + altitude : ''}`, paddingX, paddingY + 70, availW);
+    const terroirSub = [origin, (producer || roaster), altitude].filter(Boolean).join(' — ');
+    drawTruncatedText(terroirSub || 'Café de Especialidad', paddingX, paddingY + 70, availW);
 
     ctx.strokeStyle = '#E5E0D8';
     ctx.lineWidth = 0.8;
@@ -1420,7 +1441,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillStyle = '#78716C';
       ctx.font = 'italic 8.5px "Playfair Display", Georgia, serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`HERBARIUM BOTANIQUE // COFFEA ARABICA VAR. ${variety.toUpperCase()} // SCA ${scaScore}★`, baseW / 2, stripY + 21);
+      const scaHeader = scaScore !== null ? ` // SCA ${scaScore}★` : '';
+      const varietyHeader = variety ? `VAR. ${variety.toUpperCase()}` : 'SÉLECTION ATELIER';
+      ctx.fillText(`HERBARIUM BOTANIQUE // COFFEA ARABICA ${varietyHeader}${scaHeader}`, baseW / 2, stripY + 21);
       ctx.textAlign = 'left';
 
       // 2. Terroir Ledger Matrix (2x2)
@@ -1430,10 +1453,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const colH = 86;
 
       const terroirItems = [
-        { lbl: 'ORIGEN & FINCA', val: origin, sub: producer || roaster },
-        { lbl: 'ALTITUD & TERROIR', val: altitude || '1800m', sub: 'Terroir de alta montaña' },
-        { lbl: 'VARIEDAD BOTÁNICA', val: variety || 'Arábica', sub: 'Lote seleccionado' },
-        { lbl: 'PROCESO & BENEFICIO', val: process || 'Lavado', sub: 'Cosecha manual artesanal' }
+        { lbl: 'ORIGEN & FINCA', val: origin || 'Origen único', sub: producer || roaster || 'Finca de origen' },
+        { lbl: 'ALTITUD & TERROIR', val: altitude || 'No especificada', sub: origin ? `Terroir: ${origin}` : 'Altitud sobre nivel del mar' },
+        { lbl: 'VARIEDAD BOTÁNICA', val: variety || 'Arábica', sub: 'Variedad Coffea' },
+        { lbl: 'PROCESO & BENEFICIO', val: process || 'Lavado', sub: 'Procesamiento de lote' }
       ];
 
       terroirItems.forEach((t, i) => {
@@ -1460,9 +1483,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         drawTruncatedText(t.sub, mx + 12, my + 68, colW - 24);
       });
 
-      // 3. Sensory Notes Pills Section
+      // 3. Sensory Notes & Cupping Profile Ledger
       const notesBoxY = matY + (colH * 2) + matGap + 10;
-      const notesH = 92;
+      const notesH = 150;
       ctx.fillStyle = '#FAF8F5';
       ctx.strokeStyle = '#E5E0D8';
       ctx.lineWidth = 0.8;
@@ -1470,50 +1493,40 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       ctx.fillStyle = '#78716C';
       ctx.font = '800 8.5px "Playfair Display", Georgia, serif';
-      ctx.fillText('NOTAS SENSORIALES // PERFIL EN TAZA', paddingX + 12, notesBoxY + 20);
+      ctx.fillText('NOTAS SENSORIALES // PERFIL EN TAZA', paddingX + 14, notesBoxY + 20);
 
-      const sensoryPillY = notesBoxY + 34;
-      let pillX = paddingX + 12;
-      const pillH = 24;
-      const displayNotes = flavorTags.length > 0 ? flavorTags.slice(0, 5) : ['Notas Limpias', 'Balance', 'Dulzor Natural'];
+      // Authentic notes text
+      ctx.fillStyle = '#292524';
+      ctx.font = 'italic 10.5px "Playfair Display", Georgia, serif';
+      const actualNotes = notesStr ? `« ${notesStr} »` : 'Sin notas de cata registradas para este lote.';
+      const linesDrawn = drawWrappedText(ctx, actualNotes, paddingX + 14, notesBoxY + 40, availW - 28, 17, 3);
 
-      displayNotes.forEach((tag) => {
-        ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
-        const textW = ctx.measureText(tag).width;
-        const pillW = textW + 18;
-        if (pillX + pillW <= paddingX + availW - 12) {
-          ctx.fillStyle = 'rgba(120, 53, 15, 0.06)';
-          ctx.strokeStyle = 'rgba(120, 53, 15, 0.2)';
-          ctx.lineWidth = 0.8;
-          drawRoundedRect(ctx, pillX, sensoryPillY, pillW, pillH, 4, true, true);
+      // Flavor pills below text
+      if (flavorTags.length > 0) {
+        let pillX = paddingX + 14;
+        const pillY = notesBoxY + 44 + (linesDrawn * 17) + 8;
+        const pillH = 22;
 
-          ctx.fillStyle = '#78350F';
-          ctx.fillText(tag, pillX + 9, sensoryPillY + 16);
+        flavorTags.slice(0, 5).forEach((tag) => {
+          ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
+          const textW = ctx.measureText(tag).width;
+          const pillW = textW + 18;
+          if (pillX + pillW <= paddingX + availW - 14) {
+            ctx.fillStyle = 'rgba(120, 53, 15, 0.06)';
+            ctx.strokeStyle = 'rgba(120, 53, 15, 0.2)';
+            ctx.lineWidth = 0.8;
+            drawRoundedRect(ctx, pillX, pillY, pillW, pillH, 4, true, true);
 
-          pillX += pillW + 8;
-        }
-      });
+            ctx.fillStyle = '#78350F';
+            ctx.fillText(tag, pillX + 9, pillY + 15);
 
-      // 4. Cupping Balance Ledger
-      const specY = notesBoxY + notesH + 10;
-      const specH = 76;
-      ctx.fillStyle = '#F5F2EB';
-      ctx.strokeStyle = '#E5E0D8';
-      ctx.lineWidth = 0.8;
-      drawRoundedRect(ctx, paddingX, specY, availW, specH, 5, true, true);
+            pillX += pillW + 8;
+          }
+        });
+      }
 
-      ctx.fillStyle = '#78716C';
-      ctx.font = '800 8px "Playfair Display", Georgia, serif';
-      ctx.fillText('ANALYSE SENSORIELLE // ÉQUILIBRE DU TERROIR:', paddingX + 12, specY + 18);
-
-      ctx.font = 'italic 8.5px "Playfair Display", Georgia, serif';
-      ctx.fillStyle = '#57534E';
-      ctx.fillText('Corps: Soyeux et velouté • Texture noble et enveloppante', paddingX + 12, specY + 36);
-      ctx.fillText('Acidité: Brillante et florale • Notes d\'agrumes nobles et fruits doux', paddingX + 12, specY + 52);
-      ctx.fillText('Douceur: Panela et miel d\'oranger • Finale persistante et propre', paddingX + 12, specY + 68);
-
-      // 5. Cellar Vacuum Sealed Doses Bar
-      const cellarY = specY + specH + 10;
+      // 4. Cellar Vacuum Sealed Doses Bar
+      const cellarY = notesBoxY + notesH + 12;
       const cellarH = 34;
       ctx.fillStyle = '#F2EFE7';
       ctx.strokeStyle = '#E5E0D8';
@@ -1522,16 +1535,19 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       ctx.fillStyle = '#3F6212';
       ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
-      ctx.fillText(`❄️ CAVA BEANTAG: ${dosesStr} • DOSIS CONGELADAS AL VACÍO`, paddingX + 12, cellarY + 21);
+      const cellarText = remainingDoses !== null
+        ? `❄️ CAVA BEANTAG: ${dosesStr} • DOSIS CONGELADAS AL VACÍO`
+        : '☕ SÉLECTION ATELIER // BEANTAG ARCHIVE';
+      ctx.fillText(cellarText, paddingX + 12, cellarY + 21);
 
-      if (scaScore && scaScore !== '—') {
+      if (scaScore !== null) {
         ctx.fillStyle = '#78350F';
         ctx.textAlign = 'right';
         ctx.fillText(`SCA ${scaScore}★`, paddingX + availW - 12, cellarY + 21);
         ctx.textAlign = 'left';
       }
 
-      // 6. Vector Seal & Atelier Footer
+      // 5. Vector Seal & Atelier Footer
       const footY = cellarY + cellarH + 12;
       drawVectorSeal(ctx, baseW - paddingX - 28, footY + 14, 18);
 
@@ -1556,7 +1572,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillStyle = '#78716C';
       ctx.font = 'italic 8.5px "Playfair Display", Georgia, serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`PROTOCOLE BARISTA // CALIBRATION D'EXTRACTION // SCA ${scaScore}★`, baseW / 2, stripY + 21);
+      const scaHeader = scaScore !== null ? ` // SCA ${scaScore}★` : '';
+      ctx.fillText(`PROTOCOLE BARISTA // CALIBRATION D'EXTRACTION${scaHeader}`, baseW / 2, stripY + 21);
       ctx.textAlign = 'left';
 
       // 2. 4 Metric Tiles (2x2) with PURE TYPOGRAPHY
@@ -1568,8 +1585,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const metrics = [
         { lbl: 'MÉTODO // EXTRACTION', val: methodStr, sub: 'Extraction filtre artisanale' },
         { lbl: 'RATIO // PROPORTION', val: `1:${ratioStr.replace('1:', '')}`, sub: `${coffeeG}g café ➔ ${waterG}g eau` },
-        { lbl: 'MOUTURE // MICRONS', val: `${microns} µm`, sub: grindStr },
-        { lbl: 'TEMPS & TEMPÉRATURE', val: `${timeStr} MIN`, sub: `${tempStr} • Débit régulier` }
+        { lbl: 'MOUTURE // CALIBRATION', val: grindStr, sub: microns ? `~${microns} µm` : 'Mouture calibrée' },
+        { lbl: 'TEMPS & TEMPÉRATURE', val: timeStr ? `${timeStr} MIN` : 'TEMPS LIBRE', sub: tempStr ? `${tempStr} • Débit régulier` : 'Température idéale' }
       ];
 
       metrics.forEach((m, idx) => {
@@ -1610,11 +1627,16 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillText('CHRONOLOGIE DE VERSÉE // POUR TIMELINE:', paddingX + 12, flowY + 18);
 
       const stepW = (availW - 24 - 16) / 3;
-      const steps = [
-        { title: 'Bloom (0:00)', desc: '45g eau' },
-        { title: 'Versée 1 (0:45)', desc: '+95g continu' },
-        { title: 'Finale (1:30)', desc: `${waterG}g total` }
-      ];
+      const steps = (rec.pours && Array.isArray(rec.pours) && rec.pours.length > 0)
+        ? rec.pours.slice(0, 3).map((p, i) => ({
+            title: p.title || `Versée 0${i + 1}`,
+            desc: `${p.weight ? p.weight + 'g' : ''}${p.time ? ' • ' + p.time : ''}`.trim() || 'Régulier'
+          }))
+        : [
+            { title: 'Dose Café', desc: `${coffeeG}g mouture` },
+            { title: 'Eau Totale', desc: `${waterG}g objectif` },
+            { title: 'Ratio Tasse', desc: `1:${ratioStr.replace('1:', '')}` }
+          ];
 
       steps.forEach((s, idx) => {
         const sx = paddingX + 12 + idx * (stepW + 8);
@@ -1648,41 +1670,33 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const sensoryPillY = notesBoxY + 30;
       let pillX = paddingX + 12;
       const pillH = 24;
-      const displayNotes = flavorTags.length > 0 ? flavorTags.slice(0, 5) : ['Notas Limpias', 'Balance', 'Claridad'];
 
-      displayNotes.forEach((tag) => {
-        ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
-        const textW = ctx.measureText(tag).width;
-        const pillW = textW + 18;
-        if (pillX + pillW <= paddingX + availW - 12) {
-          ctx.fillStyle = 'rgba(120, 53, 15, 0.06)';
-          ctx.strokeStyle = 'rgba(120, 53, 15, 0.2)';
-          ctx.lineWidth = 0.8;
-          drawRoundedRect(ctx, pillX, sensoryPillY, pillW, pillH, 4, true, true);
+      if (flavorTags.length > 0) {
+        flavorTags.slice(0, 5).forEach((tag) => {
+          ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
+          const textW = ctx.measureText(tag).width;
+          const pillW = textW + 18;
+          if (pillX + pillW <= paddingX + availW - 12) {
+            ctx.fillStyle = 'rgba(120, 53, 15, 0.06)';
+            ctx.strokeStyle = 'rgba(120, 53, 15, 0.2)';
+            ctx.lineWidth = 0.8;
+            drawRoundedRect(ctx, pillX, sensoryPillY, pillW, pillH, 4, true, true);
 
-          ctx.fillStyle = '#78350F';
-          ctx.fillText(tag, pillX + 9, sensoryPillY + 16);
+            ctx.fillStyle = '#78350F';
+            ctx.fillText(tag, pillX + 9, sensoryPillY + 16);
 
-          pillX += pillW + 8;
-        }
-      });
+            pillX += pillW + 8;
+          }
+        });
+      } else {
+        ctx.fillStyle = '#8C827A';
+        ctx.font = 'italic 9px "Playfair Display", Georgia, serif';
+        ctx.fillText(notesStr ? `« ${notesStr.slice(0, 60)}... »` : 'Sin notas sensoriales adicionales especificadas', pillX, sensoryPillY + 16);
+      }
 
-      // 5. Tasting Balance
-      const specY = notesBoxY + notesH + 10;
-      const specH = 46;
-      ctx.fillStyle = '#F5F2EB';
-      ctx.strokeStyle = '#E5E0D8';
-      ctx.lineWidth = 0.8;
-      drawRoundedRect(ctx, paddingX, specY, availW, specH, 5, true, true);
-
-      ctx.fillStyle = '#57534E';
-      ctx.font = 'italic 8.5px "Playfair Display", Georgia, serif';
-      ctx.fillText('Équilibre d\'extraction: Clarté aromatique remarquable et texture soyeuse', paddingX + 12, specY + 20);
-      ctx.fillText('Acidité citrique noble et finale sucrée persistante', paddingX + 12, specY + 34);
-
-      // 6. Cellar Stock Bar
-      const cellarY = specY + specH + 8;
-      const cellarH = 30;
+      // 5. Cellar Stock Bar
+      const cellarY = notesBoxY + notesH + 12;
+      const cellarH = 32;
       ctx.fillStyle = '#F2EFE7';
       ctx.strokeStyle = '#E5E0D8';
       ctx.lineWidth = 0.8;
@@ -1690,15 +1704,18 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       ctx.fillStyle = '#3F6212';
       ctx.font = 'bold 9px "Playfair Display", Georgia, serif';
-      ctx.fillText(`❄️ CAVA BEANTAG: ${dosesStr} • DOSIS CONGELADAS AL VACÍO`, paddingX + 12, cellarY + 19);
+      const cellarText = remainingDoses !== null
+        ? `❄️ CAVA BEANTAG: ${dosesStr} • DOSIS CONGELADAS AL VACÍO`
+        : '☕ PROTOCOLE ATELIER // BEANTAG ARCHIVE';
+      ctx.fillText(cellarText, paddingX + 12, cellarY + 20);
 
-      // 7. Vector Seal & Atelier Footer
+      // 6. Vector Seal & Atelier Footer
       const footY = cellarY + cellarH + 10;
       drawVectorSeal(ctx, baseW - paddingX - 28, footY + 12, 16);
 
       ctx.fillStyle = '#78716C';
       ctx.font = '600 8px "Playfair Display", Georgia, serif';
-      ctx.fillText(`BEANTAG SPECIALTY ATELIER // PROTOCOLE 2027 // LOT ARTISANAL`, paddingX, footY + 16);
+      ctx.fillText(`BEANTAG SPECIALTY ATELIER // PROTOCOLE ${new Date().getFullYear()} // LOT ARTISANAL`, paddingX, footY + 16);
     }
   }
 
@@ -1830,48 +1847,55 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
       ctx.textAlign = 'left';
 
       // Line 2: Roaster, Origin & Altitude
-      const roasterStr = stripEmojis(b.roaster || 'Specialty');
+      const roasterStr = stripEmojis(b.roaster || '');
       const originStr = stripEmojis(b.origin || '');
-      const altStr = b.altitude ? ` (${stripEmojis(String(b.altitude))}${String(b.altitude).toLowerCase().includes('m') ? '' : 'm'})` : '';
-      const line2Text = originStr ? `${roasterStr} • ${originStr}${altStr}` : `${roasterStr}${altStr}`;
+      const altStr = b.altitude ? `${stripEmojis(String(b.altitude))}${String(b.altitude).toLowerCase().includes('m') ? '' : 'm'}` : '';
+      const line2Tokens = [roasterStr, originStr, altStr].filter(Boolean);
+      const line2Text = line2Tokens.join(' • ');
 
       ctx.fillStyle = '#93C5FD';
       ctx.font = '700 9.5px "JetBrains Mono", monospace';
-      ctx.fillText(line2Text, paddingX + 46, curY + 38);
+      ctx.fillText(line2Text || 'Origen Único', paddingX + 46, curY + 38);
 
       // Line 3: Variety, Process & SCA Score
-      const varietyStr = stripEmojis(b.variety || 'Variedad Arábica');
-      const processStr = stripEmojis(b.process || 'Proceso Artesanal');
-      const scaStr = b.sca_score ? ` | SCA ${b.sca_score}` : '';
-      const line3Text = `${varietyStr} • ${processStr}${scaStr}`;
+      const varietyStr = stripEmojis(b.variety || '');
+      const processStr = stripEmojis(b.process || '');
+      const rawSca = b.sca_score;
+      const validSca = rawSca && !isNaN(parseFloat(rawSca)) && parseFloat(rawSca) > 0 ? parseFloat(rawSca) : null;
+      const scaStr = validSca ? `SCA ${validSca}` : '';
+      const line3Tokens = [varietyStr, processStr, scaStr].filter(Boolean);
+      const line3Text = line3Tokens.join(' • ');
 
-      ctx.fillStyle = '#38BDF8';
-      ctx.font = '700 9px "JetBrains Mono", monospace';
-      ctx.fillText(line3Text, paddingX + 46, curY + 52);
+      if (line3Text) {
+        ctx.fillStyle = '#38BDF8';
+        ctx.font = '700 9px "JetBrains Mono", monospace';
+        ctx.fillText(line3Text, paddingX + 46, curY + 52);
+      }
 
       // Line 4: Flavor Notes Pills
       const rawNotes = b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '';
       const parsedTags = extractFlavorTags(rawNotes).slice(0, 4);
-      const tags = parsedTags.length > 0 ? parsedTags : ['Notas Limpias', 'Balance'];
 
-      let pillX = paddingX + 46;
-      const pillY = curY + 64;
-      const pillH = 18;
+      if (parsedTags.length > 0) {
+        let pillX = paddingX + 46;
+        const pillY = curY + 64;
+        const pillH = 18;
 
-      ctx.font = '800 8.5px "JetBrains Mono", monospace';
-      tags.forEach(tag => {
-        const tw = ctx.measureText(tag).width;
-        const pw = tw + 12;
-        if (pillX + pw <= baseW - paddingX - 8) {
-          ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
-          ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-          ctx.lineWidth = 1;
-          drawRoundedRect(ctx, pillX, pillY, pw, pillH, 4, true, true);
-          ctx.fillStyle = '#E0F2FE';
-          ctx.fillText(tag, pillX + 6, pillY + 12.5);
-          pillX += pw + 6;
-        }
-      });
+        ctx.font = '800 8.5px "JetBrains Mono", monospace';
+        parsedTags.forEach(tag => {
+          const tw = ctx.measureText(tag).width;
+          const pw = tw + 12;
+          if (pillX + pw <= baseW - paddingX - 8) {
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+            ctx.lineWidth = 1;
+            drawRoundedRect(ctx, pillX, pillY, pw, pillH, 4, true, true);
+            ctx.fillStyle = '#E0F2FE';
+            ctx.fillText(tag, pillX + 6, pillY + 12.5);
+            pillX += pw + 6;
+          }
+        });
+      }
 
       curY += itemH;
     });
@@ -1983,54 +2007,61 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
       ctx.textAlign = 'left';
 
       // Line 2: Roaster, Origin & Altitude
-      const roasterStr = stripEmojis(b.roaster || 'Specialty');
+      const roasterStr = stripEmojis(b.roaster || '');
       const originStr = stripEmojis(b.origin || '');
-      const altStr = b.altitude ? ` (${stripEmojis(String(b.altitude))}${String(b.altitude).toLowerCase().includes('m') ? '' : 'm'})` : '';
-      const line2Text = originStr ? `${roasterStr} • ${originStr}${altStr}` : `${roasterStr}${altStr}`;
+      const altStr = b.altitude ? `${stripEmojis(String(b.altitude))}${String(b.altitude).toLowerCase().includes('m') ? '' : 'm'}` : '';
+      const line2Tokens = [roasterStr, originStr, altStr].filter(Boolean);
+      const line2Text = line2Tokens.join(' • ');
 
       ctx.fillStyle = '#475569';
       ctx.font = '700 9.5px "Space Grotesk", sans-serif';
-      ctx.fillText(line2Text, paddingX + 46, curY + 38);
+      ctx.fillText(line2Text || 'ORIGEN ÚNICO', paddingX + 46, curY + 38);
 
       // Line 3: Variety, Process & SCA Score
-      const varietyStr = stripEmojis(b.variety || 'Variedad Arábica');
-      const processStr = stripEmojis(b.process || 'Proceso Artesanal');
-      const scaStr = b.sca_score ? ` | SCA ${b.sca_score}` : '';
-      const line3Text = `${varietyStr} • ${processStr}${scaStr}`;
+      const varietyStr = stripEmojis(b.variety || '');
+      const processStr = stripEmojis(b.process || '');
+      const rawSca = b.sca_score;
+      const validSca = rawSca && !isNaN(parseFloat(rawSca)) && parseFloat(rawSca) > 0 ? parseFloat(rawSca) : null;
+      const scaStr = validSca ? `SCA ${validSca}` : '';
+      const line3Tokens = [varietyStr, processStr, scaStr].filter(Boolean);
+      const line3Text = line3Tokens.join(' • ');
 
-      ctx.fillStyle = '#0F172A';
-      ctx.font = '700 9px "Space Grotesk", sans-serif';
-      ctx.fillText(line3Text, paddingX + 46, curY + 52);
+      if (line3Text) {
+        ctx.fillStyle = '#0F172A';
+        ctx.font = '700 9px "Space Grotesk", sans-serif';
+        ctx.fillText(line3Text, paddingX + 46, curY + 52);
+      }
 
       // Line 4: Flavor Notes Pills
       const rawNotes = b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '';
       const parsedTags = extractFlavorTags(rawNotes).slice(0, 4);
-      const tags = parsedTags.length > 0 ? parsedTags : ['Notas Limpias', 'Balance'];
-      const pillColors = ['#D4FF00', '#FED7AA', '#E9D5FF', '#BAE6FD'];
 
-      let pillX = paddingX + 46;
-      const pillY = curY + 64;
-      const pillH = 18;
+      if (parsedTags.length > 0) {
+        const pillColors = ['#D4FF00', '#FED7AA', '#E9D5FF', '#BAE6FD'];
+        let pillX = paddingX + 46;
+        const pillY = curY + 64;
+        const pillH = 18;
 
-      ctx.font = '900 8.5px "Space Grotesk", sans-serif';
-      tags.forEach((tag, tIdx) => {
-        const tagUpper = tag.toUpperCase();
-        const tw = ctx.measureText(tagUpper).width;
-        const pw = tw + 12;
-        if (pillX + pw <= baseW - paddingX - 8) {
-          ctx.fillStyle = '#000000';
-          ctx.fillRect(pillX + 1.5, pillY + 1.5, pw, pillH);
-          ctx.fillStyle = pillColors[tIdx % pillColors.length];
-          ctx.fillRect(pillX, pillY, pw, pillH);
-          ctx.strokeStyle = '#000000';
-          ctx.lineWidth = 1.2;
-          ctx.strokeRect(pillX, pillY, pw, pillH);
+        ctx.font = '900 8.5px "Space Grotesk", sans-serif';
+        parsedTags.forEach((tag, tIdx) => {
+          const tagUpper = tag.toUpperCase();
+          const tw = ctx.measureText(tagUpper).width;
+          const pw = tw + 12;
+          if (pillX + pw <= baseW - paddingX - 8) {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(pillX + 1.5, pillY + 1.5, pw, pillH);
+            ctx.fillStyle = pillColors[tIdx % pillColors.length];
+            ctx.fillRect(pillX, pillY, pw, pillH);
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 1.2;
+            ctx.strokeRect(pillX, pillY, pw, pillH);
 
-          ctx.fillStyle = '#000000';
-          ctx.fillText(tagUpper, pillX + 6, pillY + 12.5);
-          pillX += pw + 6;
-        }
-      });
+            ctx.fillStyle = '#000000';
+            ctx.fillText(tagUpper, pillX + 6, pillY + 12.5);
+            pillX += pw + 6;
+          }
+        });
+      }
 
       curY += itemH;
     });
@@ -2128,48 +2159,55 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
       ctx.textAlign = 'left';
 
       // Line 2: Roaster, Origin & Altitude
-      const roasterStr = stripEmojis(b.roaster || 'Specialty');
+      const roasterStr = stripEmojis(b.roaster || '');
       const originStr = stripEmojis(b.origin || '');
-      const altStr = b.altitude ? ` (${stripEmojis(String(b.altitude))}${String(b.altitude).toLowerCase().includes('m') ? '' : 'm'})` : '';
-      const line2Text = originStr ? `${roasterStr} • ${originStr}${altStr}` : `${roasterStr}${altStr}`;
+      const altStr = b.altitude ? `${stripEmojis(String(b.altitude))}${String(b.altitude).toLowerCase().includes('m') ? '' : 'm'}` : '';
+      const line2Tokens = [roasterStr, originStr, altStr].filter(Boolean);
+      const line2Text = line2Tokens.join(' • ');
 
       ctx.fillStyle = '#94A3B8';
       ctx.font = '600 9.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-      ctx.fillText(line2Text, paddingX + 46, curY + 38);
+      ctx.fillText(line2Text || 'Origen Único', paddingX + 46, curY + 38);
 
       // Line 3: Variety, Process & SCA Score
-      const varietyStr = stripEmojis(b.variety || 'Variedad Arábica');
-      const processStr = stripEmojis(b.process || 'Proceso Artesanal');
-      const scaStr = b.sca_score ? ` | SCA ${b.sca_score}` : '';
-      const line3Text = `${varietyStr} • ${processStr}${scaStr}`;
+      const varietyStr = stripEmojis(b.variety || '');
+      const processStr = stripEmojis(b.process || '');
+      const rawSca = b.sca_score;
+      const validSca = rawSca && !isNaN(parseFloat(rawSca)) && parseFloat(rawSca) > 0 ? parseFloat(rawSca) : null;
+      const scaStr = validSca ? `SCA ${validSca}` : '';
+      const line3Tokens = [varietyStr, processStr, scaStr].filter(Boolean);
+      const line3Text = line3Tokens.join(' • ');
 
-      ctx.fillStyle = '#CBD5E1';
-      ctx.font = '600 9px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-      ctx.fillText(line3Text, paddingX + 46, curY + 52);
+      if (line3Text) {
+        ctx.fillStyle = '#CBD5E1';
+        ctx.font = '600 9px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(line3Text, paddingX + 46, curY + 52);
+      }
 
       // Line 4: Flavor Notes Pills
       const rawNotes = b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '';
       const parsedTags = extractFlavorTags(rawNotes).slice(0, 4);
-      const tags = parsedTags.length > 0 ? parsedTags : ['Notas Limpias', 'Balance'];
 
-      let pillX = paddingX + 46;
-      const pillY = curY + 64;
-      const pillH = 18;
+      if (parsedTags.length > 0) {
+        let pillX = paddingX + 46;
+        const pillY = curY + 64;
+        const pillH = 18;
 
-      ctx.font = '700 8.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-      tags.forEach(tag => {
-        const tw = ctx.measureText(tag).width;
-        const pw = tw + 14;
-        if (pillX + pw <= baseW - paddingX - 8) {
-          ctx.fillStyle = 'rgba(168, 85, 247, 0.16)';
-          ctx.strokeStyle = 'rgba(216, 180, 254, 0.3)';
-          ctx.lineWidth = 1;
-          drawRoundedRect(ctx, pillX, pillY, pw, pillH, 8, true, true);
-          ctx.fillStyle = '#F3E8FF';
-          ctx.fillText(tag, pillX + 7, pillY + 12.5);
-          pillX += pw + 6;
-        }
-      });
+        ctx.font = '700 8.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        parsedTags.forEach(tag => {
+          const tw = ctx.measureText(tag).width;
+          const pw = tw + 14;
+          if (pillX + pw <= baseW - paddingX - 8) {
+            ctx.fillStyle = 'rgba(168, 85, 247, 0.16)';
+            ctx.strokeStyle = 'rgba(216, 180, 254, 0.3)';
+            ctx.lineWidth = 1;
+            drawRoundedRect(ctx, pillX, pillY, pw, pillH, 8, true, true);
+            ctx.fillStyle = '#F3E8FF';
+            ctx.fillText(tag, pillX + 7, pillY + 12.5);
+            pillX += pw + 6;
+          }
+        });
+      }
 
       curY += itemH;
     });
@@ -2251,48 +2289,55 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
       ctx.textAlign = 'left';
 
       // Line 2: Roaster, Origin & Altitude
-      const roasterStr = stripEmojis(b.roaster || 'Specialty');
+      const roasterStr = stripEmojis(b.roaster || '');
       const originStr = stripEmojis(b.origin || '');
-      const altStr = b.altitude ? ` (${stripEmojis(String(b.altitude))}${String(b.altitude).toLowerCase().includes('m') ? '' : 'm'})` : '';
-      const line2Text = originStr ? `${roasterStr} • ${originStr}${altStr}` : `${roasterStr}${altStr}`;
+      const altStr = b.altitude ? `${stripEmojis(String(b.altitude))}${String(b.altitude).toLowerCase().includes('m') ? '' : 'm'}` : '';
+      const line2Tokens = [roasterStr, originStr, altStr].filter(Boolean);
+      const line2Text = line2Tokens.join(' • ');
 
       ctx.fillStyle = '#57534E';
       ctx.font = 'italic 9.5px "Playfair Display", Georgia, serif';
-      ctx.fillText(line2Text, paddingX + 44, curY + 38);
+      ctx.fillText(line2Text || 'Sélection Spéciale', paddingX + 44, curY + 38);
 
       // Line 3: Variety, Process & SCA Score
-      const varietyStr = stripEmojis(b.variety || 'Variedad Arábica');
-      const processStr = stripEmojis(b.process || 'Proceso Artesanal');
-      const scaStr = b.sca_score ? ` | SCA ${b.sca_score}` : '';
-      const line3Text = `${varietyStr} • ${processStr}${scaStr}`;
+      const varietyStr = stripEmojis(b.variety || '');
+      const processStr = stripEmojis(b.process || '');
+      const rawSca = b.sca_score;
+      const validSca = rawSca && !isNaN(parseFloat(rawSca)) && parseFloat(rawSca) > 0 ? parseFloat(rawSca) : null;
+      const scaStr = validSca ? `SCA ${validSca}` : '';
+      const line3Tokens = [varietyStr, processStr, scaStr].filter(Boolean);
+      const line3Text = line3Tokens.join(' • ');
 
-      ctx.fillStyle = '#78716C';
-      ctx.font = 'bold 9px "Playfair Display", Georgia, serif';
-      ctx.fillText(line3Text, paddingX + 44, curY + 52);
+      if (line3Text) {
+        ctx.fillStyle = '#78716C';
+        ctx.font = 'bold 9px "Playfair Display", Georgia, serif';
+        ctx.fillText(line3Text, paddingX + 44, curY + 52);
+      }
 
       // Line 4: Flavor Notes Pills
       const rawNotes = b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '';
       const parsedTags = extractFlavorTags(rawNotes).slice(0, 4);
-      const tags = parsedTags.length > 0 ? parsedTags : ['Notas Limpias', 'Balance'];
 
-      let pillX = paddingX + 44;
-      const pillY = curY + 64;
-      const pillH = 18;
+      if (parsedTags.length > 0) {
+        let pillX = paddingX + 44;
+        const pillY = curY + 64;
+        const pillH = 18;
 
-      ctx.font = 'italic 8.5px "Playfair Display", Georgia, serif';
-      tags.forEach(tag => {
-        const tw = ctx.measureText(tag).width;
-        const pw = tw + 12;
-        if (pillX + pw <= baseW - paddingX - 8) {
-          ctx.fillStyle = 'rgba(120, 113, 108, 0.1)';
-          ctx.strokeStyle = 'rgba(120, 113, 108, 0.25)';
-          ctx.lineWidth = 0.8;
-          drawRoundedRect(ctx, pillX, pillY, pw, pillH, 4, true, true);
-          ctx.fillStyle = '#292524';
-          ctx.fillText(tag, pillX + 6, pillY + 12.5);
-          pillX += pw + 6;
-        }
-      });
+        ctx.font = 'italic 8.5px "Playfair Display", Georgia, serif';
+        parsedTags.forEach(tag => {
+          const tw = ctx.measureText(tag).width;
+          const pw = tw + 12;
+          if (pillX + pw <= baseW - paddingX - 8) {
+            ctx.fillStyle = 'rgba(120, 113, 108, 0.1)';
+            ctx.strokeStyle = 'rgba(120, 113, 108, 0.25)';
+            ctx.lineWidth = 0.8;
+            drawRoundedRect(ctx, pillX, pillY, pw, pillH, 4, true, true);
+            ctx.fillStyle = '#292524';
+            ctx.fillText(tag, pillX + 6, pillY + 12.5);
+            pillX += pw + 6;
+          }
+        });
+      }
 
       curY += itemH;
     });
