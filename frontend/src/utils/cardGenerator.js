@@ -357,52 +357,220 @@ function drawKissatenTimer(ctx, cx, cy, size = 28, strokeColor = '#18181B') {
  * Pure vector Die-Cut Notches & Tear-Off Perforation Module
  * Renders realistic ticket cutouts and dashed perforation line with style-specific accents.
  */
-export function drawTicketNotchesAndPerforation(ctx, x, y, width, height, notchY, style, bgColor = '#0A0A0A') {
-  const radius = 13;
+export function drawTicketNotchesAndPerforation(ctx, x, width, notchY, style, bgColor) {
+  const s = normalizeCardStyle(style);
+  const defaultBgs = {
+    blueprint: '#0B192C',
+    neobrutalist: '#F1F5F9',
+    diner: '#FDFBF7',
+    kissaten: '#EFECE6'
+  };
+  const fillBg = bgColor || defaultBgs[s] || '#FFFDF8';
+  const radius = 12;
+
   ctx.save();
-  
-  // Cutout arcs on left and right borders filled with outer background
-  ctx.fillStyle = bgColor;
-  ctx.beginPath();
-  ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
-  ctx.fill();
-  
-  ctx.beginPath();
-  ctx.arc(x + width, notchY, radius, Math.PI / 2, (3 * Math.PI) / 2);
-  ctx.fill();
 
-  // Outline of cutouts themed by style
-  ctx.lineWidth = style === 'neobrutalist' ? 2.5 : 1;
-  ctx.strokeStyle = style === 'diner' ? '#C92A2A' : (style === 'neobrutalist' ? '#000000' : (style === 'blueprint' ? '#38BDF8' : '#D4D4D8'));
-  
-  ctx.beginPath();
-  ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
-  ctx.stroke();
+  if (s === 'neobrutalist') {
+    // 1. 3px hard black offset shadow for the arc
+    ctx.fillStyle = '#000000';
+    ctx.beginPath();
+    ctx.arc(x + 3, notchY + 3, radius, -Math.PI / 2, Math.PI / 2);
+    ctx.fill();
 
-  ctx.beginPath();
-  ctx.arc(x + width, notchY, radius, Math.PI / 2, (3 * Math.PI) / 2);
-  ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x + width + 3, notchY + 3, radius, Math.PI / 2, (3 * Math.PI) / 2);
+    ctx.fill();
 
-  // Dashed perforation line across the width
-  ctx.setLineDash([4, 4]);
-  ctx.beginPath();
-  ctx.moveTo(x + radius + 2, notchY);
-  ctx.lineTo(x + width - radius - 2, notchY);
-  ctx.stroke();
-  ctx.setLineDash([]); // Reset line dash
+    // 2. Cutout arcs
+    ctx.fillStyle = fillBg;
+    ctx.beginPath();
+    ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
+    ctx.fill();
 
-  // Style specific decorative accents at notch terminals:
-  if (style === 'diner') {
-    ctx.font = '700 8px "Space Grotesk", sans-serif';
-    ctx.fillStyle = '#C92A2A';
-    ctx.textAlign = 'center';
-    ctx.fillText('✦', x + radius + 8, notchY + 3);
-    ctx.fillText('✦', x + width - radius - 8, notchY + 3);
-  } else if (style === 'neobrutalist') {
-    ctx.font = '900 6.5px "Space Grotesk", sans-serif';
+    ctx.beginPath();
+    ctx.arc(x + width, notchY, radius, Math.PI / 2, (3 * Math.PI) / 2);
+    ctx.fill();
+
+    // 3. 2.5px solid black outline
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#000000';
+    ctx.beginPath();
+    ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(x + width, notchY, radius, Math.PI / 2, (3 * Math.PI) / 2);
+    ctx.stroke();
+
+    // 4. Chunky perforation dash [5, 4]
+    ctx.setLineDash([5, 4]);
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#000000';
+    ctx.beginPath();
+    ctx.moveTo(x + radius + 2, notchY);
+    ctx.lineTo(x + width - radius - 2, notchY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 5. Center badge: [ TEAR // CORTE ]
+    const badgeText = '[ TEAR // CORTE ]';
+    ctx.font = '900 7px "Space Grotesk", sans-serif';
+    const tw = ctx.measureText(badgeText).width;
+    const bw = tw + 12;
+    const bh = 14;
+    const bx = x + width / 2 - bw / 2;
+    const by = notchY - bh / 2;
+
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(bx + 2, by + 2, bw, bh);
+
+    ctx.fillStyle = '#FFFDF8';
+    ctx.fillRect(bx, by, bw, bh);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1.8;
+    ctx.strokeRect(bx, by, bw, bh);
+
     ctx.fillStyle = '#000000';
     ctx.textAlign = 'center';
-    ctx.fillText('[ TEAR // CORTE ]', x + width / 2, notchY - 4);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(badgeText, x + width / 2, notchY);
+  } else if (s === 'blueprint') {
+    // 1. Cutout arcs
+    ctx.fillStyle = fillBg;
+    ctx.beginPath();
+    ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x + width, notchY, radius, Math.PI / 2, (3 * Math.PI) / 2);
+    ctx.fill();
+
+    // 2. Outlines in cyan
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = '#38BDF8';
+    ctx.beginPath();
+    ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(x + width, notchY, radius, Math.PI / 2, (3 * Math.PI) / 2);
+    ctx.stroke();
+
+    // 3. Technical engineering crosshairs at notch apexes
+    const drawMiniCross = (cx, cy, arm = 3) => {
+      ctx.strokeStyle = '#38BDF8';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(cx - arm, cy);
+      ctx.lineTo(cx + arm, cy);
+      ctx.moveTo(cx, cy - arm);
+      ctx.lineTo(cx, cy + arm);
+      ctx.stroke();
+    };
+    drawMiniCross(x, notchY - radius, 3);
+    drawMiniCross(x, notchY + radius, 3);
+    drawMiniCross(x + width, notchY - radius, 3);
+    drawMiniCross(x + width, notchY + radius, 3);
+
+    // 4. Dashed perforation line [4, 4] in #38BDF8
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#38BDF8';
+    ctx.beginPath();
+    ctx.moveTo(x + radius + 2, notchY);
+    ctx.lineTo(x + width - radius - 2, notchY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 5. Technical radius annotation: R12 // CUT_LINE in cyan 7px "JetBrains Mono"
+    ctx.font = '700 7px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#38BDF8';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('R12 // CUT_LINE', x + radius + 6, notchY - 3);
+  } else if (s === 'kissaten') {
+    // 1. Cutout arcs
+    ctx.fillStyle = fillBg;
+    ctx.beginPath();
+    ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x + width, notchY, radius, Math.PI / 2, (3 * Math.PI) / 2);
+    ctx.fill();
+
+    // 2. Ultra-thin sumi hairline: lineWidth = 0.75, strokeStyle = 'rgba(24, 24, 27, 0.4)'
+    ctx.lineWidth = 0.75;
+    ctx.strokeStyle = 'rgba(24, 24, 27, 0.4)';
+    ctx.beginPath();
+    ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(x + width, notchY, radius, Math.PI / 2, (3 * Math.PI) / 2);
+    ctx.stroke();
+
+    // 3. Delicate dash [2, 3]
+    ctx.setLineDash([2, 3]);
+    ctx.lineWidth = 0.75;
+    ctx.strokeStyle = 'rgba(24, 24, 27, 0.4)';
+    ctx.beginPath();
+    ctx.moveTo(x + radius + 2, notchY);
+    ctx.lineTo(x + width - radius - 2, notchY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 4. Clean Japanese incision text: 切取り線 (font: 7px serif / Outfit, color: #71717A)
+    const incisionText = '切取り線';
+    ctx.font = '7px "Playfair Display", Georgia, serif';
+    ctx.fillStyle = '#71717A';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const textW = ctx.measureText(incisionText).width;
+    ctx.fillStyle = '#F7F5F0';
+    ctx.fillRect(x + width / 2 - textW / 2 - 4, notchY - 5, textW + 8, 10);
+    ctx.fillStyle = '#71717A';
+    ctx.fillText(incisionText, x + width / 2, notchY);
+  } else {
+    // Retro 50s Diner
+    // 1. Cutout arcs
+    ctx.fillStyle = fillBg;
+    ctx.beginPath();
+    ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x + width, notchY, radius, Math.PI / 2, (3 * Math.PI) / 2);
+    ctx.fill();
+
+    // 2. Cherry Red outline #C92A2A
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = '#C92A2A';
+    ctx.beginPath();
+    ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(x + width, notchY, radius, Math.PI / 2, (3 * Math.PI) / 2);
+    ctx.stroke();
+
+    // 3. Dashed line [4, 4] in #0E7490
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = '#0E7490';
+    ctx.beginPath();
+    ctx.moveTo(x + radius + 14, notchY);
+    ctx.lineTo(x + width - radius - 14, notchY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 4. Atomic stars ✦ at both terminals
+    ctx.fillStyle = '#C92A2A';
+    ctx.font = '700 8.5px "Space Grotesk", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✦', x + radius + 7, notchY);
+    ctx.fillText('✦', x + width - radius - 7, notchY);
   }
 
   ctx.restore();
@@ -589,8 +757,6 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     drawCross(bx, by + bh);
     drawCross(bx + bw, by + bh);
 
-    drawTicketNotchesAndPerforation(ctx, pad, pad, cardW, cardH, 185, style, '#0A0A0A');
-
     // 1. Header Spec
     ctx.fillStyle = '#38BDF8';
     ctx.font = '700 8.5px "JetBrains Mono", monospace';
@@ -611,6 +777,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.moveTo(paddingX, paddingY + 78);
     ctx.lineTo(baseW - paddingX, paddingY + 78);
     ctx.stroke();
+
+    drawTicketNotchesAndPerforation(ctx, pad, cardW, 120, style, '#0B192C');
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
@@ -983,8 +1151,6 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.closePath();
     ctx.fill();
 
-    drawTicketNotchesAndPerforation(ctx, pad, pad, cardW, cardH, 180, style, '#0A0A0A');
-
     // 1. Top Acid Lime Header Badge
     const badgeW = availW;
     const badgeH = 26;
@@ -1032,6 +1198,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         curTagX += tw + 8;
       }
     });
+
+    drawTicketNotchesAndPerforation(ctx, pad, cardW, 140, style, '#F1F5F9');
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
@@ -1401,8 +1569,6 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     drawDinerAtomicStar(ctx, bx + 15, by + bh - 15, 6, '#C92A2A');
     drawDinerAtomicStar(ctx, bx + bw - 15, by + bh - 15, 6, '#C92A2A');
 
-    drawTicketNotchesAndPerforation(ctx, pad, pad, cardW, cardH, 195, style, '#0A0A0A');
-
     // 1. Header Spec
     ctx.fillStyle = '#C92A2A';
     ctx.font = '800 8.5px "Space Grotesk", sans-serif';
@@ -1425,6 +1591,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.lineTo(baseW - paddingX, paddingY + 78);
     ctx.stroke();
     drawDinerAtomicStar(ctx, paddingX + (availW / 2), paddingY + 78, 6, '#C92A2A');
+
+    drawTicketNotchesAndPerforation(ctx, pad, cardW, 132, style, '#FDFBF7');
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
@@ -1739,8 +1907,6 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.lineWidth = 1;
     drawRoundedRect(ctx, bx, by, bw, bh, 6, false, true);
 
-    drawTicketNotchesAndPerforation(ctx, pad, pad, cardW, cardH, 175, style, '#0A0A0A');
-
     // 1. Authentic Vermilion Hanko Seal in Header (豆札)
     drawHankoSeal(ctx, baseW - paddingX - 16, paddingY + 28, 30, '豆札');
 
@@ -1765,6 +1931,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.moveTo(paddingX, paddingY + 78);
     ctx.lineTo(baseW - paddingX, paddingY + 78);
     ctx.stroke();
+
+    drawTicketNotchesAndPerforation(ctx, pad, cardW, 120, style, '#EFECE6');
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)

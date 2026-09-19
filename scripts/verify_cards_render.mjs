@@ -324,7 +324,7 @@ async function verify() {
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
       const hasNoDrawImage = !mockOps.includes('drawImage');
-      const hasPerforation = mockContext.operations.some(op => op.name === 'setLineDash');
+      const hasPerforation = mockContext.operations.some(op => op.name === 'setLineDash') && mockContext.operations.some(op => op.name === 'arc');
       const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage && hasPerforation;
 
       if (!passed) hasFailure = true;
@@ -355,7 +355,7 @@ async function verify() {
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
       const hasNoDrawImage = !mockOps.includes('drawImage');
-      const hasPerforation = mockContext.operations.some(op => op.name === 'setLineDash');
+      const hasPerforation = mockContext.operations.some(op => op.name === 'setLineDash') && mockContext.operations.some(op => op.name === 'arc');
       const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage && hasPerforation;
 
       if (!passed) hasFailure = true;
