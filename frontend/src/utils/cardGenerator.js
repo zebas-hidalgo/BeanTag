@@ -278,7 +278,7 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
   } = recipeData;
 
   const isEspresso = /espresso/i.test(method);
-  const isImmersion = /french|prensa|cupping/i.test(method);
+  const isImmersion = /french|prensa|aeropress|cupping/i.test(method);
 
   ctx.save();
 
@@ -292,12 +292,13 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
   const methodLabel = `${(method || 'POUR OVER').toUpperCase()}${temperature ? ' • ' + temperature : ''}`;
   ctx.fillText(`TIMELINE DE EXTRACCIÓN // ${methodLabel}`, x, y);
 
-  // Grind micron chip
+  // Grind micron chip (truncated defensively to prevent collision with header)
   const microns = parseGrindToMicrons(grind);
+  const cleanGrind = grind && String(grind).length > 24 ? String(grind).slice(0, 22) + '…' : grind;
   ctx.font = '700 7.5px "JetBrains Mono", monospace';
   ctx.fillStyle = s === 'blueprint' ? '#93C5FD' : '#64748B';
   ctx.textAlign = 'right';
-  ctx.fillText(`MOLIENDA: ${microns}µm (${grind})`, x + width, y);
+  ctx.fillText(`MOLIENDA: ${microns}µm (${cleanGrind})`, x + width, y);
 
   const barY = y + 13;
   const barH = 10;
@@ -314,7 +315,7 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
   } else if (isImmersion) {
     stages = [
       { label: 'INFUSIÓN', time: '0:00 - 3:30', weight: `${dose_out_g || 250}g`, flex: 3.5, color: '#1E293B' },
-      { label: 'TURBULENCIA', time: '3:30 - 4:00', weight: 'Romper costra', flex: 1.5, color: '#3B82F6' },
+      { label: 'TURBULENCIA', time: '3:30 - 4:00', weight: 'Costra', flex: 1.5, color: '#3B82F6' },
       { label: 'PRENSADO', time: brew_time || '4:30', weight: 'Filtrado', flex: 1.2, color: '#10B981' }
     ];
   } else {
@@ -362,10 +363,11 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
     ctx.textAlign = 'center';
     ctx.fillText(st.time, curX + segW / 2, barY - 3);
 
-    // Weight/Action label below
-    ctx.font = '800 7px "JetBrains Mono", monospace';
+    // Stage + weight label below
+    ctx.font = '800 6.5px "JetBrains Mono", monospace';
     ctx.fillStyle = s === 'blueprint' ? '#FFFFFF' : (s === 'neobrutalist' ? '#000000' : '#18181B');
-    ctx.fillText(st.label, curX + segW / 2, barY + barH + 9);
+    const stageText = segW >= 72 && st.weight ? `${st.label} (${st.weight})` : st.label;
+    ctx.fillText(stageText, curX + segW / 2, barY + barH + 9);
 
     curX += segW + gap;
   });
