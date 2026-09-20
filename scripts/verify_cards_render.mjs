@@ -426,64 +426,39 @@ async function verify() {
     }
   }
 
-  // C. Verify 8 Story Sticker Variants (4 styles x 2 modes: Solid & Transparent)
+  // C. Verify 16 Story Sticker Variants (4 styles x 2 orientations [Horizontal, Vertical] x 2 modes [Solid, Transparent])
   for (const style of STYLES) {
-    // 1. Solid Sticker
-    try {
-      mockOps.length = 0;
-      const dataUrl = await window.__generateCoffeeStickerImage(sampleRecipe, { template: style, transparent: false });
-      const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
-      const opsCount = mockOps.length;
-      const hasNoDrawImage = !mockOps.includes('drawImage');
-      const passed = isValidDataUrl && opsCount > 15 && hasNoDrawImage;
+    for (const orientation of ['horizontal', 'vertical']) {
+      for (const transparent of [false, true]) {
+        const modeLabel = `${orientation === 'vertical' ? 'V' : 'H'} • ${transparent ? 'Transp' : 'Sólido'}`;
+        try {
+          mockOps.length = 0;
+          const dataUrl = await window.__generateCoffeeStickerImage(sampleRecipe, { template: style, transparent, orientation });
+          const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
+          const opsCount = mockOps.length;
+          const hasNoDrawImage = !mockOps.includes('drawImage');
+          const passed = isValidDataUrl && opsCount > 15 && hasNoDrawImage;
 
-      if (!passed) hasFailure = true;
+          if (!passed) hasFailure = true;
 
-      results.push({
-        style,
-        type: 'Story Sticker',
-        mode: 'Fondo Sólido',
-        ops: opsCount,
-        status: passed ? 'PASS' : 'FAIL'
-      });
+          results.push({
+            style,
+            type: 'Story Sticker',
+            mode: modeLabel,
+            ops: opsCount,
+            status: passed ? 'PASS' : 'FAIL'
+          });
 
-      console.log(
-        `│ ${style.padEnd(15)} │ ${'Story Sticker'.padEnd(12)} │ ${'Fondo Sólido'.padEnd(12)} │ ${String(opsCount).padStart(10)} │ ${passed ? '✅ PASS' : '❌ FAIL'} │`
-      );
-    } catch (err) {
-      hasFailure = true;
-      results.push({ style, type: 'Story Sticker', mode: 'Fondo Sólido', ops: 0, status: 'ERROR' });
-      console.log(`│ ${style.padEnd(15)} │ ${'Story Sticker'.padEnd(12)} │ ${'Fondo Sólido'.padEnd(12)} │ ${'0'.padStart(10)} │ ❌ ERR  │`);
-      console.error(`   ⚠️ Error details (${style} Story Sticker Sólido):`, err.message);
-    }
-
-    // 2. Transparent Sticker
-    try {
-      mockOps.length = 0;
-      const dataUrl = await window.__generateCoffeeStickerImage(sampleRecipe, { template: style, transparent: true });
-      const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
-      const opsCount = mockOps.length;
-      const hasNoDrawImage = !mockOps.includes('drawImage');
-      const passed = isValidDataUrl && opsCount > 15 && hasNoDrawImage;
-
-      if (!passed) hasFailure = true;
-
-      results.push({
-        style,
-        type: 'Story Sticker',
-        mode: 'Transparente',
-        ops: opsCount,
-        status: passed ? 'PASS' : 'FAIL'
-      });
-
-      console.log(
-        `│ ${style.padEnd(15)} │ ${'Story Sticker'.padEnd(12)} │ ${'Transparente'.padEnd(12)} │ ${String(opsCount).padStart(10)} │ ${passed ? '✅ PASS' : '❌ FAIL'} │`
-      );
-    } catch (err) {
-      hasFailure = true;
-      results.push({ style, type: 'Story Sticker', mode: 'Transparente', ops: 0, status: 'ERROR' });
-      console.log(`│ ${style.padEnd(15)} │ ${'Story Sticker'.padEnd(12)} │ ${'Transparente'.padEnd(12)} │ ${'0'.padStart(10)} │ ❌ ERR  │`);
-      console.error(`   ⚠️ Error details (${style} Story Sticker Transparente):`, err.message);
+          console.log(
+            `│ ${style.padEnd(15)} │ ${'Story Sticker'.padEnd(12)} │ ${modeLabel.padEnd(12)} │ ${String(opsCount).padStart(10)} │ ${passed ? '✅ PASS' : '❌ FAIL'} │`
+          );
+        } catch (err) {
+          hasFailure = true;
+          results.push({ style, type: 'Story Sticker', mode: modeLabel, ops: 0, status: 'ERROR' });
+          console.log(`│ ${style.padEnd(15)} │ ${'Story Sticker'.padEnd(12)} │ ${modeLabel.padEnd(12)} │ ${'0'.padStart(10)} │ ❌ ERR  │`);
+          console.error(`   ⚠️ Error details (${style} Sticker ${modeLabel}):`, err.message);
+        }
+      }
     }
   }
 
@@ -492,12 +467,12 @@ async function verify() {
   const totalPassed = results.filter(r => r.status === 'PASS').length;
   console.log(`\n📊 Summary: ${totalPassed} / ${results.length} tests passed successfully.`);
 
-  if (hasFailure || totalPassed !== 20) {
+  if (hasFailure || totalPassed !== 28) {
     console.error('❌ Verification failed: Not all card and sticker variants rendered cleanly.');
     process.exit(1);
   }
 
-  console.log('🎉 ALL 8 CARD VARIANTS + 4 CELLAR MENUS + 8 STORY STICKERS RENDERED PERFECTLY (20/20 PASS)!\n');
+  console.log('🎉 ALL 8 CARD VARIANTS + 4 CELLAR MENUS + 16 STORY STICKERS RENDERED PERFECTLY (28/28 PASS)!\n');
   process.exit(0);
 }
 

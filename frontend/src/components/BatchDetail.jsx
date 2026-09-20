@@ -97,6 +97,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [shareImage, setShareImage] = useState(null);
   const [shareScope, setShareScope] = useState('single'); // 'single' | 'sticker' | 'menu'
   const [stickerTransparent, setStickerTransparent] = useState(false);
+  const [stickerOrientation, setStickerOrientation] = useState('horizontal'); // 'horizontal' | 'vertical'
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(false); // Default to bean-only for batch detail
   const [shareTemplate, setShareTemplate] = useState(() => {
     try {
@@ -111,14 +112,14 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   });
   const [shareStatus, setShareStatus] = useState('');
 
-  const handleShareBatchCard = async (incRecipe = shareIncludeRecipe, templ = shareTemplate, scope = shareScope, transparent = stickerTransparent) => {
+  const handleShareBatchCard = async (incRecipe = shareIncludeRecipe, templ = shareTemplate, scope = shareScope, transparent = stickerTransparent, orientation = stickerOrientation) => {
     if (!batch) return;
     setShareScope(scope);
     setShareStatus('Generando imagen...');
 
     if (scope === 'sticker') {
       try {
-        const dataUrl = await generateCoffeeStickerImage(batch, { template: templ, transparent });
+        const dataUrl = await generateCoffeeStickerImage(batch, { template: templ, transparent, orientation });
         setShareImage(dataUrl);
         setShareTemplate(templ);
         setShareStatus('✅ Sticker Story generado con éxito');
@@ -1828,48 +1829,88 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
               {/* Row 2: Sub-options (Only when scope is single or sticker) */}
               {shareScope === 'sticker' && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '10.5px', fontWeight: '700', color: 'var(--color-text)' }}>
-                    {batch?.name}
-                  </span>
-                  <div style={{ display: 'flex', gap: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '6px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>FORMATO:</span>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setStickerOrientation('horizontal');
+                        handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', stickerTransparent, 'horizontal');
+                      }}
+                      style={{
+                        padding: '3px 7px',
+                        fontSize: '9.5px',
+                        borderRadius: '4px',
+                        border: stickerOrientation === 'horizontal' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        backgroundColor: stickerOrientation === 'horizontal' ? 'var(--bg-header)' : 'var(--bg-card)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        color: stickerOrientation === 'horizontal' ? 'var(--color-crimson)' : 'var(--color-text)'
+                      }}
+                    >
+                      🏷️ Horizontal
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setStickerOrientation('vertical');
+                        handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', stickerTransparent, 'vertical');
+                      }}
+                      style={{
+                        padding: '3px 7px',
+                        fontSize: '9.5px',
+                        borderRadius: '4px',
+                        border: stickerOrientation === 'vertical' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        backgroundColor: stickerOrientation === 'vertical' ? 'var(--bg-header)' : 'var(--bg-card)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        color: stickerOrientation === 'vertical' ? 'var(--color-crimson)' : 'var(--color-text)'
+                      }}
+                    >
+                      📱 Vertical
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>FONDO:</span>
                     <button 
                       type="button" 
                       onClick={() => {
                         setStickerTransparent(false);
-                        handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', false);
+                        handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', false, stickerOrientation);
                       }}
                       style={{
-                        padding: '3px 8px',
+                        padding: '3px 7px',
                         fontSize: '9.5px',
                         borderRadius: '4px',
-                        border: !stickerTransparent ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        border: !stickerTransparent ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: !stickerTransparent ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)',
                         color: !stickerTransparent ? 'var(--color-crimson)' : 'var(--color-text)',
                         fontWeight: 'bold',
                         cursor: 'pointer'
                       }}
                     >
-                      ⬛ Fondo Sólido
+                      ⬛ Sólido
                     </button>
                     <button 
                       type="button" 
                       onClick={() => {
                         setStickerTransparent(true);
-                        handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', true);
+                        handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', true, stickerOrientation);
                       }}
                       style={{
-                        padding: '3px 8px',
+                        padding: '3px 7px',
                         fontSize: '9.5px',
                         borderRadius: '4px',
-                        border: stickerTransparent ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        border: stickerTransparent ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: stickerTransparent ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)',
                         color: stickerTransparent ? 'var(--color-crimson)' : 'var(--color-text)',
                         fontWeight: 'bold',
                         cursor: 'pointer'
                       }}
                     >
-                      🏁 Transparente PNG
+                      🏁 Transp.
                     </button>
                   </div>
                 </div>
@@ -1883,14 +1924,14 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   <div style={{ display: 'flex', gap: '4px' }}>
                     <button 
                       type="button" 
-                      onClick={() => { setShareIncludeRecipe(false); handleShareBatchCard(false, shareTemplate, 'single', stickerTransparent); }}
+                      onClick={() => { setShareIncludeRecipe(false); handleShareBatchCard(false, shareTemplate, 'single', stickerTransparent, stickerOrientation); }}
                       style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: !shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
                     >
                       🌾 Solo Grano
                     </button>
                     <button 
                       type="button" 
-                      onClick={() => { setShareIncludeRecipe(true); handleShareBatchCard(true, shareTemplate, 'single', stickerTransparent); }}
+                      onClick={() => { setShareIncludeRecipe(true); handleShareBatchCard(true, shareTemplate, 'single', stickerTransparent, stickerOrientation); }}
                       style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
                     >
                       🧾 Con Receta
@@ -1914,7 +1955,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     onClick={() => {
                       setShareTemplate(t.id);
                       try { localStorage.setItem('beantag-share-style', t.id); } catch (e) {}
-                      handleShareBatchCard(shareIncludeRecipe, t.id, shareScope, stickerTransparent);
+                      handleShareBatchCard(shareIncludeRecipe, t.id, shareScope, stickerTransparent, stickerOrientation);
                     }}
                     style={{
                       flex: 1,
