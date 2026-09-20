@@ -232,8 +232,7 @@ export async function ensureFontsLoaded() {
       document.fonts.load('900 28px "JetBrains Mono"'),
       document.fonts.load('italic 14px "Playfair Display"'),
       document.fonts.load('700 24px "Playfair Display"'),
-      document.fonts.load('bold 30px "Playfair Display"'),
-      document.fonts.load('700 16px "Outfit"')
+      document.fonts.load('bold 30px "Playfair Display"')
     ]);
     await document.fonts.ready;
   } catch (e) {
@@ -389,32 +388,6 @@ function drawBlueprintCross(ctx, cx, cy, size = 5) {
   ctx.stroke();
 }
 
-/**
- * Pure vector embossed seal for Scandinavian Editorial Atelier (Hangtag)
- */
-function drawVectorSeal(ctx, cx, cy, radius = 18) {
-  ctx.save();
-  ctx.strokeStyle = 'rgba(120, 113, 108, 0.45)';
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-  ctx.stroke();
-
-  ctx.strokeStyle = 'rgba(120, 113, 108, 0.25)';
-  ctx.lineWidth = 0.8;
-  ctx.beginPath();
-  ctx.arc(cx, cy, radius - 3, 0, Math.PI * 2);
-  ctx.stroke();
-
-  ctx.fillStyle = '#78716C';
-  ctx.font = '700 7px "Playfair Display", Georgia, serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('ATELIER', cx, cy - 3);
-  ctx.font = 'italic 6px "Playfair Display", Georgia, serif';
-  ctx.fillText('CRU', cx, cy + 5);
-  ctx.restore();
-}
 
 /**
  * Pure vector 4-pointed diamond starburst for 1950s Americana Diner
@@ -434,81 +407,6 @@ function drawDinerAtomicStar(ctx, cx, cy, size = 16, color = '#C92A2A') {
   ctx.beginPath();
   ctx.arc(cx + size * 0.65, cy - size * 0.6, Math.max(1, size * 0.14), 0, Math.PI * 2);
   ctx.arc(cx - size * 0.65, cy + size * 0.6, Math.max(1, size * 0.12), 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
-
-/**
- * Pure vector ceramic diner mug
- */
-function drawDinerCoffeeMug(ctx, cx, cy, size = 28, strokeColor = '#C92A2A', fillColor = '#FFFDF5') {
-  ctx.save();
-  const w = size * 0.72;
-  const h = size * 0.75;
-  const x = cx - w * 0.58;
-  const y = cy - h * 0.38;
-
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = 2.4;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.arc(x + w + size * 0.12, y + h * 0.45, size * 0.22, -Math.PI * 0.45, Math.PI * 0.45);
-  ctx.stroke();
-
-  ctx.fillStyle = fillColor;
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = 2.4;
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.lineTo(x + w, y);
-  ctx.lineTo(x + w, y + h - 6);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - 6, y + h);
-  ctx.lineTo(x + 6, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - 6);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = strokeColor;
-  ctx.beginPath();
-  ctx.ellipse(x + w / 2, y, w * 0.48, 3.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = 1.8;
-  ctx.beginPath();
-  ctx.moveTo(cx - 2, y - 4);
-  ctx.bezierCurveTo(cx + 3, y - 8, cx - 4, y - 12, cx + 1, y - 16);
-  ctx.stroke();
-  ctx.restore();
-}
-
-/**
- * Pure vector 1950s diner kitchen timer/clock
- */
-function drawDinerClock(ctx, cx, cy, size = 28, strokeColor = '#0E7490') {
-  ctx.save();
-  const r = size * 0.42;
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = 2.2;
-  ctx.fillStyle = '#FFFDF5';
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.lineWidth = 2;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(cx, cy);
-  ctx.lineTo(cx, cy - r * 0.65);
-  ctx.moveTo(cx, cy);
-  ctx.lineTo(cx + r * 0.55, cy);
-  ctx.stroke();
-
-  ctx.fillStyle = strokeColor;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 2, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -543,84 +441,6 @@ function drawHankoSeal(ctx, cx, cy, size = 32, kanji = '豆札') {
     ctx.font = `bold ${Math.round(s * 0.42)}px "Hiragino Mincho ProN", "Yu Mincho", serif`;
     ctx.fillText(kanji, cx, cy);
   }
-  ctx.restore();
-}
-
-/**
- * Pure vector Tokyo Kissaten Siphon / Dripper
- */
-function drawKissatenSiphon(ctx, cx, cy, size = 28, strokeColor = '#18181B') {
-  ctx.save();
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = 1.6;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-
-  const topW = size * 0.5;
-  const topH = size * 0.35;
-  ctx.beginPath();
-  ctx.moveTo(cx - topW / 2, cy - size * 0.45);
-  ctx.lineTo(cx + topW / 2, cy - size * 0.45);
-  ctx.lineTo(cx + topW * 0.25, cy - size * 0.45 + topH);
-  ctx.lineTo(cx - topW * 0.25, cy - size * 0.45 + topH);
-  ctx.closePath();
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - size * 0.45 + topH);
-  ctx.lineTo(cx, cy + size * 0.05);
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.arc(cx, cy + size * 0.22, size * 0.22, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
-}
-
-/**
- * Pure vector Tokyo Kissaten Scale
- */
-function drawKissatenScale(ctx, cx, cy, size = 28, strokeColor = '#18181B') {
-  ctx.save();
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = 1.6;
-  ctx.lineCap = 'round';
-  const w = size * 0.65;
-  const h = size * 0.35;
-  ctx.strokeRect(cx - w / 2, cy - h / 2 + size * 0.1, w, h);
-  ctx.beginPath();
-  ctx.moveTo(cx - w * 0.6, cy - h / 2 + size * 0.05);
-  ctx.lineTo(cx + w * 0.6, cy - h / 2 + size * 0.05);
-  ctx.stroke();
-  ctx.fillStyle = '#DC2626';
-  ctx.beginPath();
-  ctx.arc(cx, cy + size * 0.18, 2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
-
-/**
- * Pure vector Tokyo Kissaten Timer
- */
-function drawKissatenTimer(ctx, cx, cy, size = 28, strokeColor = '#18181B') {
-  ctx.save();
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = 1.6;
-  ctx.lineCap = 'round';
-  const r = size * 0.35;
-  ctx.beginPath();
-  ctx.moveTo(cx - r, cy - r);
-  ctx.lineTo(cx + r, cy - r);
-  ctx.moveTo(cx - r, cy + r);
-  ctx.lineTo(cx + r, cy + r);
-  ctx.moveTo(cx - r * 0.8, cy - r);
-  ctx.lineTo(cx + r * 0.8, cy - r);
-  ctx.lineTo(cx, cy);
-  ctx.lineTo(cx + r * 0.8, cy + r);
-  ctx.lineTo(cx - r * 0.8, cy + r);
-  ctx.lineTo(cx, cy);
-  ctx.closePath();
-  ctx.stroke();
   ctx.restore();
 }
 
