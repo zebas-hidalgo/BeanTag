@@ -313,6 +313,9 @@ async function verify() {
   if (typeof window.__generateCoffeeMenuCardImage !== 'function') {
     throw new Error('window.__generateCoffeeMenuCardImage is not exposed or not a function!');
   }
+  if (typeof window.__generateCoffeeStickerImage !== 'function') {
+    throw new Error('window.__generateCoffeeStickerImage is not exposed or not a function!');
+  }
 
   console.log('✅ Bundle loaded successfully! Exposed generator functions detected.\n');
 
@@ -423,17 +426,78 @@ async function verify() {
     }
   }
 
+  // C. Verify 8 Story Sticker Variants (4 styles x 2 modes: Solid & Transparent)
+  for (const style of STYLES) {
+    // 1. Solid Sticker
+    try {
+      mockOps.length = 0;
+      const dataUrl = await window.__generateCoffeeStickerImage(sampleRecipe, { template: style, transparent: false });
+      const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
+      const opsCount = mockOps.length;
+      const hasNoDrawImage = !mockOps.includes('drawImage');
+      const passed = isValidDataUrl && opsCount > 15 && hasNoDrawImage;
+
+      if (!passed) hasFailure = true;
+
+      results.push({
+        style,
+        type: 'Story Sticker',
+        mode: 'Fondo Sólido',
+        ops: opsCount,
+        status: passed ? 'PASS' : 'FAIL'
+      });
+
+      console.log(
+        `│ ${style.padEnd(15)} │ ${'Story Sticker'.padEnd(12)} │ ${'Fondo Sólido'.padEnd(12)} │ ${String(opsCount).padStart(10)} │ ${passed ? '✅ PASS' : '❌ FAIL'} │`
+      );
+    } catch (err) {
+      hasFailure = true;
+      results.push({ style, type: 'Story Sticker', mode: 'Fondo Sólido', ops: 0, status: 'ERROR' });
+      console.log(`│ ${style.padEnd(15)} │ ${'Story Sticker'.padEnd(12)} │ ${'Fondo Sólido'.padEnd(12)} │ ${'0'.padStart(10)} │ ❌ ERR  │`);
+      console.error(`   ⚠️ Error details (${style} Story Sticker Sólido):`, err.message);
+    }
+
+    // 2. Transparent Sticker
+    try {
+      mockOps.length = 0;
+      const dataUrl = await window.__generateCoffeeStickerImage(sampleRecipe, { template: style, transparent: true });
+      const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
+      const opsCount = mockOps.length;
+      const hasNoDrawImage = !mockOps.includes('drawImage');
+      const passed = isValidDataUrl && opsCount > 15 && hasNoDrawImage;
+
+      if (!passed) hasFailure = true;
+
+      results.push({
+        style,
+        type: 'Story Sticker',
+        mode: 'Transparente',
+        ops: opsCount,
+        status: passed ? 'PASS' : 'FAIL'
+      });
+
+      console.log(
+        `│ ${style.padEnd(15)} │ ${'Story Sticker'.padEnd(12)} │ ${'Transparente'.padEnd(12)} │ ${String(opsCount).padStart(10)} │ ${passed ? '✅ PASS' : '❌ FAIL'} │`
+      );
+    } catch (err) {
+      hasFailure = true;
+      results.push({ style, type: 'Story Sticker', mode: 'Transparente', ops: 0, status: 'ERROR' });
+      console.log(`│ ${style.padEnd(15)} │ ${'Story Sticker'.padEnd(12)} │ ${'Transparente'.padEnd(12)} │ ${'0'.padStart(10)} │ ❌ ERR  │`);
+      console.error(`   ⚠️ Error details (${style} Story Sticker Transparente):`, err.message);
+    }
+  }
+
   console.log('└─────────────────┴──────────────┴──────────────┴────────────┴────────┘');
 
   const totalPassed = results.filter(r => r.status === 'PASS').length;
   console.log(`\n📊 Summary: ${totalPassed} / ${results.length} tests passed successfully.`);
 
-  if (hasFailure || totalPassed !== 12) {
-    console.error('❌ Verification failed: Not all card variants rendered cleanly.');
+  if (hasFailure || totalPassed !== 20) {
+    console.error('❌ Verification failed: Not all card and sticker variants rendered cleanly.');
     process.exit(1);
   }
 
-  console.log('🎉 ALL 8 CARD VARIANTS + 4 CELLAR MENUS RENDERED PERFECTLY (12/12 PASS)!\n');
+  console.log('🎉 ALL 8 CARD VARIANTS + 4 CELLAR MENUS + 8 STORY STICKERS RENDERED PERFECTLY (20/20 PASS)!\n');
   process.exit(0);
 }
 
