@@ -20,6 +20,9 @@ export function normalizeCardStyle(tpl) {
   return 'blueprint';
 }
 
+export { getScaWheelIcon, cleanNotesString } from './scaIcons';
+import { getScaWheelIcon, cleanNotesString } from './scaIcons';
+
 /**
  * Strips OS emojis from strings for clean typography
  */
@@ -31,16 +34,18 @@ export function stripEmojis(str) {
 }
 
 /**
- * Extracts flavor notes into clean tags
+ * Extracts flavor notes into clean tags, eliminating any bracketed prefixes like [Notas:
  */
 export function extractFlavorTags(notes) {
   if (!notes) return [];
-  const cleaned = stripEmojis(notes);
-  return cleaned
+  const cleaned = cleanNotesString(notes);
+  const notesPart = cleaned.includes(' | ') ? cleaned.split(' | ')[0] : cleaned;
+  return notesPart
     .split(/[,•|\/\n]+/)
-    .map(t => t.trim())
-    .filter(t => t.length > 1 && !t.toLowerCase().startsWith('notas:'));
+    .map(t => t.replace(/^\s*\[?\s*(?:notas?|notes?)\s*:?\s*/gi, '').replace(/[\[\]]/g, '').trim())
+    .filter(t => t.length > 1 && !/^(?:notas?|notes?):?$/i.test(t));
 }
+
 
 /**
  * Translates grind description into approximate microns for technical precision
@@ -769,7 +774,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
   const roastLevel = stripEmojis(rec.roast_level || rec.roast || '');
   const roastDate = stripEmojis(rec.roast_date || '');
   const freezeDate = stripEmojis(rec.freeze_date || '');
-  const notesStr = stripEmojis(rec.flavor_notes || rec.roaster_notes || rec.batch_roaster_notes || '');
+  const notesStr = cleanNotesString(rec.flavor_notes || rec.roaster_notes || rec.batch_roaster_notes || '');
   const flavorTags = extractFlavorTags(notesStr);
 
   // Real SCA Score ONLY - Never default to 89.5 or fabricate a score!
@@ -965,7 +970,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.font = '800 9.5px "JetBrains Mono", monospace';
 
         flavorTags.slice(0, 6).forEach((tag) => {
-          const tw = ctx.measureText(tag.toUpperCase()).width;
+          const scaIcon = getScaWheelIcon(tag);
+          const tagLabel = `${scaIcon} ${tag.toUpperCase()}`;
+          const tw = ctx.measureText(tagLabel).width;
           const pw = tw + 18;
           if (pillX + pw > paddingX + contentW && pillX > paddingX + 12) {
             pillX = paddingX + 12;
@@ -978,7 +985,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
             drawRoundedRect(ctx, pillX, pillY, pw, pillH, 4, true, true);
 
             ctx.fillStyle = '#BAE6FD';
-            ctx.fillText(tag.toUpperCase(), pillX + 9, pillY + 16);
+            ctx.fillText(tagLabel, pillX + 9, pillY + 16);
             pillX += pw + 8;
           }
         });
@@ -1171,7 +1178,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         const pillY = notesY + 30;
         flavorTags.slice(0, 4).forEach((tag) => {
           ctx.font = '800 9.5px "JetBrains Mono", monospace';
-          const tw = ctx.measureText(tag.toUpperCase()).width;
+          const scaIcon = getScaWheelIcon(tag);
+          const tagLabel = `${scaIcon} ${tag.toUpperCase()}`;
+          const tw = ctx.measureText(tagLabel).width;
           const pw = tw + 16;
           if (pillX + pw <= paddingX + contentW) {
             ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
@@ -1180,7 +1189,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
             drawRoundedRect(ctx, pillX, pillY, pw, 24, 4, true, true);
 
             ctx.fillStyle = '#E0F2FE';
-            ctx.fillText(tag.toUpperCase(), pillX + 8, pillY + 16);
+            ctx.fillText(tagLabel, pillX + 8, pillY + 16);
             pillX += pw + 8;
           }
         });
@@ -1422,7 +1431,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         flavorTags.slice(0, 6).forEach((tag, idx) => {
           const bgCol = pillColors[idx % pillColors.length];
           ctx.font = '900 10px "Space Grotesk", sans-serif';
-          const pw = ctx.measureText(tag.toUpperCase()).width + 18;
+          const scaIcon = getScaWheelIcon(tag);
+          const tagLabel = `${scaIcon} ${tag.toUpperCase()}`;
+          const pw = ctx.measureText(tagLabel).width + 18;
 
           // Wrap to next row if needed
           if (pillX + pw > paddingX + contentW && pillX > paddingX + 14) {
@@ -1440,7 +1451,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
             ctx.strokeRect(pillX, pillY, pw, 24);
 
             ctx.fillStyle = bgCol === '#FF3B14' ? '#FFFFFF' : '#000000';
-            ctx.fillText(tag.toUpperCase(), pillX + 9, pillY + 16);
+            ctx.fillText(tagLabel, pillX + 9, pillY + 16);
 
             pillX += pw + 8;
           }
@@ -1819,7 +1830,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
         flavorTags.slice(0, 6).forEach(tag => {
           ctx.font = '800 9.5px "Space Grotesk", sans-serif';
-          const tw = ctx.measureText(tag).width;
+          const scaIcon = getScaWheelIcon(tag);
+          const tagLabel = `${scaIcon} ${tag}`;
+          const tw = ctx.measureText(tagLabel).width;
           const pw = tw + 18;
           if (pillX + pw > paddingX + contentW && pillX > paddingX + 14) {
             pillX = paddingX + 14;
@@ -1832,7 +1845,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
             drawRoundedRect(ctx, pillX, pillY, pw, pillH, 5, true, true);
 
             ctx.fillStyle = '#991B1B';
-            ctx.fillText(tag, pillX + 9, pillY + 16);
+            ctx.fillText(tagLabel, pillX + 9, pillY + 16);
             pillX += pw + 8;
           }
         });
@@ -2174,7 +2187,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
         flavorTags.slice(0, 6).forEach(tag => {
           ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
-          const textW = ctx.measureText(tag).width;
+          const scaIcon = getScaWheelIcon(tag);
+          const tagLabel = `${scaIcon} ${tag}`;
+          const textW = ctx.measureText(tagLabel).width;
           const pillW = textW + 18;
           if (pillX + pillW > paddingX + contentW && pillX > paddingX + 14) {
             pillX = paddingX + 14;
@@ -2187,7 +2202,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
             drawRoundedRect(ctx, pillX, pillY, pillW, pillH, 4, true, true);
 
             ctx.fillStyle = '#18181B';
-            ctx.fillText(tag, pillX + 9, pillY + 16);
+            ctx.fillText(tagLabel, pillX + 9, pillY + 16);
             pillX += pillW + 8;
           }
         });
@@ -2573,7 +2588,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
       }
 
       // Line 4: Flavor Notes Pills
-      const rawNotes = b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '';
+      const rawNotes = cleanNotesString(b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '');
       const parsedTags = extractFlavorTags(rawNotes).slice(0, 4);
 
       if (parsedTags.length > 0) {
@@ -2583,7 +2598,9 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
 
         ctx.font = '800 8.5px "JetBrains Mono", monospace';
         parsedTags.forEach(tag => {
-          const tw = ctx.measureText(tag).width;
+          const scaIcon = getScaWheelIcon(tag);
+          const tagLabel = `${scaIcon} ${tag}`;
+          const tw = ctx.measureText(tagLabel).width;
           const pw = tw + 12;
           if (pillX + pw <= baseW - paddingX - 8) {
             ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
@@ -2591,7 +2608,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
             ctx.lineWidth = 1;
             drawRoundedRect(ctx, pillX, pillY, pw, pillH, 4, true, true);
             ctx.fillStyle = '#E0F2FE';
-            ctx.fillText(tag, pillX + 6, pillY + 12.5);
+            ctx.fillText(tagLabel, pillX + 6, pillY + 12.5);
             pillX += pw + 6;
           }
         });
@@ -2733,7 +2750,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
       }
 
       // Line 4: Flavor Notes Pills
-      const rawNotes = b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '';
+      const rawNotes = cleanNotesString(b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '');
       const parsedTags = extractFlavorTags(rawNotes).slice(0, 4);
 
       if (parsedTags.length > 0) {
@@ -2744,8 +2761,9 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
 
         ctx.font = '900 8.5px "Space Grotesk", sans-serif';
         parsedTags.forEach((tag, tIdx) => {
-          const tagUpper = tag.toUpperCase();
-          const tw = ctx.measureText(tagUpper).width;
+          const scaIcon = getScaWheelIcon(tag);
+          const tagLabel = `${scaIcon} ${tag.toUpperCase()}`;
+          const tw = ctx.measureText(tagLabel).width;
           const pw = tw + 12;
           if (pillX + pw <= baseW - paddingX - 8) {
             ctx.fillStyle = '#000000';
@@ -2757,7 +2775,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
             ctx.strokeRect(pillX, pillY, pw, pillH);
 
             ctx.fillStyle = '#000000';
-            ctx.fillText(tagUpper, pillX + 6, pillY + 12.5);
+            ctx.fillText(tagLabel, pillX + 6, pillY + 12.5);
             pillX += pw + 6;
           }
         });
@@ -2901,7 +2919,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
       }
 
       // Line 4: Flavor Notes Pills
-      const rawNotes = b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '';
+      const rawNotes = cleanNotesString(b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '');
       const parsedTags = extractFlavorTags(rawNotes).slice(0, 4);
 
       if (parsedTags.length > 0) {
@@ -2911,7 +2929,9 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
 
         ctx.font = '800 8.5px "Space Grotesk", sans-serif';
         parsedTags.forEach(tag => {
-          const tw = ctx.measureText(tag).width;
+          const scaIcon = getScaWheelIcon(tag);
+          const tagLabel = `${scaIcon} ${tag}`;
+          const tw = ctx.measureText(tagLabel).width;
           const pw = tw + 14;
           if (pillX + pw <= baseW - paddingX - 8) {
             ctx.fillStyle = '#FEF3C7';
@@ -2919,7 +2939,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
             ctx.lineWidth = 1;
             drawRoundedRect(ctx, pillX, pillY, pw, pillH, 5, true, true);
             ctx.fillStyle = '#991B1B';
-            ctx.fillText(tag, pillX + 7, pillY + 12.5);
+            ctx.fillText(tagLabel, pillX + 7, pillY + 12.5);
             pillX += pw + 6;
           }
         });
@@ -3048,7 +3068,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
       }
 
       // Line 4: Flavor Notes Pills
-      const rawNotes = b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '';
+      const rawNotes = cleanNotesString(b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '');
       const parsedTags = extractFlavorTags(rawNotes).slice(0, 4);
 
       if (parsedTags.length > 0) {
@@ -3058,7 +3078,9 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
 
         ctx.font = 'bold 8.5px "Playfair Display", Georgia, serif';
         parsedTags.forEach(tag => {
-          const tw = ctx.measureText(tag).width;
+          const scaIcon = getScaWheelIcon(tag);
+          const tagLabel = `${scaIcon} ${tag}`;
+          const tw = ctx.measureText(tagLabel).width;
           const pw = tw + 12;
           if (pillX + pw <= baseW - paddingX - 8) {
             ctx.fillStyle = 'rgba(24, 24, 27, 0.04)';
@@ -3066,7 +3088,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
             ctx.lineWidth = 0.8;
             drawRoundedRect(ctx, pillX, pillY, pw, pillH, 3, true, true);
             ctx.fillStyle = '#18181B';
-            ctx.fillText(tag, pillX + 6, pillY + 12.5);
+            ctx.fillText(tagLabel, pillX + 6, pillY + 12.5);
             pillX += pw + 6;
           }
         });
@@ -3106,7 +3128,7 @@ export function generateCoffeeMenuText(batches) {
     const variety = b.variety ? stripEmojis(b.variety) : '';
     const process = b.process ? (variety ? ` • ${stripEmojis(b.process)}` : stripEmojis(b.process)) : '';
     const sca = b.sca_score ? ` | SCA ${b.sca_score}` : '';
-    const rawNotes = stripEmojis(b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '');
+    const rawNotes = cleanNotesString(b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '');
 
     const doseCount = b.remaining_doses !== undefined && b.remaining_doses !== null ? b.remaining_doses : 0;
     const estWeight = Math.round(b.remaining_weight_g || (doseCount * (parseFloat(b.dose_weight) || 20)));
@@ -3159,19 +3181,11 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
   const origin = stripEmojis(item.origin || item.batch_origin || '');
   const variety = stripEmojis(item.variety || item.batch_variety || '');
   const process = stripEmojis(item.process || item.batch_process || '');
-  const notesStr = stripEmojis(item.flavor_notes || item.roaster_notes || item.batch_roaster_notes || item.notes || '');
+  const notesStr = cleanNotesString(item.flavor_notes || item.roaster_notes || item.batch_roaster_notes || item.notes || '');
   const flavorTags = extractFlavorTags(notesStr);
 
-  const getAestheticGlyph = (tag, currentStyle) => {
-    const t = (tag || '').toLowerCase();
-    if (t.includes('flor') || t.includes('jazm') || t.includes('rosa') || t.includes('lavand')) return '✿';
-    if (t.includes('frut') || t.includes('mora') || t.includes('cereza') || t.includes('baya') || t.includes('uva') || t.includes('fram')) return '✦';
-    if (t.includes('cítric') || t.includes('naran') || t.includes('lim') || t.includes('berga') || t.includes('mand')) return '◈';
-    if (t.includes('miel') || t.includes('caram') || t.includes('dulc') || t.includes('choc') || t.includes('vain')) return '●';
-    if (t.includes('melo') || t.includes('dura') || t.includes('mango') || t.includes('papa') || t.includes('marac')) return '◆';
-    if (currentStyle === 'diner') return '★';
-    if (currentStyle === 'kissaten') return '✿';
-    return '✦';
+  const getAestheticGlyph = (tag) => {
+    return getScaWheelIcon(tag);
   };
 
   // Text helpers

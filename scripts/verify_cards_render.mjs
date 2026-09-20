@@ -340,7 +340,9 @@ async function verify() {
       const hasRadarChart = mockContext.operations.some(op => op.name === 'fillText' && op.args[0] === 'ACIDEZ');
       const hasTimeline = mockContext.operations.some(op => op.name === 'fillText' && (op.args[0].includes('BLOOM') || op.args[0].includes('TIMELINE')));
       assert(hasTimeline, 'Recipe card must render extraction timeline milestones');
-      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage && hasPerforation && hasRadarChart && hasTimeline;
+      const hasNoLiteralNotasBracket = !mockContext.operations.some(op => op.name === 'fillText' && typeof op.args[0] === 'string' && (op.args[0].includes('[Notas:') || op.args[0].includes('[Notas')));
+      assert(hasNoLiteralNotasBracket, 'Must NEVER render literal [Notas: on card');
+      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage && hasPerforation && hasRadarChart && hasTimeline && hasNoLiteralNotasBracket;
 
       if (!passed) hasFailure = true;
 
@@ -436,8 +438,12 @@ async function verify() {
           const dataUrl = await window.__generateCoffeeStickerImage(sampleRecipe, { template: style, transparent, orientation });
           const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
           const opsCount = mockOps.length;
+          const hasNoLiteralNotasBracket = !mockContext.operations.some(op => op.name === 'fillText' && typeof op.args[0] === 'string' && (op.args[0].includes('[Notas:') || op.args[0].includes('[Notas')));
+          assert(hasNoLiteralNotasBracket, 'Story sticker must NEVER render literal [Notas:');
+          const hasScaIcons = mockContext.operations.some(op => op.name === 'fillText' && typeof op.args[0] === 'string' && (op.args[0].includes('🌸') || op.args[0].includes('🍑') || op.args[0].includes('🍯') || op.args[0].includes('🍋')));
+          assert(hasScaIcons, 'Story sticker must render SCA wheel category icons');
           const hasNoDrawImage = !mockOps.includes('drawImage');
-          const passed = isValidDataUrl && opsCount > 15 && hasNoDrawImage;
+          const passed = isValidDataUrl && opsCount > 15 && hasNoDrawImage && hasNoLiteralNotasBracket && hasScaIcons;
 
           if (!passed) hasFailure = true;
 

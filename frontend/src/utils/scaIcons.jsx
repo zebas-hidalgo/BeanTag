@@ -171,16 +171,127 @@ export function getScaColorForNote(note) {
   return { bg: '#F1F5F9', border: '#64748B', text: '#0F172A' };
 }
 
+export function cleanNotesString(notes) {
+  if (!notes) return '';
+  let str = stripEmojis(String(notes)).trim();
+  // Strip [Notas: ...] or [Nota: ...] or [Notes: ...]
+  str = str.replace(/\[\s*(?:notas?|notes?)\s*:\s*([^\]]+)\]/gi, '$1');
+  // Strip leading [Notas: or Notas: or [Nota: or Nota: or [Notes: or Notes: or [
+  str = str.replace(/^\s*\[?\s*(?:notas?|notes?)\s*:?\s*/gi, '');
+  // Strip closing ] or dangling brackets
+  str = str.replace(/[\[\]]/g, '');
+  return str.trim();
+}
+
+/**
+ * Maps flavor note descriptors to corresponding official SCA Flavor Wheel icons
+ */
+export function getScaWheelIcon(tagLabel) {
+  if (!tagLabel) return '☕';
+  const text = String(tagLabel).toLowerCase().trim();
+
+  // 1. Floral (Flores, Jazmín, Rosa, Lavanda, Manzanilla, Hibisco)
+  if (text.includes('flor') || text.includes('rosa') || text.includes('jazm') || text.includes('lavand') || text.includes('hibisc') || text.includes('violeta') || text.includes('manzanilla')) {
+    return '🌸';
+  }
+
+  // 2. Té / Hierbas (Té negro, Té verde, Hierba, Menta, Romero, etc.)
+  if (text.includes('té') || text.includes('te ') || text.includes('hierba') || text.includes('heno') || text.includes('menta') || text.includes('romero') || text.includes('eucalipto') || text.includes('salvia') || text.includes('lúpulo') || text.includes('lupulo')) {
+    return '🌿';
+  }
+
+  // 3. Bayas / Frutos rojos (Mora, Frambuesa, Arándano, Fresa, Cereza, Grosella)
+  if (text.includes('mora') || text.includes('frambuesa') || text.includes('arándano') || text.includes('arandano') || text.includes('fresa') || text.includes('frutilla') || text.includes('cereza') || text.includes('baya') || text.includes('berry') || text.includes('grosella')) {
+    return '🍒';
+  }
+
+  // 4. Cítricos (Limón, Lima, Naranja, Mandarina, Pomelo, Toronja, Bergamota)
+  if (text.includes('limón') || text.includes('limon') || text.includes('lima') || text.includes('naranja') || text.includes('mandarina') || text.includes('pomelo') || text.includes('toronja') || text.includes('bergamota') || text.includes('cítric') || text.includes('citric')) {
+    return '🍋';
+  }
+
+  // 5. Frutas dulces / hueso / tropicales (Melocotón, Durazno, Mango, Maracuyá, Piña, Papaya, Manzana, Pera, Uva, etc.)
+  if (
+    text.includes('melocotón') || text.includes('melocoton') || text.includes('durazno') || text.includes('albaricoque') || text.includes('damasco') ||
+    text.includes('mango') || text.includes('maracuyá') || text.includes('maracuya') || text.includes('parchita') || text.includes('papaya') ||
+    text.includes('piña') || text.includes('pina') || text.includes('guayaba') || text.includes('lichi') || text.includes('coco') ||
+    text.includes('manzana') || text.includes('pera') || text.includes('uva') || text.includes('higo') || text.includes('dátil') || text.includes('datil') ||
+    text.includes('ciruela') || text.includes('pasa') || text.includes('granada') || text.includes('fruta')
+  ) {
+    return '🍑';
+  }
+
+  // 6. Dulces / Caramelos / Azúcares / Miel
+  if (
+    text.includes('melaza') || text.includes('arce') || text.includes('maple') || text.includes('caramelo') ||
+    text.includes('miel') || text.includes('panela') || text.includes('chancaca') || text.includes('azúcar') || text.includes('azucar') ||
+    text.includes('vainilla') || text.includes('malvavisco') || text.includes('arequipe') || text.includes('dulce') || text.includes('toffee') ||
+    text.includes('turrón') || text.includes('turron')
+  ) {
+    return '🍯';
+  }
+
+  // 7. Frutos secos
+  if (
+    text.includes('almendra') || text.includes('avellana') || text.includes('nuez') || text.includes('pecana') ||
+    text.includes('maní') || text.includes('mani') || text.includes('cacahuate') || text.includes('pistacho') ||
+    text.includes('macadamia') || text.includes('anacardo') || text.includes('castaña') || text.includes('caju') ||
+    text.includes('frutos secos')
+  ) {
+    return '🥜';
+  }
+
+  // 8. Cacao / Chocolate
+  if (text.includes('chocolate') || text.includes('cacao') || text.includes('nibs')) {
+    return '🍫';
+  }
+
+  // 9. Especias
+  if (
+    text.includes('canela') || text.includes('clavo') || text.includes('moscada') || text.includes('anís') || text.includes('anis') ||
+    text.includes('cardamomo') || text.includes('pimienta') || text.includes('jengibre') || text.includes('curri') || text.includes('especias')
+  ) {
+    return '✨';
+  }
+
+  // 10. Cereales
+  if (text.includes('malta') || text.includes('cebada') || text.includes('avena') || text.includes('grano') || text.includes('pan') || text.includes('graham') || text.includes('cereal')) {
+    return '🌾';
+  }
+
+  // 11. Ahumado / Tostado
+  if (text.includes('humo') || text.includes('ceniza') || text.includes('quemad') || text.includes('acre') || text.includes('tostado')) {
+    return '🔥';
+  }
+
+  // 12. Tabaco
+  if (text.includes('tabaco') || text.includes('pipa') || text.includes('cuero')) {
+    return '🍂';
+  }
+
+  // 13. Vegetal / Crudos
+  if (text.includes('vegetal') || text.includes('vaina') || text.includes('aceite') || text.includes('tierra') || text.includes('humedad') || text.includes('fresca') || text.includes('crudos') || text.includes('oliva') || text.includes('musgo') || text.includes('cedro')) {
+    return '🌱';
+  }
+
+  // 14. Alcohol / Fermentado
+  if (text.includes('vino') || text.includes('whiskey') || text.includes('alcohol') || text.includes('fermentado') || text.includes('licor') || text.includes('ron') || text.includes('bourbon') || text.includes('champagne') || text.includes('kombucha') || text.includes('anaerób') || text.includes('anaerob') || text.includes('maceraci')) {
+    return '🍷';
+  }
+
+  // 15. Ácidos
+  if (text.includes('ácido') || text.includes('acido') || text.includes('málico') || text.includes('malico') || text.includes('acético') || text.includes('acetico') || text.includes('vinagre') || text.includes('acidez')) {
+    return '💧';
+  }
+
+  return '☕';
+}
+
 export function RenderScaChips({ notesStr, maxChips = 4 }) {
   if (!notesStr) return null;
-  let clean = String(notesStr);
-  if (clean.includes('[Notas: ') && clean.includes(']')) {
-    const match = clean.match(/\[Notas: (.*?)\]/);
-    if (match) clean = match[1];
-  }
-  if (clean.includes(' | ')) clean = clean.split(' | ')[0];
-
-  const notesList = clean.split(/[,|•]/).map(s => s.trim()).filter(Boolean).slice(0, maxChips);
+  const clean = cleanNotesString(notesStr);
+  const notesPart = clean.includes(' | ') ? clean.split(' | ')[0] : clean;
+  const notesList = notesPart.split(/[,|•]/).map(s => s.trim()).filter(Boolean).slice(0, maxChips);
   if (notesList.length === 0) return null;
 
   return (
@@ -206,4 +317,5 @@ export function RenderScaChips({ notesStr, maxChips = 4 }) {
     </div>
   );
 }
+
 
