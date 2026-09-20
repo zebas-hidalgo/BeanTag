@@ -116,7 +116,7 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
       if (showToast) showToast('Configura tu clave API de Gemini en Ajustes para usar la IA.', { type: 'error', duration: 4000 });
       return;
     }
-    const model = localStorage.getItem('gemini-model') || 'gemini-2.0-flash';
+    const model = localStorage.getItem('gemini-model') || 'gemini-2.5-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
     setAiLoading(true); setAiError(''); setAiRecommendation(null);
@@ -151,7 +151,7 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
       if (showToast) showToast('Configura tu clave API de Gemini en Ajustes para recalibrar.', { type: 'error', duration: 4000 });
       return;
     }
-    const model = localStorage.getItem('gemini-model') || 'gemini-2.0-flash';
+    const model = localStorage.getItem('gemini-model') || 'gemini-2.5-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
     setAiLoading(true); setAiError('');

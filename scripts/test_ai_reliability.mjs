@@ -5,14 +5,17 @@ console.log('🧪 Running AI Reliability & Fallback Engine Unit Tests...\n');
 
 // 1. Test Model Sanitization
 console.log('Test 1: Model Sanitization');
-assert.equal(sanitizeModel('gemini-3.7-flash'), 'gemini-2.0-flash', 'Should map gemini-3.7-flash to gemini-2.0-flash');
-assert.equal(sanitizeModel('gemini-3.7-pro'), 'gemini-2.0-flash', 'Should map gemini-3.7-pro to gemini-2.0-flash');
-assert.equal(sanitizeModel('gemini-2.5-flash'), 'gemini-2.0-flash', 'Should map gemini-2.5-flash to gemini-2.0-flash');
-assert.equal(sanitizeModel('gemini-1.5-flash'), 'gemini-1.5-flash', 'Should preserve valid gemini-1.5-flash');
-assert.equal(sanitizeModel('gemini-2.0-flash'), 'gemini-2.0-flash', 'Should preserve valid gemini-2.0-flash');
-assert.equal(sanitizeModel('gemini-1.5-pro'), 'gemini-1.5-pro', 'Should preserve valid gemini-1.5-pro');
-assert.equal(sanitizeModel(null), 'gemini-2.0-flash', 'Should default null to gemini-2.0-flash');
-assert.equal(sanitizeModel(''), 'gemini-2.0-flash', 'Should default empty to gemini-2.0-flash');
+assert.equal(sanitizeModel('gemini-3.7-flash'), 'gemini-2.5-flash', 'Should map gemini-3.7-flash to gemini-2.5-flash');
+assert.equal(sanitizeModel('gemini-3.7-pro'), 'gemini-2.5-pro', 'Should map gemini-3.7-pro to gemini-2.5-pro');
+assert.equal(sanitizeModel('gemini-2.5-flash'), 'gemini-2.5-flash', 'Should preserve valid gemini-2.5-flash');
+assert.equal(sanitizeModel('gemini-3.6-flash'), 'gemini-3.6-flash', 'Should preserve valid gemini-3.6-flash');
+assert.equal(sanitizeModel('gemini-3.5-flash-lite'), 'gemini-3.5-flash-lite', 'Should preserve valid gemini-3.5-flash-lite');
+assert.equal(sanitizeModel('gemini-2.0-flash'), 'gemini-2.5-flash', 'Should map deprecated gemini-2.0-flash to gemini-2.5-flash');
+assert.equal(sanitizeModel('gemini-2.0-flash-lite'), 'gemini-3.5-flash-lite', 'Should map deprecated gemini-2.0-flash-lite to gemini-3.5-flash-lite');
+assert.equal(sanitizeModel('gemini-1.5-flash'), 'gemini-2.5-flash', 'Should map deprecated gemini-1.5-flash to gemini-2.5-flash');
+assert.equal(sanitizeModel('gemini-1.5-pro'), 'gemini-2.5-pro', 'Should map deprecated gemini-1.5-pro to gemini-2.5-pro');
+assert.equal(sanitizeModel(null), 'gemini-2.5-flash', 'Should default null to gemini-2.5-flash');
+assert.equal(sanitizeModel(''), 'gemini-2.5-flash', 'Should default empty to gemini-2.5-flash');
 console.log('✅ Model sanitization tests passed.\n');
 
 // 2. Test Offline Recipe Computation for V60

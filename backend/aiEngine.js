@@ -5,15 +5,14 @@
  */
 
 const VALID_GEMINI_MODELS = [
-  'gemini-2.0-flash',
-  'gemini-2.0-flash-lite',
   'gemini-2.5-flash',
-  'gemini-1.5-flash-latest',
-  'gemini-1.5-pro-latest'
+  'gemini-3.6-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-2.5-pro'
 ];
 
-const DEFAULT_GEMINI_MODEL = 'gemini-2.0-flash';
-const FALLBACK_GEMINI_MODEL = 'gemini-2.0-flash-lite';
+const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
+const FALLBACK_GEMINI_MODEL = 'gemini-3.5-flash-lite';
 
 /**
  * Sanitizes model name: maps deprecated/invalid model names to supported Google AI Studio models.
@@ -23,11 +22,11 @@ function sanitizeModel(requestedModel) {
     return DEFAULT_GEMINI_MODEL;
   }
   const clean = requestedModel.trim().toLowerCase();
-  if (clean === 'gemini-1.5-flash') {
-    return 'gemini-1.5-flash-latest';
-  }
-  if (clean === 'gemini-1.5-pro') {
-    return 'gemini-1.5-pro-latest';
+  // Map legacy / discontinued model IDs (2.0, 1.5, 3.7) to active models
+  if (clean.includes('2.0') || clean.includes('1.5') || clean.includes('3.7')) {
+    if (clean.includes('lite')) return 'gemini-3.5-flash-lite';
+    if (clean.includes('pro')) return 'gemini-2.5-pro';
+    return 'gemini-2.5-flash';
   }
   if (VALID_GEMINI_MODELS.includes(clean)) {
     return clean;
@@ -349,18 +348,39 @@ function computeOfflineTuning(data) {
 }
 
 /**
- * Executes a Gemini prompt with retry on 503/429 and automatic fallback to secondary model.
+ * Executes a Gemini prompt or multimodal request with retry on 503/429 and automatic cascading fallback across active models.
  */
-async function callGeminiWithRetry(prompt, apiKey, initialModel, enableThinking = false) {
+async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enableThinking = false) {
   if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
     throw new Error('No se ha configurado una clave API de Gemini válida.');
   }
 
   const cleanKey = apiKey.trim();
   const modelToTry = sanitizeModel(initialModel);
-  const models = [modelToTry];
-  if (modelToTry !== FALLBACK_GEMINI_MODEL) {
-    models.push(FALLBACK_GEMINI_MODEL);
+  
+  // Cascading priority across active Google AI models
+  const cascadeOrder = [
+    modelToTry,
+    DEFAULT_GEMINI_MODEL, // 'gemini-2.5-flash'
+    'gemini-3.6-flash',
+    FALLBACK_GEMINI_MODEL // 'gemini-3.5-flash-lite'
+  ];
+  const models = [...new Set(cascadeOrder)];
+
+  // Normalize contents structure (support string prompt or multimodal array)
+  let contents;
+  if (typeof contentsOrPrompt === 'string') {
+    contents = [{ parts: [{ text: contentsOrPrompt }] }];
+  } else if (Array.isArray(contentsOrPrompt)) {
+    if (contentsOrPrompt.length > 0 && contentsOrPrompt[0]?.parts) {
+      contents = contentsOrPrompt;
+    } else {
+      contents = [{ parts: contentsOrPrompt }];
+    }
+  } else if (contentsOrPrompt && contentsOrPrompt.parts) {
+    contents = [contentsOrPrompt];
+  } else {
+    contents = [{ parts: [{ text: String(contentsOrPrompt || '') }] }];
   }
 
   let lastError = null;
@@ -370,12 +390,12 @@ async function callGeminiWithRetry(prompt, apiKey, initialModel, enableThinking 
     const generationConfig = { responseMimeType: 'application/json' };
 
     // Only inject thinkingConfig on models that explicitly support it
-    if (enableThinking && (currentModel.includes('thinking') || currentModel.includes('2.0-flash'))) {
+    if (enableThinking && (currentModel.includes('thinking') || currentModel.includes('2.5-pro'))) {
       generationConfig.thinkingConfig = { thinkingBudget: 2048 };
     }
 
     const payload = JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
+      contents,
       generationConfig
     });
 
@@ -402,11 +422,20 @@ async function callGeminiWithRetry(prompt, apiKey, initialModel, enableThinking 
         const errMsg = errData.error?.message || `HTTP ${response.status} (${currentModel})`;
         console.warn(`[Gemini Attempt] Model ${currentModel} (attempt ${attempt}) returned ${response.status}: ${errMsg}`);
 
-        // Auth or Permission Errors (400, 401, 403): do not cascade with the same broken key
-        if (response.status === 400 || response.status === 401 || response.status === 403) {
+        // Auth or Permission Errors (401, 403, or 400 with API_KEY_INVALID): do not cascade with the same broken key
+        const isKeyInvalid = response.status === 401 || response.status === 403 || 
+          (response.status === 400 && (errMsg.toLowerCase().includes('api key') || errMsg.toLowerCase().includes('api_key')));
+        
+        if (isKeyInvalid) {
           const err = new Error(`Error de autenticación con Google AI (${response.status}): ${errMsg}`);
           err.status = response.status;
           throw err;
+        }
+
+        // 404 (Model removed/not found): immediately proceed to next model in cascade
+        if (response.status === 404) {
+          lastError = new Error(errMsg);
+          break;
         }
 
         // Check if retryable (503 Service Unavailable, 429 Rate Limit)

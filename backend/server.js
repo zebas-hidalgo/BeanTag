@@ -846,9 +846,9 @@ RECALIBRA científicamente la receta para corregir los defectos (${sensory_extra
 });
 
 
-// 3. AI Multimodal Coffee Bag / Receipt Scanner (Gemini 3.7 Vision OCR)
+// 3. AI Multimodal Coffee Bag / Receipt Scanner (Gemini Multimodal Vision OCR)
 app.post('/api/ai/scan-bag', async (req, res) => {
-  const { apiKey, model, url, generationConfig } = getGeminiConfig(req);
+  const { apiKey, model, enableThinking } = getGeminiConfig(req);
   if (!apiKey) {
     return res.status(400).json({ error: 'Falta la clave API de Gemini en las cabeceras' });
   }
@@ -892,46 +892,31 @@ Devuelve OBLIGATORIAMENTE un JSON estructurado con estas claves:
 }`;
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
+    const multimodalContents = [
+      {
+        parts: [
+          { text: prompt },
           {
-            parts: [
-              { text: prompt },
-              {
-                inlineData: {
-                  mimeType: mimeType,
-                  data: cleanBase64
-                }
-              }
-            ]
+            inlineData: {
+              mimeType: mimeType,
+              data: cleanBase64
+            }
           }
-        ],
-        generationConfig
-      })
-    });
+        ]
+      }
+    ];
 
-    if (!response.ok) {
-      const errData = await response.json();
-      return res.status(response.status).json({ error: errData.error?.message || `Error con Gemini Vision (${model})` });
-    }
-
-    const data = await response.json();
-    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
-    const bagData = JSON.parse(text);
+    const bagData = await callGeminiWithRetry(multimodalContents, apiKey, model, enableThinking);
     res.json(bagData);
   } catch (err) {
-    res.status(500).json({ error: 'Error al escanear la bolsa de café: ' + err.message });
+    console.warn(`[AI Scan-Bag Failed] ${err.message}`);
+    res.status(err.status || 500).json({ error: 'Error al escanear la bolsa de café: ' + err.message });
   }
 });
 
 // 4. AI Inventory Sommelier Endpoint (Recommends Peak Coffee from Freezer Tubes)
 app.post('/api/ai/sommelier', async (req, res) => {
-  const { apiKey, model, url, generationConfig } = getGeminiConfig(req);
+  const { apiKey, model, enableThinking } = getGeminiConfig(req);
   if (!apiKey) {
     return res.status(400).json({ error: 'Falta la clave API de Gemini en las cabeceras' });
   }
@@ -973,28 +958,11 @@ Selecciona el mejor lote para preparar ahora mismo y genera un JSON con esta est
 }`;
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig
-      })
-    });
-
-    if (!response.ok) {
-      const errData = await response.json();
-      return res.status(response.status).json({ error: errData.error?.message || `Error con Gemini (${model})` });
-    }
-
-    const data = await response.json();
-    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
-    const sommelierResult = JSON.parse(text);
+    const sommelierResult = await callGeminiWithRetry(prompt, apiKey, model, enableThinking);
     res.json(sommelierResult);
   } catch (err) {
-    res.status(500).json({ error: 'Error en el sommelier IA: ' + err.message });
+    console.warn(`[AI Sommelier Failed] ${err.message}`);
+    res.status(err.status || 500).json({ error: 'Error en el sommelier IA: ' + err.message });
   }
 });
 

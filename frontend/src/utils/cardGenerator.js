@@ -1042,22 +1042,22 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.fillText(incRecipe ? '// PROTOCOLO DE EXTRACCIÓN // BEANTAG ARCHIVE' : '// IDENTIDAD Y TERROIR // BEANTAG ARCHIVE', paddingX, paddingY + 14);
 
     ctx.fillStyle = '#FFFFFF';
-    drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 44, availW, 28, '"JetBrains Mono", monospace', '900');
+    drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 42, availW, 26, '"JetBrains Mono", monospace', '900');
 
     if (subtitleStr) {
       ctx.fillStyle = '#93C5FD';
-      ctx.font = '700 10px "JetBrains Mono", monospace';
-      drawTruncatedText(subtitleStr.toUpperCase(), paddingX, paddingY + 66, availW);
+      ctx.font = '700 9.5px "JetBrains Mono", monospace';
+      drawTruncatedText(subtitleStr.toUpperCase(), paddingX, paddingY + 62, availW);
     }
 
-    drawTicketNotchesAndPerforation(ctx, pad, cardW, paddingY + 78, style, '#0B192C');
+    drawTicketNotchesAndPerforation(ctx, pad, cardW, paddingY + 84, style, '#0B192C');
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
     // -----------------------------------------------------------------------
     if (!incRecipe) {
       // 1. Spec Header Strip
-      const specBoxY = paddingY + 98;
+      const specBoxY = paddingY + 104;
       const specBoxH = 32;
       ctx.fillStyle = 'rgba(14, 165, 233, 0.08)';
       ctx.strokeStyle = '#38BDF8';
@@ -1137,38 +1137,39 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const hasRadar = sensoryData !== null;
       const contentW = hasRadar ? availW - 146 : availW - 24;
 
-      // Real tasting description text
-      if (notesStr) {
-        ctx.fillStyle = '#E0F2FE';
-        ctx.font = '700 10.5px "JetBrains Mono", monospace';
-        drawWrappedText(notesStr, paddingX + 12, notesY + 40, contentW, 16, 3);
-      } else {
-        ctx.fillStyle = '#64748B';
-        ctx.font = 'italic 10px "JetBrains Mono", monospace';
-        ctx.fillText('Sin notas de cata descriptivas registradas para este lote.', paddingX + 12, notesY + 44);
-      }
-
-      // Discrete Flavor Tag Pills (only if real tags exist!)
+      // Authentic Cupping Notes presentation (Render prominent pills or clean text without repeating)
       if (flavorTags.length > 0) {
         let pillX = paddingX + 12;
-        const pillY = notesY + 98;
-        const pillH = 22;
-        ctx.font = '800 9px "JetBrains Mono", monospace';
+        let pillY = notesY + 44;
+        const pillH = 24;
+        ctx.font = '800 9.5px "JetBrains Mono", monospace';
 
-        flavorTags.slice(0, 5).forEach((tag) => {
+        flavorTags.slice(0, 6).forEach((tag) => {
           const tw = ctx.measureText(tag.toUpperCase()).width;
-          const pw = tw + 16;
-          if (pillX + pw <= paddingX + contentW) {
+          const pw = tw + 18;
+          if (pillX + pw > paddingX + contentW && pillX > paddingX + 12) {
+            pillX = paddingX + 12;
+            pillY += 32;
+          }
+          if (pillX + pw <= paddingX + contentW && pillY + pillH <= notesY + notesH - 10) {
             ctx.fillStyle = 'rgba(56, 189, 248, 0.18)';
             ctx.strokeStyle = '#38BDF8';
             ctx.lineWidth = 1;
             drawRoundedRect(ctx, pillX, pillY, pw, pillH, 4, true, true);
 
             ctx.fillStyle = '#BAE6FD';
-            ctx.fillText(tag.toUpperCase(), pillX + 8, pillY + 15);
+            ctx.fillText(tag.toUpperCase(), pillX + 9, pillY + 16);
             pillX += pw + 8;
           }
         });
+      } else if (notesStr) {
+        ctx.fillStyle = '#E0F2FE';
+        ctx.font = '700 10.5px "JetBrains Mono", monospace';
+        drawWrappedText(notesStr, paddingX + 12, notesY + 44, contentW, 18, 3);
+      } else {
+        ctx.fillStyle = '#64748B';
+        ctx.font = 'italic 10px "JetBrains Mono", monospace';
+        ctx.fillText('Sin notas de cata descriptivas registradas para este lote.', paddingX + 12, notesY + 44);
       }
 
       if (hasRadar) {
@@ -1204,7 +1205,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // -----------------------------------------------------------------------
     else {
       // 1. Protocol Spec Strip
-      const specBoxY = paddingY + 98;
+      const specBoxY = paddingY + 104;
       const specBoxH = 32;
       ctx.fillStyle = 'rgba(14, 165, 233, 0.08)';
       ctx.strokeStyle = '#38BDF8';
@@ -1459,10 +1460,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
     // 2. Massive Bold Title
     ctx.fillStyle = '#09090B';
-    drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 68, availW, 30, '"Space Grotesk", sans-serif', '900');
+    drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 62, availW, 28, '"Space Grotesk", sans-serif', '900');
 
     // 3. Metadata Tag Pills with Drop Shadows (Truthful only)
-    const tagY = paddingY + 84;
+    const tagY = paddingY + 76;
     const tags = [
       origin ? { text: origin.toUpperCase(), bg: '#FF3B14', color: '#FFF' } : null,
       process ? { text: process.toUpperCase(), bg: '#FFFFFF', color: '#000' } : null,
@@ -1472,32 +1473,34 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
     let curTagX = paddingX;
     tags.forEach(t => {
-      ctx.font = '900 9.5px "Space Grotesk", sans-serif';
+      ctx.font = '900 9px "Space Grotesk", sans-serif';
       const tw = ctx.measureText(t.text).width + 16;
       if (curTagX + tw < paddingX + availW) {
         ctx.fillStyle = '#000000';
-        ctx.fillRect(curTagX + 2.5, tagY + 2.5, tw, 22);
+        ctx.fillRect(curTagX + 2, tagY + 2, tw, 20);
         ctx.fillStyle = t.bg;
-        ctx.fillRect(curTagX, tagY, tw, 22);
+        ctx.fillRect(curTagX, tagY, tw, 20);
         ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(curTagX, tagY, tw, 22);
+        ctx.lineWidth = 1.8;
+        ctx.strokeRect(curTagX, tagY, tw, 20);
 
         ctx.fillStyle = t.color;
-        ctx.fillText(t.text, curTagX + 8, tagY + 15);
+        ctx.fillText(t.text, curTagX + 8, tagY + 14);
         curTagX += tw + 8;
       }
     });
 
-    drawTicketNotchesAndPerforation(ctx, 0, baseW, 130, style, '#F1F5F9');
+    // 4. Ticket Notches & Perforation Line (Well separated from tags above and strip below)
+    const notchY = paddingY + 114;
+    drawTicketNotchesAndPerforation(ctx, 0, baseW, notchY, style, '#F1F5F9');
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
     // -----------------------------------------------------------------------
     if (!incRecipe) {
       // 1. Roastery Spec Strip
-      const stripY = paddingY + 128;
-      const stripH = 40;
+      const stripY = paddingY + 138;
+      const stripH = 38;
 
       ctx.fillStyle = '#000000';
       ctx.fillRect(paddingX + 3.5, stripY + 3.5, availW, stripH);
@@ -1590,38 +1593,43 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const hasRadar = sensoryData !== null;
       const contentW = hasRadar ? availW - 146 : availW - 28;
 
-      // Authentic roaster notes text
-      ctx.fillStyle = '#18181B';
-      ctx.font = '700 10.5px "Space Grotesk", sans-serif';
-      const actualNotes = notesStr ? `"${notesStr}"` : 'Sin notas de cata registradas para este lote.';
-      const linesDrawn = drawWrappedText(actualNotes, paddingX + 14, specY + 42, contentW, 17, 3);
-
-      // Flavor stickers below text
+      // Authentic sensory presentation: Render prominent flavor stickers if tags exist, otherwise clean text
       if (flavorTags.length > 0) {
         let pillX = paddingX + 14;
-        const pillY = specY + 44 + (linesDrawn * 17) + 8;
+        let pillY = specY + 44;
         const pillColors = ['#D4FF00', '#FF3B14', '#D8B4FE', '#67E8F9', '#FED7AA'];
 
-        flavorTags.slice(0, 5).forEach((tag, idx) => {
+        flavorTags.slice(0, 6).forEach((tag, idx) => {
           const bgCol = pillColors[idx % pillColors.length];
-          ctx.font = '900 9.5px "Space Grotesk", sans-serif';
-          const pw = ctx.measureText(tag.toUpperCase()).width + 16;
+          ctx.font = '900 10px "Space Grotesk", sans-serif';
+          const pw = ctx.measureText(tag.toUpperCase()).width + 18;
 
-          if (pillX + pw < paddingX + contentW) {
+          // Wrap to next row if needed
+          if (pillX + pw > paddingX + contentW && pillX > paddingX + 14) {
+            pillX = paddingX + 14;
+            pillY += 32;
+          }
+
+          if (pillX + pw <= paddingX + contentW && pillY + 24 <= specY + specH - 12) {
             ctx.fillStyle = '#000000';
-            ctx.fillRect(pillX + 2, pillY + 2, pw, 22);
+            ctx.fillRect(pillX + 2, pillY + 2, pw, 24);
             ctx.fillStyle = bgCol;
-            ctx.fillRect(pillX, pillY, pw, 22);
+            ctx.fillRect(pillX, pillY, pw, 24);
             ctx.strokeStyle = '#000000';
             ctx.lineWidth = 1.8;
-            ctx.strokeRect(pillX, pillY, pw, 22);
+            ctx.strokeRect(pillX, pillY, pw, 24);
 
             ctx.fillStyle = bgCol === '#FF3B14' ? '#FFFFFF' : '#000000';
-            ctx.fillText(tag.toUpperCase(), pillX + 8, pillY + 15);
+            ctx.fillText(tag.toUpperCase(), pillX + 9, pillY + 16);
 
             pillX += pw + 8;
           }
         });
+      } else {
+        ctx.fillStyle = '#18181B';
+        ctx.font = '700 11px "Space Grotesk", sans-serif';
+        const actualNotes = notesStr ? `"${notesStr}"` : 'Sin notas de cata registradas para este lote.';
+        drawWrappedText(actualNotes, paddingX + 14, specY + 44, contentW, 18, 3);
       }
 
       if (hasRadar) {
@@ -1651,8 +1659,8 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // -----------------------------------------------------------------------
     else {
       // 1. Barista Order Strip
-      const stripY = paddingY + 128;
-      const stripH = 40;
+      const stripY = paddingY + 138;
+      const stripH = 38;
 
       ctx.fillStyle = '#000000';
       ctx.fillRect(paddingX + 3.5, stripY + 3.5, availW, stripH);
@@ -1883,20 +1891,20 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     ctx.fillText(incRecipe ? '★ BEANTAG COFFEE ROASTERS // ORDER TICKET // EST. 1950 ★' : '★ BEANTAG COFFEE ROASTERS // CELLAR RESERVE // EST. 1950 ★', paddingX, paddingY + 14);
 
     ctx.fillStyle = '#1C1917';
-    drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 46, availW, 28, '"Space Grotesk", sans-serif', '900');
+    drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 42, availW, 26, '"Space Grotesk", sans-serif', '900');
 
     ctx.fillStyle = '#0E7490';
-    ctx.font = '700 10.5px "Space Grotesk", sans-serif';
-    drawTruncatedText((subtitleStr || 'Café de Especialidad').toUpperCase(), paddingX, paddingY + 68, availW);
+    ctx.font = '700 9.5px "Space Grotesk", sans-serif';
+    drawTruncatedText((subtitleStr || 'Café de Especialidad').toUpperCase(), paddingX, paddingY + 62, availW);
 
-    drawTicketNotchesAndPerforation(ctx, pad, cardW, paddingY + 78, style, '#FDFBF7');
+    drawTicketNotchesAndPerforation(ctx, pad, cardW, paddingY + 84, style, '#FDFBF7');
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
     // -----------------------------------------------------------------------
     if (!incRecipe) {
       // 1. Table Specification Banner
-      const specBoxY = paddingY + 98;
+      const specBoxY = paddingY + 104;
       const specBoxH = 34;
 
       ctx.fillStyle = '#FFFBEB';
@@ -1979,32 +1987,36 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const hasRadar = sensoryData !== null;
       const contentW = hasRadar ? availW - 146 : availW - 28;
 
-      ctx.fillStyle = '#292524';
-      ctx.font = '600 10.5px "Space Grotesk", sans-serif';
-      const actualNotes = notesStr ? `"${notesStr}"` : 'Notas de cata tradicionales de café de especialidad.';
-      const linesDrawn = drawWrappedText(actualNotes, paddingX + 14, notesBoxY + 40, contentW, 17, 3);
-
-      // Flavor pills
+      // Authentic tasting presentation: Render flavor pills if tags exist, otherwise clean text
       if (flavorTags.length > 0) {
         let pillX = paddingX + 14;
-        const pillY = notesBoxY + 44 + (linesDrawn * 17) + 8;
-        const pillH = 22;
+        let pillY = notesBoxY + 46;
+        const pillH = 24;
 
-        flavorTags.slice(0, 5).forEach(tag => {
+        flavorTags.slice(0, 6).forEach(tag => {
           ctx.font = '800 9.5px "Space Grotesk", sans-serif';
           const tw = ctx.measureText(tag).width;
           const pw = tw + 18;
-          if (pillX + pw <= paddingX + contentW) {
+          if (pillX + pw > paddingX + contentW && pillX > paddingX + 14) {
+            pillX = paddingX + 14;
+            pillY += 32;
+          }
+          if (pillX + pw <= paddingX + contentW && pillY + pillH <= notesBoxY + notesH - 10) {
             ctx.fillStyle = '#FEF3C7';
             ctx.strokeStyle = '#C92A2A';
             ctx.lineWidth = 1;
             drawRoundedRect(ctx, pillX, pillY, pw, pillH, 5, true, true);
 
             ctx.fillStyle = '#991B1B';
-            ctx.fillText(tag, pillX + 9, pillY + 15);
+            ctx.fillText(tag, pillX + 9, pillY + 16);
             pillX += pw + 8;
           }
         });
+      } else {
+        ctx.fillStyle = '#292524';
+        ctx.font = '600 10.5px "Space Grotesk", sans-serif';
+        const actualNotes = notesStr ? `"${notesStr}"` : 'Notas de cata tradicionales de café de especialidad.';
+        drawWrappedText(actualNotes, paddingX + 14, notesBoxY + 46, contentW, 17, 3);
       }
 
       if (hasRadar) {
@@ -2045,7 +2057,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // -----------------------------------------------------------------------
     else {
       // 1. Order Ticket Spec Banner
-      const specBoxY = paddingY + 98;
+      const specBoxY = paddingY + 104;
       const specBoxH = 34;
 
       ctx.fillStyle = '#FFFBEB';
@@ -2232,22 +2244,22 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
     // Main Serif Title
     ctx.fillStyle = '#18181B';
-    drawFittedText(coffeeName, paddingX, paddingY + 46, availW - 48, 26, '"Playfair Display", Georgia, serif', 'bold');
+    drawFittedText(coffeeName, paddingX, paddingY + 42, availW - 48, 26, '"Playfair Display", Georgia, serif', 'bold');
 
     // Terroir Subtitle
     ctx.fillStyle = '#52525B';
-    ctx.font = 'italic 11px "Playfair Display", Georgia, serif';
+    ctx.font = 'italic 10.5px "Playfair Display", Georgia, serif';
     const terroirSub = [origin, (producer || roaster), altitude].filter(Boolean).join(' — ');
-    drawTruncatedText(terroirSub || '珈琲豆 • Specialty Coffee', paddingX, paddingY + 68, availW - 48);
+    drawTruncatedText(terroirSub || '珈琲豆 • Specialty Coffee', paddingX, paddingY + 62, availW - 48);
 
-    drawTicketNotchesAndPerforation(ctx, pad, cardW, paddingY + 78, style, '#EFECE6');
+    drawTicketNotchesAndPerforation(ctx, pad, cardW, paddingY + 84, style, '#EFECE6');
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
     // -----------------------------------------------------------------------
     if (!incRecipe) {
       // 1. Specification Header Strip
-      const stripY = paddingY + 98;
+      const stripY = paddingY + 104;
       const stripH = 34;
 
       ctx.fillStyle = '#FBF9F5';
@@ -2326,32 +2338,36 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const hasRadar = sensoryData !== null;
       const contentW = hasRadar ? availW - 146 : availW - 28;
 
-      ctx.fillStyle = '#27272A';
-      ctx.font = 'italic 10.5px "Playfair Display", Georgia, serif';
-      const actualNotes = notesStr ? `« ${notesStr} »` : 'Café de especialidad con notas sutiles y balance limpio.';
-      const linesDrawn = drawWrappedText(actualNotes, paddingX + 14, notesBoxY + 40, contentW, 17, 3);
-
-      // Flavor pills in natural rice paper aesthetic
+      // Flavor pills in natural rice paper aesthetic (or clean text if no tags)
       if (flavorTags.length > 0) {
         let pillX = paddingX + 14;
-        const pillY = notesBoxY + 44 + (linesDrawn * 17) + 8;
-        const pillH = 22;
+        let pillY = notesBoxY + 46;
+        const pillH = 24;
 
-        flavorTags.slice(0, 5).forEach(tag => {
+        flavorTags.slice(0, 6).forEach(tag => {
           ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
           const textW = ctx.measureText(tag).width;
           const pillW = textW + 18;
-          if (pillX + pillW <= paddingX + contentW) {
+          if (pillX + pillW > paddingX + contentW && pillX > paddingX + 14) {
+            pillX = paddingX + 14;
+            pillY += 32;
+          }
+          if (pillX + pillW <= paddingX + contentW && pillY + pillH <= notesBoxY + notesH - 10) {
             ctx.fillStyle = 'rgba(24, 24, 27, 0.04)';
             ctx.strokeStyle = '#D4D4D8';
             ctx.lineWidth = 0.8;
-            drawRoundedRect(ctx, pillX, pillY, pillW, pillH, 3, true, true);
+            drawRoundedRect(ctx, pillX, pillY, pillW, pillH, 4, true, true);
 
             ctx.fillStyle = '#18181B';
-            ctx.fillText(tag, pillX + 9, pillY + 15);
+            ctx.fillText(tag, pillX + 9, pillY + 16);
             pillX += pillW + 8;
           }
         });
+      } else {
+        ctx.fillStyle = '#27272A';
+        ctx.font = 'italic 10.5px "Playfair Display", Georgia, serif';
+        const actualNotes = notesStr ? `« ${notesStr} »` : 'Café de especialidad con notas sutiles y balance limpio.';
+        drawWrappedText(actualNotes, paddingX + 14, notesBoxY + 46, contentW, 17, 3);
       }
 
       if (hasRadar) {
@@ -2393,7 +2409,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     // -----------------------------------------------------------------------
     else {
       // 1. Extraction Protocol Header Strip
-      const stripY = paddingY + 98;
+      const stripY = paddingY + 104;
       const stripH = 34;
 
       ctx.fillStyle = '#FBF9F5';
