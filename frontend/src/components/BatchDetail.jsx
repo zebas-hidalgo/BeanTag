@@ -4,7 +4,7 @@ import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
 import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers, SlidersHorizontal } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
-import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText } from '../utils/cardGenerator';
+import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText, generateCoffeeStickerImage } from '../utils/cardGenerator';
 import { FAMOUS_RECIPES } from '../utils/famousRecipes';
 import ScaRadarChart from './ScaRadarChart';
 import DialInAssistant from './DialInAssistant';
@@ -95,7 +95,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   // Share / Export Card States
   const [shareImage, setShareImage] = useState(null);
-  const [shareScope, setShareScope] = useState('single'); // 'single' | 'menu'
+  const [shareScope, setShareScope] = useState('single'); // 'single' | 'sticker' | 'menu'
+  const [stickerTransparent, setStickerTransparent] = useState(false);
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(false); // Default to bean-only for batch detail
   const [shareTemplate, setShareTemplate] = useState(() => {
     try {
@@ -110,10 +111,23 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   });
   const [shareStatus, setShareStatus] = useState('');
 
-  const handleShareBatchCard = async (incRecipe = shareIncludeRecipe, templ = shareTemplate, scope = shareScope) => {
+  const handleShareBatchCard = async (incRecipe = shareIncludeRecipe, templ = shareTemplate, scope = shareScope, transparent = stickerTransparent) => {
     if (!batch) return;
     setShareScope(scope);
     setShareStatus('Generando imagen...');
+
+    if (scope === 'sticker') {
+      try {
+        const dataUrl = await generateCoffeeStickerImage(batch, { template: templ, transparent });
+        setShareImage(dataUrl);
+        setShareTemplate(templ);
+        setShareStatus('✅ Sticker Story generado con éxito');
+      } catch (err) {
+        console.error("Sticker generation error:", err);
+        setShareStatus('❌ Error: ' + err.message);
+      }
+      return;
+    }
 
     if (scope === 'menu') {
       const targetList = Array.isArray(batches) && batches.length > 0 ? batches : [batch];
@@ -1741,46 +1755,65 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
               
-              {/* Row 1: Scope Selector (Ficha de este café vs Carta Completa) */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
-                <div style={{ display: 'flex', gap: '4px' }}>
+              {/* Row 1: Scope Selector (Ficha de este café vs Sticker Story vs Carta Completa) */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                   <button
                     type="button"
                     onClick={() => {
                       setShareScope('single');
-                      handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'single');
+                      handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'single', stickerTransparent);
                     }}
                     style={{
-                      padding: '5px 10px',
-                      fontSize: '11px',
+                      padding: '5px 8px',
+                      fontSize: '10.5px',
                       borderRadius: '6px',
                       border: shareScope === 'single' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                      backgroundColor: shareScope === 'single' ? '#FFFFFF' : 'var(--bg-canvas)',
+                      backgroundColor: shareScope === 'single' ? 'var(--bg-card)' : 'var(--bg-canvas)',
                       fontWeight: shareScope === 'single' ? '800' : '500',
                       color: shareScope === 'single' ? 'var(--color-crimson)' : 'var(--color-text)',
                       cursor: 'pointer'
                     }}
                   >
-                    🎫 Ficha de este Café
+                    🎫 Ficha
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShareScope('sticker');
+                      handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', stickerTransparent);
+                    }}
+                    style={{
+                      padding: '5px 8px',
+                      fontSize: '10.5px',
+                      borderRadius: '6px',
+                      border: shareScope === 'sticker' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                      backgroundColor: shareScope === 'sticker' ? 'var(--bg-card)' : 'var(--bg-canvas)',
+                      fontWeight: shareScope === 'sticker' ? '800' : '500',
+                      color: shareScope === 'sticker' ? 'var(--color-crimson)' : 'var(--color-text)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🏷️ Sticker Story
                   </button>
                   <button
                     type="button"
                     onClick={() => {
                       setShareScope('menu');
-                      handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'menu');
+                      handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'menu', stickerTransparent);
                     }}
                     style={{
-                      padding: '5px 10px',
-                      fontSize: '11px',
+                      padding: '5px 8px',
+                      fontSize: '10.5px',
                       borderRadius: '6px',
                       border: shareScope === 'menu' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                      backgroundColor: shareScope === 'menu' ? '#FFFFFF' : 'var(--bg-canvas)',
+                      backgroundColor: shareScope === 'menu' ? 'var(--bg-card)' : 'var(--bg-canvas)',
                       fontWeight: shareScope === 'menu' ? '800' : '500',
                       color: shareScope === 'menu' ? 'var(--color-crimson)' : 'var(--color-text)',
                       cursor: 'pointer'
                     }}
                   >
-                    📋 Carta de Cafés ({batches && batches.length > 0 ? batches.length : 1})
+                    📋 Carta ({batches && batches.length > 0 ? batches.length : 1})
                   </button>
                 </div>
 
@@ -1793,24 +1826,72 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 </button>
               </div>
 
-              {/* Row 2: Sub-options (Only when scope is single: Solo Grano vs Con Receta) */}
-              {shareScope === 'single' && (
+              {/* Row 2: Sub-options (Only when scope is single or sticker) */}
+              {shareScope === 'sticker' && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--color-text)' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: '700', color: 'var(--color-text)' }}>
                     {batch?.name}
                   </span>
                   <div style={{ display: 'flex', gap: '4px' }}>
                     <button 
                       type="button" 
-                      onClick={() => { setShareIncludeRecipe(false); handleShareBatchCard(false, shareTemplate, 'single'); }}
-                      style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: !shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : '#FFFFFF', color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
+                      onClick={() => {
+                        setStickerTransparent(false);
+                        handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', false);
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        fontSize: '9.5px',
+                        borderRadius: '4px',
+                        border: !stickerTransparent ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        backgroundColor: !stickerTransparent ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)',
+                        color: !stickerTransparent ? 'var(--color-crimson)' : 'var(--color-text)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ⬛ Fondo Sólido
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setStickerTransparent(true);
+                        handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', true);
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        fontSize: '9.5px',
+                        borderRadius: '4px',
+                        border: stickerTransparent ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        backgroundColor: stickerTransparent ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)',
+                        color: stickerTransparent ? 'var(--color-crimson)' : 'var(--color-text)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      🏁 Transparente PNG
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {shareScope === 'single' && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: '700', color: 'var(--color-text)' }}>
+                    {batch?.name}
+                  </span>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <button 
+                      type="button" 
+                      onClick={() => { setShareIncludeRecipe(false); handleShareBatchCard(false, shareTemplate, 'single', stickerTransparent); }}
+                      style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: !shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
                     >
                       🌾 Solo Grano
                     </button>
                     <button 
                       type="button" 
-                      onClick={() => { setShareIncludeRecipe(true); handleShareBatchCard(true, shareTemplate, 'single'); }}
-                      style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : '#FFFFFF', color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
+                      onClick={() => { setShareIncludeRecipe(true); handleShareBatchCard(true, shareTemplate, 'single', stickerTransparent); }}
+                      style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
                     >
                       🧾 Con Receta
                     </button>
@@ -1833,18 +1914,17 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     onClick={() => {
                       setShareTemplate(t.id);
                       try { localStorage.setItem('beantag-share-style', t.id); } catch (e) {}
-                      handleShareBatchCard(shareIncludeRecipe, t.id, shareScope);
+                      handleShareBatchCard(shareIncludeRecipe, t.id, shareScope, stickerTransparent);
                     }}
                     style={{
                       flex: 1,
                       padding: '4px 6px',
                       fontSize: '9.5px',
-                      borderRadius: '6px',
-                      border: shareTemplate === t.id ? '1px solid var(--color-crimson)' : 'none',
-                      backgroundColor: shareTemplate === t.id ? '#FFFFFF' : 'transparent',
-                      fontWeight: shareTemplate === t.id ? '800' : '500',
-                      color: shareTemplate === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
-                      boxShadow: shareTemplate === t.id ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
+                      borderRadius: '4px',
+                      border: (shareTemplate || 'blueprint') === t.id ? '1px solid var(--color-crimson)' : 'none',
+                      backgroundColor: (shareTemplate || 'blueprint') === t.id ? 'var(--bg-card)' : 'transparent',
+                      fontWeight: (shareTemplate || 'blueprint') === t.id ? '900' : 'normal',
+                      color: (shareTemplate || 'blueprint') === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
                       cursor: 'pointer'
                     }}
                   >

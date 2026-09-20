@@ -3,7 +3,7 @@ import { formatLocalDateStr } from '../utils/date';
 import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw, Filter, Zap, Droplet, Coffee, Edit3, SlidersHorizontal } from 'lucide-react';
 import { stripEmojis, RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
-import { generateRecipeCardImage } from '../utils/cardGenerator';
+import { generateRecipeCardImage, generateCoffeeStickerImage } from '../utils/cardGenerator';
 
 const getMethodLucideIcon = (methodName, size = 18) => {
   const m = (methodName || '').toLowerCase();
@@ -37,6 +37,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   const [shareImage, setShareImage] = useState(null);
   const [shareStatus, setShareStatus] = useState('');
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(true);
+  const [shareFormat, setShareFormat] = useState('card'); // 'card' | 'sticker'
+  const [stickerTransparent, setStickerTransparent] = useState(false);
   const [shareTemplate, setShareTemplate] = useState(() => {
     try {
       const pref = localStorage.getItem('beantag-share-style');
@@ -107,20 +109,28 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
     });
   };
 
-  const exportRecipeAsImage = async (recipe, templateOverride, includeRecipeOverride) => {
+  const exportRecipeAsImage = async (recipe, templateOverride, includeRecipeOverride, formatOverride, transparentOverride) => {
     const currentTpl = templateOverride || shareTemplate || 'blueprint';
     const incRecipe = includeRecipeOverride !== undefined ? includeRecipeOverride : shareIncludeRecipe;
-    setShareStatus('Generando tarjeta en Ultra-HD...');
+    const currentFormat = formatOverride !== undefined ? formatOverride : shareFormat;
+    const isTransparent = transparentOverride !== undefined ? transparentOverride : stickerTransparent;
+
+    setShareStatus(currentFormat === 'sticker' ? 'Generando Sticker Story...' : 'Generando tarjeta en Ultra-HD...');
     setShareImage(null);
 
     try {
-      // Use Ultra-HD canvas engine
-      const dataUrl = await generateRecipeCardImage(recipe, currentTpl, incRecipe);
+      let dataUrl;
+      if (currentFormat === 'sticker') {
+        dataUrl = await generateCoffeeStickerImage(recipe, { template: currentTpl, transparent: isTransparent });
+        setShareStatus('✅ Sticker Story generado con éxito');
+      } else {
+        dataUrl = await generateRecipeCardImage(recipe, currentTpl, incRecipe);
+        setShareStatus('✅ Tarjeta generada con éxito');
+      }
       setShareImage(dataUrl);
-      setShareStatus('✅ Tarjeta generada con éxito');
     } catch (err) {
       console.error("Canvas export error:", err);
-      setShareStatus('❌ Error al generar tarjeta: ' + err.message);
+      setShareStatus('❌ Error al generar imagen: ' + err.message);
     }
   };
 
@@ -136,7 +146,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
     try {
       const blob = dataURLtoBlob(shareImage);
-      const filename = `${selectedRecipe.batch_name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}_receta.png`;
+      const suffix = shareFormat === 'sticker' ? 'sticker' : 'receta';
+      const filename = `${selectedRecipe.batch_name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}_${suffix}.png`;
       const file = new File([blob], filename, { type: 'image/png' });
 
       // Fallback 1: Web Share API with File
@@ -969,30 +980,145 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             overflow: 'hidden'
           }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0 }}>
-                  🧾 Ticket Barista • {selectedRecipe?.batch_name}
+              {/* Row 1: Header + Format Selector */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '12.5px', textTransform: 'uppercase', margin: 0, color: 'var(--color-text)' }}>
+                  {shareFormat === 'sticker' ? '🏷️ Sticker Story' : '🧾 Ticket Barista'} • {selectedRecipe?.batch_name}
                 </h3>
-                {/* Content Toggle */}
+                {/* Format Toggle */}
                 <div style={{ display: 'flex', gap: '4px' }}>
                   <button 
                     type="button" 
-                    onClick={() => { setShareIncludeRecipe(true); exportRecipeAsImage(selectedRecipe, shareTemplate || 'blueprint', true); }}
-                    style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                    onClick={() => {
+                      setShareFormat('card');
+                      exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'card', stickerTransparent);
+                    }}
+                    style={{
+                      padding: '3px 8px',
+                      fontSize: '10px',
+                      borderRadius: '4px',
+                      border: shareFormat === 'card' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                      backgroundColor: shareFormat === 'card' ? 'var(--bg-header)' : 'var(--bg-card)',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      color: shareFormat === 'card' ? 'var(--color-crimson)' : 'var(--color-text)'
+                    }}
                   >
-                    🧾 Con Receta
+                    🧾 Ficha
                   </button>
                   <button 
                     type="button" 
-                    onClick={() => { setShareIncludeRecipe(false); exportRecipeAsImage(selectedRecipe, shareTemplate || 'blueprint', false); }}
-                    style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: !shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'var(--bg-header)' : '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
+                    onClick={() => {
+                      setShareFormat('sticker');
+                      exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'sticker', stickerTransparent);
+                    }}
+                    style={{
+                      padding: '3px 8px',
+                      fontSize: '10px',
+                      borderRadius: '4px',
+                      border: shareFormat === 'sticker' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                      backgroundColor: shareFormat === 'sticker' ? 'var(--bg-header)' : 'var(--bg-card)',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      color: shareFormat === 'sticker' ? 'var(--color-crimson)' : 'var(--color-text)'
+                    }}
                   >
-                    🌾 Solo Grano
+                    🏷️ Sticker Story
                   </button>
                 </div>
               </div>
 
-              {/* Aesthetic Template Selector */}
+              {/* Row 2: Sub-options (Content scope if card, background mode if sticker) */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>
+                  {shareFormat === 'sticker' ? 'MODO DE FONDO:' : 'CONTENIDO:'}
+                </span>
+                {shareFormat === 'sticker' ? (
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStickerTransparent(false);
+                        exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'sticker', false);
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        fontSize: '9.5px',
+                        borderRadius: '4px',
+                        border: !stickerTransparent ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        backgroundColor: !stickerTransparent ? 'var(--bg-header)' : 'var(--bg-card)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        color: !stickerTransparent ? 'var(--color-crimson)' : 'var(--color-text)'
+                      }}
+                    >
+                      ⬛ Fondo Sólido
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStickerTransparent(true);
+                        exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'sticker', true);
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        fontSize: '9.5px',
+                        borderRadius: '4px',
+                        border: stickerTransparent ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        backgroundColor: stickerTransparent ? 'var(--bg-header)' : 'var(--bg-card)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        color: stickerTransparent ? 'var(--color-crimson)' : 'var(--color-text)'
+                      }}
+                    >
+                      🏁 Transparente PNG
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setShareIncludeRecipe(true);
+                        exportRecipeAsImage(selectedRecipe, shareTemplate || 'blueprint', true, 'card', stickerTransparent);
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        fontSize: '9.5px',
+                        borderRadius: '4px',
+                        border: shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        backgroundColor: shareIncludeRecipe ? 'var(--bg-header)' : 'var(--bg-card)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)'
+                      }}
+                    >
+                      🧾 Con Receta
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setShareIncludeRecipe(false);
+                        exportRecipeAsImage(selectedRecipe, shareTemplate || 'blueprint', false, 'card', stickerTransparent);
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        fontSize: '9.5px',
+                        borderRadius: '4px',
+                        border: !shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        backgroundColor: !shareIncludeRecipe ? 'var(--bg-header)' : 'var(--bg-card)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)'
+                      }}
+                    >
+                      🌾 Solo Grano
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Row 3: Aesthetic Template Selector */}
               <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                 <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
                 {[
@@ -1007,7 +1133,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                     onClick={() => {
                       setShareTemplate(t.id);
                       try { localStorage.setItem('beantag-share-style', t.id); } catch (e) {}
-                      exportRecipeAsImage(selectedRecipe, t.id, shareIncludeRecipe);
+                      exportRecipeAsImage(selectedRecipe, t.id, shareIncludeRecipe, shareFormat, stickerTransparent);
                     }}
                     style={{
                       flex: 1,
@@ -1015,7 +1141,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       fontSize: '9.5px',
                       borderRadius: '4px',
                       border: (shareTemplate || 'blueprint') === t.id ? '1.5px solid var(--color-crimson)' : 'none',
-                      backgroundColor: (shareTemplate || 'blueprint') === t.id ? '#FFFFFF' : 'transparent',
+                      backgroundColor: (shareTemplate || 'blueprint') === t.id ? 'var(--bg-card)' : 'transparent',
                       fontWeight: (shareTemplate || 'blueprint') === t.id ? '900' : 'normal',
                       color: (shareTemplate || 'blueprint') === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
                       cursor: 'pointer'
