@@ -3126,3 +3126,406 @@ export function generateCoffeeMenuText(batches) {
   text += `📱 _Gestionado con BeanTag Specialty Coffee App_`;
   return text;
 }
+
+/**
+ * Generates an Ultra-High Legibility Instagram Story Sticker Overlay (600 x 240 px @ 2x = 1200 x 480 px)
+ * Designed for micro-interactions and camera overlays with high-contrast typography and optional transparency.
+ */
+export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
+  // options: { template = 'blueprint', transparent = false }
+  const baseW = 600;
+  const baseH = 240;
+  const scale = 2;
+
+  const canvas = typeof document !== 'undefined'
+    ? document.createElement('canvas')
+    : globalThis.createMockCanvas?.(baseW * scale, baseH * scale);
+  if (!canvas) throw new Error("Canvas not supported");
+  canvas.width = baseW * scale;
+  canvas.height = baseH * scale;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(scale, scale);
+  await ensureFontsLoaded();
+
+  const style = normalizeCardStyle(options.template);
+  const transparent = Boolean(options.transparent);
+
+  // 2. Data Extraction
+  const item = batchOrRecipe || {};
+  const coffeeName = stripEmojis(item.batch_name || item.coffee_name || item.name || 'Café de Especialidad');
+  const roaster = stripEmojis(item.roaster || item.batch_roaster || '');
+  const origin = stripEmojis(item.origin || item.batch_origin || '');
+  const variety = stripEmojis(item.variety || item.batch_variety || '');
+  const process = stripEmojis(item.process || item.batch_process || '');
+  const notesStr = stripEmojis(item.flavor_notes || item.roaster_notes || item.batch_roaster_notes || item.notes || '');
+  const flavorTags = extractFlavorTags(notesStr);
+
+  // Text helpers
+  const drawTruncatedText = (text, x, y, maxWidth) => {
+    const str = String(text || '');
+    if (!maxWidth || ctx.measureText(str).width <= maxWidth) {
+      ctx.fillText(str, x, y);
+      return;
+    }
+    let truncated = str;
+    while (truncated.length > 0 && ctx.measureText(truncated + '…').width > maxWidth) {
+      truncated = truncated.slice(0, -1);
+    }
+    ctx.fillText(truncated + '…', x, y);
+  };
+
+  const drawFittedText = (text, x, y, maxWidth, initialSize = 25, fontName = '"Space Grotesk", sans-serif', weight = '900') => {
+    const str = String(text || '');
+    let size = initialSize;
+    ctx.font = `${weight} ${size}px ${fontName}`;
+    while (ctx.measureText(str).width > maxWidth && size > 13) {
+      size -= 1;
+      ctx.font = `${weight} ${size}px ${fontName}`;
+    }
+    if (ctx.measureText(str).width > maxWidth) {
+      drawTruncatedText(str, x, y, maxWidth);
+    } else {
+      ctx.fillText(str, x, y);
+    }
+  };
+
+  // 3. Background & Card Shell
+  const margin = transparent ? 8 : 0;
+  const cardX = margin, cardY = margin, cardW = baseW - (margin * 2), cardH = baseH - (margin * 2);
+
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+
+  const subStr = [roaster, origin, variety, process].filter(Boolean).map(s => s.toUpperCase()).join(' • ');
+
+  // 4. Style rendering
+  if (style === 'blueprint') {
+    if (transparent) {
+      ctx.clearRect(0, 0, baseW, baseH);
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 4;
+      ctx.fillStyle = '#06162D';
+      ctx.strokeStyle = '#38BDF8';
+      ctx.lineWidth = 1.8;
+      drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 16, true, true);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = '#06162D';
+      ctx.fillRect(0, 0, baseW, baseH);
+      ctx.strokeStyle = '#38BDF8';
+      ctx.lineWidth = 1.8;
+      drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 16, false, true);
+    }
+
+    // Corner accents
+    drawBlueprintCross(ctx, cardX + 14, cardY + 14, 5);
+    drawBlueprintCross(ctx, cardX + cardW - 14, cardY + 14, 5);
+    drawBlueprintCross(ctx, cardX + 14, cardY + cardH - 14, 5);
+    drawBlueprintCross(ctx, cardX + cardW - 14, cardY + cardH - 14, 5);
+
+    // Brand tag
+    ctx.fillStyle = '#38BDF8';
+    ctx.font = '700 8.5px "JetBrains Mono", monospace';
+    ctx.fillText('BEANTAG // SPECIALTY COFFEE', cardX + 24, cardY + 32);
+
+    // Title (Coffee Name)
+    ctx.fillStyle = '#FFFFFF';
+    drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 68, cardW - 50, 34, '"JetBrains Mono", monospace', '900');
+
+    // Subtitle
+    ctx.fillStyle = '#7DD3FC';
+    ctx.font = '700 14px "JetBrains Mono", monospace';
+    drawTruncatedText(subStr, cardX + 24, cardY + 104, cardW - 48);
+
+    // Flavor pills
+    const pillY = cardY + 138;
+    const pillH = 36;
+    if (flavorTags.length > 0) {
+      let curX = cardX + 24;
+      const displayed = flavorTags.slice(0, 3);
+      ctx.font = '700 13px "JetBrains Mono", monospace';
+      for (const tag of displayed) {
+        const tagText = tag.toUpperCase();
+        const pillW = ctx.measureText(tagText).width + 24;
+        if (curX + pillW > cardX + cardW - 16) break;
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+        ctx.strokeStyle = '#38BDF8';
+        ctx.lineWidth = 1.4;
+        drawRoundedRect(ctx, curX, pillY, pillW, pillH, 8, true, true);
+        ctx.fillStyle = '#E0F2FE';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(tagText, curX + pillW / 2, pillY + pillH / 2);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        curX += pillW + 10;
+      }
+    } else {
+      const fallbackNote = 'ORIGEN SELECCIONADO • TOSTADO ARTESANAL';
+      ctx.font = '700 12px "JetBrains Mono", monospace';
+      const pillW = Math.min(ctx.measureText(fallbackNote).width + 24, cardW - 48);
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+      ctx.strokeStyle = '#38BDF8';
+      ctx.lineWidth = 1.4;
+      drawRoundedRect(ctx, cardX + 24, pillY, pillW, pillH, 8, true, true);
+      ctx.fillStyle = '#E0F2FE';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(fallbackNote, cardX + 24 + pillW / 2, pillY + pillH / 2);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+    }
+  } else if (style === 'neobrutalist') {
+    if (transparent) {
+      ctx.clearRect(0, 0, baseW, baseH);
+      // 4px hard black drop shadow
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(cardX + 5, cardY + 5, cardW, cardH);
+      // Card background
+      ctx.fillStyle = '#FFFDF8';
+      ctx.fillRect(cardX, cardY, cardW, cardH);
+      // Border
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(cardX, cardY, cardW, cardH);
+    } else {
+      ctx.fillStyle = '#FFFDF8';
+      ctx.fillRect(0, 0, baseW, baseH);
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(cardX, cardY, cardW, cardH);
+    }
+
+    // Brand tag
+    ctx.fillStyle = '#000000';
+    ctx.font = '900 9px "Space Grotesk", sans-serif';
+    ctx.fillText('BEANTAG // STICKER', cardX + 24, cardY + 32);
+
+    // Title (Coffee Name)
+    ctx.fillStyle = '#000000';
+    drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 68, cardW - 50, 36, '"Space Grotesk", sans-serif', '900');
+
+    // Subtitle
+    ctx.fillStyle = '#FF3B14';
+    ctx.font = '800 14px "Space Grotesk", sans-serif';
+    drawTruncatedText(subStr, cardX + 24, cardY + 104, cardW - 48);
+
+    // Flavor pills
+    const pillY = cardY + 138;
+    const pillH = 36;
+    const neoColors = ['#D4FF00', '#FF3B14', '#D8B4FE'];
+    if (flavorTags.length > 0) {
+      let curX = cardX + 24;
+      const displayed = flavorTags.slice(0, 3);
+      ctx.font = '800 13px "Space Grotesk", sans-serif';
+      displayed.forEach((tag, idx) => {
+        const tagText = tag.toUpperCase();
+        const pillW = ctx.measureText(tagText).width + 24;
+        if (curX + pillW > cardX + cardW - 16) return;
+        // 2px hard shadow
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(curX + 2, pillY + 2, pillW, pillH);
+        // Pill background
+        ctx.fillStyle = neoColors[idx % neoColors.length];
+        ctx.fillRect(curX, pillY, pillW, pillH);
+        // 2px black border
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(curX, pillY, pillW, pillH);
+        // Text
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(tagText, curX + pillW / 2, pillY + pillH / 2);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        curX += pillW + 10;
+      });
+    } else {
+      const fallbackNote = 'ORIGEN SELECCIONADO • TOSTADO ARTESANAL';
+      ctx.font = '800 12px "Space Grotesk", sans-serif';
+      const pillW = Math.min(ctx.measureText(fallbackNote).width + 24, cardW - 48);
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(cardX + 24 + 2, pillY + 2, pillW, pillH);
+      ctx.fillStyle = '#D4FF00';
+      ctx.fillRect(cardX + 24, pillY, pillW, pillH);
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(cardX + 24, pillY, pillW, pillH);
+      ctx.fillStyle = '#000000';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(fallbackNote, cardX + 24 + pillW / 2, pillY + pillH / 2);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+    }
+  } else if (style === 'diner') {
+    if (transparent) {
+      ctx.clearRect(0, 0, baseW, baseH);
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 4;
+      ctx.fillStyle = '#FFFDF5';
+      ctx.strokeStyle = '#C92A2A';
+      ctx.lineWidth = 2;
+      drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 18, true, true);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = '#FFFDF5';
+      ctx.fillRect(0, 0, baseW, baseH);
+      ctx.strokeStyle = '#C92A2A';
+      ctx.lineWidth = 2;
+      drawRoundedRect(ctx, cardX + 1, cardY + 1, cardW - 2, cardH - 2, 14, false, true);
+    }
+
+    // Inner border #0E7490 dashed or inset
+    ctx.strokeStyle = '#0E7490';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    drawRoundedRect(ctx, cardX + 6, cardY + 6, cardW - 12, cardH - 12, 12, false, true);
+    ctx.setLineDash([]);
+
+    // Corner accent
+    drawDinerAtomicStar(ctx, cardX + cardW - 32, cardY + 28, 14, '#C92A2A');
+
+    // Brand tag
+    ctx.fillStyle = '#C92A2A';
+    ctx.font = '700 8.5px "Space Grotesk", sans-serif';
+    ctx.fillText('★ BEANTAG COFFEE CO. ★', cardX + 24, cardY + 32);
+
+    // Title (Coffee Name)
+    ctx.fillStyle = '#1C1917';
+    drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 68, cardW - 75, 34, '"Space Grotesk", sans-serif', '900');
+
+    // Subtitle
+    ctx.fillStyle = '#0E7490';
+    ctx.font = '700 14px "Space Grotesk", sans-serif';
+    drawTruncatedText(subStr, cardX + 24, cardY + 104, cardW - 48);
+
+    // Flavor pills
+    const pillY = cardY + 138;
+    const pillH = 36;
+    if (flavorTags.length > 0) {
+      let curX = cardX + 24;
+      const displayed = flavorTags.slice(0, 3);
+      ctx.font = '700 13px "Space Grotesk", sans-serif';
+      for (const tag of displayed) {
+        const tagText = tag.toUpperCase();
+        const pillW = ctx.measureText(tagText).width + 24;
+        if (curX + pillW > cardX + cardW - 16) break;
+        ctx.fillStyle = '#FEE2E2';
+        ctx.strokeStyle = '#C92A2A';
+        ctx.lineWidth = 1.5;
+        drawRoundedRect(ctx, curX, pillY, pillW, pillH, 8, true, true);
+        ctx.fillStyle = '#991B1B';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(tagText, curX + pillW / 2, pillY + pillH / 2);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        curX += pillW + 10;
+      }
+    } else {
+      const fallbackNote = 'ORIGEN SELECCIONADO • TOSTADO ARTESANAL';
+      ctx.font = '700 12px "Space Grotesk", sans-serif';
+      const pillW = Math.min(ctx.measureText(fallbackNote).width + 24, cardW - 48);
+      ctx.fillStyle = '#FEE2E2';
+      ctx.strokeStyle = '#C92A2A';
+      ctx.lineWidth = 1.5;
+      drawRoundedRect(ctx, cardX + 24, pillY, pillW, pillH, 8, true, true);
+      ctx.fillStyle = '#991B1B';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(fallbackNote, cardX + 24 + pillW / 2, pillY + pillH / 2);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+    }
+  } else {
+    // kissaten
+    if (transparent) {
+      ctx.clearRect(0, 0, baseW, baseH);
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 4;
+      ctx.fillStyle = '#F7F5F0';
+      ctx.strokeStyle = '#18181B';
+      ctx.lineWidth = 1.2;
+      drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 18, true, true);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = '#F7F5F0';
+      ctx.fillRect(0, 0, baseW, baseH);
+      ctx.strokeStyle = '#18181B';
+      ctx.lineWidth = 1.2;
+      drawRoundedRect(ctx, cardX + 1, cardY + 1, cardW - 2, cardH - 2, 10, false, true);
+    }
+
+    // Inner subtle line
+    ctx.strokeStyle = '#E4E4E7';
+    ctx.lineWidth = 1;
+    drawRoundedRect(ctx, cardX + 6, cardY + 6, cardW - 12, cardH - 12, 8, false, true);
+
+    // Stamp
+    drawHankoSeal(ctx, cardX + cardW - 38, cardY + 36, 26, '豆札');
+
+    // Brand tag
+    ctx.fillStyle = '#52525B';
+    ctx.font = '700 8.5px "Playfair Display", Georgia, serif';
+    ctx.fillText('自家焙煎 • BEANTAG ARCHIVE', cardX + 24, cardY + 32);
+
+    // Title (Coffee Name)
+    ctx.fillStyle = '#18181B';
+    drawFittedText(coffeeName, cardX + 24, cardY + 68, cardW - 75, 34, '"Playfair Display", Georgia, serif', 'bold');
+
+    // Subtitle
+    ctx.fillStyle = '#78716C';
+    ctx.font = 'italic 14px "Playfair Display", Georgia, serif';
+    drawTruncatedText(subStr, cardX + 24, cardY + 104, cardW - 48);
+
+    // Flavor pills
+    const pillY = cardY + 138;
+    const pillH = 36;
+    if (flavorTags.length > 0) {
+      let curX = cardX + 24;
+      const displayed = flavorTags.slice(0, 3);
+      ctx.font = 'bold 13px "Playfair Display", Georgia, serif';
+      for (const tag of displayed) {
+        const tagText = tag.toUpperCase();
+        const pillW = ctx.measureText(tagText).width + 24;
+        if (curX + pillW > cardX + cardW - 16) break;
+        ctx.fillStyle = '#FAF8F5';
+        ctx.strokeStyle = '#D4D4D8';
+        ctx.lineWidth = 1;
+        drawRoundedRect(ctx, curX, pillY, pillW, pillH, 6, true, true);
+        ctx.fillStyle = '#18181B';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(tagText, curX + pillW / 2, pillY + pillH / 2);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        curX += pillW + 10;
+      }
+    } else {
+      const fallbackNote = 'ORIGEN SELECCIONADO • TOSTADO ARTESANAL';
+      ctx.font = 'bold 12px "Playfair Display", Georgia, serif';
+      const pillW = Math.min(ctx.measureText(fallbackNote).width + 24, cardW - 48);
+      ctx.fillStyle = '#FAF8F5';
+      ctx.strokeStyle = '#D4D4D8';
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, cardX + 24, pillY, pillW, pillH, 6, true, true);
+      ctx.fillStyle = '#52525B';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(fallbackNote, cardX + 24 + pillW / 2, pillY + pillH / 2);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+    }
+  }
+
+  return canvas.toDataURL('image/png');
+}
+
