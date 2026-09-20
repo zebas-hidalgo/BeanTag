@@ -440,8 +440,16 @@ async function verify() {
           const opsCount = mockOps.length;
           const hasNoLiteralNotasBracket = !mockContext.operations.some(op => op.name === 'fillText' && typeof op.args[0] === 'string' && (op.args[0].includes('[Notas:') || op.args[0].includes('[Notas')));
           assert(hasNoLiteralNotasBracket, 'Story sticker must NEVER render literal [Notas:');
-          const hasScaIcons = mockContext.operations.some(op => op.name === 'fillText' && typeof op.args[0] === 'string' && (op.args[0].includes('🌸') || op.args[0].includes('🍑') || op.args[0].includes('🍯') || op.args[0].includes('🍋')));
-          assert(hasScaIcons, 'Story sticker must render SCA wheel category icons');
+          const hasScaIcons = mockContext.operations.some(op => {
+            if (op.name !== 'fillText' || typeof op.args[0] !== 'string') return false;
+            const str = op.args[0];
+            return str.includes('⊛') || str.includes('◈') || str.includes('◉') || str.includes('◇') ||
+                   str.includes('✿') || str.includes('★') || str.includes('⚡') ||
+                   str.includes('✻') || str.includes('✶') || str.includes('✧') || str.includes('✪') ||
+                   str.includes('❀') || str.includes('❖') || str.includes('❂') ||
+                   str.includes('🌸') || str.includes('🍑') || str.includes('🍯') || str.includes('🍒');
+          });
+          assert(hasScaIcons, 'Story sticker must render style-tailored SCA icons');
           const hasNoDrawImage = !mockOps.includes('drawImage');
           const passed = isValidDataUrl && opsCount > 15 && hasNoDrawImage && hasNoLiteralNotasBracket && hasScaIcons;
 

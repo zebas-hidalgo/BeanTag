@@ -184,30 +184,30 @@ export function cleanNotesString(notes) {
 }
 
 /**
- * Maps flavor note descriptors to corresponding official SCA Flavor Wheel icons
+ * Classifies a flavor descriptor into one of the official SCA categories
  */
-export function getScaWheelIcon(tagLabel) {
-  if (!tagLabel) return '☕';
+export function getScaCategory(tagLabel) {
+  if (!tagLabel) return 'default';
   const text = String(tagLabel).toLowerCase().trim();
 
   // 1. Floral (Flores, Jazmín, Rosa, Lavanda, Manzanilla, Hibisco)
   if (text.includes('flor') || text.includes('rosa') || text.includes('jazm') || text.includes('lavand') || text.includes('hibisc') || text.includes('violeta') || text.includes('manzanilla')) {
-    return '🌸';
+    return 'floral';
   }
 
   // 2. Té / Hierbas (Té negro, Té verde, Hierba, Menta, Romero, etc.)
   if (text.includes('té') || text.includes('te ') || text.includes('hierba') || text.includes('heno') || text.includes('menta') || text.includes('romero') || text.includes('eucalipto') || text.includes('salvia') || text.includes('lúpulo') || text.includes('lupulo')) {
-    return '🌿';
+    return 'herbal';
   }
 
   // 3. Bayas / Frutos rojos (Mora, Frambuesa, Arándano, Fresa, Cereza, Grosella)
   if (text.includes('mora') || text.includes('frambuesa') || text.includes('arándano') || text.includes('arandano') || text.includes('fresa') || text.includes('frutilla') || text.includes('cereza') || text.includes('baya') || text.includes('berry') || text.includes('grosella')) {
-    return '🍒';
+    return 'berries';
   }
 
   // 4. Cítricos (Limón, Lima, Naranja, Mandarina, Pomelo, Toronja, Bergamota)
   if (text.includes('limón') || text.includes('limon') || text.includes('lima') || text.includes('naranja') || text.includes('mandarina') || text.includes('pomelo') || text.includes('toronja') || text.includes('bergamota') || text.includes('cítric') || text.includes('citric')) {
-    return '🍋';
+    return 'citrus';
   }
 
   // 5. Frutas dulces / hueso / tropicales (Melocotón, Durazno, Mango, Maracuyá, Piña, Papaya, Manzana, Pera, Uva, etc.)
@@ -218,7 +218,7 @@ export function getScaWheelIcon(tagLabel) {
     text.includes('manzana') || text.includes('pera') || text.includes('uva') || text.includes('higo') || text.includes('dátil') || text.includes('datil') ||
     text.includes('ciruela') || text.includes('pasa') || text.includes('granada') || text.includes('fruta')
   ) {
-    return '🍑';
+    return 'fruit';
   }
 
   // 6. Dulces / Caramelos / Azúcares / Miel
@@ -228,7 +228,7 @@ export function getScaWheelIcon(tagLabel) {
     text.includes('vainilla') || text.includes('malvavisco') || text.includes('arequipe') || text.includes('dulce') || text.includes('toffee') ||
     text.includes('turrón') || text.includes('turron')
   ) {
-    return '🍯';
+    return 'sweet';
   }
 
   // 7. Frutos secos
@@ -238,12 +238,12 @@ export function getScaWheelIcon(tagLabel) {
     text.includes('macadamia') || text.includes('anacardo') || text.includes('castaña') || text.includes('caju') ||
     text.includes('frutos secos')
   ) {
-    return '🥜';
+    return 'nuts';
   }
 
   // 8. Cacao / Chocolate
   if (text.includes('chocolate') || text.includes('cacao') || text.includes('nibs')) {
-    return '🍫';
+    return 'chocolate';
   }
 
   // 9. Especias
@@ -251,40 +251,163 @@ export function getScaWheelIcon(tagLabel) {
     text.includes('canela') || text.includes('clavo') || text.includes('moscada') || text.includes('anís') || text.includes('anis') ||
     text.includes('cardamomo') || text.includes('pimienta') || text.includes('jengibre') || text.includes('curri') || text.includes('especias')
   ) {
-    return '✨';
+    return 'spices';
   }
 
   // 10. Cereales
   if (text.includes('malta') || text.includes('cebada') || text.includes('avena') || text.includes('grano') || text.includes('pan') || text.includes('graham') || text.includes('cereal')) {
-    return '🌾';
+    return 'cereals';
   }
 
   // 11. Ahumado / Tostado
   if (text.includes('humo') || text.includes('ceniza') || text.includes('quemad') || text.includes('acre') || text.includes('tostado')) {
-    return '🔥';
+    return 'roasted';
   }
 
   // 12. Tabaco
   if (text.includes('tabaco') || text.includes('pipa') || text.includes('cuero')) {
-    return '🍂';
+    return 'tobacco';
   }
 
   // 13. Vegetal / Crudos
   if (text.includes('vegetal') || text.includes('vaina') || text.includes('aceite') || text.includes('tierra') || text.includes('humedad') || text.includes('fresca') || text.includes('crudos') || text.includes('oliva') || text.includes('musgo') || text.includes('cedro')) {
-    return '🌱';
+    return 'vegetal';
   }
 
   // 14. Alcohol / Fermentado
   if (text.includes('vino') || text.includes('whiskey') || text.includes('alcohol') || text.includes('fermentado') || text.includes('licor') || text.includes('ron') || text.includes('bourbon') || text.includes('champagne') || text.includes('kombucha') || text.includes('anaerób') || text.includes('anaerob') || text.includes('maceraci')) {
-    return '🍷';
+    return 'fermented';
   }
 
   // 15. Ácidos
   if (text.includes('ácido') || text.includes('acido') || text.includes('málico') || text.includes('malico') || text.includes('acético') || text.includes('acetico') || text.includes('vinagre') || text.includes('acidez')) {
-    return '💧';
+    return 'acidity';
   }
 
-  return '☕';
+  return 'default';
+}
+
+/**
+ * Curated, aesthetic icon sets tailored to each visual style
+ */
+export const STYLE_SCA_ICONS = {
+  // 1. BLUEPRINT: Technical CAD, schematic drafting, patent engineering markers
+  blueprint: {
+    floral: '⊛',
+    herbal: '☘',
+    berries: '◈',
+    citrus: '◐',
+    fruit: '◉',
+    sweet: '◇',
+    nuts: '⬡',
+    chocolate: '▦',
+    spices: '✦',
+    cereals: '◬',
+    roasted: '▲',
+    tobacco: '▰',
+    vegetal: '⌖',
+    fermented: '▽',
+    acidity: '⚡',
+    default: '◈'
+  },
+  // 2. NEOBRUTALIST: Chunky, pop-art bold stamps, high-contrast graphic punch
+  neobrutalist: {
+    floral: '✿',
+    herbal: '☘',
+    berries: '🍒',
+    citrus: '⚡',
+    fruit: '★',
+    sweet: '🍯',
+    nuts: '🥜',
+    chocolate: '🍫',
+    spices: '✦',
+    cereals: '▲',
+    roasted: '🔥',
+    tobacco: '◼',
+    vegetal: '🌱',
+    fermented: '🍷',
+    acidity: '⚡',
+    default: '★'
+  },
+  // 3. DINER: Mid-century 1950s Atomic Age starbursts, Googie motel symbols, retro americana
+  diner: {
+    floral: '✻',
+    herbal: '☘',
+    berries: '✶',
+    citrus: '✧',
+    fruit: '✪',
+    sweet: '✦',
+    nuts: '✮',
+    chocolate: '★',
+    spices: '✴',
+    cereals: '✲',
+    roasted: '♨',
+    tobacco: '✧',
+    vegetal: '❆',
+    fermented: '🍸',
+    acidity: '⚡',
+    default: '★'
+  },
+  // 4. KISSATEN: Tokyo 1960s Showa-era botanical sumi-e crests, washi paper emblems
+  kissaten: {
+    floral: '❀',
+    herbal: '❋',
+    berries: '◈',
+    citrus: '❂',
+    fruit: '✿',
+    sweet: '◇',
+    nuts: '❖',
+    chocolate: '◆',
+    spices: '✦',
+    cereals: '❊',
+    roasted: '♨',
+    tobacco: '🍂',
+    vegetal: '🌱',
+    fermented: '❖',
+    acidity: '✧',
+    default: '✿'
+  }
+};
+
+/**
+ * Maps flavor note descriptors to corresponding SCA Flavor Wheel icons,
+ * optionally styled for 'blueprint' | 'neobrutalist' | 'diner' | 'kissaten'
+ */
+export function getScaWheelIcon(tagLabel, style = null) {
+  const cat = getScaCategory(tagLabel);
+
+  if (style) {
+    const s = String(style).toLowerCase();
+    let norm = 'blueprint';
+    if (s.includes('blue') || s.includes('cyan') || s.includes('tech')) norm = 'blueprint';
+    else if (s.includes('neo') || s.includes('brutal') || s.includes('pop')) norm = 'neobrutalist';
+    else if (s.includes('diner') || s.includes('retro') || s.includes('1950') || s.includes('aurora')) norm = 'diner';
+    else if (s.includes('kissa') || s.includes('japan') || s.includes('tokyo') || s.includes('hang')) norm = 'kissaten';
+
+    const styleSet = STYLE_SCA_ICONS[norm] || STYLE_SCA_ICONS.blueprint;
+    return styleSet[cat] || styleSet.default;
+  }
+
+  // Standard colorful wheel emoji fallback if no card style specified
+  const EMOJI_MAP = {
+    floral: '🌸',
+    herbal: '🌿',
+    berries: '🍒',
+    citrus: '🍋',
+    fruit: '🍑',
+    sweet: '🍯',
+    nuts: '🥜',
+    chocolate: '🍫',
+    spices: '✨',
+    cereals: '🌾',
+    roasted: '🔥',
+    tobacco: '🍂',
+    vegetal: '🌱',
+    fermented: '🍷',
+    acidity: '💧',
+    default: '☕'
+  };
+  return EMOJI_MAP[cat] || '☕';
 }
 
 export function RenderScaChips({ notesStr, maxChips = 4 }) {

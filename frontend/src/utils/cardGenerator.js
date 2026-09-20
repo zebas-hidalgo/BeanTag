@@ -20,8 +20,8 @@ export function normalizeCardStyle(tpl) {
   return 'blueprint';
 }
 
-export { getScaWheelIcon, cleanNotesString } from './scaIcons';
-import { getScaWheelIcon, cleanNotesString } from './scaIcons';
+export { getScaWheelIcon, cleanNotesString, getScaCategory, STYLE_SCA_ICONS } from './scaIcons';
+import { getScaWheelIcon, cleanNotesString, getScaCategory, STYLE_SCA_ICONS } from './scaIcons';
 
 /**
  * Strips OS emojis from strings for clean typography
@@ -970,7 +970,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.font = '800 9.5px "JetBrains Mono", monospace';
 
         flavorTags.slice(0, 6).forEach((tag) => {
-          const scaIcon = getScaWheelIcon(tag);
+          const scaIcon = getScaWheelIcon(tag, 'blueprint');
           const tagLabel = `${scaIcon} ${tag.toUpperCase()}`;
           const tw = ctx.measureText(tagLabel).width;
           const pw = tw + 18;
@@ -1178,7 +1178,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         const pillY = notesY + 30;
         flavorTags.slice(0, 4).forEach((tag) => {
           ctx.font = '800 9.5px "JetBrains Mono", monospace';
-          const scaIcon = getScaWheelIcon(tag);
+          const scaIcon = getScaWheelIcon(tag, 'neobrutalist');
           const tagLabel = `${scaIcon} ${tag.toUpperCase()}`;
           const tw = ctx.measureText(tagLabel).width;
           const pw = tw + 16;
@@ -1431,7 +1431,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         flavorTags.slice(0, 6).forEach((tag, idx) => {
           const bgCol = pillColors[idx % pillColors.length];
           ctx.font = '900 10px "Space Grotesk", sans-serif';
-          const scaIcon = getScaWheelIcon(tag);
+          const scaIcon = getScaWheelIcon(tag, 'diner');
           const tagLabel = `${scaIcon} ${tag.toUpperCase()}`;
           const pw = ctx.measureText(tagLabel).width + 18;
 
@@ -1830,7 +1830,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
         flavorTags.slice(0, 6).forEach(tag => {
           ctx.font = '800 9.5px "Space Grotesk", sans-serif';
-          const scaIcon = getScaWheelIcon(tag);
+          const scaIcon = getScaWheelIcon(tag, 'kissaten');
           const tagLabel = `${scaIcon} ${tag}`;
           const tw = ctx.measureText(tagLabel).width;
           const pw = tw + 18;
@@ -2187,7 +2187,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
         flavorTags.slice(0, 6).forEach(tag => {
           ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
-          const scaIcon = getScaWheelIcon(tag);
+          const scaIcon = getScaWheelIcon(tag, 'kissaten');
           const tagLabel = `${scaIcon} ${tag}`;
           const textW = ctx.measureText(tagLabel).width;
           const pillW = textW + 18;
@@ -2598,7 +2598,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
 
         ctx.font = '800 8.5px "JetBrains Mono", monospace';
         parsedTags.forEach(tag => {
-          const scaIcon = getScaWheelIcon(tag);
+          const scaIcon = getScaWheelIcon(tag, 'blueprint');
           const tagLabel = `${scaIcon} ${tag}`;
           const tw = ctx.measureText(tagLabel).width;
           const pw = tw + 12;
@@ -2761,7 +2761,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
 
         ctx.font = '900 8.5px "Space Grotesk", sans-serif';
         parsedTags.forEach((tag, tIdx) => {
-          const scaIcon = getScaWheelIcon(tag);
+          const scaIcon = getScaWheelIcon(tag, 'neobrutalist');
           const tagLabel = `${scaIcon} ${tag.toUpperCase()}`;
           const tw = ctx.measureText(tagLabel).width;
           const pw = tw + 12;
@@ -2929,7 +2929,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
 
         ctx.font = '800 8.5px "Space Grotesk", sans-serif';
         parsedTags.forEach(tag => {
-          const scaIcon = getScaWheelIcon(tag);
+          const scaIcon = getScaWheelIcon(tag, 'diner');
           const tagLabel = `${scaIcon} ${tag}`;
           const tw = ctx.measureText(tagLabel).width;
           const pw = tw + 14;
@@ -3078,7 +3078,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
 
         ctx.font = 'bold 8.5px "Playfair Display", Georgia, serif';
         parsedTags.forEach(tag => {
-          const scaIcon = getScaWheelIcon(tag);
+          const scaIcon = getScaWheelIcon(tag, 'kissaten');
           const tagLabel = `${scaIcon} ${tag}`;
           const tw = ctx.measureText(tagLabel).width;
           const pw = tw + 12;
@@ -3184,8 +3184,8 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
   const notesStr = cleanNotesString(item.flavor_notes || item.roaster_notes || item.batch_roaster_notes || item.notes || '');
   const flavorTags = extractFlavorTags(notesStr);
 
-  const getAestheticGlyph = (tag) => {
-    return getScaWheelIcon(tag);
+  const getAestheticGlyph = (tag, currentStyle) => {
+    return getScaWheelIcon(tag, currentStyle || style);
   };
 
   // Text helpers
