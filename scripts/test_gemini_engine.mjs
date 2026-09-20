@@ -10,12 +10,12 @@ if (sanitizeModel('') !== DEFAULT_GEMINI_MODEL) {
   console.error('❌ Empty model did not fallback to default');
   failed = true;
 }
-if (sanitizeModel('gemini-2.5-flash') !== 'gemini-2.5-flash') {
+if (sanitizeModel('gemini-3.6-flash') !== 'gemini-3.6-flash') {
   console.error('❌ Valid model was not recognized');
   failed = true;
 }
-if (sanitizeModel('gemini-2.0-flash') !== 'gemini-2.5-flash') {
-  console.error('❌ Legacy model was not migrated to gemini-2.5-flash');
+if (sanitizeModel('gemini-2.0-flash') !== 'gemini-3.6-flash') {
+  console.error('❌ Legacy model was not migrated to gemini-3.6-flash');
   failed = true;
 }
 console.log('✅ Model sanitization operates correctly');

@@ -245,7 +245,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       return;
     }
 
-    const model = localStorage.getItem('gemini-model') || 'gemini-2.5-flash';
+    const model = localStorage.getItem('gemini-model') || 'gemini-3.6-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
     setAiLoading(true);
