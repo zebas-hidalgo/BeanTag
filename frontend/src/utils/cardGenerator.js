@@ -66,6 +66,22 @@ export function parseGrindToMicrons(grind) {
 }
 
 /**
+ * Robust text truncation utility that guarantees text never bleeds past maxWidth
+ */
+export function drawCanvasTruncatedText(ctx, text, x, y, maxWidth) {
+  const str = String(text || '');
+  if (!maxWidth || ctx.measureText(str).width <= maxWidth) {
+    ctx.fillText(str, x, y);
+    return;
+  }
+  let truncated = str;
+  while (truncated.length > 0 && ctx.measureText(truncated + '…').width > maxWidth) {
+    truncated = truncated.slice(0, -1);
+  }
+  ctx.fillText(truncated + '…', x, y);
+}
+
+/**
  * Draws a 5-axis Mini SCA Sensory Radar Chart on the given Canvas context
  */
 export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
@@ -157,7 +173,7 @@ export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
   }
 
   // 5. Axis Labels with quadrant-aware alignment to prevent vertex collisions
-  ctx.font = '700 7px "JetBrains Mono", monospace';
+  ctx.font = '700 6.5px "JetBrains Mono", monospace';
   ctx.fillStyle = s === 'blueprint'
     ? '#93C5FD'
     : (s === 'kissaten' ? '#52525B' : (s === 'diner' ? '#0E7490' : '#18181B'));
@@ -167,8 +183,8 @@ export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
     const sinA = Math.sin(angle);
     ctx.textAlign = Math.abs(cosA) < 0.25 ? 'center' : (cosA > 0 ? 'left' : 'right');
     ctx.textBaseline = Math.abs(sinA) < 0.25 ? 'middle' : (sinA > 0 ? 'top' : 'bottom');
-    const lx = cx + (radius + 8) * cosA;
-    const ly = cy + (radius + 6) * sinA;
+    const lx = cx + (radius + 4) * cosA;
+    const ly = cy + (radius + 4) * sinA;
     ctx.fillText(labels[i], lx, ly);
   }
 
@@ -294,15 +310,22 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
   const methodLabel = `${(method || 'POUR OVER').toUpperCase()}${temperature ? ' • ' + temperature : ''}`;
-  ctx.fillText(`TIMELINE DE EXTRACCIÓN // ${methodLabel}`, x, y);
+  const maxHeaderLeftW = width * 0.55;
+  drawCanvasTruncatedText(ctx, `TIMELINE DE EXTRACCIÓN // ${methodLabel}`, x, y, maxHeaderLeftW);
 
   // Grind micron chip (truncated defensively to prevent collision with header)
   const microns = parseGrindToMicrons(grind);
-  const cleanGrind = grind && String(grind).length > 24 ? String(grind).slice(0, 22) + '…' : grind;
+  const cleanGrind = grind && String(grind).length > 20 ? String(grind).slice(0, 18) + '…' : grind;
   ctx.font = '700 7.5px "JetBrains Mono", monospace';
   ctx.fillStyle = s === 'blueprint' ? '#93C5FD' : '#64748B';
   ctx.textAlign = 'right';
-  ctx.fillText(`MOLIENDA: ${microns}µm (${cleanGrind})`, x + width, y);
+  const grindLabel = `MOLIENDA: ${microns}µm (${cleanGrind})`;
+  const maxHeaderRightW = width * 0.42;
+  if (ctx.measureText(grindLabel).width > maxHeaderRightW) {
+    ctx.fillText(`MOL: ${microns}µm`, x + width, y);
+  } else {
+    ctx.fillText(grindLabel, x + width, y);
+  }
 
   const barY = y + 13;
   const barH = 10;
@@ -467,14 +490,15 @@ export function drawTicketNotchesAndPerforation(ctx, x, width, notchY, style, bg
   ctx.save();
 
   if (s === 'neobrutalist') {
-    // 1. 3px hard black offset shadow for the arc
+    // 1. 3px hard black offset shadow for the arc (kept cleanly within card/canvas bounds)
     ctx.fillStyle = '#000000';
     ctx.beginPath();
     ctx.arc(x + 3, notchY + 3, radius, -Math.PI / 2, Math.PI / 2);
     ctx.fill();
 
     ctx.beginPath();
-    ctx.arc(x + width + 3, notchY + 3, radius, Math.PI / 2, (3 * Math.PI) / 2);
+    const rightShadowX = (x + width >= 540) ? (x + width) : (x + width + 3);
+    ctx.arc(rightShadowX, notchY + 3, radius, Math.PI / 2, (3 * Math.PI) / 2);
     ctx.fill();
 
     // 2. Cutout arcs
@@ -1057,7 +1081,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       }
 
       if (hasRadar) {
-        drawSensoryRadarChart(ctx, paddingX + availW - 68, notesY + 74, 36, sensoryData, style);
+        drawSensoryRadarChart(ctx, paddingX + availW - 74, notesY + 74, 36, sensoryData, style);
       }
 
       // 4. Cellar Vault Strip
@@ -1189,13 +1213,13 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
           const px = paddingX + 12 + (pIdx * pourColW);
           ctx.fillStyle = '#BAE6FD';
           ctx.font = '700 8px "JetBrains Mono", monospace';
-          drawTruncatedText(`${p.time ? p.time + ' • ' : ''}${p.label}`, px, flowY + 33, pourColW - 8);
+          drawTruncatedText(`${p.time ? p.time + ' • ' : ''}${p.label}`, px, flowY + 31, pourColW - 8);
           ctx.fillStyle = '#FFFFFF';
-          ctx.font = '900 12px "JetBrains Mono", monospace';
-          ctx.fillText(`${p.totalWater}g`, px, flowY + 49);
+          ctx.font = '900 11.5px "JetBrains Mono", monospace';
+          ctx.fillText(`${p.totalWater}g`, px, flowY + 45);
           ctx.fillStyle = '#38BDF8';
           ctx.font = '700 7.5px "JetBrains Mono", monospace';
-          drawTruncatedText(`(+${p.stepWater}g acum)`, px, flowY + 60, pourColW - 8);
+          drawTruncatedText(`(+${p.stepWater}g acum)`, px, flowY + 56, pourColW - 8);
         });
       } else {
         // Barista Brew Notes / Instruction Box
@@ -1233,7 +1257,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillText('DESCRIPTORES SENSORIALES DEL CAFÉ:', paddingX + 12, notesY + 18);
 
       const hasRadar = sensoryData !== null;
-      const contentW = hasRadar ? availW - 116 : availW - 12;
+      const contentW = hasRadar ? availW - 122 : availW - 12;
 
       if (flavorTags.length > 0) {
         let pillX = paddingX + 12;
@@ -1258,7 +1282,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       } else if (notesStr) {
         ctx.fillStyle = '#BAE6FD';
         ctx.font = '700 9px "JetBrains Mono", monospace';
-        drawTruncatedText(notesStr, paddingX + 12, notesY + 44, hasRadar ? availW - 120 : availW - 24);
+        drawTruncatedText(notesStr, paddingX + 12, notesY + 44, hasRadar ? availW - 122 : availW - 24);
       } else {
         ctx.fillStyle = '#94A3B8';
         ctx.font = 'italic 8.5px "JetBrains Mono", monospace';
@@ -1266,7 +1290,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       }
 
       if (hasRadar) {
-        drawSensoryRadarChart(ctx, paddingX + availW - 55, notesY + 38, 23, sensoryData, style);
+        drawSensoryRadarChart(ctx, paddingX + availW - 65, notesY + 38, 23, sensoryData, style);
       }
 
       // 5. Extraction Timeline
@@ -1383,7 +1407,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
     // 4. Ticket Notches & Perforation Line (Well separated from tags above and strip below)
     const notchY = paddingY + 114;
-    drawTicketNotchesAndPerforation(ctx, 0, baseW, notchY, style, '#FFFDF8');
+    drawTicketNotchesAndPerforation(ctx, 0, baseW, notchY, style, '#F4F4F5');
 
     // -----------------------------------------------------------------------
     // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
@@ -1526,7 +1550,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       }
 
       if (hasRadar) {
-        drawSensoryRadarChart(ctx, paddingX + availW - 70, specY + 75, 36, sensoryData, style);
+        drawSensoryRadarChart(ctx, paddingX + availW - 74, specY + 75, 36, sensoryData, style);
       }
 
       // 4. Cellar vault pill
@@ -1644,7 +1668,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillText('⚡ NOTAS DE CATA // SENSORY STICKERS:', paddingX + 12, notesY + 20);
 
       const hasRadar = sensoryData !== null;
-      const contentW = hasRadar ? availW - 116 : availW - 12;
+      const contentW = hasRadar ? availW - 122 : availW - 12;
 
       let pillX = paddingX + 12;
       const pillY = notesY + 34;
@@ -1682,7 +1706,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       }
 
       if (hasRadar) {
-        drawSensoryRadarChart(ctx, paddingX + availW - 55, notesY + 40, 24, sensoryData, style);
+        drawSensoryRadarChart(ctx, paddingX + availW - 65, notesY + 40, 23, sensoryData, style);
       }
 
       // 4. Barista Pour Timeline Strip
@@ -1725,9 +1749,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
         ctx.fillStyle = '#000000';
         ctx.font = '900 8px "Space Grotesk", sans-serif';
-        ctx.fillText(s.title, sx + 6, sy + 13);
+        drawTruncatedText(s.title, sx + 6, sy + 13, stepW - 12);
         ctx.font = '700 8px monospace';
-        ctx.fillText(s.desc, sx + 6, sy + 24);
+        drawTruncatedText(s.desc, sx + 6, sy + 24, stepW - 12);
       });
 
       // 5. Extraction Timeline
@@ -1920,7 +1944,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       }
 
       if (hasRadar) {
-        drawSensoryRadarChart(ctx, paddingX + availW - 70, notesBoxY + 75, 36, sensoryData, style);
+        drawSensoryRadarChart(ctx, paddingX + availW - 74, notesBoxY + 75, 36, sensoryData, style);
       }
 
       // 4. Vault Stock Bar
@@ -2058,7 +2082,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillText('CUPPING TASTE NOTES // PERFIL SENSORIAL:', paddingX + 14, notesY + 18);
 
       const hasRadar = sensoryData !== null;
-      const contentW = hasRadar ? availW - 116 : availW - 14;
+      const contentW = hasRadar ? availW - 122 : availW - 14;
 
       let pillX = paddingX + 14;
       const pillY = notesY + 32;
@@ -2090,7 +2114,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       }
 
       if (hasRadar) {
-        drawSensoryRadarChart(ctx, paddingX + availW - 55, notesY + 40, 24, sensoryData, style);
+        drawSensoryRadarChart(ctx, paddingX + availW - 65, notesY + 40, 23, sensoryData, style);
       }
 
       // 5. Stock & Vault bar
@@ -2277,7 +2301,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       }
 
       if (hasRadar) {
-        drawSensoryRadarChart(ctx, paddingX + availW - 70, notesBoxY + 75, 36, sensoryData, style);
+        drawSensoryRadarChart(ctx, paddingX + availW - 74, notesBoxY + 75, 36, sensoryData, style);
       }
 
       // 4. Vault Stock Bar
@@ -2415,10 +2439,10 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
         ctx.fillStyle = '#18181B';
         ctx.font = 'bold 8.5px "Playfair Display", Georgia, serif';
-        ctx.fillText(s.title, sx + 6, sy + 12);
+        drawTruncatedText(s.title, sx + 6, sy + 12, stepW - 12);
         ctx.fillStyle = '#71717A';
         ctx.font = 'italic 8px "Playfair Display", Georgia, serif';
-        ctx.fillText(s.desc, sx + 6, sy + 22);
+        drawTruncatedText(s.desc, sx + 6, sy + 22, stepW - 12);
       });
 
       // 4. Sensory Notes Pills Section
@@ -2434,7 +2458,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillText('風味特性 // SENSORY NOTES // PERFIL EN TAZA', paddingX + 12, notesBoxY + 18);
 
       const hasRadar = sensoryData !== null;
-      const contentW = hasRadar ? availW - 116 : availW - 12;
+      const contentW = hasRadar ? availW - 122 : availW - 12;
 
       const sensoryPillY = notesBoxY + 30;
       let pillX = paddingX + 12;
@@ -2467,7 +2491,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       }
 
       if (hasRadar) {
-        drawSensoryRadarChart(ctx, paddingX + availW - 55, notesBoxY + 40, 24, sensoryData, style);
+        drawSensoryRadarChart(ctx, paddingX + availW - 65, notesBoxY + 40, 23, sensoryData, style);
       }
 
       // 5. Stock & Cellar Bar

@@ -450,15 +450,15 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
                     gap: '8px'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text)', wordBreak: 'break-word', flex: '1 1 200px' }}>
                       Etapa {stage.step}: {stage.label} (+{stage.water_g}g → Acum: {stage.total_water_g || (() => {
                         let c = 0;
                         for (let k = 0; k <= idx; k++) c += parseFloat(pulsarStages[k].water_g) || 0;
                         return c;
                       })()}g)
                     </span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                       ⏱️ {stage.time}
                     </span>
                   </div>

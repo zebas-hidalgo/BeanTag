@@ -1098,13 +1098,13 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                               {p.valve === 'half' && (
                                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FEFCBF', color: '#744210', border: '1px solid #F6E05E', marginBottom: '4px' }}>⚡ VÁLVULA MEDIA (Flujo Regulado 50%)</div>
                               )}
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontWeight: '800', color: 'var(--color-crimson)', fontSize: '12px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                                <span style={{ fontWeight: '800', color: 'var(--color-crimson)', fontSize: '12px', wordBreak: 'break-word', flex: '1 1 180px' }}>
                                   {p.step || idx + 1}. {p.label}
                                 </span>
-                                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>⏱️ {p.time}</span>
+                                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>⏱️ {p.time}</span>
                               </div>
-                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
                                 <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
                                   Paso: <strong style={{ color: 'var(--color-text)' }}>+{stepW}g</strong>
                                 </span>
