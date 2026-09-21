@@ -1564,6 +1564,26 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   flex: 1;
 }
 
+/* 🍱 Universal Bento & System Modal Overlay */
+.bento-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 11000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* 🍎 Cupertino Segmented Controls */
 .cupertino-segmented {
   display: flex;
@@ -1573,6 +1593,13 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   gap: 2px;
   box-sizing: border-box;
   width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.cupertino-segmented::-webkit-scrollbar {
+  display: none;
 }
 
 .cupertino-segmented-btn {

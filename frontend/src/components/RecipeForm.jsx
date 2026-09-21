@@ -639,15 +639,15 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
                             {p.valve === 'half' && (
                               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FEFCBF', color: '#744210', border: '1px solid #F6E05E', marginBottom: '4px', width: 'fit-content' }}>⚡ VÁLVULA MEDIA (Flujo Regulado 50%)</div>
                             )}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ fontSize: '11px', fontWeight: '900', color: 'var(--color-crimson)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                              <span style={{ fontSize: '11px', fontWeight: '900', color: 'var(--color-crimson)', wordBreak: 'break-word', flex: '1 1 180px' }}>
                                 Paso {p.step || idx + 1}: {p.label}
                               </span>
-                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', fontWeight: '800', backgroundColor: '#FFFFFF', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', fontWeight: '800', backgroundColor: '#FFFFFF', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border-color)', whiteSpace: 'nowrap' }}>
                                 ⏱️ {p.time}
                               </span>
                             </div>
-                            <div style={{ display: 'flex', gap: '10px', fontSize: '10.5px', fontWeight: 'bold', marginTop: '3px', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', gap: '10px', fontSize: '10.5px', fontWeight: 'bold', marginTop: '3px', alignItems: 'center', flexWrap: 'wrap' }}>
                               <span>Paso: <strong>+{stepW}g</strong></span>
                               <span style={{ color: 'var(--barista-accent-honey, #D97706)', background: 'var(--barista-bg-elevated, rgba(217, 119, 6, 0.12))', padding: '1px 6px', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>
                                 🎯 Acumulado: {totalW}g
@@ -676,7 +676,7 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
                 </div>
               )}
 
-              <div style={{ fontSize: '10.5px', color: 'var(--color-text)', borderTop: '1px dashed var(--border-color)', paddingTop: '8px', marginTop: '2px', lineHeight: 1.4 }}>
+              <div style={{ fontSize: '10.5px', color: 'var(--color-text)', borderTop: '1px dashed var(--border-color)', paddingTop: '8px', marginTop: '2px', lineHeight: 1.4, wordBreak: 'break-word' }}>
                 <strong>Notas Barista / Perfil:</strong> {aiRecommendation.notes}
               </div>
               <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>

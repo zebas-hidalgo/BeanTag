@@ -164,12 +164,18 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
         zIndex: 120, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '16px', boxSizing: 'border-box'
+        padding: '16px', boxSizing: 'border-box',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch'
       }}
       onClick={onClose}
     >
       <div className="candy-card static" style={{
         maxWidth: '440px', width: '100%', padding: '20px', boxSizing: 'border-box',
+        maxHeight: 'calc(100dvh - 32px)',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        margin: 'auto 0',
         display: 'flex', flexDirection: 'column', gap: '14px',
         animation: 'softFadeIn 200ms ease-out'
       }} onClick={e => e.stopPropagation()}>

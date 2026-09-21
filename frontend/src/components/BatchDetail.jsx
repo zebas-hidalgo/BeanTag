@@ -1151,7 +1151,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       </div>
 
                       {aiRecommendation.grinders && (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginTop: '2px', paddingTop: '6px', borderTop: '1px dashed var(--border-color)', fontSize: '9.5px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '6px', marginTop: '2px', paddingTop: '6px', borderTop: '1px dashed var(--border-color)', fontSize: '9.5px', wordBreak: 'break-word' }}>
                           <div><strong>Comandante:</strong><br/>{aiRecommendation.grinders.comandante}</div>
                           <div><strong>Timemore:</strong><br/>{aiRecommendation.grinders.timemore}</div>
                           <div><strong>Baratza:</strong><br/>{aiRecommendation.grinders.baratza}</div>
@@ -1646,7 +1646,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   <div style={{ color: 'var(--color-crimson)', fontWeight: 'bold', marginTop: '2px' }}>
                     Molienda: {r.grind}
                   </div>
-                  {r.notes && <div style={{ fontStyle: 'italic', marginTop: '4px', color: 'var(--color-text-muted)' }}>"{r.notes}"</div>}
+                  {r.notes && <div style={{ fontStyle: 'italic', marginTop: '4px', color: 'var(--color-text-muted)', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>"{r.notes}"</div>}
                 </div>
               ))}
             </div>
@@ -1802,7 +1802,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             padding: '16px', boxSizing: 'border-box',
             boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
             display: 'flex', flexDirection: 'column', gap: '10px',
-            overflow: 'hidden'
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch'
           }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
               
@@ -2030,9 +2031,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               backgroundColor: 'var(--bg-canvas, #F1F5F9)',
               borderRadius: '12px',
               padding: '8px',
-              overflowY: 'auto',
-              flex: '1 1 auto',
-              minHeight: '140px',
+              overflow: 'hidden',
+              flex: '0 1 auto',
+              minHeight: 0,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -2042,8 +2043,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 alt="Ticket de café POS o Carta" 
                 style={{
                   maxWidth: '100%',
-                  maxHeight: 'calc(70dvh - 180px)',
+                  maxHeight: 'calc(45dvh - 50px)',
                   height: 'auto',
+                  objectFit: 'contain',
                   borderRadius: '6px', 
                   display: 'block',
                   margin: '0 auto',
