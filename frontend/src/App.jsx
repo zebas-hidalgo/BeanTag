@@ -125,9 +125,16 @@ export default function App() {
   const fetchBatches = (authToken = token) => {
     const headers = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
     fetch(apiUrl('api/batches'), { headers })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then(data => {
         if (Array.isArray(data)) setBatches(data);
+      })
+      .catch(err => {
+        console.error('fetchBatches error:', err);
+        showToast('No se pudo cargar el inventario. Verifica tu conexión.', { type: 'error', duration: 4000 });
       });
   };
 
@@ -139,6 +146,21 @@ export default function App() {
       setSelectedBatchId(route.batchId);
       setCurrentView('detail');
     }
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const route = getInitialRoute();
+      if (route.view === 'detail' && route.batchId) {
+        setSelectedBatchId(route.batchId);
+        setCurrentView('detail');
+      } else {
+        setCurrentView('inventory');
+        setSelectedBatchId(null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const handleSelectBatch = (batchOrId, options = {}) => {
@@ -378,7 +400,7 @@ export default function App() {
               <span style={{ fontSize: '11px', fontWeight: 'bold', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {currentUser.name}
               </span>
-              <button onClick={handleLogout} title="Cerrar Sesión" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}>
+              <button onClick={handleLogout} title="Cerrar Sesión" aria-label="Cerrar sesión" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}>
                 <LogOut size={13} color="var(--color-text-muted)" />
               </button>
             </div>
@@ -392,7 +414,7 @@ export default function App() {
             </button>
           )}
 
-          <button className="app-bar-btn" onClick={() => setShowNfcTools(true)} title="Herramientas NFC" style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1.5px solid var(--color-border, #E5E7EB)' }}>
+          <button className="app-bar-btn" onClick={() => setShowNfcTools(true)} title="Herramientas NFC" aria-label="Herramientas NFC" style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1.5px solid var(--color-border, #E5E7EB)' }}>
             <Nfc size={14} strokeWidth={2} />
           </button>
         </div>
@@ -474,7 +496,7 @@ export default function App() {
       </main>
 
       {toast.visible && (
-        <div className="toast-notification animate-entrance" style={{
+        <div className="toast-notification animate-entrance" role={toast.type === 'error' ? 'alert' : 'status'} aria-live={toast.type === 'error' ? 'assertive' : 'polite'} style={{
           ...toastStyles[toast.type],
           display: 'flex',
           alignItems: 'center',
@@ -506,9 +528,9 @@ export default function App() {
       )}
 
       {deleteModal.visible && (
-        <div className="bento-modal-overlay" style={{ zIndex: 11000 }}>
+        <div className="bento-modal-overlay" style={{ zIndex: 11000 }} role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" onKeyDown={(e) => { if (e.key === 'Escape') setDeleteModal({ visible: false, batchId: null, batchName: '' }); }} tabIndex={-1} ref={(el) => el && el.focus()}>
           <div className="candy-card animate-entrance" style={{ maxWidth: '340px', padding: '20px', margin: 'auto', textAlign: 'center' }}>
-            <h4 style={{ margin: '0 0 8px 0', fontFamily: 'var(--font-heading)' }}>¿Eliminar este Lote?</h4>
+            <h4 id="delete-modal-title" style={{ margin: '0 0 8px 0', fontFamily: 'var(--font-heading)' }}>¿Eliminar este Lote?</h4>
             <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
               Se eliminará "{deleteModal.batchName}" y todo su historial de tubos. Esta acción no se puede deshacer.
             </p>

@@ -2072,4 +2072,20 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   box-shadow: 2px 2px 0px var(--border-color);
 }
 
-
+/* ♿ Respect user motion preferences (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-entrance {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .genjutsu-pulse, .bounce-pop {
+    animation: none !important;
+  }
+}

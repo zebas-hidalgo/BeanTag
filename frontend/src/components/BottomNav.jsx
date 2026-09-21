@@ -38,6 +38,8 @@ export default function BottomNav({ currentView, setCurrentView }) {
           <button
             key={item.id}
             type="button"
+            aria-label={item.label}
+            aria-current={isActive ? 'page' : undefined}
             onClick={() => setCurrentView(item.id)}
             style={{
               display: 'flex',

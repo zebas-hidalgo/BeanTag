@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Zap, Snowflake, CheckCircle2, Mountain, Sparkles, Loader2, Compass, Share2, ClipboardCopy, X, MoreHorizontal } from 'lucide-react';
+import { Plus, Zap, Snowflake, CheckCircle2, Mountain, Sparkles, Loader2, Compass, Share2, ClipboardCopy, X, MoreHorizontal, MapPin, Flag, ClipboardList, Coffee, Flame, Search as SearchIcon } from 'lucide-react';
 import { RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 import { generateCoffeeMenuCardImage, generateCoffeeMenuText } from '../utils/cardGenerator';
@@ -181,7 +181,8 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
       <div style={{ marginBottom: '10px' }}>
         <input 
           className="candy-input" 
-          placeholder="🔍 Buscar café, origen, productor o variedad..." 
+          placeholder="Buscar café, origen, productor o variedad..." 
+          aria-label="Buscar café por nombre, origen o variedad"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           style={{ width: '100%', boxSizing: 'border-box', margin: 0, padding: '11px 14px', fontSize: '13px' }}
@@ -234,7 +235,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
           }}
         >
           <Share2 size={15} color="var(--color-crimson)" strokeWidth={2.2} />
-          <span>📋 Compartir Carta ({availableBatches.length})</span>
+          <span><ClipboardList size={14} style={{marginRight:'4px',verticalAlign:'middle'}} /> Compartir Carta ({availableBatches.length})</span>
         </button>
       </div>
 
@@ -321,7 +322,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
       {filteredBatches.length === 0 ? (
         <div className="candy-card static" style={{ textAlign: 'center', padding: '40px 20px', borderStyle: 'dashed', backgroundColor: 'var(--bg-card)', borderRadius: '14px' }}>
           <div style={{ fontSize: '38px', marginBottom: '10px' }}>
-            {showFinished ? '🏁' : '❄️'}
+            {showFinished ? <Flag size={32} /> : <Snowflake size={32} />}
           </div>
           <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', textTransform: 'uppercase', margin: '0 0 6px 0', color: 'var(--color-text)' }}>
             {showFinished ? 'Sin cafés agotados' : 'No hay cafés en el congelador'}
@@ -419,7 +420,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11.5px', color: 'var(--color-text-muted)' }}>
                 {batch.origin && (
                   <span style={{ fontWeight: '600', color: 'var(--color-text)' }}>
-                    📍 {batch.origin}
+                    <MapPin size={11} strokeWidth={2.5} style={{ color: 'var(--color-crimson)', flexShrink: 0 }} /> {batch.origin}
                   </span>
                 )}
                 {batch.altitude && (
@@ -457,7 +458,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                   alignItems: 'center',
                   gap: '4px'
                 }}>
-                  {isLowStock ? '⚠️ ' : '❄️ '}
+                  {isLowStock ? <span style={{color:'var(--barista-accent-danger)'}}>⚠</span> : <Snowflake size={12} />}{' '}
                   {batch.remaining_doses} {batch.remaining_doses === 1 ? 'tubo' : 'tubos'}
                   {currentWeight > 0 ? ` (~${currentWeight}g)` : ''}
                 </span>
@@ -507,20 +508,29 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
 
       {/* MODAL DE COMPARTIR CARTA DE CAFÉS (FREEZER MENU) */}
       {showMenuShareModal && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          zIndex: 11000, 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'flex-start',
-          padding: '16px 12px', 
-          boxSizing: 'border-box',
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch'
-        }} onClick={() => { setShowMenuShareModal(false); setMenuShareStatus(''); }}>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Compartir carta de cafés"
+          onKeyDown={(e) => { if (e.key === 'Escape') setShowMenuShareModal(false); }}
+          tabIndex={-1}
+          ref={(el) => el && el.focus()}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            zIndex: 11000, 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'flex-start',
+            padding: '16px 12px', 
+            boxSizing: 'border-box',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch'
+          }}
+          onClick={() => { setShowMenuShareModal(false); setMenuShareStatus(''); }}
+        >
           <div className="candy-card static animate-entrance" style={{
             maxWidth: '480px', width: '100%',
             maxHeight: 'calc(100dvh - 32px)',
@@ -536,7 +546,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: 0, fontWeight: '800', color: 'var(--color-text)' }}>
-                    📋 Carta de Cafés • Menú en Cava
+                    Carta de Cafés • Menú en Cava
                   </h3>
                   <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
                     {availableBatches.length > 0 ? availableBatches.length : safeBatches.length} lotes de especialidad disponibles
@@ -555,10 +565,10 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
               <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
                 {[
-                  { id: 'blueprint', label: '📐 Blueprint' },
+                  { id: 'blueprint', label: 'Blueprint' },
                   { id: 'neobrutalist', label: '⚡ Brutalismo' },
-                  { id: 'diner', label: '📻 Retro 50s' },
-                  { id: 'kissaten', label: '🍵 Kissaten' }
+                  { id: 'diner', label: 'Retro 50s' },
+                  { id: 'kissaten', label: 'Kissaten' }
                 ].map(t => (
                   <button
                     key={t.id}
@@ -661,7 +671,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
 
       {/* 🍎 CUPERTINO HAPTIC TOUCH CONTEXT MENU */}
       {contextBatch && (
-        <div className="cupertino-context-overlay" onClick={() => setContextBatch(null)}>
+        <div className="cupertino-context-overlay" onClick={() => setContextBatch(null)} role="dialog" aria-modal="true" aria-label={`Acciones rápidas para ${contextBatch.name}`} onKeyDown={(e) => { if (e.key === 'Escape') setContextBatch(null); }} tabIndex={-1} ref={(el) => el && el.focus()}>
           <div className="cupertino-context-menu" onClick={e => e.stopPropagation()}>
             <div style={{ padding: '14px 16px 10px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-canvas)' }}>
               <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' }}>
@@ -688,7 +698,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                 }
               }}
             >
-              <span>☕ Preparar / Dial-In</span>
+              <span><Coffee size={14} style={{marginRight:'6px',verticalAlign:'middle'}} /> Preparar / Dial-In</span>
               <Zap size={15} color="var(--color-crimson)" />
             </button>
 
@@ -704,7 +714,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                   });
                 }}
               >
-                <span>❄️ Restar 1 Tubo (-1)</span>
+                <span><Snowflake size={14} style={{marginRight:'6px',verticalAlign:'middle'}} /> Restar 1 Tubo (-1)</span>
                 <Snowflake size={15} color="var(--color-crimson)" />
               </button>
             )}
@@ -718,7 +728,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                 onSelectBatch(b.id);
               }}
             >
-              <span>📋 Ver Ficha & Compartir</span>
+              <span><ClipboardList size={14} style={{marginRight:'6px',verticalAlign:'middle'}} /> Ver Ficha & Compartir</span>
               <Share2 size={15} />
             </button>
 
@@ -726,6 +736,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
               type="button"
               className="cupertino-context-item danger"
               onClick={() => setContextBatch(null)}
+              aria-label="Cerrar menú de acciones"
             >
               <span>✕ Cancelar</span>
               <X size={15} />

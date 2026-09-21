@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Nfc, RefreshCw, Trash2, Copy, X, CheckCircle, Smartphone, Share2, ExternalLink } from 'lucide-react';
+import { Nfc, RefreshCw, Trash2, Copy, X, CheckCircle, Smartphone, Share2, ExternalLink, Search, Eraser, HelpCircle } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
 
@@ -151,14 +151,23 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
   };
 
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'rgba(18, 10, 8, 0.65)',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
-      zIndex: 120, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '16px', boxSizing: 'border-box'
-    }} onClick={onClose}>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Herramientas NFC"
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+      tabIndex={-1}
+      ref={(el) => el && el.focus()}
+      style={{
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: 'rgba(18, 10, 8, 0.65)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        zIndex: 120, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '16px', boxSizing: 'border-box'
+      }}
+      onClick={onClose}
+    >
       <div className="candy-card static" style={{
         maxWidth: '440px', width: '100%', padding: '20px', boxSizing: 'border-box',
         display: 'flex', flexDirection: 'column', gap: '14px',
@@ -207,21 +216,21 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
                 className={`filter-chip ${activeTab === 'scan' ? 'active' : ''}`}
                 onClick={() => { setActiveTab('scan'); setStatusMessage(''); }}
               >
-                🔍 Diagnosticar
+                <Search size={14} style={{marginRight:'4px',verticalAlign:'middle'}} /> Diagnosticar
               </button>
               <button
                 type="button"
                 className={`filter-chip ${activeTab === 'format' ? 'active' : ''}`}
                 onClick={() => { setActiveTab('format'); setStatusMessage(''); }}
               >
-                🧹 Formatear
+                <Eraser size={14} style={{marginRight:'4px',verticalAlign:'middle'}} /> Formatear
               </button>
               <button
                 type="button"
                 className={`filter-chip ${activeTab === 'clone' ? 'active' : ''}`}
                 onClick={() => { setActiveTab('clone'); setStatusMessage(''); }}
               >
-                📋 Clonar Lote
+                <Copy size={14} style={{marginRight:'4px',verticalAlign:'middle'}} /> Clonar Lote
               </button>
             </>
           )}
@@ -232,7 +241,7 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ background: 'var(--bg-canvas)', padding: '12px', borderRadius: '6px', border: '2px solid var(--border-color)', fontSize: '11.5px', lineHeight: '1.4' }}>
               <strong style={{ color: 'var(--color-crimson)', display: 'block', marginBottom: '4px' }}>
-                💡 ¿Cómo funciona el NFC en iPhone?
+                <HelpCircle size={14} style={{marginRight:'4px',verticalAlign:'middle'}} /> ¿Cómo funciona el NFC en iPhone?
               </strong>
               1. En iPhone no necesitas presionar nada para leer.
               2. Acerca la parte superior trasera de tu iPhone al tag NFC.<br/>

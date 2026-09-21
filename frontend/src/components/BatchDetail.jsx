@@ -1161,6 +1161,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
                     <input
                       type="number"
+                      inputMode="decimal"
                       step="0.5"
                       value={doseInG}
                       onChange={(e) => setDoseInG(parseFloat(e.target.value) || 0)}
@@ -1203,6 +1204,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
                       <input
                         type="number"
+                        inputMode="decimal"
                         step="0.5"
                         value={doseOutG}
                         onChange={(e) => setDoseOutG(parseFloat(e.target.value) || 0)}
@@ -1247,6 +1249,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
                       <input
                         type="number"
+                        inputMode="decimal"
                         step="0.5"
                         value={ratioVal}
                         onChange={(e) => setRatioVal(parseFloat(e.target.value) || 0)}
@@ -1291,6 +1294,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
                     <input
                       type="number"
+                      inputMode="decimal"
                       value={waterTemp}
                       onChange={(e) => setWaterTemp(parseInt(e.target.value) || 93)}
                       style={{ width: '52px', textAlign: 'center', fontSize: '19px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
@@ -1430,6 +1434,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       <div style={{ flex: 1, textAlign: 'center' }}>
                         <input 
                           type="number" 
+                          inputMode="decimal"
                           className="candy-input" 
                           style={{ width: '100%', textAlign: 'center', margin: 0, padding: '8px', fontSize: '16px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}
                           value={femobookClicks}
@@ -1476,6 +1481,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       <div style={{ flex: 1, textAlign: 'center' }}>
                         <input 
                           type="number" 
+                          inputMode="decimal"
                           className="candy-input" 
                           style={{ width: '100%', textAlign: 'center', margin: 0, padding: '8px', fontSize: '16px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}
                           value={comandanteClicks}
@@ -1620,17 +1626,17 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
               <div className="form-group" style={{ flex: 1, margin: 0 }}>
                 <label style={{ fontSize: '10px' }}>Café (g)</label>
-                <input type="number" step="0.5" className="candy-input" value={calcDose} onChange={(e) => { const d = parseFloat(e.target.value) || 0; setCalcDose(d); setCalcWater(Math.round(d * calcRatio)); }} />
+                <input type="number" inputMode="decimal" step="0.5" className="candy-input" value={calcDose} onChange={(e) => { const d = parseFloat(e.target.value) || 0; setCalcDose(d); setCalcWater(Math.round(d * calcRatio)); }} />
               </div>
               <div style={{ fontSize: '16px', fontWeight: 'bold', paddingBottom: '8px' }}>×</div>
               <div className="form-group" style={{ flex: 1, margin: 0 }}>
                 <label style={{ fontSize: '10px' }}>Ratio 1:</label>
-                <input type="number" step="0.5" className="candy-input" value={calcRatio} onChange={(e) => { const r = parseFloat(e.target.value) || 0; setCalcRatio(r); setCalcWater(Math.round(calcDose * r)); }} />
+                <input type="number" inputMode="decimal" step="0.5" className="candy-input" value={calcRatio} onChange={(e) => { const r = parseFloat(e.target.value) || 0; setCalcRatio(r); setCalcWater(Math.round(calcDose * r)); }} />
               </div>
               <div style={{ fontSize: '16px', fontWeight: 'bold', paddingBottom: '8px' }}>=</div>
               <div className="form-group" style={{ flex: 1, margin: 0 }}>
                 <label style={{ fontSize: '10px' }}>Agua (g)</label>
-                <input type="number" className="candy-input" value={calcWater} onChange={(e) => { const w = parseFloat(e.target.value) || 0; setCalcWater(w); if (calcDose > 0) setCalcRatio(parseFloat((w / calcDose).toFixed(1))); }} />
+                <input type="number" inputMode="decimal" className="candy-input" value={calcWater} onChange={(e) => { const w = parseFloat(e.target.value) || 0; setCalcWater(w); if (calcDose > 0) setCalcRatio(parseFloat((w / calcDose).toFixed(1))); }} />
               </div>
             </div>
             <button type="button" className="btn-candy accent" style={{ width: '100%', marginTop: '10px', padding: '6px', fontSize: '10.5px' }} onClick={() => { setDoseInG(calcDose); setRatioVal(calcRatio); setActiveTab('brew'); if (showToast) showToast('Valores transferidos a la pestaña de preparación.', { type: 'success' }); }}>

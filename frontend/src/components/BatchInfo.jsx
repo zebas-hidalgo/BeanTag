@@ -1,7 +1,7 @@
 import React from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis } from '../utils/scaIcons';
-import { ArrowLeft, Nfc } from 'lucide-react';
+import { ArrowLeft, Nfc, Flame, Snowflake as SnowflakeIcon, Hourglass } from 'lucide-react';
 
 export default function BatchInfo({ batch, onBack, onSubtractDose, onSaveRecipe, showToast, setBatch }) {
   if (!batch) return null;
@@ -178,15 +178,15 @@ export default function BatchInfo({ batch, onBack, onSubtractDose, onSaveRecipe,
           )}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #E2E8F0', fontSize: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><span style={{ fontSize: '15px' }}>🔥</span><span style={{ color: 'var(--color-text-muted)', width: '65px' }}>Tueste:</span><strong>{formatLocalDateStr(batch.roast_date)}</strong></div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><span style={{ fontSize: '15px' }}>❄️</span><span style={{ color: 'var(--color-text-muted)', width: '65px' }}>Congelado:</span><strong>{formatLocalDateStr(batch.freeze_date)}</strong></div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><span style={{ fontSize: '15px' }}>⏳</span><span style={{ color: 'var(--color-text-muted)', width: '65px' }}>Reposado:</span><strong>{restingDaysText}</strong></div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><span style={{ fontSize: '15px' }}>🧊</span><span style={{ color: 'var(--color-text-muted)', width: '65px' }}>Estadía:</span><strong>{freezeTime}</strong></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Flame size={15} style={{ color: 'var(--color-crimson)' }} /><span style={{ color: 'var(--color-text-muted)', width: '65px' }}>Tueste:</span><strong>{formatLocalDateStr(batch.roast_date)}</strong></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><SnowflakeIcon size={15} style={{ color: 'var(--barista-accent-cryo, #0284C7)' }} /><span style={{ color: 'var(--color-text-muted)', width: '65px' }}>Congelado:</span><strong>{formatLocalDateStr(batch.freeze_date)}</strong></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Hourglass size={15} style={{ color: 'var(--barista-accent-honey, #D97706)' }} /><span style={{ color: 'var(--color-text-muted)', width: '65px' }}>Reposado:</span><strong>{restingDaysText}</strong></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><SnowflakeIcon size={15} style={{ color: 'var(--barista-accent-cryo, #0284C7)' }} /><span style={{ color: 'var(--color-text-muted)', width: '65px' }}>Estadía:</span><strong>{freezeTime}</strong></div>
         </div>
       </div>
 
       {batch.roast_date && batch.freeze_date && (
-        <div className="candy-card static" style={{ borderLeft: `6px solid ${degasStatus.color}`, backgroundColor: '#FFFFFF' }}>
+        <div className="candy-card static" style={{ borderLeft: `6px solid ${degasStatus.color}`, backgroundColor: 'var(--barista-bg-surface, var(--bg-card))' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontFamily: 'var(--font-heading)', fontSize: '11px', fontWeight: '900', color: degasStatus.color, textTransform: 'uppercase' }}>{degasStatus.label} ({restingDays} Días)</span>
           </div>
