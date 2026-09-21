@@ -31,9 +31,9 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
 
   // Pulsar Mini interactive 3-state valve configuration
   const [pulsarStages, setPulsarStages] = useState([
-    { step: 1, label: 'Bloom e Inmersión + WWDT', water_g: 50, valve: 'closed', time: '0:00 - 0:45', desc: 'Válvula cerrada. 50g agua y agitación WWDT suave para saturar homogéneamente.' },
-    { step: 2, label: '1º Vertido de Percolación', water_g: 100, valve: 'open', time: '0:45 - 2:00', desc: 'Válvula abierta al 100% sobre tapa dispersora manteniendo caudal suave.' },
-    { step: 3, label: '2º Vertido Final', water_g: 100, valve: 'open', time: '2:00 - 3:30', desc: 'Drenaje continuo hasta alcanzar cama plana sin canalizaciones.' }
+    { step: 1, label: 'Bloom e Inmersión + WWDT', water_g: 50, total_water_g: 50, valve: 'closed', time: '0:00 - 0:45', desc: 'Válvula cerrada. 50g agua y agitación WWDT suave para saturar homogéneamente.' },
+    { step: 2, label: '1º Vertido de Percolación', water_g: 100, total_water_g: 150, valve: 'open', time: '0:45 - 2:00', desc: 'Válvula abierta al 100% sobre tapa dispersora manteniendo caudal suave.' },
+    { step: 3, label: '2º Vertido Final', water_g: 100, total_water_g: 250, valve: 'open', time: '2:00 - 3:30', desc: 'Drenaje continuo hasta alcanzar cama plana sin canalizaciones.' }
   ]);
 
   const applyPulsarPreset = (presetId) => {
@@ -51,14 +51,21 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
       if (s.click !== undefined) setJmaxClick(s.click);
     }
     const calculated = recipe.calculatePours(dose);
-    setPulsarStages(calculated.map((p, i) => ({
-      step: p.step || i + 1,
-      label: p.label,
-      water_g: p.water_g,
-      valve: p.valve || 'open',
-      time: p.time,
-      desc: p.description
-    })));
+    let runningPresetW = 0;
+    setPulsarStages(calculated.map((p, i) => {
+      const stepW = parseFloat(p.water_g) || 0;
+      const totalW = p.total_water_g !== undefined ? parseFloat(p.total_water_g) : (runningPresetW + stepW);
+      runningPresetW = totalW;
+      return {
+        step: p.step || i + 1,
+        label: p.label,
+        water_g: stepW,
+        total_water_g: totalW,
+        valve: p.valve || 'open',
+        time: p.time,
+        desc: p.description
+      };
+    }));
     if (showToast) {
       showToast(`Preset cargado: ${recipe.name}`, { type: 'success', duration: 2500 });
     }
@@ -191,14 +198,21 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
     else if (recMethod.includes('pulsar')) setMethod('NextLevel Pulsar Mini');
 
     if (recMethod.includes('pulsar') && aiRecommendation.pours && aiRecommendation.pours.length > 0) {
-      setPulsarStages(aiRecommendation.pours.map((p, i) => ({
-        step: p.step || i + 1,
-        label: p.label,
-        water_g: p.water_g || p.water,
-        valve: p.valve || 'open',
-        time: p.time,
-        desc: p.description
-      })));
+      let runningAiPreset = 0;
+      setPulsarStages(aiRecommendation.pours.map((p, i) => {
+        const stepW = parseFloat(p.water_g || p.water) || 0;
+        const totalW = p.total_water_g !== undefined ? parseFloat(p.total_water_g) : (runningAiPreset + stepW);
+        runningAiPreset = totalW;
+        return {
+          step: p.step || i + 1,
+          label: p.label,
+          water_g: stepW,
+          total_water_g: totalW,
+          valve: p.valve || 'open',
+          time: p.time,
+          desc: p.description
+        };
+      }));
     }
 
     if (aiRecommendation.jmax_rot !== undefined) setJmaxRot(parseInt(aiRecommendation.jmax_rot) || 0);
@@ -222,10 +236,14 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
     
     let finalNotes = notes.trim();
     if (method === 'NextLevel Pulsar Mini' && pulsarStages && pulsarStages.length > 0) {
+      let runningValveW = 0;
       const valveSeq = pulsarStages.map(s => {
         const vText = s.valve === 'closed' ? '🔒 Cerrada' : s.valve === 'half' ? '⚡ 50% Media' : '🔓 100% Abierta';
         const lbl = (s.label || `Paso ${s.step}`).split('(')[0].trim();
-        return `${lbl}: ${vText}`;
+        const stepW = parseFloat(s.water_g) || 0;
+        const totalW = s.total_water_g !== undefined ? parseFloat(s.total_water_g) : (runningValveW + stepW);
+        runningValveW = totalW;
+        return `${lbl} (+${stepW}g → Acum: ${totalW}g): ${vText}`;
       }).join(' • ');
       if (!finalNotes.includes('[Válvula:')) {
         finalNotes = finalNotes ? `${finalNotes} | [Válvula: ${valveSeq}]` : `[Válvula: ${valveSeq}]`;
@@ -434,7 +452,11 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text)' }}>
-                      Etapa {stage.step}: {stage.label} (+{stage.water_g}g)
+                      Etapa {stage.step}: {stage.label} (+{stage.water_g}g → Acum: {stage.total_water_g || (() => {
+                        let c = 0;
+                        for (let k = 0; k <= idx; k++) c += parseFloat(pulsarStages[k].water_g) || 0;
+                        return c;
+                      })()}g)
                     </span>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
                       ⏱️ {stage.time}
@@ -600,32 +622,42 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
                     💧 Guía de Vertidos por Etapas ({doseInG}g café)
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {aiRecommendation.pours.map(p => (
-                      <div key={p.step || p.label} style={{ padding: '8px 10px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        {p.valve === 'closed' && (
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FED7D7', color: '#9B2C2C', border: '1px solid #FEB2B2', marginBottom: '4px', width: 'fit-content' }}>🔒 VÁLVULA CERRADA (Bloom + Inmersión)</div>
-                        )}
-                        {p.valve === 'open' && (
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#C6F6D5', color: '#22543D', border: '1px solid #9AE6B4', marginBottom: '4px', width: 'fit-content' }}>🔓 VÁLVULA ABIERTA (Percolación)</div>
-                        )}
-                        {p.valve === 'half' && (
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FEFCBF', color: '#744210', border: '1px solid #F6E05E', marginBottom: '4px', width: 'fit-content' }}>⚡ VÁLVULA MEDIA (Flujo Regulado 50%)</div>
-                        )}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: '10.5px', fontWeight: '900', color: 'var(--color-crimson)' }}>
-                            Paso {p.step}: {p.label}
-                          </span>
-                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9.5px', fontWeight: '800', backgroundColor: '#FFFFFF', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-                            ⏱️ {p.time}
-                          </span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '10px', fontSize: '10px', fontWeight: 'bold' }}>
-                          <span>Vertido: +{p.water_g || p.water}g</span>
-                          {p.total_water_g && <span>Acumulado: {p.total_water_g}g</span>}
-                        </div>
-                        {p.description && <div style={{ fontSize: '9.5px', color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{p.description}</div>}
-                      </div>
-                    ))}
+                    {(() => {
+                      let runningFormAi = 0;
+                      return aiRecommendation.pours.map((p, idx) => {
+                        const stepW = parseFloat(p.water_g || p.water) || 0;
+                        const totalW = p.total_water_g !== undefined ? parseFloat(p.total_water_g) : (runningFormAi + stepW);
+                        runningFormAi = totalW;
+                        return (
+                          <div key={p.step || idx} style={{ padding: '8px 10px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            {p.valve === 'closed' && (
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FED7D7', color: '#9B2C2C', border: '1px solid #FEB2B2', marginBottom: '4px', width: 'fit-content' }}>🔒 VÁLVULA CERRADA (Bloom + Inmersión)</div>
+                            )}
+                            {p.valve === 'open' && (
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#C6F6D5', color: '#22543D', border: '1px solid #9AE6B4', marginBottom: '4px', width: 'fit-content' }}>🔓 VÁLVULA ABIERTA (Percolación)</div>
+                            )}
+                            {p.valve === 'half' && (
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FEFCBF', color: '#744210', border: '1px solid #F6E05E', marginBottom: '4px', width: 'fit-content' }}>⚡ VÁLVULA MEDIA (Flujo Regulado 50%)</div>
+                            )}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '11px', fontWeight: '900', color: 'var(--color-crimson)' }}>
+                                Paso {p.step || idx + 1}: {p.label}
+                              </span>
+                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', fontWeight: '800', backgroundColor: '#FFFFFF', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+                                ⏱️ {p.time}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '10px', fontSize: '10.5px', fontWeight: 'bold', marginTop: '3px', alignItems: 'center' }}>
+                              <span>Paso: <strong>+{stepW}g</strong></span>
+                              <span style={{ color: 'var(--barista-accent-honey, #D97706)', background: 'var(--barista-bg-elevated, rgba(217, 119, 6, 0.12))', padding: '1px 6px', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>
+                                🎯 Acumulado: {totalW}g
+                              </span>
+                            </div>
+                            {p.description && <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', lineHeight: '1.3', marginTop: '2px' }}>{p.description}</div>}
+                          </div>
+                        );
+                      });
+                    })()}
                   </div>
                 </div>
               )}

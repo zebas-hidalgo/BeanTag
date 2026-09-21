@@ -145,6 +145,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     }
     
     // Construct recipe/batch object
+    const activePours = (aiRecommendation && aiRecommendation.pours && aiRecommendation.pours.length > 0)
+      ? aiRecommendation.pours
+      : (batch?.recipes && batch.recipes.length > 0 && batch.recipes[0].pours ? batch.recipes[0].pours : undefined);
+
     const syntheticRecipe = {
       id: batch.id,
       batch_name: batch.name,
@@ -166,6 +170,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       sensory_body: sensoryBody,
       sensory_extraction: sensoryExtraction,
       notes: notes,
+      pours: activePours,
       created_at: new Date().toISOString()
     };
 
@@ -370,8 +375,14 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     if (aiRecommendation.notes) {
       setNotes(prev => {
         const cleanPrev = prev.replace(/\[Receta IA:.*?\]/g, '').trim();
+        let runningW = 0;
         const pourSummary = aiRecommendation.pours && aiRecommendation.pours.length > 0 
-          ? ` | Vertidos: ${aiRecommendation.pours.map(p => `${p.label} (${p.water_g || p.water}g)`).join(' → ')}`
+          ? ` | Vertidos: ${aiRecommendation.pours.map(p => {
+              const stepW = parseFloat(p.water_g || p.water) || 0;
+              const totalW = p.total_water_g !== undefined ? parseFloat(p.total_water_g) : (runningW + stepW);
+              runningW = totalW;
+              return `${p.label} (+${stepW}g → Acum: ${totalW}g)`;
+            }).join(' → ')}`
           : '';
         return `[Receta IA: ${aiRecommendation.notes}${pourSummary}] ${cleanPrev}`.trim();
       });
@@ -406,8 +417,14 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     }
 
     const calculatedPours = famous.calculatePours ? famous.calculatePours(effectiveDose) : [];
+    let runningFamousW = 0;
     const pourSummary = calculatedPours.length > 0 
-      ? ` | Vertidos: ${calculatedPours.map(p => `${p.label} (${p.water_g}g)`).join(' → ')}`
+      ? ` | Vertidos: ${calculatedPours.map(p => {
+          const stepW = parseFloat(p.water_g) || 0;
+          const totalW = p.total_water_g !== undefined ? parseFloat(p.total_water_g) : (runningFamousW + stepW);
+          runningFamousW = totalW;
+          return `${p.label} (+${stepW}g → Acum: ${totalW}g)`;
+        }).join(' → ')}`
       : '';
     
     setNotes(prev => {
@@ -1064,24 +1081,51 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   {/* Sub-Contenido: Vertidos */}
                   {aiSubTab === 'pours' && aiRecommendation.pours && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {aiRecommendation.pours.map((p, idx) => (
-                        <div key={idx} style={{ padding: '8px 10px', background: 'var(--bg-card)', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '11px' }}>
-                          {p.valve === 'closed' && (
-                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FED7D7', color: '#9B2C2C', border: '1px solid #FEB2B2', marginBottom: '4px' }}>🔒 VÁLVULA CERRADA (Bloom + Inmersión)</div>
-                          )}
-                          {p.valve === 'open' && (
-                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#C6F6D5', color: '#22543D', border: '1px solid #9AE6B4', marginBottom: '4px' }}>🔓 VÁLVULA ABIERTA (Percolación)</div>
-                          )}
-                          {p.valve === 'half' && (
-                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FEFCBF', color: '#744210', border: '1px solid #F6E05E', marginBottom: '4px' }}>⚡ VÁLVULA MEDIA (Flujo Regulado 50%)</div>
-                          )}
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: 'var(--color-crimson)' }}>
-                            <span>{p.step}. {p.label} (+{p.water_g || p.water}g)</span>
-                            <span style={{ fontFamily: 'var(--font-mono)' }}>⏱️ {p.time}</span>
-                          </div>
-                          {p.description && <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>{p.description}</div>}
-                        </div>
-                      ))}
+                      {(() => {
+                        let runningInteractive = 0;
+                        return aiRecommendation.pours.map((p, idx) => {
+                          const stepW = parseFloat(p.water_g || p.water) || 0;
+                          const totalW = p.total_water_g !== undefined ? parseFloat(p.total_water_g) : (runningInteractive + stepW);
+                          runningInteractive = totalW;
+                          return (
+                            <div key={idx} style={{ padding: '8px 10px', background: 'var(--bg-card)', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '11px' }}>
+                              {p.valve === 'closed' && (
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FED7D7', color: '#9B2C2C', border: '1px solid #FEB2B2', marginBottom: '4px' }}>🔒 VÁLVULA CERRADA (Bloom + Inmersión)</div>
+                              )}
+                              {p.valve === 'open' && (
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#C6F6D5', color: '#22543D', border: '1px solid #9AE6B4', marginBottom: '4px' }}>🔓 VÁLVULA ABIERTA (Percolación)</div>
+                              )}
+                              {p.valve === 'half' && (
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FEFCBF', color: '#744210', border: '1px solid #F6E05E', marginBottom: '4px' }}>⚡ VÁLVULA MEDIA (Flujo Regulado 50%)</div>
+                              )}
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontWeight: '800', color: 'var(--color-crimson)', fontSize: '12px' }}>
+                                  {p.step || idx + 1}. {p.label}
+                                </span>
+                                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>⏱️ {p.time}</span>
+                              </div>
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+                                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                                  Paso: <strong style={{ color: 'var(--color-text)' }}>+{stepW}g</strong>
+                                </span>
+                                <span style={{
+                                  fontSize: '11px',
+                                  fontWeight: '900',
+                                  color: 'var(--barista-accent-honey, #D97706)',
+                                  background: 'var(--barista-bg-elevated, #F1F5F9)',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px',
+                                  border: '1px solid var(--barista-border-hairline, var(--border-color))',
+                                  fontFamily: 'var(--font-mono)'
+                                }}>
+                                  🎯 Acumulado: {totalW}g
+                                </span>
+                              </div>
+                              {p.description && <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '4px', lineHeight: '1.3' }}>{p.description}</div>}
+                            </div>
+                          );
+                        });
+                      })()}
                     </div>
                   )}
 

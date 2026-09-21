@@ -673,6 +673,63 @@ export function drawTicketNotchesAndPerforation(ctx, x, width, notchY, style, bg
 }
 
 /**
+ * Normalizes recipe pours and calculates cumulative target water (en balanza) for each stage.
+ * Extracts pours from rec.pours array, or parses from rec.notes if "Vertidos:" is present.
+ */
+export function normalizeRecipePours(rec) {
+  if (!rec) return [];
+  let list = Array.isArray(rec.pours) ? [...rec.pours] : [];
+
+  // Fallback parsing from notes if rec.pours is missing
+  const notesText = rec.notes || rec.user_notes || '';
+  if (list.length === 0 && notesText && typeof notesText === 'string' && notesText.includes('Vertidos:')) {
+    try {
+      const match = notesText.match(/Vertidos:\s*([^\]]+)/i);
+      if (match && match[1]) {
+        const parts = match[1].split('→').map(s => s.trim()).filter(Boolean);
+        let parsedRunning = 0;
+        list = parts.map((part, idx) => {
+          const label = part.split('(')[0].trim();
+          const accumMatch = part.match(/Acum:\s*(\d+(\.\d+)?)/i) || part.match(/→\s*(\d+(\.\d+)?)/);
+          const stepMatch = part.match(/\+?(\d+(\.\d+)?)g/);
+          const stepW = stepMatch ? parseFloat(stepMatch[1]) : 0;
+          const totalW = accumMatch ? parseFloat(accumMatch[1]) : undefined;
+          return {
+            step: idx + 1,
+            label,
+            water_g: stepW,
+            total_water_g: totalW
+          };
+        });
+      }
+    } catch (e) {
+      // Graceful fallback
+    }
+  }
+
+  let running = 0;
+  return list.map((p, idx) => {
+    const stepW = parseFloat(p.water_g || p.water || p.weight) || 0;
+    let totalW = 0;
+    if (p.total_water_g !== undefined && p.total_water_g !== null && !isNaN(parseFloat(p.total_water_g))) {
+      totalW = parseFloat(p.total_water_g);
+      running = totalW;
+    } else {
+      running += stepW;
+      totalW = running;
+    }
+    return {
+      ...p,
+      step: p.step || idx + 1,
+      label: p.label || p.title || `Vertido 0${idx + 1}`,
+      time: p.time || '',
+      stepWater: stepW,
+      totalWater: totalW
+    };
+  });
+}
+
+/**
  * Generates an Ultra-Aesthetic Share Card (Portrait 540 x 760 px @ 2x = 1080 x 1520 px)
  * Flawlessly balanced for both "Con Receta" and "Solo Grano" modes with pure minimalist typography.
  */
@@ -1106,7 +1163,9 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       const flowY = bentoY + (colH * 2) + bentoGap + 10;
       const flowH = 68;
 
-      if (rec.pours && Array.isArray(rec.pours) && rec.pours.length > 0) {
+      const normalizedPours = normalizeRecipePours(rec);
+
+      if (normalizedPours && normalizedPours.length > 0) {
         ctx.fillStyle = 'rgba(14, 165, 233, 0.05)';
         ctx.strokeStyle = '#38BDF8';
         ctx.lineWidth = 1;
@@ -1116,7 +1175,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
         ctx.fillStyle = '#7DD3FC';
         ctx.font = '800 8px "JetBrains Mono", monospace';
-        ctx.fillText('CRONOGRAMA DE VERTIDOS REAL:', paddingX + 12, flowY + 16);
+        ctx.fillText('CRONOGRAMA DE VERTIDOS (ACUMULADO EN BALANZA):', paddingX + 12, flowY + 16);
 
         ctx.fillStyle = '#4ADE80';
         ctx.textAlign = 'right';
@@ -1124,16 +1183,19 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.textAlign = 'left';
 
         // Draw up to 3 pour step milestones
-        const poursToShow = rec.pours.slice(0, 3);
+        const poursToShow = normalizedPours.slice(0, 3);
         const pourColW = (availW - 24) / poursToShow.length;
         poursToShow.forEach((p, pIdx) => {
           const px = paddingX + 12 + (pIdx * pourColW);
           ctx.fillStyle = '#BAE6FD';
           ctx.font = '700 8px "JetBrains Mono", monospace';
-          drawTruncatedText(`${p.time || ''} • ${p.label || 'Vertido'}`, px, flowY + 34, pourColW - 8);
+          drawTruncatedText(`${p.time ? p.time + ' • ' : ''}${p.label}`, px, flowY + 33, pourColW - 8);
           ctx.fillStyle = '#FFFFFF';
-          ctx.font = '900 11px "JetBrains Mono", monospace';
-          drawTruncatedText(`${p.total_water_g || p.water_g}g`, px, flowY + 52);
+          ctx.font = '900 12px "JetBrains Mono", monospace';
+          ctx.fillText(`${p.totalWater}g`, px, flowY + 49);
+          ctx.fillStyle = '#38BDF8';
+          ctx.font = '700 7.5px "JetBrains Mono", monospace';
+          drawTruncatedText(`(+${p.stepWater}g acum)`, px, flowY + 60, pourColW - 8);
         });
       } else {
         // Barista Brew Notes / Instruction Box
@@ -1640,10 +1702,11 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillText('⏱ PROTOCOLO DE VERTIDO // POUR TIMELINE:', paddingX + 12, flowY + 18);
 
       const stepW = (availW - 24 - 16) / 3;
-      const steps = (rec.pours && Array.isArray(rec.pours) && rec.pours.length > 0)
-        ? rec.pours.slice(0, 3).map((p, i) => ({
+      const normalizedPours = normalizeRecipePours(rec);
+      const steps = (normalizedPours.length > 0)
+        ? normalizedPours.slice(0, 3).map((p, i) => ({
             title: (p.label || p.title || `VERTIDO 0${i + 1}`).toUpperCase(),
-            desc: `${p.total_water_g || p.water_g || p.weight ? (p.total_water_g || p.water_g || p.weight) + 'g' : ''}${p.time ? ' • ' + p.time : ''}`.trim() || 'Vertido'
+            desc: `${p.totalWater}g (+${p.stepWater}g)${p.time ? ' • ' + p.time : ''}`
           }))
         : [
             { title: 'DOSIS CAFÉ', desc: `${coffeeG}g molienda` },
@@ -2329,10 +2392,11 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillText('注湯工程 // POUR TIMELINE & PROFILE:', paddingX + 12, flowY + 18);
 
       const stepW = (availW - 24 - 16) / 3;
-      const steps = (rec.pours && Array.isArray(rec.pours) && rec.pours.length > 0)
-        ? rec.pours.slice(0, 3).map((p, i) => ({
+      const normalizedPours = normalizeRecipePours(rec);
+      const steps = (normalizedPours.length > 0)
+        ? normalizedPours.slice(0, 3).map((p, i) => ({
             title: p.label || p.title || `注ぎ 0${i + 1}`,
-            desc: `${p.total_water_g || p.water_g || p.weight ? (p.total_water_g || p.water_g || p.weight) + 'g' : ''}${p.time ? ' • ' + p.time : ''}`.trim() || 'Régulier'
+            desc: `${p.totalWater}g (+${p.stepWater}g)${p.time ? ' • ' + p.time : ''}`
           }))
         : [
             { title: '珈琲粉', desc: `${coffeeG}g molienda` },
