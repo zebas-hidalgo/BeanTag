@@ -362,7 +362,7 @@ export default function App() {
   };
 
   return (
-    <div className="app-container" style={{ paddingBottom: '90px' }}>
+    <div className="app-container">
       <header className="app-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {/* Tiny Variant 3 Logo */}
