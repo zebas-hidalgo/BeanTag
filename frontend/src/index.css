@@ -315,6 +315,13 @@ textarea:focus-visible,
   border-right: 1px solid var(--border-color);
 }
 
+@media (max-width: 480px) {
+  .app-container {
+    border-left: none;
+    border-right: none;
+  }
+}
+
 main {
   flex: 1;
   overflow-y: auto;
@@ -325,16 +332,16 @@ main {
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
-  padding: 14px 16px calc(84px + env(safe-area-inset-bottom)) 16px;
+  padding: 16px 20px calc(88px + env(safe-area-inset-bottom)) 20px;
 }
 
 /* Modern Clean Specialty Coffee Card (Minimalist & Precision) */
 .candy-card {
   background-color: var(--barista-bg-surface, var(--bg-card));
   border: 1px solid var(--barista-border-hairline, var(--border-color));
-  border-radius: var(--barista-radius-md, 14px);
-  padding: 14px;
-  margin-bottom: 12px;
+  border-radius: var(--barista-radius-md, 16px);
+  padding: 18px;
+  margin-bottom: 14px;
   position: relative;
   cursor: pointer;
   box-shadow: var(--barista-shadow-card, 0 1px 3px rgba(0, 0, 0, 0.03));
@@ -404,8 +411,8 @@ main {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 12px;
+  padding: 18px;
+  margin-bottom: 14px;
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
   transition: border-color 150ms ease, background-color 150ms ease;
@@ -474,8 +481,8 @@ main {
   border: 1px solid var(--border-color);
   border-left: 3.5px solid var(--color-crimson);
   border-radius: 8px;
-  padding: 14px 16px;
-  margin-bottom: 12px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   transition: border-color 150ms ease, background-color 150ms ease;
@@ -552,7 +559,7 @@ main {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
-  padding: 10px 16px;
+  padding: 12px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -961,9 +968,9 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 .barista-sticky-bottom {
   position: fixed;
   bottom: calc(16px + env(safe-area-inset-bottom));
-  left: 16px;
-  right: 16px;
-  max-width: 448px;
+  left: 20px;
+  right: 20px;
+  max-width: 440px;
   margin: 0 auto;
   z-index: 90;
   background: var(--barista-bg-surface);
@@ -1806,11 +1813,11 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 
 @media (max-width: 375px) {
   main {
-    padding-left: 12px;
-    padding-right: 12px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
   .app-header {
-    padding: 6px 10px;
+    padding: 8px 16px;
   }
   .app-header svg {
     width: 20px !important;

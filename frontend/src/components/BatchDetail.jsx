@@ -746,7 +746,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   return (
     <div>
       {/* Top Header - Row 1: Back Navigation + Status Badge */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <button 
           className="btn-candy" 
           onClick={onBack} 
@@ -840,7 +840,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       </div>
 
       {/* Hero Ficha del Café */}
-      <div className="candy-card static" style={{ marginBottom: '14px', padding: '16px', backgroundColor: 'var(--bg-card)' }}>
+      <div className="candy-card static" style={{ marginBottom: '16px', padding: '18px', backgroundColor: 'var(--bg-card)' }}>
         <div style={{ marginBottom: '6px' }}>
           <h2 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 4px 0', textTransform: 'uppercase', fontSize: '19px', lineHeight: 1.2 }}>{batch.name}</h2>
           <div style={{ fontSize: '11.5px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
@@ -1056,7 +1056,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             </div>
 
             {/* Receta Recomendada por IA */}
-            <div className="candy-card static" style={{ marginBottom: '16px', padding: '14px', backgroundColor: 'var(--bg-card)' }}>
+            <div className="candy-card static" style={{ marginBottom: '16px', padding: '18px', backgroundColor: 'var(--bg-card)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ fontSize: '15px' }}>✨</span>
@@ -1574,7 +1574,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             </div>
 
             {/* Evaluacion Sensorial */}
-            <div className="candy-card static" style={{ marginTop: '12px', padding: '12px' }}>
+            <div className="candy-card static" style={{ marginTop: '14px', padding: '16px' }}>
               <div style={{ fontSize: '10.5px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>Evaluación Sensorial</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '10px' }}>
                 <div>
@@ -1684,7 +1684,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       {activeTab === 'tools' && (
         <div className="animate-entrance" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {/* Calculadora de Ratio */}
-          <div className="candy-card static" style={{ padding: '14px' }}>
+          <div className="candy-card static" style={{ padding: '18px' }}>
             <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Calculator size={16} color="var(--color-crimson)" />
               Calculadora de Ratio & Agua

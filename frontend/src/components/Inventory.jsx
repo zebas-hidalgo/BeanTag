@@ -178,19 +178,19 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
     <div>
       
       {/* 1. Search Bar */}
-      <div style={{ marginBottom: '10px' }}>
+      <div style={{ marginBottom: '12px' }}>
         <input 
           className="candy-input" 
           placeholder="Buscar café, origen, productor o variedad..." 
           aria-label="Buscar café por nombre, origen o variedad"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ width: '100%', boxSizing: 'border-box', margin: 0, padding: '11px 14px', fontSize: '13px' }}
+          style={{ width: '100%', boxSizing: 'border-box', margin: 0, padding: '12px 16px', fontSize: '13.5px' }}
         />
       </div>
 
       {/* 2. Top Modern Action Toolbar: Sommelier + Share Full Coffee Menu */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
         <button
           type="button"
           className="btn-candy"

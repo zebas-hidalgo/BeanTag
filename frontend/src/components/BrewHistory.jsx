@@ -378,7 +378,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', margin: 0 }}>
           Bitácoras
         </h2>
@@ -390,8 +390,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
       </div>
 
       {safeHistory.length > 0 && (
-        <div style={{ marginBottom: '14px' }}>
-          <div style={{ position: 'relative', marginBottom: '10px' }}>
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ position: 'relative', marginBottom: '12px' }}>
             <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}>
               <Search size={16} strokeWidth={2.5} />
             </div>
@@ -401,12 +401,12 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="candy-input"
-              style={{ width: '100%', paddingLeft: '38px', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '12px 14px 12px 38px', fontSize: '13.5px', boxSizing: 'border-box' }}
             />
           </div>
 
           {/* Quick Method Filters */}
-          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }} className="hide-scrollbar">
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px' }} className="hide-scrollbar">
             {['Todos', 'V60', 'Espresso', 'AeroPress', 'AeroPress Go', 'Pulsar Mini', 'Prensa'].map((m) => {
               const isSelected = (m === 'Todos' && !searchTerm) || 
                 (m === 'Pulsar Mini' && (searchTerm.toLowerCase() === 'pulsar mini' || searchTerm.toLowerCase() === 'pulsar')) ||
