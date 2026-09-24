@@ -325,7 +325,7 @@ main {
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
-  padding-bottom: calc(78px + env(safe-area-inset-bottom));
+  padding: 14px 16px calc(84px + env(safe-area-inset-bottom)) 16px;
 }
 
 /* Modern Clean Specialty Coffee Card (Minimalist & Precision) */
@@ -963,7 +963,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   bottom: calc(16px + env(safe-area-inset-bottom));
   left: 16px;
   right: 16px;
-  max-width: 500px;
+  max-width: 448px;
   margin: 0 auto;
   z-index: 90;
   background: var(--barista-bg-surface);
@@ -1805,6 +1805,10 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 
 @media (max-width: 375px) {
+  main {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
   .app-header {
     padding: 6px 10px;
   }

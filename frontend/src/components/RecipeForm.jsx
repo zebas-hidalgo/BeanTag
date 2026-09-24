@@ -347,9 +347,7 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
             overscrollBehaviorX: 'contain',
             WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'none',
-            paddingBottom: '6px',
-            paddingTop: '2px',
-            paddingLeft: '2px'
+            padding: '2px 4px 6px 4px'
           }}
         >
           {[
@@ -889,7 +887,7 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
           </details>
         </div>
 
-        <button type="submit" className="barista-btn-primary" style={{ width: '100%', marginTop: '20px', minHeight: '48px', height: '48px', fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+        <button type="submit" className="barista-btn-primary" style={{ width: '100%', marginTop: '16px', minHeight: '48px', height: '48px', fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
           <Save size={20} strokeWidth={2.5} />
           Guardar Bitácora
         </button>

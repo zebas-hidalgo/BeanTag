@@ -175,7 +175,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
   };
 
   return (
-    <div style={{ padding: '16px 14px 28px 14px' }}>
+    <div>
       
       {/* 1. Search Bar */}
       <div style={{ marginBottom: '10px' }}>
@@ -312,7 +312,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
       </div>
 
       {/* 2.1 Batch Counter */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', padding: '0 2px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           {filteredBatches.length} {filteredBatches.length === 1 ? 'Lote en bodega' : 'Lotes en bodega'}
         </span>
@@ -524,7 +524,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
             display: 'flex', 
             justifyContent: 'center', 
             alignItems: 'flex-start',
-            padding: '16px 12px', 
+            padding: '16px', 
             boxSizing: 'border-box',
             overflowY: 'auto',
             WebkitOverflowScrolling: 'touch'
@@ -564,7 +564,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
 
               {/* Template Selector */}
               <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
+                <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', padding: '0 4px' }}>ESTILO:</span>
                 {[
                   { id: 'blueprint', label: 'Blueprint' },
                   { id: 'neobrutalist', label: '⚡ Brutalismo' },

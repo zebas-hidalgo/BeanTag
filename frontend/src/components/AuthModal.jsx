@@ -168,7 +168,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
 
   return (
     <div className="bento-modal-overlay" onClick={onClose} style={{ zIndex: 11000 }} role="dialog" aria-modal="true" aria-label="Iniciar sesión" onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }} tabIndex={-1} ref={(el) => el && el.focus()}>
-      <div className="candy-card animate-entrance" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', width: '92%', padding: '24px', margin: 'auto', background: 'var(--color-surface, #FFFFFF)' }}>
+      <div className="candy-card animate-entrance" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', width: '100%', padding: '20px 18px', margin: 'auto', background: 'var(--color-surface, #FFFFFF)', boxSizing: 'border-box' }}>
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>

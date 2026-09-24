@@ -186,13 +186,13 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   };
 
   return (
-    <div style={{ padding: '12px 12px 0 12px' }}>
+    <div>
       <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 14px 0', fontSize: '16px' }}>
         Ajustes y Configuración
       </h2>
 
       {/* Estilo Visual del Inventario */}
-      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
+      <div className="candy-card static" style={{ padding: '16px', cursor: 'default', marginBottom: '14px' }}>
         <div>
           <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
             🎛️ Estilo Visual del Inventario
@@ -273,7 +273,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       </div>
 
       {/* Temas Visuales de Fantasía */}
-      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
+      <div className="candy-card static" style={{ padding: '16px', cursor: 'default', marginBottom: '14px' }}>
         <div>
           <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
             🎨 Temas Visuales de Fantasía
@@ -344,7 +344,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       </div>
 
       {/* Inteligencia Artificial (Gemini Core) */}
-      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
+      <div className="candy-card static" style={{ padding: '16px', cursor: 'default', marginBottom: '14px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
             <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0, color: 'var(--color-text)', letterSpacing: '0.5px' }}>
@@ -498,7 +498,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       </div>
 
       {/* Preferencia de Molino Predeterminado */}
-      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginBottom: '14px' }}>
+      <div className="candy-card static" style={{ padding: '16px', cursor: 'default', marginBottom: '14px' }}>
         <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
           Molino Predeterminado
         </h4>
@@ -547,7 +547,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       </div>
 
       {/* Backup and restore section */}
-      <div className="candy-card static" style={{ padding: '20px', cursor: 'default' }}>
+      <div className="candy-card static" style={{ padding: '16px', cursor: 'default', marginBottom: '14px' }}>
         <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 8px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
           Copia de Seguridad
         </h4>
@@ -590,7 +590,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       </div>
 
       {/* Herramientas WebNFC */}
-      <div className="candy-card static" style={{ padding: '20px', cursor: 'default', marginTop: '14px' }}>
+      <div className="candy-card static" style={{ padding: '16px', cursor: 'default', marginBottom: '14px' }}>
         <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
           Gestión Avanzada WebNFC
         </h4>

@@ -16,7 +16,7 @@ export default function BottomNav({ currentView, setCurrentView }) {
       left: '50%',
       transform: 'translateX(-50%)',
       width: 'calc(100% - 32px)',
-      maxWidth: '460px',
+      maxWidth: '448px',
       background: 'var(--barista-bg-surface, var(--sheet-bg, rgba(15, 23, 42, 0.94)))',
       backdropFilter: 'blur(16px)',
       WebkitBackdropFilter: 'blur(16px)',

@@ -342,7 +342,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
   };
 
   return (
-    <div style={{ padding: '12px 12px 0 12px' }}>
+    <div>
       {/* Hidden File/Camera Input */}
       <input 
         type="file" 
@@ -659,7 +659,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                 })()}
               </div>
 
-              <div className="form-group" style={{ marginTop: '14px' }}>
+              <div className="form-group">
                 <label className="barista-label">Notas de Cata Adicionales</label>
                 <input className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Fresa, chocolate, cuerpo sedoso" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
@@ -704,7 +704,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
           )}
         </div>
 
-        <button type="submit" className="btn-candy primary" style={{ width: '100%', minHeight: '48px', marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '15px', fontWeight: 'bold' }}>
+        <button type="submit" className="btn-candy primary" style={{ width: '100%', minHeight: '48px', marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '15px', fontWeight: 'bold' }}>
           <Save size={20} strokeWidth={2.5} />
           {batchToEdit ? 'Guardar Cambios' : 'Crear Lote y Obtener Link'}
         </button>

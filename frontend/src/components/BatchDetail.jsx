@@ -661,7 +661,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   // R3: Skeleton loading state
   if (!batch) return (
-    <div style={{ padding: '14px 14px 90px 14px' }}>
+    <div>
       {[1, 2, 3].map(i => (
         <div key={i} className="candy-card skeleton-card" style={{ cursor: 'default', height: i === 1 ? '80px' : '120px' }}>
           <div className="skeleton-line" style={{ width: '60%', height: '14px' }} />
@@ -673,7 +673,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   );
 
   if (batch.error) return (
-    <div style={{ padding: '24px 14px', textAlign: 'center' }}>
+    <div style={{ textAlign: 'center', paddingTop: '10px' }}>
       <div className="candy-card static" style={{ padding: '20px' }}>
         <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-crimson)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>⚠️ {batch.error}</h3>
         <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
@@ -744,7 +744,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     : (grinderType === 'comandante' ? Math.round(comandanteClicks * 30) : calculateMicrons(jmaxRot, jmaxNum, jmaxClick));
 
   return (
-    <div style={{ padding: '14px 14px 28px 14px' }}>
+    <div>
       {/* Top Header - Row 1: Back Navigation + Status Badge */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
         <button 
@@ -1812,7 +1812,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'flex-start',
-          padding: '16px 12px', 
+          padding: '16px', 
           boxSizing: 'border-box',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch'
@@ -2015,7 +2015,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
               {/* Aesthetic Template Selector */}
               <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
+                <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', padding: '0 4px' }}>ESTILO:</span>
                 {[
                   { id: 'blueprint', label: '📐 Blueprint' },
                   { id: 'neobrutalist', label: '⚡ Brutalismo' },

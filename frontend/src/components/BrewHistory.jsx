@@ -362,7 +362,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
   // R3: Skeleton loading state
   if (history === null) return (
-    <div style={{ padding: '12px 12px 0 12px' }}>
+    <div>
       <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', marginBottom: '14px' }}>
         Bitácoras
       </h2>
@@ -377,7 +377,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   );
 
   return (
-    <div style={{ padding: '12px 12px 0 12px' }}>
+    <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', margin: 0 }}>
           Bitácoras
@@ -969,7 +969,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'flex-start',
-          padding: '16px 12px', 
+          padding: '16px', 
           boxSizing: 'border-box',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch'
@@ -1172,7 +1172,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
               {/* Row 3: Aesthetic Template Selector */}
               <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', paddingLeft: '4px' }}>ESTILO:</span>
+                <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', padding: '0 4px' }}>ESTILO:</span>
                 {[
                   { id: 'blueprint', label: '📐 Blueprint' },
                   { id: 'neobrutalist', label: '⚡ Brutalismo' },
