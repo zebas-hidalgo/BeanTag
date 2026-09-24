@@ -407,9 +407,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
           {/* Quick Method Filters */}
           <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }} className="hide-scrollbar">
-            {['Todos', 'V60', 'Espresso', 'AeroPress', 'Pulsar Mini', 'Prensa'].map((m) => {
+            {['Todos', 'V60', 'Espresso', 'AeroPress', 'AeroPress Go', 'Pulsar Mini', 'Prensa'].map((m) => {
               const isSelected = (m === 'Todos' && !searchTerm) || 
                 (m === 'Pulsar Mini' && (searchTerm.toLowerCase() === 'pulsar mini' || searchTerm.toLowerCase() === 'pulsar')) ||
+                (m === 'AeroPress Go' && (searchTerm.toLowerCase() === 'aeropress go' || searchTerm.toLowerCase() === 'go')) ||
                 (searchTerm.toLowerCase() === m.toLowerCase());
               return (
                 <button
@@ -773,11 +774,12 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   <option value="V60 (Filtrado)" />
                   <option value="Espresso" />
                   <option value="AeroPress" />
+                  <option value="AeroPress Go" />
                   <option value="NextLevel Pulsar Mini" />
                   <option value="Prensa Francesa" />
                 </datalist>
                 <div style={{ display: 'flex', gap: '4px', marginTop: '6px', flexWrap: 'wrap' }}>
-                  {['V60 (Filtrado)', 'Espresso', 'AeroPress', 'NextLevel Pulsar Mini', 'Prensa Francesa'].map(m => (
+                  {['V60 (Filtrado)', 'Espresso', 'AeroPress', 'AeroPress Go', 'NextLevel Pulsar Mini', 'Prensa Francesa'].map(m => (
                     <button
                       key={m}
                       type="button"

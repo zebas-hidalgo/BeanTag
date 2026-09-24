@@ -193,6 +193,7 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
     const recMethod = (aiRecommendation.method || '').toLowerCase();
     if (recMethod.includes('v60') || recMethod.includes('filtrado')) setMethod('V60 (Filtrado)');
     else if (recMethod.includes('espresso') || recMethod.includes('expresso')) setMethod('Espresso');
+    else if (recMethod.includes('go')) setMethod('AeroPress Go');
     else if (recMethod.includes('aero') || recMethod.includes('press')) setMethod('AeroPress');
     else if (recMethod.includes('prensa') || recMethod.includes('francesa')) setMethod('Prensa Francesa');
     else if (recMethod.includes('pulsar')) setMethod('NextLevel Pulsar Mini');
@@ -341,6 +342,7 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
             { id: 'V60 (Filtrado)', lucide: <Filter size={24} />, label: 'V60' },
             { id: 'Espresso', lucide: <Zap size={24} />, label: 'Espresso' },
             { id: 'AeroPress', lucide: <Droplet size={24} />, label: 'AeroPress' },
+            { id: 'AeroPress Go', lucide: <Droplet size={24} />, label: 'AeroPress Go' },
             { id: 'Prensa Francesa', lucide: <Coffee size={24} />, label: 'Prensa' },
             { id: 'NextLevel Pulsar Mini', lucide: <SlidersHorizontal size={24} />, label: 'Pulsar Mini' }
           ].map(m => (
@@ -355,6 +357,9 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
                 if (m.id === 'NextLevel Pulsar Mini') {
                   if (doseInG === 20.0 || !doseInG) setDoseInG(15.0);
                   if (ratioVal === 15.0 || !ratioVal) setRatioVal(16.6);
+                } else if (m.id === 'AeroPress Go') {
+                  if (doseInG === 20.0 || !doseInG || doseInG > 15.0) setDoseInG(14.0);
+                  if (ratioVal === 15.0 || !ratioVal) setRatioVal(14.3);
                 }
                 if (navigator.vibrate) navigator.vibrate(40);
               }} 
@@ -365,11 +370,14 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
                   if (m.id === 'NextLevel Pulsar Mini') {
                     if (doseInG === 20.0 || !doseInG) setDoseInG(15.0);
                     if (ratioVal === 15.0 || !ratioVal) setRatioVal(16.6);
+                  } else if (m.id === 'AeroPress Go') {
+                    if (doseInG === 20.0 || !doseInG || doseInG > 15.0) setDoseInG(14.0);
+                    if (ratioVal === 15.0 || !ratioVal) setRatioVal(14.3);
                   }
                   if (navigator.vibrate) navigator.vibrate(40);
                 }
               }}
-              style={{ flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+              style={{ flex: '1', minWidth: '68px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
             >
               <div className="candy-card" style={{ width: '100%', aspectRatio: '1/1', padding: 0, margin: 0, borderColor: method === m.id ? 'var(--color-crimson)' : 'var(--border-color)', borderWidth: method === m.id ? '3px' : '2px', backgroundColor: method === m.id ? 'var(--color-crimson)' : 'var(--bg-card)', boxShadow: method === m.id ? 'none' : '3px 3px 0px var(--border-color)', transform: method === m.id ? 'translate(2px, 2px)' : 'none', transition: 'all 0.15s var(--transition-spring)' }}>
                 <div style={{ width: '100%', height: '100%', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: method === m.id ? '#FFFFFF' : 'var(--color-crimson)' }}>

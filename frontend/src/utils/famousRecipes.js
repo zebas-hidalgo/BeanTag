@@ -231,6 +231,43 @@ export const FAMOUS_RECIPES = [
     notes: 'Cuerpo sedoso, explosión aromática dulce y acidez aterciopelada.'
   },
   {
+    id: 'aeropress-go-travel',
+    name: 'AeroPress Go Travel Compact',
+    author: 'Alan Adler & Especialidad Barista',
+    badge: '✈️ AeroPress Go',
+    method: 'AeroPress Go',
+    description: 'Receta optimizada para la cámara compacta (máx 220ml) de la AeroPress Go. Taza sedosa, dulce y sin amargor.',
+    ratio: '1:14.3',
+    ratioVal: 14.3,
+    defaultDose: 14,
+    temperature: 90,
+    brewTime: '1:45 min',
+    grind: 'Medio-Fina (AeroPress Go)',
+    grindMicrons: 1650,
+    grinderSettings: {
+      jmax: { rot: 1, num: 8, click: 5, text: '1.8.5 (~1650 µm)' },
+      femobook: { clicks: 36, text: '36 clics (~0.9 Rot.)' },
+      comandante: { clicks: 15, text: '15 clics' }
+    },
+    calculatePours: (dose) => {
+      const totalWater = Math.min(210, Math.round(dose * 14.3));
+      const bloom = Math.min(45, Math.round(dose * 2.8));
+      return [
+        { step: 1, label: 'Saturación / Bloom Inicial', water_g: bloom, total_water_g: bloom, time: '0:00 - 0:30', description: 'Verter agua a 90°C y remover 3 veces con la paleta.' },
+        { step: 2, label: 'Llenado Cámara Compacta', water_g: totalWater - bloom, total_water_g: totalWater, time: '0:30 - 1:15', description: `Completar hasta ${totalWater}g (límite cámara Go). Colocar émbolo para crear vacío.` },
+        { step: 3, label: 'Prensado Suave', water_g: 0, total_water_g: totalWater, time: '1:15 - 1:45', description: 'Presionar lentamente durante 30 segundos hasta escuchar el primer silbido.' }
+      ];
+    },
+    steps: [
+      'Colocar filtro de papel en la tapa de la AeroPress Go y enjuagar con agua caliente.',
+      'Añadir 14g de café recién molido a granulometría medio-fina (1.8.5 en J-Max).',
+      'Verter agua a 90°C en dos fases respetando el límite de la cámara compacta.',
+      'Colocar émbolo en la parte superior para retener el líquido por vacío.',
+      'A 1:15 min, prensar suave y uniformemente durante 30 segundos hasta 1:45 min.'
+    ],
+    notes: 'Taza con balance sobresaliente, textura jugosa, acidez cítrica redonda y dulzor de caramelo.'
+  },
+  {
     id: 'scott-rao-pulsar-mini',
     name: 'Scott Rao Pulsar Mini',
     author: 'Scott Rao (Consultor & Autor)',

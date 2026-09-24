@@ -323,6 +323,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       setMethod('V60 (Filtrado)');
     } else if (recMethod.includes('espresso') || recMethod.includes('expresso')) {
       setMethod('Espresso');
+    } else if (recMethod.includes('go')) {
+      setMethod('AeroPress Go');
     } else if (recMethod.includes('aero') || recMethod.includes('press')) {
       setMethod('AeroPress');
     } else if (recMethod.includes('prensa') || recMethod.includes('francesa')) {
@@ -943,6 +945,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 { id: 'V60 (Filtrado)', lucide: <Filter size={18} strokeWidth={2.3} />, label: 'V60' },
                 { id: 'Espresso', lucide: <Zap size={18} strokeWidth={2.3} />, label: 'Espresso' },
                 { id: 'AeroPress', lucide: <Droplet size={18} strokeWidth={2.3} />, label: 'AeroPress' },
+                { id: 'AeroPress Go', lucide: <Droplet size={18} strokeWidth={2.3} />, label: 'AeroPress Go' },
                 { id: 'Prensa Francesa', lucide: <Coffee size={18} strokeWidth={2.3} />, label: 'Prensa' },
                 { id: 'NextLevel Pulsar Mini', lucide: <SlidersHorizontal size={18} strokeWidth={2.3} />, label: 'Pulsar Mini' }
               ].map(m => {
@@ -958,6 +961,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       if (m.id === 'NextLevel Pulsar Mini') {
                         if (!doseInG || doseInG === 20.0) setDoseInG(15.0);
                         if (!ratioVal || ratioVal === 15.0) setRatioVal(16.6);
+                      } else if (m.id === 'AeroPress Go') {
+                        if (!doseInG || doseInG === 20.0 || doseInG > 15.0) setDoseInG(14.0);
+                        if (!ratioVal || ratioVal === 15.0) setRatioVal(14.3);
                       }
                     }}
                     className={`cupertino-segmented-btn ${isActive ? 'active' : ''}`}
@@ -970,7 +976,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     }}
                   >
                     {m.lucide}
-                    <span style={{ fontSize: '11px', fontWeight: isActive ? '800' : '600' }}>{m.label}</span>
+                    <span style={{ fontSize: '10.5px', fontWeight: isActive ? '800' : '600', whiteSpace: 'nowrap' }}>{m.label}</span>
                   </button>
                 );
               })}

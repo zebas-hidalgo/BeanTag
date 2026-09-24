@@ -60,7 +60,7 @@ const res1 = await mockRequest(app, 'POST', '/api/recommend-recipe', {}, {
 assert.equal(res1.status, 200, 'Should return HTTP 200 even without API key');
 const data1 = res1.json();
 assert.equal(data1.method, 'V60 (Filtrado)');
-assert.equal(data1.water_total_g, 300);
+assert.equal(data1.water_total_g, 332, 'Light roast washed dynamically calculates 332g (1:16.6)');
 assert.ok(data1.grinders?.jmax, 'Should include J-Max grind dial');
 assert.ok(data1.notes.includes('Modo Barista Offline'), 'Notes should indicate offline mode');
 console.log('✅ Passed: Offline recipe returned with 200 OK without API key.\n');
@@ -88,8 +88,26 @@ assert.equal(data2._source, 'barista_fallback');
 assert.ok(data2.grinders?.jmax, 'Should calculate J-Max grind');
 console.log('✅ Passed: Graceful fallback recipe returned with 200 OK on invalid upstream key.\n');
 
-// Test 3: POST /api/ai/tune-recipe with NO API key
-console.log('Test 3: POST /api/ai/tune-recipe with NO API key');
+// Test 3: POST /api/recommend-recipe for AeroPress Go
+console.log('Test 3: POST /api/recommend-recipe for AeroPress Go');
+const resGo = await mockRequest(app, 'POST', '/api/recommend-recipe', {}, {
+  origin: 'Ethiopia Sidama',
+  variety: 'Heirloom',
+  process: 'Lavado',
+  altitude: '2000m',
+  roast_level: 'Claro',
+  method: 'AeroPress Go',
+  dose_in_g: 14
+});
+assert.equal(resGo.status, 200);
+const dataGo = resGo.json();
+assert.equal(dataGo.method, 'AeroPress Go');
+assert.equal(dataGo.water_total_g, 203);
+assert.ok(dataGo.water_total_g <= 215, 'AeroPress Go water within 220ml chamber');
+console.log('✅ Passed: AeroPress Go endpoint test returned with 200 OK.\n');
+
+// Test 4: POST /api/ai/tune-recipe with NO API key
+console.log('Test 4: POST /api/ai/tune-recipe with NO API key');
 const res3 = await mockRequest(app, 'POST', '/api/ai/tune-recipe', {}, {
   method: 'V60 (Filtrado)',
   dose_in_g: 20,

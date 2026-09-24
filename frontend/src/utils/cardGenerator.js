@@ -298,7 +298,8 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
   } = recipeData;
 
   const isEspresso = /espresso/i.test(method);
-  const isImmersion = /french|prensa|aeropress|cupping/i.test(method);
+  const isAeropress = /aero/i.test(method);
+  const isImmersion = /french|prensa|cupping/i.test(method);
 
   ctx.save();
 
@@ -338,6 +339,12 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
       { label: 'PRE-INFUSIÓN', time: '0-6s', weight: 'Baja bar', flex: 1.5, color: '#1E293B' },
       { label: 'RAMPA 9 BAR', time: '6-24s', weight: 'Extracción', flex: 3.5, color: '#0E7490' },
       { label: 'CORTE', time: brew_time || '28s', weight: outG, flex: 1.2, color: '#DC2626' }
+    ];
+  } else if (isAeropress) {
+    stages = [
+      { label: 'INFUSIÓN', time: '0:00 - 1:15', weight: `${dose_out_g || 200}g`, flex: 3.0, color: '#1E293B' },
+      { label: 'AGITACIÓN', time: '1:15 - 1:30', weight: 'Swirl', flex: 1.2, color: '#3B82F6' },
+      { label: 'PRENSADO', time: brew_time || '1:45', weight: '30s Suave', flex: 1.8, color: '#10B981' }
     ];
   } else if (isImmersion) {
     stages = [

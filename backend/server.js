@@ -710,60 +710,66 @@ Analiza meticulosamente este lote de café de especialidad:
 
 El usuario desea preparar este café con el método: "${targetMethod}" y una dosis de entrada de: "${dose}g".
 
-REGLAS MECÁNICAS EXACTAS PARA MOLINOS PRINCIPALES:
-1. 1ZPRESSO J-MAX (8.8 µm/clic, 90 clics/rotación, 10 clics/número -> Formato: Rotación.Número.Clic):
-   - Espresso: 1.2.5 a 1.4.2 (~830-1160 µm). Base habitual: 1.3.5.
-   - AeroPress/Moka: 1.8.0 a 2.1.0 (~1500-1670 µm).
-   - V60/Filtrado: 2.3.0 a 2.7.0 (~1850-2200 µm). Base habitual: 2.4.5.
-   - NextLevel Pulsar Mini: 2.2.0 a 2.4.0 (~1750-1950 µm). Base habitual: 2.3.0.
-   - Prensa Francesa: 3.0.0 a 3.5.0 (~2370-2800 µm).
-2. FEMOBOOK A2 (18 µm/clic, 40 clics/rotación, muelas cónicas heptagonales 38mm, motor a bajas RPM):
-   - Espresso: 3 a 10 clics desde cero (Base: 5 a 8 clics).
-   - Moka Pot: 12 a 18 clics.
-   - AeroPress: 25 a 45 clics.
-   - NextLevel Pulsar Mini: 48 a 58 clics.
-   - Pour-Over / V60: 50 a 75 clics (~1.25 a 1.85 rotaciones, Base habitual: 58-62 clics = 1.5 rotaciones).
-   - Kalita / Chemex: 65 a 85 clics.
-   - Prensa Francesa / Cold Brew: 85 a 110 clics.
-3. Otros molinos equivalentes: Comandante C40 (30 µm/clic), Timemore C2/C3, Baratza Encore.
+REGLAS MECÁNICAS Y CAPACIDADES SEGÚN MÉTODO:
+1. V60 / Filtrado Cónico:
+   - Ratios: 1:15 a 1:17 (ej. 1:16.6 para tuestes claros, lavados o variedades florales/frutales; 1:15 a 1:15.5 para tuestes medios o procesos naturales/anaeróbicos; 1:14 a 1:14.5 para tuestes oscuros).
+   - Temperatura: 94°C-96°C (tuestes claros y granos de altura >1700m); 91°C-93°C (tuestes medios); 88°C-90°C (tuestes oscuros); 90°C-92°C (procesos anaeróbicos/fermentados).
+   - Molienda J-Max: 2.2.5 a 2.6.5 (~1800-2200 µm). Base habitual: 2.4.5.
+   - Vertidos: 3 o 4 etapas calculadas (Bloom de 40-45s con agua = dosis * 3, seguido de pulsos progresivos continuos).
+2. AeroPress Go:
+   - ⚠️ ATENCIÓN: Cámara compacta con capacidad máxima de ~220 ml de agua.
+   - Dosis recomendada: 11g a 15g. (Si la dosis ingresada supera 15g, adapta el ratio para no exceder 210g de agua en cámara o formula un concentrado con bypass).
+   - Ratios: 1:13.5 a 1:14.5 (Agua total: 160g a 210g máx).
+   - Temperatura: 88°C a 92°C.
+   - Molienda J-Max: 1.7.0 a 1.9.5 (~1500-1700 µm). Base habitual: 1.8.5.
+   - Tiempo de extracción: 1:30 a 2:00 min. Prensado suave durante 30s.
+3. AeroPress Estándar:
+   - Cámara de 260ml. Ratios 1:13 a 1:15. Temp 88°C-92°C. Molienda J-Max 1.8.0 a 2.1.0.
+4. NextLevel Pulsar Mini:
+   - No-bypass. Ratio 1:15.5 a 1:17. Molienda J-Max 2.2.0 a 2.4.0 (~1750-1950 µm).
+   - Válvula: "🔒 Válvula cerrada" (bloom con dispersor y agitación suave), "⚡ Válvula 50%" (vertido 1), "🔓 Válvula 100%" (drenaje libre).
+5. Espresso:
+   - Ratios: 1:2.0 a 1:2.5 (1:2.4 para tuestes claros de alta altitud; 1:2.2 para tuestes medios; 1:2.0 para tuestes oscuros).
+   - Temperatura: 91°C a 94°C. Tiempo: 25s - 32s.
+   - Molienda J-Max: 1.2.0 a 1.4.5 (~850-1160 µm). Base habitual: 1.3.5.
+6. Prensa Francesa:
+   - Inmersión total. Ratio 1:14 a 1:15. Molienda gruesa J-Max 3.0.0 a 3.5.0 (~2400-2800 µm). Tiempo 4:00 min.
 
-AJUSTES FÍSICOS CIENTÍFICOS OBLIGATORIOS:
-1. Tueste Claro: Granos densos. Restar clics (J-Max: -3 a -5 | Femobook A2: -2 a -4 | más fino).
-2. Tueste Oscuro: Granos porosos. Sumar clics (J-Max: +4 a +6 | Femobook A2: +3 a +5 | más grueso).
-3. Proceso Natural/Anaeróbico/Maceración: Muy solubles, producen más finos. Sumar clics (J-Max: +3 a +5 | Femobook A2: +2 a +4 | más grueso).
-4. Altitud >1600m: Restar clics (más fino).
+AJUSTES CIENTÍFICOS OBLIGATORIOS SEGÚN EL CAFÉ:
+- Tueste Claro: Restar 3 a 5 clics en J-Max (más fino) y subir temperatura (+1°C a +3°C) para aumentar rendimiento de extracción en granos densos.
+- Tueste Oscuro: Sumar 4 a 6 clics en J-Max (más grueso) y bajar temperatura (88°C-90°C) para prevenir sobre-extracción amarga.
+- Proceso Natural / Anaeróbico / Maceración: Sumar 2 a 4 clics en J-Max para compensar la alta producción de finos y evitar atascos.
+- Altitud >1600m: Grano denso (SHB), restar 2 clics (más fino).
 
-Genera un JSON con esta estructura exacta:
+Genera un JSON válido con esta estructura exacta (DEBES CALCULAR Y ADAPTAR CADA CAMPO DINÁMICAMENTE al café específico, NUNCA devuelvas valores fijos ni genéricos):
 {
   "method": "${targetMethod}",
-  "ratio": "${targetMethod === 'Espresso' ? '1:2.2' : (targetMethod.includes('Pulsar') ? '1:16' : '1:15')}",
-  "water_total_g": ${targetMethod === 'Espresso' ? Math.round(dose * 2.2) : (targetMethod.includes('Pulsar') ? Math.round(dose * 16) : Math.round(dose * 15))},
-  "grind": "${targetMethod === 'Espresso' ? 'Espresso Fino (1.3.5)' : (targetMethod.includes('Pulsar') ? 'Medio No-Bypass (2.3.0)' : 'Medio-Fino (2.4.5)')}",
-  "grind_microns": "${targetMethod === 'Espresso' ? '1100 µm' : '1980 µm'}",
-  "grind_adjustment_reason": "Explicación física concisa del ajuste según tueste, proceso y altitud (máx 20 palabras)",
-  "jmax_rot": ${targetMethod === 'Espresso' ? 1 : (targetMethod.includes('Prensa') ? 3 : (targetMethod.includes('Aero') ? 1 : 2))},
-  "jmax_num": ${targetMethod === 'Espresso' ? 3 : (targetMethod.includes('Prensa') ? 2 : (targetMethod.includes('Aero') ? 9 : (targetMethod.includes('Pulsar') ? 3 : 4)))},
-  "jmax_click": ${targetMethod === 'Espresso' ? 5 : (targetMethod.includes('Prensa') ? 0 : (targetMethod.includes('Aero') ? 0 : (targetMethod.includes('Pulsar') ? 0 : 5)))},
+  "ratio": "1:X (calculado según el café y método)",
+  "water_total_g": 0, // Número entero exacto: Math.round(dosis * ratio)
+  "grind": "Descripción granulométrica y dial J-Max resultante (ej. 'Medio-Fino (2.3.8)')",
+  "grind_microns": "Micrones estimados (ej. '1920 µm')",
+  "grind_adjustment_reason": "Explicación física concisa de por qué se eligió esta molienda y temp según el tueste, proceso y altitud del grano (máx 25 palabras)",
+  "jmax_rot": 0, // Entero de 0 a 3 (número de rotaciones)
+  "jmax_num": 0, // Entero de 0 a 8 (número principal en el dial)
+  "jmax_click": 0, // Entero de 0 a 9 (clic intermedio)
   "grinders": {
-    "jmax": "${targetMethod === 'Espresso' ? '1.3.5 (1 Rot. 3 Núm. 5 Clics)' : (targetMethod.includes('Pulsar') ? '2.3.0 (2 Rot. 3 Núm. 0 Clics)' : '2.4.5 (2 Rot. 4 Núm. 5 Clics)')}",
-    "femobook_a2": "${targetMethod === 'Espresso' ? '7 clics' : (targetMethod.includes('Prensa') ? '95 clics (2.3 Rot.)' : (targetMethod.includes('Aero') ? '35 clics' : (targetMethod.includes('Pulsar') ? '54 clics (1.35 Rot.)' : '60 clics (1.5 Rot.)')))}",
-    "comandante": "${targetMethod === 'Espresso' ? '8-10 clics' : (targetMethod.includes('Pulsar') ? '20-21 clics' : '22-24 clics')}",
-    "timemore": "${targetMethod === 'Espresso' ? '8-9 clics' : (targetMethod.includes('Pulsar') ? '15-16 clics' : '16-18 clics')}",
-    "baratza": "${targetMethod === 'Espresso' ? 'Ajuste 4-6' : (targetMethod.includes('Pulsar') ? 'Ajuste 13' : 'Ajuste 14-16')}"
+    "jmax": "Formato Rot.Num.Clic (ej. '2.3.8 (2 Rot. 3 Núm. 8 Clics)')",
+    "femobook_a2": "Clics Femobook (18 µm/clic, ej. '56 clics (1.4 Rot.)')",
+    "comandante": "Clics Comandante C40 (30 µm/clic, ej. '22 clics')",
+    "timemore": "Clics Timemore C2/C3 (ej. '16 clics')",
+    "baratza": "Ajuste Baratza Encore (ej. 'Ajuste 14')"
   },
-  "temperature": ${targetMethod === 'Espresso' ? 92 : (targetMethod.includes('Pulsar') ? 94 : 93)},
-  "brew_time": "${targetMethod === 'Espresso' ? '28s' : (targetMethod.includes('Pulsar') ? '3:20 min' : '2:30 min')}",
+  "temperature": 0, // Entero en °C (entre 87 y 96) calculado específicamente para este café
+  "brew_time": "Tiempo total estimado (ej. '2:45 min', '1:45 min', '28s')",
   "pours": [
-    { "step": 1, "label": "${targetMethod === 'Espresso' ? 'Pre-infusión Espresso' : (targetMethod.includes('Pulsar') ? 'Bloom / Válvula Cerrada' : 'Bloom / Pre-infusión')}", "water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 0.5) : 60}, "total_water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 0.5) : 60}, "time": "${targetMethod === 'Espresso' ? '0s - 5s' : '0:00 - 0:45'}", "description": "${targetMethod === 'Espresso' ? 'Pre-infusión a baja presión.' : (targetMethod.includes('Pulsar') ? '🔒 Válvula cerrada. Saturar y agitar suave.' : 'Verter en espiral para desgasificar.')}" },
-    { "step": 2, "label": "${targetMethod === 'Espresso' ? 'Extracción Principal' : (targetMethod.includes('Pulsar') ? '1º Pulso / Válvula Media' : '1º Vertido Principal')}", "water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 2.2 - dose * 0.5) : (targetMethod.includes('Pulsar') ? Math.round((dose * 16 - 60) * 0.5) : Math.round(dose * 15 - 60))}, "total_water_g": ${targetMethod === 'Espresso' ? Math.round(dose * 2.2) : (targetMethod.includes('Pulsar') ? Math.round(60 + (dose * 16 - 60) * 0.5) : Math.round(dose * 15))}, "time": "${targetMethod === 'Espresso' ? '5s - 28s' : (targetMethod.includes('Pulsar') ? '0:45 - 1:45' : '0:45 - 2:30')}", "description": "${targetMethod === 'Espresso' ? 'Rampa continua a 9 bar.' : (targetMethod.includes('Pulsar') ? '⚡ Válvula al 50%. Verter con dispersor.' : 'Vertido continuo en pulso medio.')}" }
+    // Array con las fases reales de vertido.
+    // Para cada paso incluye: "step" (número 1..N), "label" (nombre de etapa), "water_g" (gramos de agua vertidos en esta fase), "total_water_g" (agua total acumulada en báscula), "time" (ej. '0:00 - 0:45'), "description" (técnica de vertido o válvula).
+    // REGLA MATEMÁTICA CRÍTICA: La suma de todos los "water_g" DEBE ser igual a "water_total_g", y el "total_water_g" del último paso DEBE ser exactamente "water_total_g".
   ],
   "steps": [
-    "Purgar y secar el portafiltro o recipiente.",
-    "Pesar ${dose}g de café y calibrar tu 1Zpresso J-Max o Femobook A2.",
-    "Realizar vertidos según cronograma.",
-    "Servir y evaluar perfil de cata."
+    // 3 a 5 pasos concretos para preparar este lote con este método y molienda
   ],
-  "notes": "Taza dulce, limpia y balanceada."
+  "notes": "Perfil en taza esperado conectando el origen (${origin}), proceso (${process}), tueste (${roast_level}) y notas del tostador (${roaster_notes || 'notas de especialidad'})"
 }`;
 
   try {
@@ -792,45 +798,54 @@ app.post('/api/ai/tune-recipe', async (req, res) => {
   }
 
   const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad. El usuario preparó una receta de "${batch_name || 'Especialidad'}" con ${method}:
-Dosis: ${dose}g, Ratio: ${ratio || '1:15'}, Temp: ${temperature || 93}°C, Molino J-Max: ${jmax_rot}.${jmax_num}.${jmax_click}.
+Dosis: ${dose}g, Ratio: ${ratio || '1:15'}, Temp: ${temperature || 93}°C, Molino J-Max actual: ${jmax_rot}.${jmax_num}.${jmax_click}.
 
-Resultado Sensorial Evaluado:
+Resultado Sensorial Evaluado por el Catador:
 - Extracción: ${sensory_extraction || 'Sub (Agrio)'}
 - Balance: ${sensory_balance || 'Desconocido'}
 - Cuerpo: ${sensory_body || 'Desconocido'}
 - Notas del Barista: ${user_notes || 'Ninguna'}
 
-RECALIBRA científicamente la receta para corregir los defectos (${sensory_extraction}) y devolver el ajuste perfecto en formato JSON:
+REGLAS DE RECALIBRACIÓN CIENTÍFICA:
+1. Si hubo SUB-EXTRACCIÓN (agrio, salado, falto de dulzor):
+   - Afinar molienda (restar 3 a 6 clics en J-Max).
+   - Subir temperatura (+1°C a +2°C, máx 96°C).
+   - Alargar tiempo de contacto o aumentar ligeramente el ratio.
+2. Si hubo SOBRE-EXTRACCIÓN (amargo, astringente, seco, cenizo):
+   - Abrir molienda (sumar 4 a 7 clics en J-Max).
+   - Reducir temperatura (-1°C a -3°C, mín 88°C).
+   - Agitación más suave en los vertidos.
+3. Si la extracción estuvo EN PUNTO / BALANCEADA:
+   - Micro-ajuste barístico (+/- 1 clic) o ajustes finos en vertidos para resaltar perfiles aromáticos.
+
+Genera un JSON con esta estructura exacta (calcula valores específicos para corregir este caso):
 {
-  "correction_reason": "Explicación barística directa de la corrección (máx 25 palabras)",
+  "correction_reason": "Explicación barística directa de la corrección según el defecto detectado (máx 25 palabras)",
   "method": "${method}",
-  "ratio": "1:16",
-  "water_total_g": ${Math.round(dose * 16)},
-  "grind": "Medio-Fino Corregido",
-  "grind_microns": "580 µm",
-  "jmax_rot": ${jmax_rot},
-  "jmax_num": ${jmax_num + 1 > 8 ? 0 : jmax_num + 1},
-  "jmax_click": ${jmax_click},
+  "ratio": "1:X (ratio corregido)",
+  "water_total_g": 0, // Entero exacto: Math.round(dosis * ratio)
+  "grind": "Descripción granulometría corregida y dial J-Max",
+  "grind_microns": "Micrones estimados",
+  "jmax_rot": 0, // Entero rotaciones corregido
+  "jmax_num": 0, // Entero número corregido
+  "jmax_click": 0, // Entero clic corregido
   "grinders": {
-    "jmax": "${jmax_rot}.${jmax_num + 1 > 8 ? 0 : jmax_num + 1}.${jmax_click}",
-    "femobook_a2": "62 clics (1.55 Rot.)",
-    "comandante": "23 clics",
-    "timemore": "17 clics",
-    "baratza": "Ajuste 15"
+    "jmax": "Formato Rot.Num.Clic",
+    "femobook_a2": "Clics Femobook",
+    "comandante": "Clics Comandante",
+    "timemore": "Clics Timemore",
+    "baratza": "Ajuste Baratza"
   },
-  "temperature": 94,
-  "brew_time": "2:35",
+  "temperature": 0, // Temperatura corregida en °C
+  "brew_time": "Tiempo corregido",
   "pours": [
-    { "step": 1, "label": "Bloom Corregido", "water_g": 60, "total_water_g": 60, "time": "0:00 - 0:45", "description": "Bloom con agitación suave." },
-    { "step": 2, "label": "1º Vertido Principal", "water_g": 140, "total_water_g": 200, "time": "0:45 - 1:30", "description": "Vertido continuo." },
-    { "step": 3, "label": "2º Vertido Final", "water_g": 120, "total_water_g": 320, "time": "1:30 - 2:35", "description": "Finalizar extracción y asentar cama de café." }
+    // Array de etapas de vertido corregidas (con step, label, water_g, total_water_g, time, description).
+    // Suma de water_g = water_total_g y total_water_g del último paso = water_total_g.
   ],
   "steps": [
-    "Ajustar molino J-Max a la nueva posición corregida.",
-    "Aumentar temperatura de agua a 94°C.",
-    "Seguir la nueva secuencia de vertidos indicada."
+    // Pasos ajustados para preparar la receta corregida
   ],
-  "notes": "Taza dulzona, bien balanceada con excelente extracción y claridad limpia."
+  "notes": "Resultado esperado tras la corrección"
 }`;
 
   try {
