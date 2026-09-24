@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Filter, Zap, X, SlidersHorizontal, Check } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Filter, Zap, X, SlidersHorizontal, Check, Cylinder, Compass } from 'lucide-react';
 import { apiUrl } from '../utils/api';
 import { FAMOUS_RECIPES } from '../utils/famousRecipes';
 
@@ -337,14 +337,28 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px' }}>
           <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', fontSize: '15px', margin: 0 }}>Registrar Preparación</h2>
         </div>
-        <div style={{ display: 'flex', gap: '12px', margin: '16px 0', overflowX: 'auto', paddingBottom: '4px' }}>
+        <div
+          className="hide-scrollbar"
+          style={{
+            display: 'flex',
+            gap: '10px',
+            margin: '16px 0',
+            overflowX: 'auto',
+            overscrollBehaviorX: 'contain',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            paddingBottom: '6px',
+            paddingTop: '2px',
+            paddingLeft: '2px'
+          }}
+        >
           {[
-            { id: 'V60 (Filtrado)', lucide: <Filter size={24} />, label: 'V60' },
-            { id: 'Espresso', lucide: <Zap size={24} />, label: 'Espresso' },
-            { id: 'AeroPress', lucide: <Droplet size={24} />, label: 'AeroPress' },
-            { id: 'AeroPress Go', lucide: <Droplet size={24} />, label: 'AeroPress Go' },
-            { id: 'Prensa Francesa', lucide: <Coffee size={24} />, label: 'Prensa' },
-            { id: 'NextLevel Pulsar Mini', lucide: <SlidersHorizontal size={24} />, label: 'Pulsar Mini' }
+            { id: 'V60 (Filtrado)', lucide: <Filter size={22} strokeWidth={2.2} />, label: 'V60' },
+            { id: 'Espresso', lucide: <Zap size={22} strokeWidth={2.2} />, label: 'Espresso' },
+            { id: 'AeroPress', lucide: <Cylinder size={22} strokeWidth={2.2} />, label: 'AeroPress' },
+            { id: 'AeroPress Go', lucide: <Compass size={22} strokeWidth={2.2} />, label: 'AeroPress Go' },
+            { id: 'Prensa Francesa', lucide: <Coffee size={22} strokeWidth={2.2} />, label: 'Prensa' },
+            { id: 'NextLevel Pulsar Mini', lucide: <SlidersHorizontal size={22} strokeWidth={2.2} />, label: 'Pulsar Mini' }
           ].map(m => (
             <div 
               key={m.id} 
@@ -352,7 +366,8 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
               tabIndex={0}
               aria-pressed={method === m.id}
               aria-label={`Seleccionar método ${m.label}`}
-              onClick={() => {
+              onClick={(e) => {
+                e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                 setMethod(m.id);
                 if (m.id === 'NextLevel Pulsar Mini') {
                   if (doseInG === 20.0 || !doseInG) setDoseInG(15.0);
@@ -366,6 +381,7 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
+                  e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                   setMethod(m.id);
                   if (m.id === 'NextLevel Pulsar Mini') {
                     if (doseInG === 20.0 || !doseInG) setDoseInG(15.0);
@@ -377,14 +393,14 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
                   if (navigator.vibrate) navigator.vibrate(40);
                 }
               }}
-              style={{ flex: '1', minWidth: '68px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+              style={{ flex: '0 0 auto', width: '84px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
             >
-              <div className="candy-card" style={{ width: '100%', aspectRatio: '1/1', padding: 0, margin: 0, borderColor: method === m.id ? 'var(--color-crimson)' : 'var(--border-color)', borderWidth: method === m.id ? '3px' : '2px', backgroundColor: method === m.id ? 'var(--color-crimson)' : 'var(--bg-card)', boxShadow: method === m.id ? 'none' : '3px 3px 0px var(--border-color)', transform: method === m.id ? 'translate(2px, 2px)' : 'none', transition: 'all 0.15s var(--transition-spring)' }}>
+              <div className="candy-card" style={{ width: '100%', height: '56px', padding: 0, margin: 0, borderColor: method === m.id ? 'var(--color-crimson)' : 'var(--border-color)', borderWidth: method === m.id ? '3px' : '2px', backgroundColor: method === m.id ? 'var(--color-crimson)' : 'var(--bg-card)', boxShadow: method === m.id ? 'none' : '3px 3px 0px var(--border-color)', transform: method === m.id ? 'translate(2px, 2px)' : 'none', transition: 'all 0.15s var(--transition-spring)' }}>
                 <div style={{ width: '100%', height: '100%', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: method === m.id ? '#FFFFFF' : 'var(--color-crimson)' }}>
                   {m.lucide}
                 </div>
               </div>
-              <span style={{ fontSize: '10px', fontWeight: method === m.id ? '900' : '600', color: method === m.id ? 'var(--color-text)' : 'var(--color-text-muted)' }}>{m.label}</span>
+              <span style={{ fontSize: '10.5px', fontWeight: method === m.id ? '900' : '600', color: method === m.id ? 'var(--color-text)' : 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>{m.label}</span>
             </div>
           ))}
         </div>

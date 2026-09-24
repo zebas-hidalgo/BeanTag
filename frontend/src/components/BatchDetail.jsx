@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers, SlidersHorizontal } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers, SlidersHorizontal, Cylinder, Compass } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText, generateCoffeeStickerImage } from '../utils/cardGenerator';
@@ -940,12 +940,25 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         <div ref={brewFormRef} className="animate-entrance">
           <form onSubmit={handleRecipeSubmit}>
             {/* Method Cupertino Segmented Selector */}
-            <div className="cupertino-segmented" style={{ padding: '4px', gap: '4px', marginBottom: '16px' }}>
+            <div
+              className="cupertino-segmented hide-scrollbar"
+              style={{
+                padding: '4px',
+                gap: '6px',
+                marginBottom: '16px',
+                overflowX: 'auto',
+                overscrollBehaviorX: 'contain',
+                WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'none',
+                display: 'flex',
+                width: '100%'
+              }}
+            >
               {[
                 { id: 'V60 (Filtrado)', lucide: <Filter size={18} strokeWidth={2.3} />, label: 'V60' },
                 { id: 'Espresso', lucide: <Zap size={18} strokeWidth={2.3} />, label: 'Espresso' },
-                { id: 'AeroPress', lucide: <Droplet size={18} strokeWidth={2.3} />, label: 'AeroPress' },
-                { id: 'AeroPress Go', lucide: <Droplet size={18} strokeWidth={2.3} />, label: 'AeroPress Go' },
+                { id: 'AeroPress', lucide: <Cylinder size={18} strokeWidth={2.3} />, label: 'AeroPress' },
+                { id: 'AeroPress Go', lucide: <Compass size={18} strokeWidth={2.3} />, label: 'AeroPress Go' },
                 { id: 'Prensa Francesa', lucide: <Coffee size={18} strokeWidth={2.3} />, label: 'Prensa' },
                 { id: 'NextLevel Pulsar Mini', lucide: <SlidersHorizontal size={18} strokeWidth={2.3} />, label: 'Pulsar Mini' }
               ].map(m => {
@@ -955,8 +968,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     type="button"
                     key={m.id}
                     aria-pressed={isActive}
-                    onClick={() => {
+                    onClick={(e) => {
                       if (navigator.vibrate) navigator.vibrate(8);
+                      e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                       setMethod(m.id);
                       if (m.id === 'NextLevel Pulsar Mini') {
                         if (!doseInG || doseInG === 20.0) setDoseInG(15.0);
@@ -968,9 +982,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     }}
                     className={`cupertino-segmented-btn ${isActive ? 'active' : ''}`}
                     style={{
+                      flex: '0 0 auto',
+                      minWidth: '88px',
                       flexDirection: 'column',
-                      padding: '8px 4px',
-                      minHeight: '52px',
+                      padding: '8px 6px',
+                      minHeight: '54px',
                       gap: '4px',
                       borderRadius: '10px'
                     }}
