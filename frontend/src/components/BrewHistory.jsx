@@ -377,7 +377,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   );
 
   return (
-    <div>
+    <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', margin: 0 }}>
           Bitácoras
@@ -406,7 +406,16 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
           </div>
 
           {/* Quick Method Filters */}
-          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px' }} className="hide-scrollbar">
+          <div style={{ 
+            display: 'flex', 
+            gap: '8px', 
+            overflowX: 'auto', 
+            overscrollBehaviorX: 'contain',
+            WebkitOverflowScrolling: 'touch',
+            width: '100%',
+            boxSizing: 'border-box',
+            paddingBottom: '6px' 
+          }} className="hide-scrollbar">
             {['Todos', 'V60', 'Espresso', 'AeroPress', 'AeroPress Go', 'Pulsar Mini', 'Prensa'].map((m) => {
               const isSelected = (m === 'Todos' && !searchTerm) || 
                 (m === 'Pulsar Mini' && (searchTerm.toLowerCase() === 'pulsar mini' || searchTerm.toLowerCase() === 'pulsar')) ||
@@ -546,6 +555,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
         }} onClick={() => setSelectedRecipe(null)}>
           <div className="candy-card static" style={{
             maxWidth: '380px', width: '100%',
+            margin: 'auto',
             padding: '20px', boxSizing: 'border-box',
             boxShadow: '8px 8px 0px var(--border-color)',
             animation: 'soft-pop 250ms var(--transition-spring)'
@@ -745,6 +755,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
         }} onClick={() => setEditingRecipe(null)}>
           <div className="candy-card static" style={{
             maxWidth: '420px', width: '100%', maxHeight: '90vh', overflowY: 'auto',
+            margin: 'auto',
             padding: '20px', boxSizing: 'border-box',
             boxShadow: '8px 8px 0px var(--border-color)',
             animation: 'soft-pop 250ms var(--transition-spring)'
@@ -977,7 +988,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
           <div className="candy-card static animate-entrance" style={{
             maxWidth: '480px', width: '100%',
             maxHeight: 'calc(100dvh - 32px)',
-            margin: 'auto 0',
+            margin: 'auto',
             padding: '16px', boxSizing: 'border-box',
             boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
             display: 'flex', flexDirection: 'column', gap: '10px',

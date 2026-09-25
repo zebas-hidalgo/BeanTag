@@ -175,7 +175,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
   };
 
   return (
-    <div>
+    <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       
       {/* 1. Search Bar */}
       <div style={{ marginBottom: '12px' }}>
@@ -190,7 +190,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
       </div>
 
       {/* 2. Top Modern Action Toolbar: Sommelier + Share Full Coffee Menu */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', marginBottom: '16px' }}>
         <button
           type="button"
           className="btn-candy"

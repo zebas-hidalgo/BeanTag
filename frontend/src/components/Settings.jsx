@@ -186,7 +186,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   };
 
   return (
-    <div>
+    <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 14px 0', fontSize: '16px' }}>
         Ajustes y Configuración
       </h2>
@@ -619,7 +619,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px',
           overflowY: 'auto', WebkitOverflowScrolling: 'touch'
         }}>
-          <div className="candy-card static" style={{ width: '100%', maxWidth: '350px', padding: '20px', cursor: 'default', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto', margin: 'auto 0' }}>
+          <div className="candy-card static" style={{ width: '100%', maxWidth: '350px', padding: '20px', cursor: 'default', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto', margin: 'auto' }}>
             <h3 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 16px 0', fontSize: '16px' }}>Importar Respaldo</h3>
             <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '16px', lineHeight: 1.4 }}>
               ¿Cómo deseas procesar los datos importados?

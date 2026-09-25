@@ -342,7 +342,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
   };
 
   return (
-    <div>
+    <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       {/* Hidden File/Camera Input */}
       <input 
         type="file" 
@@ -558,6 +558,10 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                 <div style={{ 
                   display: 'flex', 
                   overflowX: 'auto', 
+                  overscrollBehaviorX: 'contain',
+                  WebkitOverflowScrolling: 'touch',
+                  width: '100%',
+                  boxSizing: 'border-box',
                   gap: '8px', 
                   marginBottom: '14px', 
                   paddingBottom: '6px',

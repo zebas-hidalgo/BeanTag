@@ -175,7 +175,7 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
         maxHeight: 'calc(100dvh - 32px)',
         overflowY: 'auto',
         WebkitOverflowScrolling: 'touch',
-        margin: 'auto 0',
+        margin: 'auto',
         display: 'flex', flexDirection: 'column', gap: '14px',
         animation: 'softFadeIn 200ms ease-out'
       }} onClick={e => e.stopPropagation()}>
