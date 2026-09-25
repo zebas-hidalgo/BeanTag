@@ -3245,15 +3245,191 @@ export function generateCoffeeMenuText(batches) {
 }
 
 /**
+ * Subtle corner peel accent for physical vinyl sticker aesthetics (Propuesta C)
+ */
+function drawStickerPeelAccent(ctx, x, y, style) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x - 14, y);
+  ctx.lineTo(x, y + 14);
+  ctx.lineTo(x, y);
+  ctx.closePath();
+  ctx.fillStyle = style === 'blueprint'
+    ? 'rgba(56, 189, 248, 0.45)'
+    : (style === 'neobrutalist' ? '#FFE600' : (style === 'diner' ? '#FEE2E2' : 'rgba(212, 212, 216, 0.7)'));
+  ctx.fill();
+  ctx.strokeStyle = style === 'neobrutalist' ? '#000000' : (style === 'blueprint' ? '#38BDF8' : '#D4D4D8');
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.restore();
+}
+
+/**
+ * Renders structured terroir micro-badges: Origen, Proceso, Variedad (Propuesta B)
+ */
+function drawTerroirBadges(ctx, startX, startY, maxW, style, terroirChips) {
+  if (!terroirChips || terroirChips.length === 0) return startY;
+  ctx.save();
+  const chipH = 22;
+  const chipGap = 6;
+  let curX = startX;
+  let curY = startY;
+
+  terroirChips.forEach((chip) => {
+    let fontStr = '700 9px "JetBrains Mono", monospace';
+    if (style === 'neobrutalist') fontStr = '900 9.5px "Space Grotesk", sans-serif';
+    else if (style === 'diner') fontStr = '800 9.5px "Space Grotesk", sans-serif';
+    else if (style === 'kissaten') fontStr = 'bold 9px "Playfair Display", Georgia, serif';
+
+    ctx.font = fontStr;
+    const textLabel = `${chip.glyph}  ${chip.label}`;
+    const textW = ctx.measureText(textLabel).width;
+    const chipW = Math.min(textW + 16, maxW);
+
+    if (curX + chipW > startX + maxW) {
+      curX = startX;
+      curY += chipH + 5;
+    }
+
+    if (style === 'neobrutalist') {
+      const neoBg = chip.type === 'origin' ? '#38BDF8' : (chip.type === 'process' ? '#D4FF00' : '#D8B4FE');
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(curX + 2, curY + 2, chipW, chipH);
+      ctx.fillStyle = neoBg;
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1.8;
+      ctx.fillRect(curX, curY, chipW, chipH);
+      ctx.strokeRect(curX, curY, chipW, chipH);
+      ctx.fillStyle = '#000000';
+    } else if (style === 'diner') {
+      const bg = chip.type === 'origin' ? '#FEE2E2' : (chip.type === 'process' ? '#E0F2FE' : '#FEF3C7');
+      const stroke = chip.type === 'origin' ? '#C92A2A' : (chip.type === 'process' ? '#0E7490' : '#D97706');
+      const textCol = chip.type === 'origin' ? '#991B1B' : (chip.type === 'process' ? '#0E7490' : '#B45309');
+      ctx.fillStyle = bg;
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 1.3;
+      drawRoundedRect(ctx, curX, curY, chipW, chipH, 5, true, true);
+      ctx.fillStyle = textCol;
+    } else if (style === 'kissaten') {
+      const stroke = chip.type === 'process' ? '#DC2626' : (chip.type === 'origin' ? '#18181B' : '#A1A1AA');
+      const textCol = chip.type === 'process' ? '#DC2626' : (chip.type === 'origin' ? '#18181B' : '#52525B');
+      ctx.fillStyle = '#FAF8F5';
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 1.2;
+      drawRoundedRect(ctx, curX, curY, chipW, chipH, 4, true, true);
+      ctx.fillStyle = textCol;
+    } else {
+      // blueprint
+      const bg = chip.type === 'process' ? 'rgba(56, 189, 248, 0.22)' : 'rgba(56, 189, 248, 0.14)';
+      const stroke = chip.type === 'process' ? '#7DD3FC' : '#38BDF8';
+      const textCol = chip.type === 'process' ? '#FFFFFF' : '#E0F2FE';
+      ctx.fillStyle = bg;
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 1.2;
+      drawRoundedRect(ctx, curX, curY, chipW, chipH, 4, true, true);
+      ctx.fillStyle = textCol;
+    }
+
+    ctx.font = fontStr;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(textLabel, curX + chipW / 2, curY + chipH / 2);
+
+    curX += chipW + chipGap;
+  });
+
+  ctx.restore();
+  return curY + chipH;
+}
+
+/**
+ * Renders the Die-Cut Vinyl Sticker Shell with realistic drop-shadow & white vinyl contour (Propuesta C)
+ */
+function drawDieCutShell(ctx, x, y, w, h, radius, style, transparent, baseW, baseH) {
+  if (transparent) {
+    ctx.clearRect(0, 0, baseW, baseH);
+    ctx.save();
+    // 1. Drop shadow for the vinyl sticker
+    if (style === 'neobrutalist') {
+      ctx.fillStyle = '#000000';
+      drawRoundedRect(ctx, x + 5, y + 5, w + 7, h + 7, 12, true, false);
+    } else {
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.38)';
+      ctx.shadowBlur = 14;
+      ctx.shadowOffsetY = 6;
+      ctx.shadowOffsetX = 0;
+    }
+
+    // 2. Thick Die-Cut Vinyl Outer Border (white/cream contour, 3.5px expansion)
+    ctx.fillStyle = '#FFFFFF';
+    ctx.strokeStyle = style === 'neobrutalist' ? '#000000' : '#FFFFFF';
+    ctx.lineWidth = style === 'neobrutalist' ? 3 : 2;
+    drawRoundedRect(ctx, x - 3.5, y - 3.5, w + 7, h + 7, radius + 4, true, style === 'neobrutalist');
+    ctx.restore();
+
+    // 3. Inner Card Body fill
+    let bodyFill = '#06162D';
+    let bodyStroke = '#38BDF8';
+    let strokeW = 2;
+    if (style === 'neobrutalist') {
+      bodyFill = '#FFFDF8';
+      bodyStroke = '#000000';
+      strokeW = 3;
+    } else if (style === 'diner') {
+      bodyFill = '#FFFDF5';
+      bodyStroke = '#C92A2A';
+      strokeW = 2.5;
+    } else if (style === 'kissaten') {
+      bodyFill = '#F7F5F0';
+      bodyStroke = '#18181B';
+      strokeW = 1.5;
+    }
+    ctx.fillStyle = bodyFill;
+    ctx.strokeStyle = bodyStroke;
+    ctx.lineWidth = strokeW;
+    drawRoundedRect(ctx, x, y, w, h, radius, true, true);
+    
+    // 4. Subtle corner peel accent
+    drawStickerPeelAccent(ctx, x + w, y, style);
+  } else {
+    // Solid background mode
+    let bgFill = '#06162D';
+    let borderStroke = '#38BDF8';
+    let strokeW = 2;
+    if (style === 'neobrutalist') {
+      bgFill = '#FFFDF8';
+      borderStroke = '#000000';
+      strokeW = 3.5;
+    } else if (style === 'diner') {
+      bgFill = '#FFFDF5';
+      borderStroke = '#C92A2A';
+      strokeW = 2.5;
+    } else if (style === 'kissaten') {
+      bgFill = '#F7F5F0';
+      borderStroke = '#18181B';
+      strokeW = 1.5;
+    }
+    ctx.fillStyle = bgFill;
+    ctx.fillRect(0, 0, baseW, baseH);
+    ctx.strokeStyle = borderStroke;
+    ctx.lineWidth = strokeW;
+    drawRoundedRect(ctx, x + 1, y + 1, w - 2, h - 2, radius, false, true);
+  }
+}
+
+/**
  * Generates an Ultra-High Legibility Instagram Story Sticker Overlay
- * Supports Horizontal (600 x 260 px) and Vertical (380 x 480 px) @ 2x Retina scale.
- * Designed for micro-interactions and camera overlays with macro typography, aesthetic flavor glyphs, and optional transparency.
+ * Supports Horizontal (600 x 270 px) and Vertical (380 x 500 px) @ 2x Retina scale.
+ * Features:
+ * - Propuesta B: Structured Terroir Badges (Origin, Altitude, Fermentation, Variety, Roaster)
+ * - Propuesta C: Authentic Die-Cut Vinyl Sticker Contour with physical peel corner accent
+ * - Propuesta D: Mini 5-Axis SCA Sensory Radar Chart in vertical mode when sensory data is present
  */
 export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
   // options: { template = 'blueprint', transparent = false, orientation = 'horizontal' }
   const isVertical = String(options.orientation || '').toLowerCase() === 'vertical';
   const baseW = isVertical ? 380 : 600;
-  const baseH = isVertical ? 480 : 260;
+  const baseH = isVertical ? 500 : 270;
   const scale = 2;
 
   const canvas = typeof document !== 'undefined'
@@ -3276,8 +3452,10 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
   const origin = stripEmojis(item.origin || item.batch_origin || '');
   const variety = stripEmojis(item.variety || item.batch_variety || '');
   const process = stripEmojis(item.process || item.batch_process || '');
+  const altitude = stripEmojis(item.altitude || item.batch_altitude || '');
   const notesStr = cleanNotesString(item.flavor_notes || item.roaster_notes || item.batch_roaster_notes || item.notes || '');
   const flavorTags = extractFlavorTags(notesStr);
+  const sensoryData = parseSensoryEvaluation(item, item.recipe || item);
 
   const getAestheticGlyph = (tag, currentStyle) => {
     return getScaWheelIcon(tag, currentStyle || style);
@@ -3312,35 +3490,48 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
     }
   };
 
-  // 3. Background & Card Shell
+  // Structured Terroir Chips (Propuesta B)
+  const terroirChips = [];
+  if (origin) {
+    const altText = altitude ? ` • ${altitude}` : '';
+    terroirChips.push({
+      type: 'origin',
+      glyph: style === 'diner' ? '★' : (style === 'kissaten' ? '◈' : '⚑'),
+      label: `${origin.toUpperCase()}${altText}`
+    });
+  }
+  if (process) {
+    const pUp = process.toUpperCase();
+    let pGlyph = '⚡';
+    if (pUp.includes('NATUR')) pGlyph = '☀️';
+    else if (pUp.includes('LAVAD') || pUp.includes('WASH')) pGlyph = '💧';
+    else if (pUp.includes('HONEY')) pGlyph = '🍯';
+    else if (pUp.includes('MACER') || pUp.includes('CARB')) pGlyph = '🍇';
+    else if (style === 'kissaten') pGlyph = '✿';
+    terroirChips.push({
+      type: 'process',
+      glyph: pGlyph,
+      label: pUp
+    });
+  }
+  if (variety) {
+    terroirChips.push({
+      type: 'variety',
+      glyph: style === 'blueprint' ? '✦' : (style === 'kissaten' ? '❀' : '🌱'),
+      label: variety.toUpperCase()
+    });
+  }
+
+  // 3. Background & Card Shell (Propuesta C)
   const margin = transparent ? 8 : 0;
   const cardX = margin, cardY = margin, cardW = baseW - (margin * 2), cardH = baseH - (margin * 2);
 
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
 
-  const subStr = [roaster, origin, variety, process].filter(Boolean).map(s => s.toUpperCase()).join(' • ');
-
   // 4. Style rendering
   if (style === 'blueprint') {
-    if (transparent) {
-      ctx.clearRect(0, 0, baseW, baseH);
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
-      ctx.shadowBlur = 14;
-      ctx.shadowOffsetY = 4;
-      ctx.fillStyle = '#06162D';
-      ctx.strokeStyle = '#38BDF8';
-      ctx.lineWidth = 2;
-      drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 16, true, true);
-      ctx.restore();
-    } else {
-      ctx.fillStyle = '#06162D';
-      ctx.fillRect(0, 0, baseW, baseH);
-      ctx.strokeStyle = '#38BDF8';
-      ctx.lineWidth = 2;
-      drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 16, false, true);
-    }
+    drawDieCutShell(ctx, cardX, cardY, cardW, cardH, 16, 'blueprint', transparent, baseW, baseH);
 
     // Corner accents
     drawBlueprintCross(ctx, cardX + 14, cardY + 14, 5);
@@ -3348,77 +3539,115 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
     drawBlueprintCross(ctx, cardX + 14, cardY + cardH - 14, 5);
     drawBlueprintCross(ctx, cardX + cardW - 14, cardY + cardH - 14, 5);
 
-    // Brand tag
+    // Brand tag with roaster
     ctx.fillStyle = '#38BDF8';
     ctx.font = '700 9px "JetBrains Mono", monospace';
-    ctx.fillText(isVertical ? 'BEANTAG // COFFEE ARCHIVE' : 'BEANTAG // SPECIALTY COFFEE', cardX + 24, cardY + 34);
+    const brandLabel = roaster ? `BEANTAG // ${roaster.toUpperCase()}` : (isVertical ? 'BEANTAG // COFFEE ARCHIVE' : 'BEANTAG // SPECIALTY COFFEE');
+    ctx.fillText(brandLabel, cardX + 24, cardY + 34);
 
     if (isVertical) {
       // VERTICAL LAYOUT
       ctx.fillStyle = '#FFFFFF';
-      drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 76, cardW - 48, 38, '"JetBrains Mono", monospace', '900');
+      drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 76, cardW - 48, 36, '"JetBrains Mono", monospace', '900');
 
-      ctx.fillStyle = '#7DD3FC';
-      ctx.font = '700 15px "JetBrains Mono", monospace';
-      drawTruncatedText(subStr, cardX + 24, cardY + 112, cardW - 48);
+      // Terroir Badges (Propuesta B)
+      const bottomY = drawTerroirBadges(ctx, cardX + 24, cardY + 98, cardW - 48, 'blueprint', terroirChips);
+      const dividerY = bottomY + 12;
 
       // Tech divider
       ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(cardX + 24, cardY + 134);
-      ctx.lineTo(cardX + cardW - 24, cardY + 134);
+      ctx.moveTo(cardX + 24, dividerY);
+      ctx.lineTo(cardX + cardW - 24, dividerY);
       ctx.stroke();
 
-      // Section header
-      ctx.fillStyle = '#38BDF8';
-      ctx.font = '700 9px "JetBrains Mono", monospace';
-      ctx.fillText('// DESCRIPTORES SENSORIALES:', cardX + 24, cardY + 154);
+      if (sensoryData) {
+        // Propuesta D: Mini SCA Sensory Radar Chart
+        ctx.fillStyle = '#38BDF8';
+        ctx.font = '700 8.5px "JetBrains Mono", monospace';
+        ctx.fillText('// EVALUACIÓN SENSORIAL SCA (5 EJES):', cardX + 24, dividerY + 18);
 
-      // Stacked large pills
-      const pillYStart = cardY + 168;
-      const pillH = 44;
-      const displayed = flavorTags.length > 0 ? flavorTags.slice(0, 4) : [];
-      if (displayed.length > 0) {
-        displayed.forEach((tag, idx) => {
-          const py = pillYStart + idx * (pillH + 10);
-          if (py + pillH > cardY + cardH - 24) return;
-          const glyph = getAestheticGlyph(tag, 'blueprint');
-          const pillText = `${glyph}   ${tag.toUpperCase()}`;
+        const radarCY = dividerY + 76;
+        const radarR = 38;
+        drawSensoryRadarChart(ctx, cardX + cardW / 2, radarCY, radarR, sensoryData, 'blueprint');
+
+        const flavorHeaderY = radarCY + radarR + 24;
+        ctx.fillStyle = '#38BDF8';
+        ctx.font = '700 8.5px "JetBrains Mono", monospace';
+        ctx.fillText('// DESCRIPTORES SENSORIALES:', cardX + 24, flavorHeaderY);
+
+        const pillYStart = flavorHeaderY + 10;
+        const pillH = 34;
+        const displayed = flavorTags.length > 0 ? flavorTags.slice(0, 3) : [];
+        if (displayed.length > 0) {
+          displayed.forEach((tag, idx) => {
+            const py = pillYStart + idx * (pillH + 7);
+            if (py + pillH > cardY + cardH - 14) return;
+            const glyph = getAestheticGlyph(tag, 'blueprint');
+            const pillText = `${glyph}   ${tag.toUpperCase()}`;
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.14)';
+            ctx.strokeStyle = '#38BDF8';
+            ctx.lineWidth = 1.5;
+            drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 7, true, true);
+            ctx.fillStyle = '#E0F2FE';
+            ctx.font = '800 13px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pillText, cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+          });
+        }
+      } else {
+        // Full flavor pills cascade (when no sensory data)
+        ctx.fillStyle = '#38BDF8';
+        ctx.font = '700 9px "JetBrains Mono", monospace';
+        ctx.fillText('// DESCRIPTORES SENSORIALES:', cardX + 24, dividerY + 18);
+
+        const pillYStart = dividerY + 30;
+        const pillH = 44;
+        const displayed = flavorTags.length > 0 ? flavorTags.slice(0, 4) : [];
+        if (displayed.length > 0) {
+          displayed.forEach((tag, idx) => {
+            const py = pillYStart + idx * (pillH + 10);
+            if (py + pillH > cardY + cardH - 18) return;
+            const glyph = getAestheticGlyph(tag, 'blueprint');
+            const pillText = `${glyph}   ${tag.toUpperCase()}`;
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.14)';
+            ctx.strokeStyle = '#38BDF8';
+            ctx.lineWidth = 1.5;
+            drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 8, true, true);
+            ctx.fillStyle = '#E0F2FE';
+            ctx.font = '800 15px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pillText, cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+          });
+        } else {
+          const py = pillYStart;
           ctx.fillStyle = 'rgba(56, 189, 248, 0.14)';
           ctx.strokeStyle = '#38BDF8';
           ctx.lineWidth = 1.5;
           drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 8, true, true);
           ctx.fillStyle = '#E0F2FE';
-          ctx.font = '800 15px "JetBrains Mono", monospace';
+          ctx.font = '800 13px "JetBrains Mono", monospace';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText(pillText, cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+          ctx.fillText('✦   ORIGEN SELECCIONADO', cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
           ctx.textAlign = 'left';
           ctx.textBaseline = 'alphabetic';
-        });
-      } else {
-        const py = pillYStart;
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.14)';
-        ctx.strokeStyle = '#38BDF8';
-        ctx.lineWidth = 1.5;
-        drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 8, true, true);
-        ctx.fillStyle = '#E0F2FE';
-        ctx.font = '800 13px "JetBrains Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('✦   ORIGEN SELECCIONADO', cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'alphabetic';
+        }
       }
     } else {
       // HORIZONTAL LAYOUT
       ctx.fillStyle = '#FFFFFF';
-      drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 76, cardW - 48, 42, '"JetBrains Mono", monospace', '900');
+      drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 76, cardW - 48, 40, '"JetBrains Mono", monospace', '900');
 
-      ctx.fillStyle = '#7DD3FC';
-      ctx.font = '700 16px "JetBrains Mono", monospace';
-      drawTruncatedText(subStr, cardX + 24, cardY + 114, cardW - 48);
+      // Terroir Badges (Propuesta B)
+      drawTerroirBadges(ctx, cardX + 24, cardY + 98, cardW - 48, 'blueprint', terroirChips);
 
       const pillY = cardY + 148;
       const pillH = 44;
@@ -3460,100 +3689,132 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
       }
     }
   } else if (style === 'neobrutalist') {
-    if (transparent) {
-      ctx.clearRect(0, 0, baseW, baseH);
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(cardX + 6, cardY + 6, cardW, cardH);
-      ctx.fillStyle = '#FFFDF8';
-      ctx.fillRect(cardX, cardY, cardW, cardH);
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 3.5;
-      ctx.strokeRect(cardX, cardY, cardW, cardH);
-    } else {
-      ctx.fillStyle = '#FFFDF8';
-      ctx.fillRect(0, 0, baseW, baseH);
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 3.5;
-      ctx.strokeRect(cardX, cardY, cardW, cardH);
-    }
+    drawDieCutShell(ctx, cardX, cardY, cardW, cardH, 8, 'neobrutalist', transparent, baseW, baseH);
 
     // Brand tag
     ctx.fillStyle = '#000000';
     ctx.font = '900 10px "Space Grotesk", sans-serif';
-    ctx.fillText('BEANTAG // STICKER', cardX + 24, cardY + 34);
+    const brandLabel = roaster ? `BEANTAG // ${roaster.toUpperCase()}` : 'BEANTAG // STICKER';
+    ctx.fillText(brandLabel, cardX + 24, cardY + 34);
 
     const neoColors = ['#D4FF00', '#FF3B14', '#D8B4FE', '#38BDF8'];
 
     if (isVertical) {
       // VERTICAL LAYOUT
       ctx.fillStyle = '#000000';
-      drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 76, cardW - 48, 40, '"Space Grotesk", sans-serif', '900');
+      drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 76, cardW - 48, 38, '"Space Grotesk", sans-serif', '900');
 
-      ctx.fillStyle = '#FF3B14';
-      ctx.font = '800 16px "Space Grotesk", sans-serif';
-      drawTruncatedText(subStr, cardX + 24, cardY + 114, cardW - 48);
+      // Terroir Badges (Propuesta B)
+      const bottomY = drawTerroirBadges(ctx, cardX + 24, cardY + 98, cardW - 48, 'neobrutalist', terroirChips);
+      const dividerY = bottomY + 12;
 
       // Section divider
       ctx.fillStyle = '#000000';
-      ctx.fillRect(cardX + 24, cardY + 134, cardW - 48, 2);
+      ctx.fillRect(cardX + 24, dividerY, cardW - 48, 2);
 
-      ctx.fillStyle = '#000000';
-      ctx.font = '900 10px "Space Grotesk", sans-serif';
-      ctx.fillText('NOTAS DE CATA // FLAVOR PROFILE:', cardX + 24, cardY + 154);
+      if (sensoryData) {
+        // Propuesta D: Mini SCA Sensory Radar Chart
+        ctx.fillStyle = '#000000';
+        ctx.font = '900 9px "Space Grotesk", sans-serif';
+        ctx.fillText('★ PERFIL SENSORIAL // SCA RADAR ★', cardX + 24, dividerY + 18);
 
-      const pillYStart = cardY + 168;
-      const pillH = 46;
-      const displayed = flavorTags.length > 0 ? flavorTags.slice(0, 4) : [];
-      if (displayed.length > 0) {
-        displayed.forEach((tag, idx) => {
-          const py = pillYStart + idx * (pillH + 10);
-          if (py + pillH > cardY + cardH - 20) return;
-          const glyph = getAestheticGlyph(tag, 'neobrutalist');
-          const pillText = `${glyph}   ${tag.toUpperCase()}`;
-          // Drop shadow
+        const radarCY = dividerY + 76;
+        const radarR = 38;
+        drawSensoryRadarChart(ctx, cardX + cardW / 2, radarCY, radarR, sensoryData, 'neobrutalist');
+
+        const flavorHeaderY = radarCY + radarR + 24;
+        ctx.fillStyle = '#000000';
+        ctx.font = '900 9px "Space Grotesk", sans-serif';
+        ctx.fillText('NOTAS DE CATA // FLAVOR PROFILE:', cardX + 24, flavorHeaderY);
+
+        const pillYStart = flavorHeaderY + 10;
+        const pillH = 34;
+        const displayed = flavorTags.length > 0 ? flavorTags.slice(0, 3) : [];
+        if (displayed.length > 0) {
+          displayed.forEach((tag, idx) => {
+            const py = pillYStart + idx * (pillH + 7);
+            if (py + pillH > cardY + cardH - 14) return;
+            const glyph = getAestheticGlyph(tag, 'neobrutalist');
+            const pillText = `${glyph}   ${tag.toUpperCase()}`;
+            // Drop shadow
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(cardX + 24 + 2.5, py + 2.5, cardW - 48, pillH);
+            // Background
+            ctx.fillStyle = neoColors[idx % neoColors.length];
+            ctx.fillRect(cardX + 24, py, cardW - 48, pillH);
+            // Border
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2.2;
+            ctx.strokeRect(cardX + 24, py, cardW - 48, pillH);
+            // Text
+            ctx.fillStyle = '#000000';
+            ctx.font = '900 13px "Space Grotesk", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pillText, cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+          });
+        }
+      } else {
+        // Full flavor pills cascade
+        ctx.fillStyle = '#000000';
+        ctx.font = '900 10px "Space Grotesk", sans-serif';
+        ctx.fillText('NOTAS DE CATA // FLAVOR PROFILE:', cardX + 24, dividerY + 18);
+
+        const pillYStart = dividerY + 30;
+        const pillH = 46;
+        const displayed = flavorTags.length > 0 ? flavorTags.slice(0, 4) : [];
+        if (displayed.length > 0) {
+          displayed.forEach((tag, idx) => {
+            const py = pillYStart + idx * (pillH + 10);
+            if (py + pillH > cardY + cardH - 18) return;
+            const glyph = getAestheticGlyph(tag, 'neobrutalist');
+            const pillText = `${glyph}   ${tag.toUpperCase()}`;
+            // Drop shadow
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(cardX + 24 + 3, py + 3, cardW - 48, pillH);
+            // Background
+            ctx.fillStyle = neoColors[idx % neoColors.length];
+            ctx.fillRect(cardX + 24, py, cardW - 48, pillH);
+            // Border
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2.5;
+            ctx.strokeRect(cardX + 24, py, cardW - 48, pillH);
+            // Text
+            ctx.fillStyle = '#000000';
+            ctx.font = '900 16px "Space Grotesk", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pillText, cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+          });
+        } else {
+          const py = pillYStart;
           ctx.fillStyle = '#000000';
           ctx.fillRect(cardX + 24 + 3, py + 3, cardW - 48, pillH);
-          // Background
-          ctx.fillStyle = neoColors[idx % neoColors.length];
+          ctx.fillStyle = '#D4FF00';
           ctx.fillRect(cardX + 24, py, cardW - 48, pillH);
-          // Border
           ctx.strokeStyle = '#000000';
           ctx.lineWidth = 2.5;
           ctx.strokeRect(cardX + 24, py, cardW - 48, pillH);
-          // Text
           ctx.fillStyle = '#000000';
-          ctx.font = '900 16px "Space Grotesk", sans-serif';
+          ctx.font = '900 15px "Space Grotesk", sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText(pillText, cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+          ctx.fillText('★   ORIGEN SELECCIONADO', cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
           ctx.textAlign = 'left';
           ctx.textBaseline = 'alphabetic';
-        });
-      } else {
-        const py = pillYStart;
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(cardX + 24 + 3, py + 3, cardW - 48, pillH);
-        ctx.fillStyle = '#D4FF00';
-        ctx.fillRect(cardX + 24, py, cardW - 48, pillH);
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 2.5;
-        ctx.strokeRect(cardX + 24, py, cardW - 48, pillH);
-        ctx.fillStyle = '#000000';
-        ctx.font = '900 15px "Space Grotesk", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('★   ORIGEN SELECCIONADO', cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'alphabetic';
+        }
       }
     } else {
       // HORIZONTAL LAYOUT
       ctx.fillStyle = '#000000';
-      drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 76, cardW - 48, 44, '"Space Grotesk", sans-serif', '900');
+      drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 76, cardW - 48, 42, '"Space Grotesk", sans-serif', '900');
 
-      ctx.fillStyle = '#FF3B14';
-      ctx.font = '800 16.5px "Space Grotesk", sans-serif';
-      drawTruncatedText(subStr, cardX + 24, cardY + 114, cardW - 48);
+      // Terroir Badges (Propuesta B)
+      drawTerroirBadges(ctx, cardX + 24, cardY + 98, cardW - 48, 'neobrutalist', terroirChips);
 
       const pillY = cardY + 148;
       const pillH = 44;
@@ -3601,24 +3862,7 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
       }
     }
   } else if (style === 'diner') {
-    if (transparent) {
-      ctx.clearRect(0, 0, baseW, baseH);
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-      ctx.shadowBlur = 14;
-      ctx.shadowOffsetY = 4;
-      ctx.fillStyle = '#FFFDF5';
-      ctx.strokeStyle = '#C92A2A';
-      ctx.lineWidth = 2.5;
-      drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 18, true, true);
-      ctx.restore();
-    } else {
-      ctx.fillStyle = '#FFFDF5';
-      ctx.fillRect(0, 0, baseW, baseH);
-      ctx.strokeStyle = '#C92A2A';
-      ctx.lineWidth = 2.5;
-      drawRoundedRect(ctx, cardX + 1, cardY + 1, cardW - 2, cardH - 2, 16, false, true);
-    }
+    drawDieCutShell(ctx, cardX, cardY, cardW, cardH, 18, 'diner', transparent, baseW, baseH);
 
     // Inner dashed line
     ctx.strokeStyle = '#0E7490';
@@ -3633,71 +3877,111 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
     // Brand tag
     ctx.fillStyle = '#C92A2A';
     ctx.font = '700 9px "Space Grotesk", sans-serif';
-    ctx.fillText('★ BEANTAG COFFEE CO. ★', cardX + 24, cardY + 34);
+    const brandLabel = roaster ? `★ BEANTAG COFFEE CO. • ${roaster.toUpperCase()} ★` : '★ BEANTAG COFFEE CO. ★';
+    ctx.fillText(brandLabel, cardX + 24, cardY + 34);
 
     if (isVertical) {
       // VERTICAL LAYOUT
       ctx.fillStyle = '#1C1917';
-      drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 76, cardW - 48, 38, '"Space Grotesk", sans-serif', '900');
+      drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 76, cardW - 48, 36, '"Space Grotesk", sans-serif', '900');
 
-      ctx.fillStyle = '#0E7490';
-      ctx.font = '700 15px "Space Grotesk", sans-serif';
-      drawTruncatedText(subStr, cardX + 24, cardY + 114, cardW - 48);
+      // Terroir Badges (Propuesta B)
+      const bottomY = drawTerroirBadges(ctx, cardX + 24, cardY + 98, cardW - 48, 'diner', terroirChips);
+      const dividerY = bottomY + 12;
 
       ctx.strokeStyle = 'rgba(201, 42, 42, 0.3)';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(cardX + 24, cardY + 134);
-      ctx.lineTo(cardX + cardW - 24, cardY + 134);
+      ctx.moveTo(cardX + 24, dividerY);
+      ctx.lineTo(cardX + cardW - 24, dividerY);
       ctx.stroke();
 
-      ctx.fillStyle = '#C92A2A';
-      ctx.font = '800 9.5px "Space Grotesk", sans-serif';
-      ctx.fillText('★ TASTING NOTES // SELECCIÓN:', cardX + 24, cardY + 154);
+      if (sensoryData) {
+        // Propuesta D: Mini SCA Sensory Radar Chart
+        ctx.fillStyle = '#C92A2A';
+        ctx.font = '800 8.5px "Space Grotesk", sans-serif';
+        ctx.fillText('★ TASTING EVALUATION // SCA RADAR ★', cardX + 24, dividerY + 18);
 
-      const pillYStart = cardY + 168;
-      const pillH = 44;
-      const displayed = flavorTags.length > 0 ? flavorTags.slice(0, 4) : [];
-      if (displayed.length > 0) {
-        displayed.forEach((tag, idx) => {
-          const py = pillYStart + idx * (pillH + 10);
-          if (py + pillH > cardY + cardH - 20) return;
-          const glyph = getAestheticGlyph(tag, 'diner');
-          const pillText = `${glyph}   ${tag.toUpperCase()}`;
+        const radarCY = dividerY + 76;
+        const radarR = 38;
+        drawSensoryRadarChart(ctx, cardX + cardW / 2, radarCY, radarR, sensoryData, 'diner');
+
+        const flavorHeaderY = radarCY + radarR + 24;
+        ctx.fillStyle = '#C92A2A';
+        ctx.font = '800 8.5px "Space Grotesk", sans-serif';
+        ctx.fillText('★ TASTING NOTES // SELECCIÓN:', cardX + 24, flavorHeaderY);
+
+        const pillYStart = flavorHeaderY + 10;
+        const pillH = 34;
+        const displayed = flavorTags.length > 0 ? flavorTags.slice(0, 3) : [];
+        if (displayed.length > 0) {
+          displayed.forEach((tag, idx) => {
+            const py = pillYStart + idx * (pillH + 7);
+            if (py + pillH > cardY + cardH - 14) return;
+            const glyph = getAestheticGlyph(tag, 'diner');
+            const pillText = `${glyph}   ${tag.toUpperCase()}`;
+            ctx.fillStyle = '#FEE2E2';
+            ctx.strokeStyle = '#C92A2A';
+            ctx.lineWidth = 1.6;
+            drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 7, true, true);
+            ctx.fillStyle = '#991B1B';
+            ctx.font = '800 13px "Space Grotesk", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pillText, cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+          });
+        }
+      } else {
+        // Full flavor pills cascade
+        ctx.fillStyle = '#C92A2A';
+        ctx.font = '800 9.5px "Space Grotesk", sans-serif';
+        ctx.fillText('★ TASTING NOTES // SELECCIÓN:', cardX + 24, dividerY + 18);
+
+        const pillYStart = dividerY + 30;
+        const pillH = 44;
+        const displayed = flavorTags.length > 0 ? flavorTags.slice(0, 4) : [];
+        if (displayed.length > 0) {
+          displayed.forEach((tag, idx) => {
+            const py = pillYStart + idx * (pillH + 10);
+            if (py + pillH > cardY + cardH - 18) return;
+            const glyph = getAestheticGlyph(tag, 'diner');
+            const pillText = `${glyph}   ${tag.toUpperCase()}`;
+            ctx.fillStyle = '#FEE2E2';
+            ctx.strokeStyle = '#C92A2A';
+            ctx.lineWidth = 1.6;
+            drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 8, true, true);
+            ctx.fillStyle = '#991B1B';
+            ctx.font = '800 15px "Space Grotesk", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pillText, cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+          });
+        } else {
+          const py = pillYStart;
           ctx.fillStyle = '#FEE2E2';
           ctx.strokeStyle = '#C92A2A';
           ctx.lineWidth = 1.6;
           drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 8, true, true);
           ctx.fillStyle = '#991B1B';
-          ctx.font = '800 15px "Space Grotesk", sans-serif';
+          ctx.font = '800 14px "Space Grotesk", sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText(pillText, cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+          ctx.fillText('★   SERVIDO FRESCO A DIARIO', cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
           ctx.textAlign = 'left';
           ctx.textBaseline = 'alphabetic';
-        });
-      } else {
-        const py = pillYStart;
-        ctx.fillStyle = '#FEE2E2';
-        ctx.strokeStyle = '#C92A2A';
-        ctx.lineWidth = 1.6;
-        drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 8, true, true);
-        ctx.fillStyle = '#991B1B';
-        ctx.font = '800 14px "Space Grotesk", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('★   SERVIDO FRESCO A DIARIO', cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'alphabetic';
+        }
       }
     } else {
       // HORIZONTAL LAYOUT
       ctx.fillStyle = '#1C1917';
-      drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 76, cardW - 75, 42, '"Space Grotesk", sans-serif', '900');
+      drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 76, cardW - 75, 40, '"Space Grotesk", sans-serif', '900');
 
-      ctx.fillStyle = '#0E7490';
-      ctx.font = '700 16px "Space Grotesk", sans-serif';
-      drawTruncatedText(subStr, cardX + 24, cardY + 114, cardW - 48);
+      // Terroir Badges (Propuesta B)
+      drawTerroirBadges(ctx, cardX + 24, cardY + 98, cardW - 48, 'diner', terroirChips);
 
       const pillY = cardY + 148;
       const pillH = 44;
@@ -3739,25 +4023,8 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
       }
     }
   } else {
-    // Kプレイヤー KISSATEN
-    if (transparent) {
-      ctx.clearRect(0, 0, baseW, baseH);
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-      ctx.shadowBlur = 14;
-      ctx.shadowOffsetY = 4;
-      ctx.fillStyle = '#F7F5F0';
-      ctx.strokeStyle = '#18181B';
-      ctx.lineWidth = 1.4;
-      drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 16, true, true);
-      ctx.restore();
-    } else {
-      ctx.fillStyle = '#F7F5F0';
-      ctx.fillRect(0, 0, baseW, baseH);
-      ctx.strokeStyle = '#18181B';
-      ctx.lineWidth = 1.4;
-      drawRoundedRect(ctx, cardX + 1, cardY + 1, cardW - 2, cardH - 2, 12, false, true);
-    }
+    // KISSATEN
+    drawDieCutShell(ctx, cardX, cardY, cardW, cardH, 16, 'kissaten', transparent, baseW, baseH);
 
     // Inner subtle line
     ctx.strokeStyle = '#E4E4E7';
@@ -3770,71 +4037,111 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
     // Brand tag
     ctx.fillStyle = '#52525B';
     ctx.font = '700 9px "Playfair Display", Georgia, serif';
-    ctx.fillText('自家焙煎 • BEANTAG ARCHIVE', cardX + 24, cardY + 34);
+    const brandLabel = roaster ? `自家焙煎 • BEANTAG • ${roaster.toUpperCase()}` : '自家焙煎 • BEANTAG ARCHIVE';
+    ctx.fillText(brandLabel, cardX + 24, cardY + 34);
 
     if (isVertical) {
       // VERTICAL LAYOUT
       ctx.fillStyle = '#18181B';
-      drawFittedText(coffeeName, cardX + 24, cardY + 76, cardW - 48, 38, '"Playfair Display", Georgia, serif', 'bold');
+      drawFittedText(coffeeName, cardX + 24, cardY + 76, cardW - 48, 36, '"Playfair Display", Georgia, serif', 'bold');
 
-      ctx.fillStyle = '#78716C';
-      ctx.font = 'italic 15px "Playfair Display", Georgia, serif';
-      drawTruncatedText(subStr, cardX + 24, cardY + 114, cardW - 48);
+      // Terroir Badges (Propuesta B)
+      const bottomY = drawTerroirBadges(ctx, cardX + 24, cardY + 98, cardW - 48, 'kissaten', terroirChips);
+      const dividerY = bottomY + 12;
 
       ctx.strokeStyle = '#E4E4E7';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(cardX + 24, cardY + 134);
-      ctx.lineTo(cardX + cardW - 24, cardY + 134);
+      ctx.moveTo(cardX + 24, dividerY);
+      ctx.lineTo(cardX + cardW - 24, dividerY);
       ctx.stroke();
 
-      ctx.fillStyle = '#52525B';
-      ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
-      ctx.fillText('珈琲風味 // SENSORY PROFILE:', cardX + 24, cardY + 154);
+      if (sensoryData) {
+        // Propuesta D: Mini SCA Sensory Radar Chart
+        ctx.fillStyle = '#52525B';
+        ctx.font = 'bold 8.5px "Playfair Display", Georgia, serif';
+        ctx.fillText('珈琲官能評価 // SCA RADAR', cardX + 24, dividerY + 18);
 
-      const pillYStart = cardY + 168;
-      const pillH = 44;
-      const displayed = flavorTags.length > 0 ? flavorTags.slice(0, 4) : [];
-      if (displayed.length > 0) {
-        displayed.forEach((tag, idx) => {
-          const py = pillYStart + idx * (pillH + 10);
-          if (py + pillH > cardY + cardH - 20) return;
-          const glyph = getAestheticGlyph(tag, 'kissaten');
-          const pillText = `${glyph}   ${tag.toUpperCase()}`;
+        const radarCY = dividerY + 76;
+        const radarR = 38;
+        drawSensoryRadarChart(ctx, cardX + cardW / 2, radarCY, radarR, sensoryData, 'kissaten');
+
+        const flavorHeaderY = radarCY + radarR + 24;
+        ctx.fillStyle = '#52525B';
+        ctx.font = 'bold 8.5px "Playfair Display", Georgia, serif';
+        ctx.fillText('珈琲風味 // SENSORY PROFILE:', cardX + 24, flavorHeaderY);
+
+        const pillYStart = flavorHeaderY + 10;
+        const pillH = 34;
+        const displayed = flavorTags.length > 0 ? flavorTags.slice(0, 3) : [];
+        if (displayed.length > 0) {
+          displayed.forEach((tag, idx) => {
+            const py = pillYStart + idx * (pillH + 7);
+            if (py + pillH > cardY + cardH - 14) return;
+            const glyph = getAestheticGlyph(tag, 'kissaten');
+            const pillText = `${glyph}   ${tag.toUpperCase()}`;
+            ctx.fillStyle = '#FAF8F5';
+            ctx.strokeStyle = '#D4D4D8';
+            ctx.lineWidth = 1.2;
+            drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 6, true, true);
+            ctx.fillStyle = '#18181B';
+            ctx.font = 'bold 13px "Playfair Display", Georgia, serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pillText, cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+          });
+        }
+      } else {
+        // Full flavor pills cascade
+        ctx.fillStyle = '#52525B';
+        ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
+        ctx.fillText('珈琲風味 // SENSORY PROFILE:', cardX + 24, dividerY + 18);
+
+        const pillYStart = dividerY + 30;
+        const pillH = 44;
+        const displayed = flavorTags.length > 0 ? flavorTags.slice(0, 4) : [];
+        if (displayed.length > 0) {
+          displayed.forEach((tag, idx) => {
+            const py = pillYStart + idx * (pillH + 10);
+            if (py + pillH > cardY + cardH - 18) return;
+            const glyph = getAestheticGlyph(tag, 'kissaten');
+            const pillText = `${glyph}   ${tag.toUpperCase()}`;
+            ctx.fillStyle = '#FAF8F5';
+            ctx.strokeStyle = '#D4D4D8';
+            ctx.lineWidth = 1.2;
+            drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 6, true, true);
+            ctx.fillStyle = '#18181B';
+            ctx.font = 'bold 15px "Playfair Display", Georgia, serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pillText, cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+          });
+        } else {
+          const py = pillYStart;
           ctx.fillStyle = '#FAF8F5';
           ctx.strokeStyle = '#D4D4D8';
           ctx.lineWidth = 1.2;
           drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 6, true, true);
           ctx.fillStyle = '#18181B';
-          ctx.font = 'bold 15px "Playfair Display", Georgia, serif';
+          ctx.font = 'bold 14px "Playfair Display", Georgia, serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText(pillText, cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+          ctx.fillText('✿   純喫茶 自家焙煎', cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
           ctx.textAlign = 'left';
           ctx.textBaseline = 'alphabetic';
-        });
-      } else {
-        const py = pillYStart;
-        ctx.fillStyle = '#FAF8F5';
-        ctx.strokeStyle = '#D4D4D8';
-        ctx.lineWidth = 1.2;
-        drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 6, true, true);
-        ctx.fillStyle = '#18181B';
-        ctx.font = 'bold 14px "Playfair Display", Georgia, serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('✿   純喫茶 自家焙煎', cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'alphabetic';
+        }
       }
     } else {
       // HORIZONTAL LAYOUT
       ctx.fillStyle = '#18181B';
-      drawFittedText(coffeeName, cardX + 24, cardY + 76, cardW - 75, 42, '"Playfair Display", Georgia, serif', 'bold');
+      drawFittedText(coffeeName, cardX + 24, cardY + 76, cardW - 75, 40, '"Playfair Display", Georgia, serif', 'bold');
 
-      ctx.fillStyle = '#78716C';
-      ctx.font = 'italic 16px "Playfair Display", Georgia, serif';
-      drawTruncatedText(subStr, cardX + 24, cardY + 114, cardW - 48);
+      // Terroir Badges (Propuesta B)
+      drawTerroirBadges(ctx, cardX + 24, cardY + 98, cardW - 48, 'kissaten', terroirChips);
 
       const pillY = cardY + 148;
       const pillH = 44;

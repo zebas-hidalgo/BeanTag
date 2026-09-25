@@ -451,7 +451,9 @@ async function verify() {
           });
           assert(hasScaIcons, 'Story sticker must render style-tailored SCA icons');
           const hasNoDrawImage = !mockOps.includes('drawImage');
-          const passed = isValidDataUrl && opsCount > 15 && hasNoDrawImage && hasNoLiteralNotasBracket && hasScaIcons;
+          const hasTerroirChips = mockContext.operations.some(op => op.name === 'fillText' && typeof op.args[0] === 'string' && (op.args[0].includes('PANAMÁ') || op.args[0].includes('GEISHA')));
+          assert(hasTerroirChips, 'Story sticker must render structured terroir chips (Propuesta B)');
+          const passed = isValidDataUrl && opsCount > 15 && hasNoDrawImage && hasNoLiteralNotasBracket && hasScaIcons && hasTerroirChips;
 
           if (!passed) hasFailure = true;
 
@@ -476,17 +478,46 @@ async function verify() {
     }
   }
 
+  // D. Verify Vertical Story Stickers with Sensory Evaluation (Propuesta D: Mini SCA Radar)
+  for (const style of STYLES) {
+    try {
+      mockOps.length = 0;
+      const dataUrl = await window.__generateCoffeeStickerImage(sampleRecipeWithSensory, { template: style, transparent: true, orientation: 'vertical' });
+      const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
+      const opsCount = mockOps.length;
+      const hasRadarChart = mockContext.operations.some(op => op.name === 'fillText' && op.args[0] === 'ACIDEZ');
+      assert(hasRadarChart, 'Vertical story sticker with sensory data must render 5-axis SCA radar chart (Propuesta D)');
+      const passed = isValidDataUrl && opsCount > 25 && hasRadarChart;
+      if (!passed) hasFailure = true;
+      results.push({
+        style,
+        type: 'Sticker Radar',
+        mode: 'V • Sensorial',
+        ops: opsCount,
+        status: passed ? 'PASS' : 'FAIL'
+      });
+      console.log(
+        `│ ${style.padEnd(15)} │ ${'Sticker Radar'.padEnd(12)} │ ${'V • Sensorial'.padEnd(12)} │ ${String(opsCount).padStart(10)} │ ${passed ? '✅ PASS' : '❌ FAIL'} │`
+      );
+    } catch (err) {
+      hasFailure = true;
+      results.push({ style, type: 'Sticker Radar', mode: 'V • Sensorial', ops: 0, status: 'ERROR' });
+      console.log(`│ ${style.padEnd(15)} │ ${'Sticker Radar'.padEnd(12)} │ ${'V • Sensorial'.padEnd(12)} │ ${'0'.padStart(10)} │ ❌ ERR  │`);
+      console.error(`   ⚠️ Error details (${style} Sticker Radar):`, err.message);
+    }
+  }
+
   console.log('└─────────────────┴──────────────┴──────────────┴────────────┴────────┘');
 
   const totalPassed = results.filter(r => r.status === 'PASS').length;
   console.log(`\n📊 Summary: ${totalPassed} / ${results.length} tests passed successfully.`);
 
-  if (hasFailure || totalPassed !== 28) {
+  if (hasFailure || totalPassed !== results.length) {
     console.error('❌ Verification failed: Not all card and sticker variants rendered cleanly.');
     process.exit(1);
   }
 
-  console.log('🎉 ALL 8 CARD VARIANTS + 4 CELLAR MENUS + 16 STORY STICKERS RENDERED PERFECTLY (28/28 PASS)!\n');
+  console.log(`🎉 ALL ${results.length} CARD VARIANTS, MENUS AND STORY STICKERS RENDERED PERFECTLY (${totalPassed}/${results.length} PASS)!\n`);
   process.exit(0);
 }
 
