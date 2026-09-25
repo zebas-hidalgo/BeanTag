@@ -1435,23 +1435,36 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 /* Bento Grid & Cupertino Metric Cards */
 .bento-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
   margin: 14px 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .bento-widget {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  padding: 14px;
+  padding: 10px 8px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   box-sizing: border-box;
-  min-height: 118px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  min-height: 110px;
   transition: all 180ms ease;
+}
+
+.bento-widget .cupertino-stepper-btn {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  font-size: 16px;
 }
 
 .bento-widget.accent {
@@ -1649,6 +1662,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 
 .cupertino-segmented-btn {
   flex: 1;
+  min-width: 0;
   padding: 7px 10px;
   border-radius: 9px;
   border: none;

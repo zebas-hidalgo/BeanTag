@@ -534,7 +534,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
           <div className="candy-card static animate-entrance" style={{
             maxWidth: '480px', width: '100%',
             maxHeight: 'calc(100dvh - 32px)',
-            margin: 'auto 0',
+            margin: 'auto',
             padding: '16px', boxSizing: 'border-box',
             boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
             display: 'flex', flexDirection: 'column', gap: '10px',

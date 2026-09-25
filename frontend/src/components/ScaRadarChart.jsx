@@ -49,12 +49,16 @@ export default function ScaRadarChart({
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      padding: '14px',
+      padding: '12px 10px',
       background: 'var(--bg-card, #ECFDF5)',
-      borderRadius: '20px',
+      borderRadius: '16px',
       border: '1.5px solid var(--border-color, #A7F3D0)',
       boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
-      margin: '14px 0'
+      margin: '14px 0',
+      width: '100%',
+      maxWidth: '100%',
+      boxSizing: 'border-box',
+      overflow: 'hidden'
     }}>
       <div style={{
         fontSize: '12px',
@@ -68,7 +72,16 @@ export default function ScaRadarChart({
         📊 Perfil Sensorial SCA
       </div>
 
-      <svg width={size} height={size} style={{ overflow: 'visible' }}>
+      <svg 
+        viewBox="-30 -25 300 290" 
+        style={{ 
+          width: '100%', 
+          maxWidth: '240px', 
+          height: 'auto', 
+          display: 'block', 
+          margin: '0 auto' 
+        }}
+      >
         {/* Background Concentric Grid Lines */}
         {gridPolygons.map((points, idx) => (
           <polygon

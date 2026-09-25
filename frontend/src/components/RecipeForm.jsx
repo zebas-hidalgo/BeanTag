@@ -365,7 +365,11 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
               aria-pressed={method === m.id}
               aria-label={`Seleccionar método ${m.label}`}
               onClick={(e) => {
-                e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                const container = e.currentTarget.parentElement;
+                if (container) {
+                  const scrollTarget = e.currentTarget.offsetLeft - (container.clientWidth / 2) + (e.currentTarget.clientWidth / 2);
+                  container.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+                }
                 setMethod(m.id);
                 if (m.id === 'NextLevel Pulsar Mini') {
                   if (doseInG === 20.0 || !doseInG) setDoseInG(15.0);
@@ -379,7 +383,11 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                  const container = e.currentTarget.parentElement;
+                  if (container) {
+                    const scrollTarget = e.currentTarget.offsetLeft - (container.clientWidth / 2) + (e.currentTarget.clientWidth / 2);
+                    container.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+                  }
                   setMethod(m.id);
                   if (m.id === 'NextLevel Pulsar Mini') {
                     if (doseInG === 20.0 || !doseInG) setDoseInG(15.0);

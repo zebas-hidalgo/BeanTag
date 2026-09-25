@@ -420,7 +420,14 @@ export default function App() {
         </div>
       </header>
 
-      <main style={{ flex: 1, position: 'relative' }}>
+      <main 
+        onScroll={(e) => {
+          if (e.currentTarget.scrollLeft !== 0) {
+            e.currentTarget.scrollLeft = 0;
+          }
+        }}
+        style={{ flex: 1, position: 'relative', width: '100%', maxWidth: '100%', overflowX: 'hidden' }}
+      >
         {currentView === 'inventory' && (
           <Inventory 
             batches={batches} 

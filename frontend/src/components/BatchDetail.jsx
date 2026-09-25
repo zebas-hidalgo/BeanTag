@@ -42,7 +42,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     const isNewBrew = window.location.search.includes('action=new_brew') || window.location.pathname.includes('/batch/');
     if (isNewBrew && brewFormRef.current) {
       setTimeout(() => {
-        brewFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        brewFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
       }, 350);
     }
   }, [batchId]);
@@ -744,7 +744,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     : (grinderType === 'comandante' ? Math.round(comandanteClicks * 30) : calculateMicrons(jmaxRot, jmaxNum, jmaxClick));
 
   return (
-    <div>
+    <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       {/* Top Header - Row 1: Back Navigation + Status Badge */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <button 
@@ -806,7 +806,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       )}
 
       {/* Top Header - Row 2: Spacious Action Toolbar */}
-      <div style={{ display: 'grid', gridTemplateColumns: isOwner ? '1fr auto auto' : '1fr', gap: '8px', marginBottom: '14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isOwner ? 'minmax(0, 1fr) auto auto' : '1fr', gap: '8px', marginBottom: '14px', width: '100%', boxSizing: 'border-box' }}>
         <button 
           className="btn-candy primary" 
           onClick={() => handleShareBatchCard(false)} 
@@ -840,7 +840,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       </div>
 
       {/* Hero Ficha del Café */}
-      <div className="candy-card static" style={{ marginBottom: '16px', padding: '18px', backgroundColor: 'var(--bg-card)' }}>
+      <div className="candy-card static" style={{ marginBottom: '16px', padding: '18px', backgroundColor: 'var(--bg-card)', width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
         <div style={{ marginBottom: '6px' }}>
           <h2 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 4px 0', textTransform: 'uppercase', fontSize: '19px', lineHeight: 1.2 }}>{batch.name}</h2>
           <div style={{ fontSize: '11.5px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
@@ -970,7 +970,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     aria-pressed={isActive}
                     onClick={(e) => {
                       if (navigator.vibrate) navigator.vibrate(8);
-                      e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                      const container = e.currentTarget.parentElement;
+                      if (container) {
+                        const scrollTarget = e.currentTarget.offsetLeft - (container.clientWidth / 2) + (e.currentTarget.clientWidth / 2);
+                        container.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+                      }
                       setMethod(m.id);
                       if (m.id === 'NextLevel Pulsar Mini') {
                         if (!doseInG || doseInG === 20.0) setDoseInG(15.0);
@@ -1072,7 +1076,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               {aiRecommendation ? (
                 <div style={{ marginTop: '12px', padding: '12px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {/* Badges de Parámetros Clave */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', textAlign: 'center' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', textAlign: 'center' }}>
                     <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                       <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>Ratio / Agua</div>
                       <strong style={{ fontSize: '12px', color: 'var(--color-crimson)' }}>{aiRecommendation.ratio} ({aiRecommendation.water_total_g || Math.round(doseInG * 15)}g)</strong>
@@ -1154,7 +1158,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   {/* Sub-Contenido: Molinos */}
                   {aiSubTab === 'grinders' && (
                     <div style={{ fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px' }}>
                         <div style={{ padding: '6px 8px', background: 'var(--bg-header)', borderRadius: '6px' }}>
                           <strong style={{ color: 'var(--barista-accent-honey, var(--color-crimson))', display: 'block', fontSize: '11px' }}>1Zpresso J-Max:</strong>
                           <span style={{ fontSize: '12px', fontWeight: 'bold' }}>
@@ -1231,7 +1235,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       step="0.5"
                       value={doseInG}
                       onChange={(e) => setDoseInG(parseFloat(e.target.value) || 0)}
-                      style={{ width: '56px', textAlign: 'center', fontSize: '19px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
+                      style={{ width: '46px', maxWidth: '48px', minWidth: 0, textAlign: 'center', fontSize: '18px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
                     />
                     <span className="unit" style={{ marginLeft: '2px' }}>g</span>
                   </div>
@@ -1274,7 +1278,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                         step="0.5"
                         value={doseOutG}
                         onChange={(e) => setDoseOutG(parseFloat(e.target.value) || 0)}
-                        style={{ width: '56px', textAlign: 'center', fontSize: '19px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
+                        style={{ width: '46px', maxWidth: '48px', minWidth: 0, textAlign: 'center', fontSize: '18px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
                       />
                       <span className="unit" style={{ marginLeft: '2px' }}>g</span>
                     </div>
@@ -1319,7 +1323,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                         step="0.5"
                         value={ratioVal}
                         onChange={(e) => setRatioVal(parseFloat(e.target.value) || 0)}
-                        style={{ width: '56px', textAlign: 'center', fontSize: '19px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
+                        style={{ width: '46px', maxWidth: '48px', minWidth: 0, textAlign: 'center', fontSize: '18px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
                       />
                     </div>
                     <button
@@ -1363,7 +1367,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       inputMode="decimal"
                       value={waterTemp}
                       onChange={(e) => setWaterTemp(parseInt(e.target.value) || 93)}
-                      style={{ width: '52px', textAlign: 'center', fontSize: '19px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
+                      style={{ width: '44px', maxWidth: '46px', minWidth: 0, textAlign: 'center', fontSize: '18px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
                     />
                     <span className="unit" style={{ marginLeft: '2px' }}>°C</span>
                   </div>
@@ -1389,7 +1393,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 <div className="bento-value-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '4px', minHeight: '34px' }}>
                   <input
                     type="text"
-                    style={{ fontSize: '19px', fontWeight: '800', textAlign: 'center', width: '90px', border: 'none', background: 'transparent' }}
+                    style={{ fontSize: '18px', fontWeight: '800', textAlign: 'center', width: '80px', maxWidth: '84px', minWidth: 0, border: 'none', background: 'transparent' }}
                     value={brewTime}
                     onChange={(e) => setBrewTime(e.target.value)}
                   />
@@ -1480,11 +1484,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 {/* Femobook A2 Controls */}
                 {grinderType === 'femobook' && (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
                       <button 
                         type="button" 
                         className="btn-candy" 
-                        style={{ minWidth: '40px', minHeight: '38px', padding: '6px 10px', margin: 0, fontSize: '12px', fontWeight: 'bold' }} 
+                        style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
                         onClick={() => setFemobookClicks(prev => Math.max(0, prev - 5))}
                       >
                         -5
@@ -1492,17 +1496,17 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       <button 
                         type="button" 
                         className="btn-candy" 
-                        style={{ minWidth: '38px', minHeight: '38px', padding: '6px 8px', margin: 0, fontSize: '12px', fontWeight: 'bold' }} 
+                        style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
                         onClick={() => setFemobookClicks(prev => Math.max(0, prev - 1))}
                       >
                         -1
                       </button>
-                      <div style={{ flex: 1, textAlign: 'center' }}>
+                      <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
                         <input 
                           type="number" 
-                          inputMode="decimal"
+                          inputMode="decimal" 
                           className="candy-input" 
-                          style={{ width: '100%', textAlign: 'center', margin: 0, padding: '8px', fontSize: '16px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}
+                          style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}
                           value={femobookClicks}
                           min="0"
                           max="120"
@@ -1512,7 +1516,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       <button 
                         type="button" 
                         className="btn-candy" 
-                        style={{ minWidth: '38px', minHeight: '38px', padding: '6px 8px', margin: 0, fontSize: '12px', fontWeight: 'bold' }} 
+                        style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
                         onClick={() => setFemobookClicks(prev => Math.min(120, prev + 1))}
                       >
                         +1
@@ -1520,7 +1524,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       <button 
                         type="button" 
                         className="btn-candy" 
-                        style={{ minWidth: '40px', minHeight: '38px', padding: '6px 10px', margin: 0, fontSize: '12px', fontWeight: 'bold' }} 
+                        style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
                         onClick={() => setFemobookClicks(prev => Math.min(120, prev + 5))}
                       >
                         +5
@@ -1535,21 +1539,21 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 {/* Comandante C40 Controls */}
                 {grinderType === 'comandante' && (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
                       <button 
                         type="button" 
                         className="btn-candy" 
-                        style={{ minWidth: '40px', minHeight: '38px', padding: '6px 10px', margin: 0, fontSize: '12px', fontWeight: 'bold' }} 
+                        style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
                         onClick={() => setComandanteClicks(prev => Math.max(0, prev - 1))}
                       >
                         -1
                       </button>
-                      <div style={{ flex: 1, textAlign: 'center' }}>
+                      <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
                         <input 
                           type="number" 
-                          inputMode="decimal"
+                          inputMode="decimal" 
                           className="candy-input" 
-                          style={{ width: '100%', textAlign: 'center', margin: 0, padding: '8px', fontSize: '16px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}
+                          style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}
                           value={comandanteClicks}
                           min="0"
                           max="45"
@@ -1559,7 +1563,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       <button 
                         type="button" 
                         className="btn-candy" 
-                        style={{ minWidth: '40px', minHeight: '38px', padding: '6px 10px', margin: 0, fontSize: '12px', fontWeight: 'bold' }} 
+                        style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
                         onClick={() => setComandanteClicks(prev => Math.min(45, prev + 1))}
                       >
                         +1
@@ -1576,7 +1580,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             {/* Evaluacion Sensorial */}
             <div className="candy-card static" style={{ marginTop: '14px', padding: '16px' }}>
               <div style={{ fontSize: '10.5px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>Evaluación Sensorial</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginBottom: '10px' }}>
                 <div>
                   <label className="barista-label">Balance</label>
                   <select className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryBalance} onChange={e => setSensoryBalance(e.target.value)}>
@@ -1820,7 +1824,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           <div className="candy-card static animate-entrance" style={{
             maxWidth: '480px', width: '100%',
             maxHeight: 'calc(100dvh - 32px)',
-            margin: 'auto 0',
+            margin: 'auto',
             padding: '16px', boxSizing: 'border-box',
             boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
             display: 'flex', flexDirection: 'column', gap: '10px',
