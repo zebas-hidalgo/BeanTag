@@ -8,6 +8,7 @@ import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMen
 import { FAMOUS_RECIPES } from '../utils/famousRecipes';
 import ScaRadarChart from './ScaRadarChart';
 import DialInAssistant from './DialInAssistant';
+import { GRINDERS, getGrinderConfig } from '../utils/grinders';
 
 const calculateMicrons = (rot, num, click) => {
   const r = parseInt(rot) || 0;
@@ -50,7 +51,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   // Form fields
   const [method, setMethod] = useState('V60 (Filtrado)');
   
-  // Grinder Selector State ('jmax' | 'femobook' | 'comandante')
+  // Grinder Selector State (8 Supported Grinders)
   const [grinderType, setGrinderType] = useState(() => localStorage.getItem('default-grinder') || 'jmax');
   
   // 1Zpresso J-Max Steppers (Default: 1.5.0)
@@ -58,11 +59,26 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [jmaxNum, setJmaxNum] = useState(5);
   const [jmaxClick, setJmaxClick] = useState(0);
 
+  // 1Zpresso K-Ultra Dial (1.0 - 15.0, default 9.0)
+  const [kUltraDial, setKUltraDial] = useState(9.0);
+
+  // Fellow Ode Gen 2 Setting (1.0 - 11.0, default 5.0)
+  const [odeDial, setOdeDial] = useState(5.0);
+
   // Femobook A2 State (0 - 120 clicks, default 60 = 1.5 Rot.)
   const [femobookClicks, setFemobookClicks] = useState(60);
 
-  // Comandante C40 State (0 - 40 clicks, default 24)
+  // Comandante C40 State (0 - 45 clicks, default 24)
   const [comandanteClicks, setComandanteClicks] = useState(24);
+
+  // Kingrinder K6 State (0 - 180 clicks, default 90 = 1.5 Rot.)
+  const [kingrinderClicks, setKingrinderClicks] = useState(90);
+
+  // Timemore C2/C3 State (6 - 36 clicks, default 18)
+  const [timemoreClicks, setTimemoreClicks] = useState(18);
+
+  // Baratza Encore/ESP State (1 - 40 steps, default 15)
+  const [baratzaStep, setBaratzaStep] = useState(15);
   
   // Smart Ratio (Default: 15.0)
   const [ratioVal, setRatioVal] = useState(15.0);
@@ -354,6 +370,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       setBrewTime(aiRecommendation.brew_time);
     }
 
+    // Extract J-Max
     if (aiRecommendation.jmax_rot !== undefined && aiRecommendation.jmax_rot !== null) {
       setJmaxRot(parseInt(aiRecommendation.jmax_rot) || 0);
     }
@@ -364,20 +381,54 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       setJmaxClick(parseInt(aiRecommendation.jmax_click) || 0);
     }
 
-    // Extract Femobook A2 clicks if available
-    if (aiRecommendation.grinders?.femobook_a2) {
-      const match = String(aiRecommendation.grinders.femobook_a2).match(/(\d+)\s*clic/i);
-      if (match) {
-        setFemobookClicks(parseInt(match[1]) || 60);
-      }
+    // Extract K-Ultra dial
+    if (aiRecommendation.grinders?.k_ultra) {
+      const match = String(aiRecommendation.grinders.k_ultra).match(/(\d+(?:\.\d+)?)/);
+      if (match) setKUltraDial(parseFloat(match[1]) || 9.0);
     }
 
-    // Extract Comandante clicks if available
+    // Extract Ode Gen 2 dial
+    if (aiRecommendation.grinders?.ode_gen2) {
+      const match = String(aiRecommendation.grinders.ode_gen2).match(/(?:Ajuste\s*)?(\d+(?:\.\d+)?)/i);
+      if (match) setOdeDial(parseFloat(match[1]) || 5.0);
+    }
+
+    // Extract Femobook A2 clicks
+    if (aiRecommendation.grinders?.femobook_a2) {
+      const match = String(aiRecommendation.grinders.femobook_a2).match(/(\d+)\s*clic/i);
+      if (match) setFemobookClicks(parseInt(match[1]) || 60);
+    }
+
+    // Extract Comandante clicks
     if (aiRecommendation.grinders?.comandante) {
       const match = String(aiRecommendation.grinders.comandante).match(/(\d+)/);
-      if (match) {
-        setComandanteClicks(parseInt(match[1]) || 24);
-      }
+      if (match) setComandanteClicks(parseInt(match[1]) || 24);
+    }
+
+    // Extract Kingrinder K6 clicks
+    if (aiRecommendation.grinders?.kingrinder_k6) {
+      const match = String(aiRecommendation.grinders.kingrinder_k6).match(/(\d+)\s*clic/i);
+      if (match) setKingrinderClicks(parseInt(match[1]) || 90);
+    }
+
+    // Extract Timemore clicks
+    if (aiRecommendation.grinders?.timemore) {
+      const match = String(aiRecommendation.grinders.timemore).match(/(\d+)\s*clic/i);
+      if (match) setTimemoreClicks(parseInt(match[1]) || 18);
+    }
+
+    // Extract Baratza step
+    if (aiRecommendation.grinders?.baratza) {
+      const match = String(aiRecommendation.grinders.baratza).match(/(?:Ajuste\s*)?(\d+)/i);
+      if (match) setBaratzaStep(parseInt(match[1]) || 15);
+    }
+
+    // Switch active grinder view if recommended
+    if (aiRecommendation.active_grinder_dial?.grinder_id) {
+      const gId = aiRecommendation.active_grinder_dial.grinder_id;
+      if (gId === 'femobook_a2') setGrinderType('femobook');
+      else if (gId === 'kingrinder_k6') setGrinderType('kingrinder');
+      else if (GRINDERS.some(g => g.id === gId)) setGrinderType(gId);
     }
 
     if (aiRecommendation.notes) {
@@ -622,13 +673,30 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   };
 
   const getGrindString = () => {
-    if (grinderType === 'femobook') {
-      const rot = (femobookClicks / 40).toFixed(2);
-      return `Femobook A2: ${femobookClicks} clics (${rot} Rot.)`;
-    } else if (grinderType === 'comandante') {
-      return `Comandante: ${comandanteClicks} clics`;
+    switch (grinderType) {
+      case 'k_ultra':
+        return `1Zpresso K-Ultra: ${parseFloat(kUltraDial).toFixed(1)} (${Math.round(kUltraDial * 10)} clics)`;
+      case 'ode_gen2':
+        return `Fellow Ode Gen 2: Ajuste ${parseFloat(odeDial).toFixed(1)}`;
+      case 'comandante':
+        return `Comandante: ${comandanteClicks} clics`;
+      case 'femobook': {
+        const rot = (femobookClicks / 40).toFixed(2);
+        return `Femobook A2: ${femobookClicks} clics (${rot} Rot.)`;
+      }
+      case 'kingrinder': {
+        const rot = Math.floor(kingrinderClicks / 60);
+        const sub = kingrinderClicks % 60;
+        return `Kingrinder K6: ${kingrinderClicks} clics (~${rot}.${sub})`;
+      }
+      case 'timemore':
+        return `Timemore: ${timemoreClicks} clics`;
+      case 'baratza':
+        return `Baratza: Ajuste ${baratzaStep}`;
+      case 'jmax':
+      default:
+        return `J-Max: ${jmaxRot}.${jmaxNum}.${jmaxClick}`;
     }
-    return `J-Max: ${jmaxRot}.${jmaxNum}.${jmaxClick}`;
   };
 
   const handleRecipeSubmit = (e) => {
@@ -745,9 +813,34 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
 
   // Dynamic calculated microns for current form state based on grinder type
-  const currentMicrons = grinderType === 'femobook'
-    ? Math.round(femobookClicks * 18)
-    : (grinderType === 'comandante' ? Math.round(comandanteClicks * 30) : calculateMicrons(jmaxRot, jmaxNum, jmaxClick));
+  const currentMicrons = (() => {
+    switch (grinderType) {
+      case 'k_ultra':
+        return Math.round(parseFloat(kUltraDial) * 10 * 20);
+      case 'ode_gen2':
+        return Math.round(350 + parseFloat(odeDial) * 75);
+      case 'comandante':
+        return Math.round(comandanteClicks * 30);
+      case 'femobook':
+        return Math.round(femobookClicks * 18);
+      case 'kingrinder':
+        return Math.round(kingrinderClicks * 16);
+      case 'timemore':
+        return Math.round(timemoreClicks * 33);
+      case 'baratza':
+        return Math.round(400 + baratzaStep * 30);
+      case 'jmax':
+      default:
+        return calculateMicrons(jmaxRot, jmaxNum, jmaxClick);
+    }
+  })();
+
+  const activeGrinderMeta = getGrinderConfig(grinderType);
+
+  const handleSelectGrinder = (id) => {
+    setGrinderType(id);
+    localStorage.setItem('default-grinder', id);
+  };
 
   return (
     <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
@@ -1480,7 +1573,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 </div>
               </div>
 
-              {/* Manual Grinder Selector & Dedicated Controls */}
+              {/* Manual Grinder Selector & Dedicated Controls (8 Supported Grinders) */}
               <div className="bento-widget bento-full-row accent">
                 <div className="bento-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -1488,169 +1581,139 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     <span style={{ fontWeight: '800' }}>Molino</span>
                   </div>
                   {/* Selector Pills */}
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <button
-                      type="button"
-                      onClick={() => setGrinderType('jmax')}
-                      style={{
-                        padding: '4px 10px',
-                        fontSize: '10.5px',
-                        fontWeight: '800',
-                        borderRadius: '6px',
-                        border: grinderType === 'jmax' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                        backgroundColor: grinderType === 'jmax' ? 'var(--color-crimson)' : 'var(--bg-canvas)',
-                        color: grinderType === 'jmax' ? '#FFFFFF' : 'var(--color-text)',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      J-Max
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setGrinderType('femobook')}
-                      style={{
-                        padding: '4px 10px',
-                        fontSize: '10.5px',
-                        fontWeight: '800',
-                        borderRadius: '6px',
-                        border: grinderType === 'femobook' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                        backgroundColor: grinderType === 'femobook' ? 'var(--color-crimson)' : 'var(--bg-canvas)',
-                        color: grinderType === 'femobook' ? '#FFFFFF' : 'var(--color-text)',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Femobook A2
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setGrinderType('comandante')}
-                      style={{
-                        padding: '4px 10px',
-                        fontSize: '10.5px',
-                        fontWeight: '800',
-                        borderRadius: '6px',
-                        border: grinderType === 'comandante' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                        backgroundColor: grinderType === 'comandante' ? 'var(--color-crimson)' : 'var(--bg-canvas)',
-                        color: grinderType === 'comandante' ? '#FFFFFF' : 'var(--color-text)',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Comandante
-                    </button>
+                  <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', maxWidth: '75%', paddingBottom: '2px', scrollbarWidth: 'none' }}>
+                    {GRINDERS.map(g => {
+                      const isSel = grinderType === g.id;
+                      return (
+                        <button
+                          key={g.id}
+                          type="button"
+                          onClick={() => handleSelectGrinder(g.id)}
+                          style={{
+                            padding: '4px 8px',
+                            fontSize: '10px',
+                            fontWeight: '800',
+                            borderRadius: '6px',
+                            whiteSpace: 'nowrap',
+                            border: isSel ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                            backgroundColor: isSel ? 'var(--color-crimson)' : 'var(--bg-canvas)',
+                            color: isSel ? '#FFFFFF' : 'var(--color-text)',
+                            cursor: 'pointer',
+                            flexShrink: 0
+                          }}
+                        >
+                          {g.shortName}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* 1Zpresso J-Max Controls */}
+                {/* 1. 1Zpresso J-Max Controls */}
                 {grinderType === 'jmax' && (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0' }}>
-                      <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxRot} onChange={(e) => setJmaxRot(parseInt(e.target.value) || 0)}>
-                        {[0, 1, 2, 3, 4].map(v => <option key={v} value={v}>Rot: {v}</option>)}
-                      </select>
-                      <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxNum} onChange={(e) => setJmaxNum(parseInt(e.target.value) || 0)}>
-                        {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(v => <option key={v} value={v}>Num: {v}</option>)}
-                      </select>
-                      <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxClick} onChange={(e) => setJmaxClick(parseInt(e.target.value) || 0)}>
-                        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(v => <option key={v} value={v}>Clic: {v}</option>)}
-                      </select>
-                    </div>
-                    <div className="bento-info" style={{ marginTop: '4px', fontSize: '10.5px' }}>1Zpresso J-Max: {jmaxRot}.{jmaxNum}.{jmaxClick} (~{currentMicrons} µm)</div>
-                  </>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0' }}>
+                    <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxRot} onChange={(e) => setJmaxRot(parseInt(e.target.value) || 0)}>
+                      {[0, 1, 2, 3, 4].map(v => <option key={v} value={v}>Rot: {v}</option>)}
+                    </select>
+                    <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxNum} onChange={(e) => setJmaxNum(parseInt(e.target.value) || 0)}>
+                      {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(v => <option key={v} value={v}>Num: {v}</option>)}
+                    </select>
+                    <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxClick} onChange={(e) => setJmaxClick(parseInt(e.target.value) || 0)}>
+                      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(v => <option key={v} value={v}>Clic: {v}</option>)}
+                    </select>
+                  </div>
                 )}
 
-                {/* Femobook A2 Controls */}
-                {grinderType === 'femobook' && (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                      <button 
-                        type="button" 
-                        className="btn-candy" 
-                        style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
-                        onClick={() => setFemobookClicks(prev => Math.max(0, prev - 5))}
-                      >
-                        -5
-                      </button>
-                      <button 
-                        type="button" 
-                        className="btn-candy" 
-                        style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
-                        onClick={() => setFemobookClicks(prev => Math.max(0, prev - 1))}
-                      >
-                        -1
-                      </button>
-                      <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                        <input 
-                          type="number" 
-                          inputMode="decimal" 
-                          className="candy-input" 
-                          style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}
-                          value={femobookClicks}
-                          min="0"
-                          max="120"
-                          onChange={(e) => setFemobookClicks(Math.max(0, Math.min(120, parseInt(e.target.value) || 0)))}
-                        />
-                      </div>
-                      <button 
-                        type="button" 
-                        className="btn-candy" 
-                        style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
-                        onClick={() => setFemobookClicks(prev => Math.min(120, prev + 1))}
-                      >
-                        +1
-                      </button>
-                      <button 
-                        type="button" 
-                        className="btn-candy" 
-                        style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
-                        onClick={() => setFemobookClicks(prev => Math.min(120, prev + 5))}
-                      >
-                        +5
-                      </button>
+                {/* 2. 1Zpresso K-Ultra Controls */}
+                {grinderType === 'k_ultra' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKUltraDial(prev => Math.max(1.0, Math.round((prev - 0.5) * 10) / 10))}>-0.5</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKUltraDial(prev => Math.max(1.0, Math.round((prev - 0.1) * 10) / 10))}>-0.1</button>
+                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
+                      <input type="number" step="0.1" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={kUltraDial} min="1.0" max="15.0" onChange={(e) => setKUltraDial(Math.max(1.0, Math.min(15.0, parseFloat(e.target.value) || 1.0)))} />
                     </div>
-                    <div className="bento-info" style={{ marginTop: '4px', fontSize: '10.5px' }}>
-                      Femobook A2: {femobookClicks} clics ({(femobookClicks / 40).toFixed(2)} Rot.) • ~{currentMicrons} µm
-                    </div>
-                  </>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKUltraDial(prev => Math.min(15.0, Math.round((prev + 0.1) * 10) / 10))}>+0.1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKUltraDial(prev => Math.min(15.0, Math.round((prev + 0.5) * 10) / 10))}>+0.5</button>
+                  </div>
                 )}
 
-                {/* Comandante C40 Controls */}
+                {/* 3. Fellow Ode Gen 2 Controls */}
+                {grinderType === 'ode_gen2' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setOdeDial(prev => Math.max(1.0, Math.round((prev - 0.5) * 10) / 10))}>-0.5</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setOdeDial(prev => Math.max(1.0, Math.round((prev - 0.1) * 10) / 10))}>-0.1</button>
+                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
+                      <input type="number" step="0.1" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={odeDial} min="1.0" max="11.0" onChange={(e) => setOdeDial(Math.max(1.0, Math.min(11.0, parseFloat(e.target.value) || 1.0)))} />
+                    </div>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setOdeDial(prev => Math.min(11.0, Math.round((prev + 0.1) * 10) / 10))}>+0.1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setOdeDial(prev => Math.min(11.0, Math.round((prev + 0.5) * 10) / 10))}>+0.5</button>
+                  </div>
+                )}
+
+                {/* 4. Comandante C40 Controls */}
                 {grinderType === 'comandante' && (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                      <button 
-                        type="button" 
-                        className="btn-candy" 
-                        style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
-                        onClick={() => setComandanteClicks(prev => Math.max(0, prev - 1))}
-                      >
-                        -1
-                      </button>
-                      <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                        <input 
-                          type="number" 
-                          inputMode="decimal" 
-                          className="candy-input" 
-                          style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}
-                          value={comandanteClicks}
-                          min="0"
-                          max="45"
-                          onChange={(e) => setComandanteClicks(Math.max(0, Math.min(45, parseInt(e.target.value) || 0)))}
-                        />
-                      </div>
-                      <button 
-                        type="button" 
-                        className="btn-candy" 
-                        style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} 
-                        onClick={() => setComandanteClicks(prev => Math.min(45, prev + 1))}
-                      >
-                        +1
-                      </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
+                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setComandanteClicks(prev => Math.max(0, prev - 1))}>-1</button>
+                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
+                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={comandanteClicks} min="0" max="45" onChange={(e) => setComandanteClicks(Math.max(0, Math.min(45, parseInt(e.target.value) || 0)))} />
                     </div>
-                    <div className="bento-info" style={{ marginTop: '4px', fontSize: '10.5px' }}>
-                      Comandante C40: {comandanteClicks} clics • ~{currentMicrons} µm
-                    </div>
-                  </>
+                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setComandanteClicks(prev => Math.min(45, prev + 1))}>+1</button>
+                  </div>
                 )}
+
+                {/* 5. Femobook A2 Controls */}
+                {grinderType === 'femobook' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setFemobookClicks(prev => Math.max(0, prev - 5))}>-5</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setFemobookClicks(prev => Math.max(0, prev - 1))}>-1</button>
+                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
+                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={femobookClicks} min="0" max="120" onChange={(e) => setFemobookClicks(Math.max(0, Math.min(120, parseInt(e.target.value) || 0)))} />
+                    </div>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setFemobookClicks(prev => Math.min(120, prev + 1))}>+1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setFemobookClicks(prev => Math.min(120, prev + 5))}>+5</button>
+                  </div>
+                )}
+
+                {/* 6. Kingrinder K6 Controls */}
+                {grinderType === 'kingrinder' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKingrinderClicks(prev => Math.max(0, prev - 5))}>-5</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKingrinderClicks(prev => Math.max(0, prev - 1))}>-1</button>
+                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
+                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={kingrinderClicks} min="0" max="180" onChange={(e) => setKingrinderClicks(Math.max(0, Math.min(180, parseInt(e.target.value) || 0)))} />
+                    </div>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKingrinderClicks(prev => Math.min(180, prev + 1))}>+1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKingrinderClicks(prev => Math.min(180, prev + 5))}>+5</button>
+                  </div>
+                )}
+
+                {/* 7. Timemore C2/C3 Controls */}
+                {grinderType === 'timemore' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
+                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setTimemoreClicks(prev => Math.max(6, prev - 1))}>-1</button>
+                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
+                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={timemoreClicks} min="6" max="36" onChange={(e) => setTimemoreClicks(Math.max(6, Math.min(36, parseInt(e.target.value) || 6)))} />
+                    </div>
+                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setTimemoreClicks(prev => Math.min(36, prev + 1))}>+1</button>
+                  </div>
+                )}
+
+                {/* 8. Baratza Encore/ESP Controls */}
+                {grinderType === 'baratza' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
+                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setBaratzaStep(prev => Math.max(1, prev - 1))}>-1</button>
+                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
+                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={baratzaStep} min="1" max="40" onChange={(e) => setBaratzaStep(Math.max(1, Math.min(40, parseInt(e.target.value) || 1)))} />
+                    </div>
+                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setBaratzaStep(prev => Math.min(40, prev + 1))}>+1</button>
+                  </div>
+                )}
+
+                {/* Active Grinder Specs & Calculated Microns Summary */}
+                <div className="bento-info" style={{ marginTop: '6px', fontSize: '10.5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
+                  <span><strong>{activeGrinderMeta.name}:</strong> {getGrindString().replace(/^[A-Za-z0-9\s/-]+:\s*/, '')} (~{currentMicrons} µm)</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}>{activeGrinderMeta.burrs}</span>
+                </div>
               </div>
             </div>
 

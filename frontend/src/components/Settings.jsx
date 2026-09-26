@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
 import NfcToolsModal from './NfcToolsModal';
 import { apiUrl } from '../utils/api';
+import { GRINDERS } from '../utils/grinders';
 
 export default function Settings({ theme, setTheme, batches = [], showToast }) {
   const [showNfcModal, setShowNfcModal] = useState(false);
@@ -507,16 +508,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '8px' }}>
-          {[
-            { id: 'jmax', name: '1Zpresso J-Max', desc: '8.8 µm / clic • Cónica 48mm' },
-            { id: 'k_ultra', name: '1Zpresso K-Ultra', desc: '20 µm / clic • Dial 0-9' },
-            { id: 'ode_gen2', name: 'Fellow Ode Gen 2', desc: 'Muelas Planas 64mm' },
-            { id: 'comandante', name: 'Comandante C40', desc: '30 µm / clic • Nitro Blade' },
-            { id: 'femobook', name: 'Femobook A2', desc: '18 µm • 40 c/rot' },
-            { id: 'kingrinder', name: 'Kingrinder K6', desc: '16 µm • 60 c/rot' },
-            { id: 'timemore', name: 'Timemore C2/C3', desc: 'Cónica 38mm' },
-            { id: 'baratza', name: 'Baratza Encore/ESP', desc: '40 Pasos' }
-          ].map((grinder) => {
+          {GRINDERS.map((grinder) => {
             const isActive = defaultGrinder === grinder.id;
             return (
               <button
@@ -544,7 +536,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 }}
               >
                 <strong style={{ fontSize: '11px' }}>{grinder.name}</strong>
-                <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>{grinder.desc}</span>
+                <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>{grinder.stepDesc || grinder.desc}</span>
               </button>
             );
           })}

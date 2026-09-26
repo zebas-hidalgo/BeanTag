@@ -47,23 +47,8 @@ export function extractFlavorTags(notes) {
 }
 
 
-/**
- * Translates grind description into approximate microns for technical precision
- */
-export function parseGrindToMicrons(grind) {
-  if (!grind) return 750;
-  const lower = String(grind).toLowerCase();
-  const numMatch = lower.match(/(\d{3,4})\s*(?:um|µm|micr)/i);
-  if (numMatch) return parseInt(numMatch[1], 10);
-  if (lower.includes('espresso') || lower.includes('fino')) return 380;
-  if (lower.includes('aeropress')) return 620;
-  if (lower.includes('v60') || lower.includes('medio fino') || lower.includes('medio-fino')) return 750;
-  if (lower.includes('kalita') || lower.includes('chemex')) return 850;
-  if (lower.includes('medio grueso') || lower.includes('medio-grueso')) return 980;
-  if (lower.includes('prensa') || lower.includes('french') || lower.includes('grueso') || lower.includes('cupping')) return 1100;
-  if (lower.includes('cold brew')) return 1250;
-  return 750;
-}
+export { parseGrindToMicrons } from './grinders';
+import { parseGrindToMicrons } from './grinders';
 
 /**
  * Robust text truncation utility that guarantees text never bleeds past maxWidth
