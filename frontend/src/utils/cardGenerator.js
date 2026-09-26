@@ -1253,69 +1253,12 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         drawTruncatedText(m.sub, mx + 14, my + 72, colW - 28);
       });
 
-      // 3. Real Pours Timeline Strip or Barista Notes
-      const flowY = bentoY + (colH * 2) + bentoGap + 10;
-      const flowH = 68;
+      // 3. Unified Master Extraction Timeline (Real pours, delta weights, scale milestones & grind)
+      const timelineY = bentoY + (colH * 2) + bentoGap + 12;
+      drawExtractionTimeline(ctx, paddingX, timelineY, availW, 46, rec, style);
 
-      const normalizedPours = normalizeRecipePours(rec);
-
-      if (normalizedPours && normalizedPours.length > 0) {
-        ctx.fillStyle = 'rgba(14, 165, 233, 0.05)';
-        ctx.strokeStyle = '#38BDF8';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([3, 3]);
-        drawRoundedRect(ctx, paddingX, flowY, availW, flowH, 5, true, true);
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = '#7DD3FC';
-        ctx.font = '800 8px "JetBrains Mono", monospace';
-        ctx.fillText('CRONOGRAMA DE VERTIDOS (ACUMULADO EN BALANZA):', paddingX + 12, flowY + 16);
-
-        ctx.fillStyle = '#4ADE80';
-        ctx.textAlign = 'right';
-        ctx.fillText(`TOTAL: ${waterG || '—'}g (RATIO ${ratioStr})`, paddingX + availW - 12, flowY + 16);
-        ctx.textAlign = 'left';
-
-        // Draw up to 3 pour step milestones
-        const poursToShow = normalizedPours.slice(0, 3);
-        const pourColW = (availW - 24) / poursToShow.length;
-        poursToShow.forEach((p, pIdx) => {
-          const px = paddingX + 12 + (pIdx * pourColW);
-          ctx.fillStyle = '#BAE6FD';
-          ctx.font = '700 8px "JetBrains Mono", monospace';
-          drawTruncatedText(`${p.time ? p.time + ' • ' : ''}${p.label}`, px, flowY + 31, pourColW - 8);
-          ctx.fillStyle = '#FFFFFF';
-          ctx.font = '900 11.5px "JetBrains Mono", monospace';
-          ctx.fillText(`${p.totalWater}g`, px, flowY + 45);
-          ctx.fillStyle = '#38BDF8';
-          ctx.font = '700 7.5px "JetBrains Mono", monospace';
-          drawTruncatedText(`(+${p.stepWater}g acum)`, px, flowY + 56, pourColW - 8);
-        });
-      } else {
-        // Barista Brew Notes / Instruction Box
-        ctx.fillStyle = 'rgba(14, 165, 233, 0.05)';
-        ctx.strokeStyle = '#38BDF8';
-        ctx.lineWidth = 1;
-        drawRoundedRect(ctx, paddingX, flowY, availW, flowH, 5, true, true);
-
-        ctx.fillStyle = '#7DD3FC';
-        ctx.font = '800 8px "JetBrains Mono", monospace';
-        ctx.fillText('NOTAS DE PREPARACIÓN DEL BARISTA:', paddingX + 12, flowY + 18);
-
-        const recipeNotes = stripEmojis(rec.notes || rec.user_notes || '');
-        if (recipeNotes) {
-          ctx.fillStyle = '#E0F2FE';
-          ctx.font = '700 9px "JetBrains Mono", monospace';
-          drawWrappedText(recipeNotes, paddingX + 12, flowY + 36, availW - 24, 14, 2);
-        } else {
-          ctx.fillStyle = '#94A3B8';
-          ctx.font = 'italic 8.5px "JetBrains Mono", monospace';
-          ctx.fillText('Extracción limpia y balanceada según parámetros de molienda.', paddingX + 12, flowY + 40);
-        }
-      }
-
-      // 4. Sensory Descriptors & Flavor Pills (only if real notes/tags exist)
-      const notesY = flowY + flowH + 10;
+      // 4. Sensory Descriptors & Radar SCA (only if real notes/tags exist)
+      const notesY = timelineY + 48 + 12;
       const notesH = 76;
       ctx.fillStyle = 'rgba(56, 189, 248, 0.05)';
       ctx.fillRect(paddingX, notesY, availW, notesH);
@@ -1363,9 +1306,42 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         drawSensoryRadarChart(ctx, paddingX + availW - 65, notesY + 38, 23, sensoryData, style);
       }
 
-      // 5. Extraction Timeline
-      const timelineY = notesY + notesH + 16;
-      drawExtractionTimeline(ctx, paddingX, timelineY, availW, 36, rec, style);
+      // 5. Dedicated Barista Notes / Technical Calibration Stamp
+      const baristaBoxY = notesY + notesH + 12;
+      const recipeNotes = stripEmojis(rec.notes || rec.user_notes || '');
+      if (recipeNotes) {
+        const bBoxH = 48;
+        ctx.fillStyle = 'rgba(14, 165, 233, 0.05)';
+        ctx.strokeStyle = '#38BDF8';
+        ctx.lineWidth = 1;
+        drawRoundedRect(ctx, paddingX, baristaBoxY, availW, bBoxH, 4, true, true);
+
+        ctx.fillStyle = '#7DD3FC';
+        ctx.font = '800 8px "JetBrains Mono", monospace';
+        ctx.fillText('// NOTAS & CONSEJOS DEL BARISTA:', paddingX + 12, baristaBoxY + 16);
+
+        ctx.fillStyle = '#E0F2FE';
+        ctx.font = '700 8.5px "JetBrains Mono", monospace';
+        drawWrappedText(recipeNotes, paddingX + 12, baristaBoxY + 30, availW - 24, 13, 2);
+      } else {
+        const bBoxH = 34;
+        ctx.fillStyle = 'rgba(14, 165, 233, 0.04)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.lineWidth = 0.8;
+        ctx.setLineDash([3, 3]);
+        drawRoundedRect(ctx, paddingX, baristaBoxY, availW, bBoxH, 4, true, true);
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#7DD3FC';
+        ctx.font = '700 8px "JetBrains Mono", monospace';
+        ctx.fillText('CALIBRACIÓN TÉCNICA VERIFICADA // REPRODUCIBLE EN BALANZA', paddingX + 12, baristaBoxY + 21);
+
+        ctx.fillStyle = '#4ADE80';
+        ctx.font = '800 8px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('BEANTAG PROTOCOL OK ✓', paddingX + availW - 12, baristaBoxY + 21);
+        ctx.textAlign = 'left';
+      }
     }
 
     // Architectural Title Block (Bottom)
@@ -1721,8 +1697,12 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         drawTruncatedText(m.sub, mx + 14, my + 74, colW - 28);
       });
 
-      // 3. Flavor Notes Pop Stickers Bento
-      const notesY = bentoY + (colH * 2) + bentoGap + 12;
+      // 3. Unified Master Extraction Timeline (Real pours, delta weights, scale milestones & grind)
+      const timelineY = bentoY + (colH * 2) + bentoGap + 12;
+      drawExtractionTimeline(ctx, paddingX, timelineY, availW, 46, rec, style);
+
+      // 4. Flavor Notes Pop Stickers Bento
+      const notesY = timelineY + 48 + 14;
       const notesH = 80;
 
       ctx.fillStyle = '#000000';
@@ -1779,54 +1759,38 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         drawSensoryRadarChart(ctx, paddingX + availW - 65, notesY + 40, 23, sensoryData, style);
       }
 
-      // 4. Barista Pour Timeline Strip
-      const flowY = notesY + notesH + 12;
-      const flowH = 68;
-
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(paddingX + 3.5, flowY + 3.5, availW, flowH);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(paddingX, flowY, availW, flowH);
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 2.5;
-      ctx.strokeRect(paddingX, flowY, availW, flowH);
-
-      ctx.fillStyle = '#000000';
-      ctx.font = '900 9px "Space Grotesk", sans-serif';
-      ctx.fillText('⏱ PROTOCOLO DE VERTIDO // POUR TIMELINE:', paddingX + 12, flowY + 18);
-
-      const stepW = (availW - 24 - 16) / 3;
-      const normalizedPours = normalizeRecipePours(rec);
-      const steps = (normalizedPours.length > 0)
-        ? normalizedPours.slice(0, 3).map((p, i) => ({
-            title: (p.label || p.title || `VERTIDO 0${i + 1}`).toUpperCase(),
-            desc: `${p.totalWater}g (+${p.stepWater}g)${p.time ? ' • ' + p.time : ''}`
-          }))
-        : [
-            { title: 'DOSIS CAFÉ', desc: `${coffeeG}g molienda` },
-            { title: 'AGUA TOTAL', desc: `${waterG}g objetivo` },
-            { title: 'RATIO TAZA', desc: `1:${ratioStr.replace('1:', '')}` }
-          ];
-
-      steps.forEach((s, idx) => {
-        const sx = paddingX + 12 + idx * (stepW + 8);
-        const sy = flowY + 28;
-        ctx.fillStyle = '#F4F4F5';
-        ctx.fillRect(sx, sy, stepW, 30);
+      // 5. Dedicated Barista Notes / Streetwear Lab Stamp
+      const baristaY = notesY + notesH + 12;
+      const recipeNotes = stripEmojis(rec.notes || rec.user_notes || '');
+      if (recipeNotes) {
+        const baristaH = 46;
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(paddingX + 3.5, baristaY + 3.5, availW, baristaH);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(paddingX, baristaY, availW, baristaH);
         ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 1.2;
-        ctx.strokeRect(sx, sy, stepW, 30);
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(paddingX, baristaY, availW, baristaH);
 
         ctx.fillStyle = '#000000';
-        ctx.font = '900 8px "Space Grotesk", sans-serif';
-        drawTruncatedText(s.title, sx + 6, sy + 13, stepW - 12);
-        ctx.font = '700 8px monospace';
-        drawTruncatedText(s.desc, sx + 6, sy + 24, stepW - 12);
-      });
+        ctx.font = '900 8.5px "Space Grotesk", sans-serif';
+        ctx.fillText('💬 BARISTA NOTES // RECOMENDACIÓN:', paddingX + 12, baristaY + 16);
 
-      // 5. Extraction Timeline
-      const timelineY = flowY + flowH + 16;
-      drawExtractionTimeline(ctx, paddingX, timelineY, availW, 36, rec, style);
+        ctx.font = '700 9px "Space Grotesk", sans-serif';
+        drawWrappedText(recipeNotes, paddingX + 12, baristaY + 30, availW - 24, 13, 2);
+      } else {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(paddingX + 3.5, baristaY + 3.5, availW, 30);
+        ctx.fillStyle = '#D4FF00';
+        ctx.fillRect(paddingX, baristaY, availW, 30);
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(paddingX, baristaY, availW, 30);
+
+        ctx.fillStyle = '#000000';
+        ctx.font = '900 9px "Space Grotesk", sans-serif';
+        ctx.fillText('★ BEANTAG CALIBRATED EXTRACTION // TOKYO STREETWEAR LAB ★', paddingX + 12, baristaY + 19);
+      }
     }
 
     // Authentic POS Barcode (Bottom)
