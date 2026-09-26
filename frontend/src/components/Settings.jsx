@@ -506,11 +506,16 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
           Selecciona tu molino principal para precargar sus diales y física en cada nueva receta.
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '8px' }}>
           {[
-            { id: 'jmax', name: '1Zpresso J-Max', desc: '8.8 µm / clic' },
+            { id: 'jmax', name: '1Zpresso J-Max', desc: '8.8 µm / clic • Cónica 48mm' },
+            { id: 'k_ultra', name: '1Zpresso K-Ultra', desc: '20 µm / clic • Dial 0-9' },
+            { id: 'ode_gen2', name: 'Fellow Ode Gen 2', desc: 'Muelas Planas 64mm' },
+            { id: 'comandante', name: 'Comandante C40', desc: '30 µm / clic • Nitro Blade' },
             { id: 'femobook', name: 'Femobook A2', desc: '18 µm • 40 c/rot' },
-            { id: 'comandante', name: 'Comandante C40', desc: '30 µm / clic' }
+            { id: 'kingrinder', name: 'Kingrinder K6', desc: '16 µm • 60 c/rot' },
+            { id: 'timemore', name: 'Timemore C2/C3', desc: 'Cónica 38mm' },
+            { id: 'baratza', name: 'Baratza Encore/ESP', desc: '40 Pasos' }
           ].map((grinder) => {
             const isActive = defaultGrinder === grinder.id;
             return (
@@ -523,8 +528,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   if (showToast) showToast(`Molino predeterminado: ${grinder.name}`, { type: 'info', duration: 2000 }); 
                 }}
                 style={{
-                  minHeight: '48px',
-                  padding: '10px 8px',
+                  minHeight: '52px',
+                  padding: '8px 6px',
                   borderRadius: '10px',
                   border: isActive ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
                   backgroundColor: isActive ? 'var(--bg-header)' : 'var(--bg-card)',
@@ -538,8 +543,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   transition: 'all 0.15s ease'
                 }}
               >
-                <strong style={{ fontSize: '12px' }}>{grinder.name}</strong>
-                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>{grinder.desc}</span>
+                <strong style={{ fontSize: '11px' }}>{grinder.name}</strong>
+                <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>{grinder.desc}</span>
               </button>
             );
           })}

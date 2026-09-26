@@ -118,4 +118,65 @@ assert.ok(tunedRecipe.temperature >= 93, 'Should increase temperature for sub-ex
 assert.equal(tunedRecipe._source, 'barista_fallback');
 console.log('✅ Sensory tuning passed. Reason:', tunedRecipe.correction_reason);
 
+// 6. Test Multivariable: Fresh Roast CO2 Degassing Window (< 7 days)
+console.log('\nTest 6: Multivariable Fresh Roast CO2 Degassing Window');
+const threeDaysAgo = new Date(Date.now() - (3 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+const freshRecipe = computeOfflineRecipe({
+  origin: 'Panamá Boquete',
+  variety: 'Geisha',
+  process: 'Lavado',
+  altitude: '1750m',
+  roast_level: 'Claro',
+  roast_date: threeDaysAgo,
+  method: 'V60 (Filtrado)',
+  dose_in_g: 15,
+  sca_score: 91.5
+});
+
+assert.equal(freshRecipe.days_since_roast, 3, 'Should compute exactly 3 days since roast');
+assert.ok(freshRecipe.pours.some(p => p.time.includes('0:50') || p.label.toLowerCase().includes('extendido')), 'Fresh roast should extend bloom time to 50s for CO2 degassing');
+assert.ok(freshRecipe.physics_analysis?.degas_and_rest, 'Should include degassing analysis');
+assert.ok(freshRecipe.physics_analysis?.roast_and_density, 'Should include density analysis');
+assert.ok(freshRecipe.physics_analysis?.burr_and_fines, 'Should include burr analysis');
+console.log('✅ Fresh roast CO2 window passed. Bloom:', freshRecipe.pours[0].time, '| Analysis:', freshRecipe.physics_analysis.degas_and_rest);
+
+// 7. Test Multivariable: Frozen Batch in Cava (-18°C) + Fellow Ode Gen 2 (Flat Burrs)
+console.log('\nTest 7: Multivariable Frozen Batch in Cava + Fellow Ode Gen 2 (Flat Burrs)');
+const frozenOdeRecipe = computeOfflineRecipe({
+  origin: 'Colombia Cauca',
+  variety: 'Chiroso',
+  process: 'Lavado',
+  altitude: '1900m',
+  roast_level: 'Claro',
+  freeze_date: '2026-08-15',
+  grinder: 'ode_gen2',
+  method: 'V60 (Filtrado)',
+  dose_in_g: 18
+});
+
+assert.equal(frozenOdeRecipe.is_frozen, true, 'Should detect frozen batch');
+assert.equal(frozenOdeRecipe.active_grinder_dial.grinder_id, 'ode_gen2', 'Active grinder should be Ode Gen 2');
+assert.ok(frozenOdeRecipe.active_grinder_dial.burr_type.includes('Plana 64mm'), 'Should specify 64mm flat burrs');
+assert.ok(frozenOdeRecipe.grinders.ode_gen2.includes('Ajuste'), 'Should include Ode dial adjustment');
+assert.ok(frozenOdeRecipe.grinders.k_ultra, 'Should include K-Ultra dial');
+assert.ok(frozenOdeRecipe.grinders.kingrinder_k6, 'Should include Kingrinder K6 dial');
+console.log('✅ Frozen batch + Flat burrs passed. Active dial:', frozenOdeRecipe.active_grinder_dial.dial, '| Burr:', frozenOdeRecipe.active_grinder_dial.burr_type);
+
+// 8. Test Multivariable: 1Zpresso K-Ultra Active Grinder
+console.log('\nTest 8: Multivariable 1Zpresso K-Ultra Dial Resolution');
+const kUltraRecipe = computeOfflineRecipe({
+  origin: 'Etiopía Guji',
+  variety: 'Heirloom',
+  process: 'Natural',
+  altitude: '2050m',
+  roast_level: 'Claro',
+  grinder: 'k_ultra',
+  method: 'V60 (Filtrado)',
+  dose_in_g: 15
+});
+
+assert.equal(kUltraRecipe.active_grinder_dial.grinder_id, 'k_ultra');
+assert.ok(kUltraRecipe.grinders.k_ultra.match(/\d\.\d/), 'K-Ultra dial should be in decimal format (e.g. 7.2)');
+console.log('✅ K-Ultra active grinder test passed. Dial:', kUltraRecipe.active_grinder_dial.dial);
+
 console.log('\n🎉 ALL AI RELIABILITY & FALLBACK ENGINE TESTS PASSED!\n');

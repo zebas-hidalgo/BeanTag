@@ -126,4 +126,34 @@ assert.ok(data3.correction_reason, 'Should provide correction explanation');
 assert.ok(data3.temperature >= 93, 'Should adjust temperature');
 console.log('✅ Passed: Offline sensory tuning returned with 200 OK.\n');
 
+// Test 5: POST /api/recommend-recipe with full multivariable payload (Ode Gen 2, Frozen, SCA 90)
+console.log('Test 5: POST /api/recommend-recipe with Multivariable Payload (Ode Gen 2 + Frozen + SCA 90)');
+const resMulti = await mockRequest(app, 'POST', '/api/recommend-recipe', {}, {
+  batch_name: 'Geisha Reserva La Palma',
+  origin: 'Colombia Cundinamarca',
+  producer: 'La Palma & El Tucán',
+  variety: 'Geisha',
+  process: 'Láctico Anaeróbico',
+  altitude: '1740m',
+  roast_level: 'Claro',
+  roast_date: '2026-09-20',
+  freeze_date: '2026-09-22',
+  sca_score: 90.5,
+  method: 'V60 (Filtrado)',
+  dose_in_g: 15,
+  grinder: 'ode_gen2'
+});
+
+assert.equal(resMulti.status, 200);
+const dataMulti = resMulti.json();
+assert.equal(dataMulti.active_grinder_dial?.grinder_id, 'ode_gen2', 'Endpoint should identify active grinder ode_gen2');
+assert.ok(dataMulti.active_grinder_dial?.burr_type.includes('Plana 64mm'), 'Endpoint should specify flat burrs');
+assert.ok(dataMulti.physics_analysis?.degas_and_rest, 'Endpoint should return degassing physics');
+assert.ok(dataMulti.physics_analysis?.burr_and_fines, 'Endpoint should return burr physics');
+assert.equal(dataMulti.is_frozen, true, 'Endpoint should flag frozen batch');
+assert.ok(dataMulti.grinders?.ode_gen2, 'Endpoint should include Ode Gen 2 dial');
+assert.ok(dataMulti.grinders?.k_ultra, 'Endpoint should include K-Ultra dial');
+assert.ok(dataMulti.grinders?.kingrinder_k6, 'Endpoint should include Kingrinder K6 dial');
+console.log('✅ Passed: Multivariable endpoint test returned complete physics analysis and active grinder dial.\n');
+
 console.log('🎉 ALL END-TO-END AI ENDPOINT INTEGRATION TESTS PASSED!\n');

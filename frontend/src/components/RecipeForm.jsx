@@ -126,6 +126,7 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
     const model = localStorage.getItem('gemini-model') || 'gemini-3.6-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
+    const activeGrinder = localStorage.getItem('default-grinder') || 'jmax';
     setAiLoading(true); setAiError(''); setAiRecommendation(null);
     fetch(apiUrl('api/recommend-recipe'), {
       method: 'POST',
@@ -135,16 +136,31 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
         'x-gemini-model': model,
         'x-gemini-thinking': isThinking ? 'true' : 'false'
       },
-      body: JSON.stringify({ origin: batch.origin, variety: batch.variety, process: batch.process, altitude: batch.altitude, roast_level: batch.roast_level, roaster_notes: batch.roaster_notes, method: method, dose_in_g: doseInG })
+      body: JSON.stringify({
+        batch_name: batch?.name,
+        origin: batch?.origin,
+        producer: batch?.producer,
+        variety: batch?.variety,
+        process: batch?.process,
+        altitude: batch?.altitude,
+        roast_level: batch?.roast_level,
+        roaster_notes: batch?.roaster_notes,
+        roast_date: batch?.roast_date,
+        freeze_date: batch?.freeze_date,
+        sca_score: batch?.sca_score,
+        method: method,
+        dose_in_g: doseInG,
+        grinder: activeGrinder
+      })
     }).then(async (res) => {
       if (!res.ok) throw new Error((await res.json()).error || 'Error');
       return res.json();
     }).then(data => {
       setAiRecommendation(data);
       if (data._source === 'barista_fallback') {
-        if (showToast) showToast('Receta calibrada con motor Barista Offline', { type: 'info', duration: 3000 });
+        if (showToast) showToast('Receta calibrada con motor Barista Offline (Multivariable)', { type: 'info', duration: 3000 });
       } else {
-        if (showToast) showToast('¡Recomendación generada por la IA!', { type: 'success', duration: 2500 });
+        if (showToast) showToast('¡Recomendación multivariable generada por la IA!', { type: 'success', duration: 2500 });
       }
     }).catch(err => {
       setAiError(err.message);
@@ -160,6 +176,7 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
     }
     const model = localStorage.getItem('gemini-model') || 'gemini-3.6-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
+    const activeGrinder = localStorage.getItem('default-grinder') || 'jmax';
 
     setAiLoading(true); setAiError('');
     fetch(apiUrl('api/ai/tune-recipe'), {
@@ -174,7 +191,10 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
         method, dose_in_g: doseInG, ratio: `1:${ratioVal}`, temperature: waterTemp,
         jmax_rot: jmaxRot, jmax_num: jmaxNum, jmax_click: jmaxClick,
         sensory_extraction: sensoryExtraction, sensory_balance: sensoryBalance,
-        sensory_body: sensoryBody, user_notes: notes, batch_name: batch.name
+        sensory_body: sensoryBody, user_notes: notes, batch_name: batch?.name,
+        roast_level: batch?.roast_level, roast_date: batch?.roast_date,
+        freeze_date: batch?.freeze_date, sca_score: batch?.sca_score,
+        grinder: activeGrinder
       })
     }).then(async (res) => {
       if (!res.ok) throw new Error((await res.json()).error || 'Error recalibrando');
@@ -620,27 +640,94 @@ export default function RecipeForm({ batch, onSaveRecipe, showToast, setBatch, p
                 </div>
               </div>
 
-              {/* Sección Molienda y Molinos */}
-              <div style={{ background: 'var(--bg-canvas)', padding: '10px 12px', borderRadius: '6px', border: '1.5px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', color: 'var(--color-crimson)', fontFamily: 'var(--font-heading)' }}>
-                    ⚙️ Molienda: {aiRecommendation.grind_microns || aiRecommendation.grind || 'Medio-Fino'}
-                  </span>
-                  <span style={{ fontSize: '10px', fontWeight: 'bold', background: 'var(--color-crimson)', color: '#FFF', padding: '2px 6px', borderRadius: '4px' }}>
-                    J-Max: {aiRecommendation.jmax_rot !== undefined ? `${aiRecommendation.jmax_rot}.${aiRecommendation.jmax_num}.${aiRecommendation.jmax_click}` : (aiRecommendation.grinders?.jmax || '1.5.0')}
-                  </span>
+              {/* Análisis Físico Multivariable */}
+              {aiRecommendation.physics_analysis && (
+                <div style={{ background: 'var(--barista-bg-elevated, #F8FAFC)', border: '1px solid var(--barista-border-hairline, var(--border-color))', borderRadius: '8px', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ fontSize: '10.5px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--color-crimson)', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    <span>🔬</span> Análisis Físico Multivariable
+                    {aiRecommendation.is_frozen && <span style={{ fontSize: '9px', background: '#DBEAFE', color: '#1E40AF', padding: '1px 6px', borderRadius: '4px', fontWeight: '700' }}>❄️ Frozen Dosing (-18°C)</span>}
+                    {aiRecommendation.days_since_roast !== null && <span style={{ fontSize: '9px', background: '#FEF3C7', color: '#92400E', padding: '1px 6px', borderRadius: '4px', fontWeight: '700' }}>⏱️ Reposo: Día {aiRecommendation.days_since_roast}</span>}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '6px', fontSize: '10px', lineHeight: '1.35' }}>
+                    {aiRecommendation.physics_analysis.roast_and_density && (
+                      <div style={{ background: 'var(--bg-card)', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                        <strong style={{ color: 'var(--color-text)', display: 'block', fontSize: '9.5px' }}>🏔️ Densidad & Tueste:</strong>
+                        <span style={{ color: 'var(--color-text-muted)' }}>{aiRecommendation.physics_analysis.roast_and_density}</span>
+                      </div>
+                    )}
+                    {aiRecommendation.physics_analysis.degas_and_rest && (
+                      <div style={{ background: 'var(--bg-card)', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                        <strong style={{ color: 'var(--color-text)', display: 'block', fontSize: '9.5px' }}>⏳ Desgasificación (CO₂):</strong>
+                        <span style={{ color: 'var(--color-text-muted)' }}>{aiRecommendation.physics_analysis.degas_and_rest}</span>
+                      </div>
+                    )}
+                    {aiRecommendation.physics_analysis.burr_and_fines && (
+                      <div style={{ background: 'var(--bg-card)', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                        <strong style={{ color: 'var(--color-text)', display: 'block', fontSize: '9.5px' }}>⚙️ Muelas & Finos:</strong>
+                        <span style={{ color: 'var(--color-text-muted)' }}>{aiRecommendation.physics_analysis.burr_and_fines}</span>
+                      </div>
+                    )}
+                    {aiRecommendation.physics_analysis.extraction_strategy && (
+                      <div style={{ background: 'var(--bg-card)', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                        <strong style={{ color: 'var(--color-text)', display: 'block', fontSize: '9.5px' }}>🎯 Estrategia Hidrodinámica:</strong>
+                        <span style={{ color: 'var(--color-text-muted)' }}>{aiRecommendation.physics_analysis.extraction_strategy}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                {aiRecommendation.grind_adjustment_reason && (
-                  <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--color-text-muted)', fontStyle: 'italic', marginTop: '2px' }}>
-                    💡 Calibración J-Max: {aiRecommendation.grind_adjustment_reason}
+              )}
+
+              {/* Sección Molienda y Molinos */}
+              <div style={{ background: 'var(--bg-canvas)', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {aiRecommendation.active_grinder_dial ? (
+                  <div style={{ background: 'var(--bg-header)', border: '1.5px solid var(--color-crimson)', borderRadius: '8px', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: '800', color: 'var(--color-crimson)' }}>
+                        Tu Molino: {aiRecommendation.active_grinder_dial.grinder_name}
+                      </div>
+                      <div style={{ fontSize: '13px', fontWeight: '900', fontFamily: 'var(--font-mono)', color: 'var(--color-text)', marginTop: '1px' }}>
+                        {aiRecommendation.active_grinder_dial.dial}
+                      </div>
+                      <div style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>
+                        {aiRecommendation.active_grinder_dial.burr_type} • {aiRecommendation.active_grinder_dial.microns}
+                      </div>
+                    </div>
+                    <span style={{ fontSize: '11px', fontWeight: 'bold', background: 'var(--color-crimson)', color: '#FFF', padding: '4px 8px', borderRadius: '6px', fontFamily: 'var(--font-mono)' }}>
+                      Calibrado ✅
+                    </span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', color: 'var(--color-crimson)', fontFamily: 'var(--font-heading)' }}>
+                      ⚙️ Molienda: {aiRecommendation.grind_microns || aiRecommendation.grind || 'Medio-Fino'}
+                    </span>
+                    <span style={{ fontSize: '10px', fontWeight: 'bold', background: 'var(--color-crimson)', color: '#FFF', padding: '2px 6px', borderRadius: '4px' }}>
+                      J-Max: {aiRecommendation.jmax_rot !== undefined ? `${aiRecommendation.jmax_rot}.${aiRecommendation.jmax_num}.${aiRecommendation.jmax_click}` : (aiRecommendation.grinders?.jmax || '1.5.0')}
+                    </span>
                   </div>
                 )}
+
+                {aiRecommendation.grind_adjustment_reason && (
+                  <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
+                    💡 Razón de Ajuste: {aiRecommendation.grind_adjustment_reason}
+                  </div>
+                )}
+
                 {aiRecommendation.grinders && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', fontSize: '9.5px', marginTop: '4px', borderTop: '1px dashed var(--border-color)', paddingTop: '4px' }}>
-                    <div><strong>Femobook A2:</strong> {aiRecommendation.grinders.femobook_a2 || '60 clics (1.5 Rot.)'}</div>
-                    <div><strong>Comandante C40:</strong> {aiRecommendation.grinders.comandante || '22 clics'}</div>
-                    <div><strong>Timemore C2/C3:</strong> {aiRecommendation.grinders.timemore || '16 clics'}</div>
-                    <div><strong>Baratza Encore:</strong> {aiRecommendation.grinders.baratza || 'Ajuste 14'}</div>
+                  <div>
+                    <div style={{ fontSize: '9.5px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
+                      Matriz Multimolino Equivalente:
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px', fontSize: '9.5px', borderTop: '1px dashed var(--border-color)', paddingTop: '6px' }}>
+                      {aiRecommendation.grinders.jmax && <div><strong>J-Max:</strong> {String(aiRecommendation.grinders.jmax).split('(')[0]}</div>}
+                      {aiRecommendation.grinders.k_ultra && <div><strong>K-Ultra:</strong> {aiRecommendation.grinders.k_ultra}</div>}
+                      {aiRecommendation.grinders.ode_gen2 && <div><strong>Fellow Ode:</strong> {aiRecommendation.grinders.ode_gen2}</div>}
+                      {aiRecommendation.grinders.comandante && <div><strong>Comandante:</strong> {aiRecommendation.grinders.comandante}</div>}
+                      {aiRecommendation.grinders.femobook_a2 && <div><strong>Femobook:</strong> {aiRecommendation.grinders.femobook_a2}</div>}
+                      {aiRecommendation.grinders.kingrinder_k6 && <div><strong>Kingrinder:</strong> {aiRecommendation.grinders.kingrinder_k6}</div>}
+                      {aiRecommendation.grinders.timemore && <div><strong>Timemore:</strong> {aiRecommendation.grinders.timemore}</div>}
+                      {aiRecommendation.grinders.baratza && <div><strong>Baratza:</strong> {aiRecommendation.grinders.baratza}</div>}
+                    </div>
                   </div>
                 )}
               </div>

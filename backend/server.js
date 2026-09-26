@@ -12,6 +12,8 @@ const {
   sanitizeModel,
   clicksToJMax,
   jMaxToClicks,
+  calculateDaysSinceRoast,
+  isFrozenBatch,
   computeOfflineRecipe,
   computeOfflineTuning,
   callGeminiWithRetry
@@ -685,91 +687,136 @@ app.post('/api/test-gemini', async (req, res) => {
   }
 });
 
-// 1. AI Recommendation Endpoint (Gemini 2.0 Flash + Offline Barista Engine Fallback)
+// 1. AI Recommendation Endpoint (Gemini Flash + Offline Barista Engine Fallback)
 app.post('/api/recommend-recipe', async (req, res) => {
   const { apiKey, model, enableThinking } = getGeminiConfig(req);
-  const { origin, variety, process, altitude, roast_level, roaster_notes, method, dose_in_g } = req.body;
+  const {
+    origin,
+    variety,
+    process,
+    altitude,
+    roast_level,
+    roaster_notes,
+    method,
+    dose_in_g,
+    roast_date,
+    freeze_date,
+    sca_score,
+    producer,
+    batch_name,
+    grinder
+  } = req.body;
+
   const dose = parseFloat(dose_in_g) || 20.0;
   const targetMethod = method || 'V60 (Filtrado)';
+  const daysSinceRoast = calculateDaysSinceRoast(roast_date);
+  const isFrozen = isFrozenBatch({ freeze_date });
+  const activeGrinder = (grinder || 'jmax').toLowerCase();
 
   // If no API key is provided, gracefully serve the offline barista calculation
   if (!apiKey) {
-    const offlineRec = computeOfflineRecipe({ origin, variety, process, altitude, roast_level, roaster_notes, method: targetMethod, dose_in_g: dose });
+    const offlineRec = computeOfflineRecipe({
+      origin,
+      variety,
+      process,
+      altitude,
+      roast_level,
+      roaster_notes,
+      method: targetMethod,
+      dose_in_g: dose,
+      roast_date,
+      freeze_date,
+      sca_score,
+      producer,
+      grinder: activeGrinder
+    });
     offlineRec.notes = `${offlineRec.notes} (Modo Barista Offline - Configura tu API Key en Ajustes para activar Gemini)`;
     return res.json(offlineRec);
   }
 
-  const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad y experto en física de molienda e hidrodinámica de extracción.
-Analiza meticulosamente este lote de café de especialidad:
-- Origen: ${origin || 'Desconocido'}
-- Variedad: ${variety || 'N/A'}
-- Proceso: ${process || 'N/A'}
-- Altitud: ${altitude || 'N/A'}
-- Tueste: ${roast_level || 'Medio'}
-- Notas del Tostador: ${roaster_notes || 'N/A'}
+  const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad y Doctor en Física de Fluidos y Extracción de Café.
+Analiza con máximo rigor científico y multivariable este lote de café y su equipo de molienda:
 
-El usuario desea preparar este café con el método: "${targetMethod}" y una dosis de entrada de: "${dose}g".
+PARÁMETROS DEL CAFÉ:
+- Nombre / Lote: ${batch_name || 'Café de Especialidad'}
+- Origen / Terroir: ${origin || 'Desconocido'}
+- Productor / Finca: ${producer || 'No especificado'}
+- Variedad Genética: ${variety || 'Arábica'}
+- Proceso de Beneficio: ${process || 'Lavado'}
+- Altitud de Cultivo: ${altitude || '1500m'}
+- Nivel de Tueste: ${roast_level || 'Medio'}
+- Fecha de Tueste: ${roast_date || 'No especificada'} (${daysSinceRoast !== null ? `${daysSinceRoast} días desde tueste` : 'Reposo estándar óptimo'})
+- Conservación Criogénica: ${isFrozen ? '❄️ Sí, congelado en Cava a -18°C (Frozen Bean Dosing)' : 'Temperatura ambiente'}
+- Calificación SCA: ${sca_score ? `${sca_score} puntos` : 'Especialidad'}
+- Notas Sensoriales del Tostador: ${roaster_notes || 'Notas de origen'}
 
-REGLAS MECÁNICAS Y CAPACIDADES SEGÚN MÉTODO:
-1. V60 / Filtrado Cónico:
-   - Ratios: 1:15 a 1:17 (ej. 1:16.6 para tuestes claros, lavados o variedades florales/frutales; 1:15 a 1:15.5 para tuestes medios o procesos naturales/anaeróbicos; 1:14 a 1:14.5 para tuestes oscuros).
-   - Temperatura: 94°C-96°C (tuestes claros y granos de altura >1700m); 91°C-93°C (tuestes medios); 88°C-90°C (tuestes oscuros); 90°C-92°C (procesos anaeróbicos/fermentados).
-   - Molienda J-Max: 2.2.5 a 2.6.5 (~1800-2200 µm). Base habitual: 2.4.5.
-   - Vertidos: 3 o 4 etapas calculadas (Bloom de 40-45s con agua = dosis * 3, seguido de pulsos progresivos continuos).
-2. AeroPress Go:
-   - ⚠️ ATENCIÓN: Cámara compacta con capacidad máxima de ~220 ml de agua.
-   - Dosis recomendada: 11g a 15g. (Si la dosis ingresada supera 15g, adapta el ratio para no exceder 210g de agua en cámara o formula un concentrado con bypass).
-   - Ratios: 1:13.5 a 1:14.5 (Agua total: 160g a 210g máx).
-   - Temperatura: 88°C a 92°C.
-   - Molienda J-Max: 1.7.0 a 1.9.5 (~1500-1700 µm). Base habitual: 1.8.5.
-   - Tiempo de extracción: 1:30 a 2:00 min. Prensado suave durante 30s.
-3. AeroPress Estándar:
-   - Cámara de 260ml. Ratios 1:13 a 1:15. Temp 88°C-92°C. Molienda J-Max 1.8.0 a 2.1.0.
-4. NextLevel Pulsar Mini:
-   - No-bypass. Ratio 1:15.5 a 1:17. Molienda J-Max 2.2.0 a 2.4.0 (~1750-1950 µm).
-   - Válvula: "🔒 Válvula cerrada" (bloom con dispersor y agitación suave), "⚡ Válvula 50%" (vertido 1), "🔓 Válvula 100%" (drenaje libre).
-5. Espresso:
-   - Ratios: 1:2.0 a 1:2.5 (1:2.4 para tuestes claros de alta altitud; 1:2.2 para tuestes medios; 1:2.0 para tuestes oscuros).
-   - Temperatura: 91°C a 94°C. Tiempo: 25s - 32s.
-   - Molienda J-Max: 1.2.0 a 1.4.5 (~850-1160 µm). Base habitual: 1.3.5.
-6. Prensa Francesa:
-   - Inmersión total. Ratio 1:14 a 1:15. Molienda gruesa J-Max 3.0.0 a 3.5.0 (~2400-2800 µm). Tiempo 4:00 min.
+EQUIPO Y MÉTODO:
+- Método de Extracción: "${targetMethod}"
+- Dosis de Café (In): "${dose}g"
+- Molino Principal del Barista: "${activeGrinder}"
 
-AJUSTES CIENTÍFICOS OBLIGATORIOS SEGÚN EL CAFÉ:
-- Tueste Claro: Restar 3 a 5 clics en J-Max (más fino) y subir temperatura (+1°C a +3°C) para aumentar rendimiento de extracción en granos densos.
-- Tueste Oscuro: Sumar 4 a 6 clics en J-Max (más grueso) y bajar temperatura (88°C-90°C) para prevenir sobre-extracción amarga.
-- Proceso Natural / Anaeróbico / Maceración: Sumar 2 a 4 clics en J-Max para compensar la alta producción de finos y evitar atascos.
-- Altitud >1600m: Grano denso (SHB), restar 2 clics (más fino).
+FÍSICA DE EXTRACCIÓN Y REGLAS CIENTÍFICAS OBLIGATORIAS:
+1. DESGASIFICACIÓN Y DÍAS DE REPOSO (CINÉTICA DE CO₂):
+   - Si tiene menos de 7 días de tueste (<7d): El grano está sobresaturado de CO₂ presurizado. DEBES extender el Bloom a 45-60s y/o usar 3.2x a 3.5x de agua en el bloom para evitar que el burbujeo violento genere canalizaciones ("volcano effect") y zonas secas. Abre la molienda 1 a 2 clics para evitar atascos.
+   - Entre 12 y 30 días: Pico aromático ("Peak Flavor Window"). Solubilidad y desgasificación equilibradas.
+   - Más de 45 días: Grano desgasificado. Para compensar la pérdida de presión aromática y volatilidad, ajusta el ratio levemente más corto (ej. 1:15 en vez de 1:16.6) y afina 1 clic la molienda.
+2. DOSIS CONGELADA EN CAVA (-18°C):
+   - Al moler el grano a -18°C, la matriz celular se fractura de forma frágil y más uniforme (curva unimodal con significativa reducción de finos erráticos). Permite moler 1 a 2 clics más fino sin riesgo de sobre-extracción amarga, logrando mayor TDS y claridad de taza.
+3. GEOMETRÍA DE MUELAS (PLANAS VS. CÓNICAS):
+   - Muelas Planas (ej. Fellow Ode Gen 2, DF64, EK43): Molienda unimodal de alta uniformidad y finos mínimos. Destaca acidez cítrica brillante, dulzor limpio y separación aromática. Tolera moliendas más cerradas.
+   - Muelas Cónicas (ej. 1Zpresso J-Max/K-Ultra, Comandante C40, Femobook A2, Timemore C2/C3, Kingrinder K6): Molienda bimodal con pico secundario de finos. Aporta cuerpo untuoso, textura aterciopelada y notas chocolatadas/caramelo. Requiere cuidar el número de vertidos para no compactar el lecho.
+4. CALIDAD SCA Y GENÉTICAS FLORALES:
+   - Cafés SCA >= 88 o variedades delicadas (Geisha, Chiroso, Pink Bourbon, Sidra, Eugenioides, Wush Wush): No usar agitación violenta ni temperaturas extremas (>96°C) que degraden los terpenos y ésteres volátiles. Vertidos laminares suaves desde baja altura.
+5. LIMITACIONES FÍSICAS DE DISPOSITIVOS:
+   - AeroPress Go: Capacidad máxima de la cámara = ~215ml de agua. Si dosis * ratio > 215g, limita el agua total a 205-210g o formula método concentrado.
+   - NextLevel Pulsar Mini: Gestionar válvula (🔒 cerrada para bloom con dispersor, ⚡ media 50%, 🔓 abierta para drenaje por gravedad).
+   - Espresso: Molienda fina de alta precisión (850-1150 µm), 25-32 segundos, ratio 1:2.0 a 1:2.4.
 
-Genera un JSON válido con esta estructura exacta (DEBES CALCULAR Y ADAPTAR CADA CAMPO DINÁMICAMENTE al café específico, NUNCA devuelvas valores fijos ni genéricos):
+Genera un JSON con esta estructura exacta (calcula y calibra cada campo rigurosamente según este lote específico):
 {
   "method": "${targetMethod}",
-  "ratio": "1:X (calculado según el café y método)",
-  "water_total_g": 0, // Número entero exacto: Math.round(dosis * ratio)
-  "grind": "Descripción granulométrica y dial J-Max resultante (ej. 'Medio-Fino (2.3.8)')",
+  "ratio": "1:X (calculado según el café, reposo y método)",
+  "water_total_g": 0, // Entero exacto: Math.round(dosis * ratio)
+  "grind": "Descripción granulométrica y dial para ${activeGrinder} (ej. 'Medio-Fino (2.3.8)')",
   "grind_microns": "Micrones estimados (ej. '1920 µm')",
-  "grind_adjustment_reason": "Explicación física concisa de por qué se eligió esta molienda y temp según el tueste, proceso y altitud del grano (máx 25 palabras)",
-  "jmax_rot": 0, // Entero de 0 a 3 (número de rotaciones)
-  "jmax_num": 0, // Entero de 0 a 8 (número principal en el dial)
-  "jmax_click": 0, // Entero de 0 a 9 (clic intermedio)
+  "grind_adjustment_reason": "Explicación física concisa de la calibración según tueste, días de reposo, congelación y muelas (máx 25 palabras)",
+  "jmax_rot": 0, // Entero de 0 a 3
+  "jmax_num": 0, // Entero de 0 a 8
+  "jmax_click": 0, // Entero de 0 a 9
   "grinders": {
     "jmax": "Formato Rot.Num.Clic (ej. '2.3.8 (2 Rot. 3 Núm. 8 Clics)')",
-    "femobook_a2": "Clics Femobook (18 µm/clic, ej. '56 clics (1.4 Rot.)')",
+    "k_ultra": "Dial 0-9 con decimal (20 µm/clic, ej. '7.2 (72 clics)')",
+    "ode_gen2": "Dial Fellow Ode 1-11 con subdivisiones (ej. 'Ajuste 5.1' o 'No apto para espresso')",
     "comandante": "Clics Comandante C40 (30 µm/clic, ej. '22 clics')",
+    "femobook_a2": "Clics Femobook A2 (18 µm/clic, ej. '56 clics (1.4 Rot.)')",
+    "kingrinder_k6": "Clics Kingrinder K6 (16 µm/clic, ej. '95 clics (1 Rot. 35 Clics)')",
     "timemore": "Clics Timemore C2/C3 (ej. '16 clics')",
-    "baratza": "Ajuste Baratza Encore (ej. 'Ajuste 14')"
+    "baratza": "Ajuste Baratza Encore/ESP (ej. 'Ajuste 14')"
   },
-  "temperature": 0, // Entero en °C (entre 87 y 96) calculado específicamente para este café
+  "active_grinder_dial": {
+    "grinder_id": "${activeGrinder}",
+    "grinder_name": "Nombre comercial del molino",
+    "dial": "Ajuste exacto recomendado para este molino",
+    "burr_type": "Geometría de muelas (Planas / Cónicas) y tamaño",
+    "microns": "Micrones objetivo"
+  },
+  "physics_analysis": {
+    "roast_and_density": "Análisis de densidad celular según altitud y desarrollo de tueste",
+    "degas_and_rest": "Diagnóstico de desgasificación de CO₂ y estado de reposo / congelación",
+    "burr_and_fines": "Comportamiento de finos y flujo hidrodinámico según el molino activo",
+    "extraction_strategy": "Fundamento científico de la estrategia de vertidos y temperatura"
+  },
+  "temperature": 0, // Entero en °C (entre 87 y 96)
   "brew_time": "Tiempo total estimado (ej. '2:45 min', '1:45 min', '28s')",
   "pours": [
     // Array con las fases reales de vertido.
-    // Para cada paso incluye: "step" (número 1..N), "label" (nombre de etapa), "water_g" (gramos de agua vertidos en esta fase), "total_water_g" (agua total acumulada en báscula), "time" (ej. '0:00 - 0:45'), "description" (técnica de vertido o válvula).
-    // REGLA MATEMÁTICA CRÍTICA: La suma de todos los "water_g" DEBE ser igual a "water_total_g", y el "total_water_g" del último paso DEBE ser exactamente "water_total_g".
+    // Incluye: "step", "label", "water_g", "total_water_g", "time", "description" (técnica de vertido o estado de válvula).
+    // Suma de water_g = water_total_g y total_water_g del último paso = water_total_g.
   ],
   "steps": [
     // 3 a 5 pasos concretos para preparar este lote con este método y molienda
   ],
-  "notes": "Perfil en taza esperado conectando el origen (${origin}), proceso (${process}), tueste (${roast_level}) y notas del tostador (${roaster_notes || 'notas de especialidad'})"
+  "notes": "Perfil sensorial esperado conectando origen, proceso, tueste y notas del tostador"
 }`;
 
   try {
@@ -777,7 +824,21 @@ Genera un JSON válido con esta estructura exacta (DEBES CALCULAR Y ADAPTAR CADA
     res.json(recommendation);
   } catch (err) {
     console.warn(`[AI Recommend Fallback] Error with Gemini (${model}): ${err.message}. Serving deterministic barista recipe.`);
-    const fallbackRec = computeOfflineRecipe({ origin, variety, process, altitude, roast_level, roaster_notes, method: targetMethod, dose_in_g: dose });
+    const fallbackRec = computeOfflineRecipe({
+      origin,
+      variety,
+      process,
+      altitude,
+      roast_level,
+      roaster_notes,
+      method: targetMethod,
+      dose_in_g: dose,
+      roast_date,
+      freeze_date,
+      sca_score,
+      producer,
+      grinder: activeGrinder
+    });
     fallbackRec._error = err.message;
     fallbackRec.notes = `${fallbackRec.notes} (Receta calculada localmente: servidores de Google no disponibles o saturados)`;
     res.json(fallbackRec);
@@ -787,18 +848,33 @@ Genera un JSON válido con esta estructura exacta (DEBES CALCULAR Y ADAPTAR CADA
 // 2. AI Recipe Re-calibration Endpoint (Smart Tuning based on Sensory Feedback)
 app.post('/api/ai/tune-recipe', async (req, res) => {
   const { apiKey, model, enableThinking } = getGeminiConfig(req);
-  const { method, dose_in_g, ratio, temperature, jmax_rot, jmax_num, jmax_click, sensory_extraction, sensory_balance, sensory_body, user_notes, batch_name } = req.body;
+  const {
+    method,
+    dose_in_g,
+    ratio,
+    temperature,
+    jmax_rot,
+    jmax_num,
+    jmax_click,
+    sensory_extraction,
+    sensory_balance,
+    sensory_body,
+    user_notes,
+    batch_name,
+    grinder
+  } = req.body;
   const dose = parseFloat(dose_in_g) || 20.0;
+  const activeGrinder = (grinder || 'jmax').toLowerCase();
 
   // If no API key is provided, serve offline barista tuning calculation directly
   if (!apiKey) {
-    const offlineTune = computeOfflineTuning(req.body);
+    const offlineTune = computeOfflineTuning({ ...req.body, grinder: activeGrinder });
     offlineTune.notes = `${offlineTune.notes} (Modo Barista Offline - Configura tu API Key en Ajustes)`;
     return res.json(offlineTune);
   }
 
   const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad. El usuario preparó una receta de "${batch_name || 'Especialidad'}" con ${method}:
-Dosis: ${dose}g, Ratio: ${ratio || '1:15'}, Temp: ${temperature || 93}°C, Molino J-Max actual: ${jmax_rot}.${jmax_num}.${jmax_click}.
+Dosis: ${dose}g, Ratio: ${ratio || '1:15'}, Temp: ${temperature || 93}°C, Molino J-Max actual: ${jmax_rot}.${jmax_num}.${jmax_click}, Molino preferido: ${activeGrinder}.
 
 Resultado Sensorial Evaluado por el Catador:
 - Extracción: ${sensory_extraction || 'Sub (Agrio)'}
@@ -808,11 +884,11 @@ Resultado Sensorial Evaluado por el Catador:
 
 REGLAS DE RECALIBRACIÓN CIENTÍFICA:
 1. Si hubo SUB-EXTRACCIÓN (agrio, salado, falto de dulzor):
-   - Afinar molienda (restar 3 a 6 clics en J-Max).
+   - Afinar molienda (restar 3 a 6 clics en J-Max / ajustar proporcional en ${activeGrinder}).
    - Subir temperatura (+1°C a +2°C, máx 96°C).
    - Alargar tiempo de contacto o aumentar ligeramente el ratio.
 2. Si hubo SOBRE-EXTRACCIÓN (amargo, astringente, seco, cenizo):
-   - Abrir molienda (sumar 4 a 7 clics en J-Max).
+   - Abrir molienda (sumar 4 a 7 clics en J-Max / ajustar proporcional en ${activeGrinder}).
    - Reducir temperatura (-1°C a -3°C, mín 88°C).
    - Agitación más suave en los vertidos.
 3. Si la extracción estuvo EN PUNTO / BALANCEADA:
@@ -824,17 +900,25 @@ Genera un JSON con esta estructura exacta (calcula valores específicos para cor
   "method": "${method}",
   "ratio": "1:X (ratio corregido)",
   "water_total_g": 0, // Entero exacto: Math.round(dosis * ratio)
-  "grind": "Descripción granulometría corregida y dial J-Max",
+  "grind": "Descripción granulometría corregida y dial ${activeGrinder}",
   "grind_microns": "Micrones estimados",
   "jmax_rot": 0, // Entero rotaciones corregido
   "jmax_num": 0, // Entero número corregido
   "jmax_click": 0, // Entero clic corregido
   "grinders": {
     "jmax": "Formato Rot.Num.Clic",
+    "k_ultra": "Dial K-Ultra",
+    "ode_gen2": "Dial Ode Gen 2",
     "femobook_a2": "Clics Femobook",
     "comandante": "Clics Comandante",
+    "kingrinder_k6": "Clics Kingrinder",
     "timemore": "Clics Timemore",
     "baratza": "Ajuste Baratza"
+  },
+  "active_grinder_dial": {
+    "grinder_id": "${activeGrinder}",
+    "grinder_name": "Nombre del molino",
+    "dial": "Ajuste corregido para este molino"
   },
   "temperature": 0, // Temperatura corregida en °C
   "brew_time": "Tiempo corregido",
@@ -853,7 +937,7 @@ Genera un JSON con esta estructura exacta (calcula valores específicos para cor
     res.json(tunedRecommendation);
   } catch (err) {
     console.warn(`[AI Tune Fallback] Error with Gemini (${model}): ${err.message}. Serving deterministic barista tuning.`);
-    const fallbackTune = computeOfflineTuning(req.body);
+    const fallbackTune = computeOfflineTuning({ ...req.body, grinder: activeGrinder });
     fallbackTune._error = err.message;
     fallbackTune.notes = `${fallbackTune.notes} (Recalibración calculada localmente: servidores de Google no disponibles o saturados)`;
     res.json(fallbackTune);

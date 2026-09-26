@@ -281,14 +281,20 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         'x-gemini-thinking': isThinking ? 'true' : 'false'
       },
       body: JSON.stringify({
+        batch_name: batch.name,
         origin: batch.origin,
+        producer: batch.producer,
         variety: batch.variety,
         process: batch.process,
         altitude: batch.altitude,
         roast_level: batch.roast_level,
         roaster_notes: batch.roaster_notes,
+        roast_date: batch.roast_date,
+        freeze_date: batch.freeze_date,
+        sca_score: batch.sca_score,
         method: method,
-        dose_in_g: doseInG
+        dose_in_g: doseInG,
+        grinder: grinderType || localStorage.getItem('default-grinder') || 'jmax'
       })
     })
     .then(async (res) => {
@@ -301,9 +307,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     .then(data => {
       setAiRecommendation(data);
       if (data._source === 'barista_fallback') {
-        if (showToast) showToast('Receta calibrada con motor Barista Offline', { type: 'info', duration: 3000 });
+        if (showToast) showToast('Receta calibrada con motor Barista Offline (Multivariable)', { type: 'info', duration: 3000 });
       } else {
-        if (showToast) showToast('¡Recomendación generada por la IA!', { type: 'success', duration: 2500 });
+        if (showToast) showToast('¡Recomendación multivariable generada por la IA!', { type: 'success', duration: 2500 });
       }
     })
     .catch(err => {
@@ -1076,6 +1082,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               {aiRecommendation ? (
                 <div style={{ marginTop: '12px', padding: '12px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {/* Badges de Parámetros Clave */}
+                  {/* Badges de Parámetros Clave */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', textAlign: 'center' }}>
                     <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                       <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>Ratio / Agua</div>
@@ -1091,13 +1098,23 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     </div>
                   </div>
 
-                  {/* Sub-pestañas para organizar Vertidos, Molinos y Pasos */}
-                  <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginTop: '4px' }}>
+                  {/* Chips resumen multivariable */}
+                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', fontSize: '9.5px' }}>
+                    {aiRecommendation.is_frozen && <span style={{ background: '#DBEAFE', color: '#1E40AF', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>❄️ Frozen Dosing (-18°C)</span>}
+                    {aiRecommendation.days_since_roast !== null && <span style={{ background: '#FEF3C7', color: '#92400E', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>⏱️ Reposo: Día {aiRecommendation.days_since_roast}</span>}
+                    {aiRecommendation.active_grinder_dial && <span style={{ background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: '800' }}>⚙️ {aiRecommendation.active_grinder_dial.grinder_name}: {aiRecommendation.active_grinder_dial.dial}</span>}
+                  </div>
+
+                  {/* Sub-pestañas para organizar Vertidos, Molinos, Física y Pasos */}
+                  <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
                     <button type="button" className={`filter-chip ${aiSubTab === 'pours' ? 'active' : ''}`} onClick={() => setAiSubTab('pours')} style={{ padding: '4px 10px', fontSize: '10.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Droplet size={12} /> Vertidos
                     </button>
                     <button type="button" className={`filter-chip ${aiSubTab === 'grinders' ? 'active' : ''}`} onClick={() => setAiSubTab('grinders')} style={{ padding: '4px 10px', fontSize: '10.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Settings2 size={12} /> Molinos
+                    </button>
+                    <button type="button" className={`filter-chip ${aiSubTab === 'physics' ? 'active' : ''}`} onClick={() => setAiSubTab('physics')} style={{ padding: '4px 10px', fontSize: '10.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Sparkles size={12} /> Física
                     </button>
                     <button type="button" className={`filter-chip ${aiSubTab === 'steps' ? 'active' : ''}`} onClick={() => setAiSubTab('steps')} style={{ padding: '4px 10px', fontSize: '10.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <ListOrdered size={12} /> Pasos
@@ -1158,29 +1175,70 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   {/* Sub-Contenido: Molinos */}
                   {aiSubTab === 'grinders' && (
                     <div style={{ fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px' }}>
-                        <div style={{ padding: '6px 8px', background: 'var(--bg-header)', borderRadius: '6px' }}>
-                          <strong style={{ color: 'var(--barista-accent-honey, var(--color-crimson))', display: 'block', fontSize: '11px' }}>1Zpresso J-Max:</strong>
-                          <span style={{ fontSize: '12px', fontWeight: 'bold' }}>
-                            {aiRecommendation.jmax_rot !== undefined ? `${aiRecommendation.jmax_rot}.${aiRecommendation.jmax_num}.${aiRecommendation.jmax_click}` : (aiRecommendation.grinders?.jmax || '1.3.5')}
+                      {aiRecommendation.active_grinder_dial && (
+                        <div style={{ background: 'var(--bg-header)', border: '1.5px solid var(--color-crimson)', borderRadius: '6px', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <div style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: '800', color: 'var(--color-crimson)' }}>
+                              Tu Molino: {aiRecommendation.active_grinder_dial.grinder_name}
+                            </div>
+                            <div style={{ fontSize: '13px', fontWeight: '900', fontFamily: 'var(--font-mono)', color: 'var(--color-text)' }}>
+                              {aiRecommendation.active_grinder_dial.dial}
+                            </div>
+                            <div style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>
+                              {aiRecommendation.active_grinder_dial.burr_type} • {aiRecommendation.active_grinder_dial.microns}
+                            </div>
+                          </div>
+                          <span style={{ fontSize: '11px', fontWeight: 'bold', background: 'var(--color-crimson)', color: '#FFF', padding: '3px 8px', borderRadius: '4px' }}>
+                            Calibrado ✅
                           </span>
-                          <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>8.8 µm/clic • 90 c/rot</div>
                         </div>
-
-                        <div style={{ padding: '6px 8px', background: 'var(--bg-header)', borderRadius: '6px' }}>
-                          <strong style={{ color: 'var(--barista-accent-honey, var(--color-crimson))', display: 'block', fontSize: '11px' }}>Femobook A2:</strong>
-                          <span style={{ fontSize: '12px', fontWeight: 'bold' }}>
-                            {aiRecommendation.grinders?.femobook_a2 || '60 clics (1.5 Rot.)'}
-                          </span>
-                          <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>18 µm/clic • 40 c/rot</div>
-                        </div>
-                      </div>
+                      )}
 
                       {aiRecommendation.grinders && (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '6px', marginTop: '2px', paddingTop: '6px', borderTop: '1px dashed var(--border-color)', fontSize: '9.5px', wordBreak: 'break-word' }}>
-                          <div><strong>Comandante:</strong><br/>{aiRecommendation.grinders.comandante}</div>
-                          <div><strong>Timemore:</strong><br/>{aiRecommendation.grinders.timemore}</div>
-                          <div><strong>Baratza:</strong><br/>{aiRecommendation.grinders.baratza}</div>
+                        <div>
+                          <div style={{ fontSize: '9.5px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
+                            Matriz Multimolino Completa:
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px', fontSize: '9.5px', borderTop: '1px dashed var(--border-color)', paddingTop: '6px' }}>
+                            {aiRecommendation.grinders.jmax && <div><strong>J-Max:</strong> {String(aiRecommendation.grinders.jmax).split('(')[0]}</div>}
+                            {aiRecommendation.grinders.k_ultra && <div><strong>K-Ultra:</strong> {aiRecommendation.grinders.k_ultra}</div>}
+                            {aiRecommendation.grinders.ode_gen2 && <div><strong>Fellow Ode:</strong> {aiRecommendation.grinders.ode_gen2}</div>}
+                            {aiRecommendation.grinders.comandante && <div><strong>Comandante:</strong> {aiRecommendation.grinders.comandante}</div>}
+                            {aiRecommendation.grinders.femobook_a2 && <div><strong>Femobook:</strong> {aiRecommendation.grinders.femobook_a2}</div>}
+                            {aiRecommendation.grinders.kingrinder_k6 && <div><strong>Kingrinder:</strong> {aiRecommendation.grinders.kingrinder_k6}</div>}
+                            {aiRecommendation.grinders.timemore && <div><strong>Timemore:</strong> {aiRecommendation.grinders.timemore}</div>}
+                            {aiRecommendation.grinders.baratza && <div><strong>Baratza:</strong> {aiRecommendation.grinders.baratza}</div>}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Sub-Contenido: Física */}
+                  {aiSubTab === 'physics' && aiRecommendation.physics_analysis && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '6px', fontSize: '10.5px' }}>
+                      {aiRecommendation.physics_analysis.roast_and_density && (
+                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '10px' }}>🏔️ Densidad & Tueste:</strong>
+                          <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.roast_and_density}</span>
+                        </div>
+                      )}
+                      {aiRecommendation.physics_analysis.degas_and_rest && (
+                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '10px' }}>⏳ Desgasificación (CO₂):</strong>
+                          <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.degas_and_rest}</span>
+                        </div>
+                      )}
+                      {aiRecommendation.physics_analysis.burr_and_fines && (
+                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '10px' }}>⚙️ Muelas & Finos:</strong>
+                          <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.burr_and_fines}</span>
+                        </div>
+                      )}
+                      {aiRecommendation.physics_analysis.extraction_strategy && (
+                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '10px' }}>🎯 Estrategia Hidrodinámica:</strong>
+                          <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.extraction_strategy}</span>
                         </div>
                       )}
                     </div>
