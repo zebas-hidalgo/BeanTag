@@ -54,6 +54,9 @@ async function initDb() {
   try {
     await db.exec('ALTER TABLE batches ADD COLUMN remaining_weight_g REAL DEFAULT 0;');
   } catch (e) {}
+  try {
+    await db.exec('ALTER TABLE batches ADD COLUMN sca_score REAL;');
+  } catch (e) {}
 
   // Create recipes table
   await db.exec(`

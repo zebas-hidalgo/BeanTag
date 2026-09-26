@@ -847,11 +847,30 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
       {/* Hero Ficha del Café */}
       <div className="candy-card static" style={{ marginBottom: '16px', padding: '18px', backgroundColor: 'var(--bg-card)', width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
-        <div style={{ marginBottom: '6px' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 4px 0', textTransform: 'uppercase', fontSize: '19px', lineHeight: 1.2 }}>{batch.name}</h2>
-          <div style={{ fontSize: '11.5px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
-            {batch.roaster || 'Tostador Especialidad'}
+        <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <h2 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 4px 0', textTransform: 'uppercase', fontSize: '19px', lineHeight: 1.2 }}>{batch.name}</h2>
+            <div style={{ fontSize: '11.5px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
+              {batch.roaster || 'Tostador Especialidad'}
+            </div>
           </div>
+          {batch.sca_score && (
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              backgroundColor: 'var(--bg-canvas)',
+              border: '1.5px solid var(--color-crimson)',
+              color: 'var(--color-crimson)',
+              padding: '3px 8px',
+              borderRadius: '6px',
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: '11.5px',
+              fontWeight: '800'
+            }}>
+              ★ SCA {parseFloat(batch.sca_score).toFixed(1)}
+            </div>
+          )}
         </div>
         
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '12px' }}>

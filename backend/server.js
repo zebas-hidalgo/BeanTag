@@ -214,7 +214,7 @@ app.get('/api/batches/:id', async (req, res) => {
 
 // Create new batch
 app.post('/api/batches', async (req, res) => {
-  const { id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, origin, roast_level, roast_date, freeze_date } = req.body;
+  const { id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, origin, roast_level, roast_date, freeze_date, sca_score } = req.body;
   if (!id || !name || !producer || !total_doses) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
@@ -223,11 +223,12 @@ app.post('/api/batches', async (req, res) => {
     const doseWeightNum = parseFloat(dose_weight) || 20.0;
     const totalWeightG = doseWeightNum * parseInt(total_doses);
     const userId = req.user ? req.user.id : null;
+    const scaScoreNum = (sca_score !== undefined && sca_score !== null && sca_score !== '' && !isNaN(parseFloat(sca_score))) ? parseFloat(sca_score) : null;
 
     await db.run(
-      `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, user_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, total_doses, origin, roast_level, roast_date, freeze_date, totalWeightG, totalWeightG, userId]
+      `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, user_id, sca_score)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, total_doses, origin, roast_level, roast_date, freeze_date, totalWeightG, totalWeightG, userId, scaScoreNum]
     );
     res.status(201).json({ success: true, id });
   } catch (err) {
@@ -350,7 +351,7 @@ app.get('/api/recipes', async (req, res) => {
 
 // Update batch details
 app.put('/api/batches/:id', async (req, res) => {
-  const { name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date } = req.body;
+  const { name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, sca_score } = req.body;
   if (!name || !producer || total_doses === undefined) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
@@ -375,14 +376,15 @@ app.put('/api/batches/:id', async (req, res) => {
     const doseWeightNum = parseFloat(dose_weight) || 20.0;
     const newTotalWeight = doseWeightNum * total_doses;
     const newRemainingWeight = doseWeightNum * newRemaining;
+    const scaScoreNum = (sca_score !== undefined && sca_score !== null && sca_score !== '' && !isNaN(parseFloat(sca_score))) ? parseFloat(sca_score) : null;
 
     await db.run(
       `UPDATE batches 
        SET name = ?, producer = ?, altitude = ?, variety = ?, process = ?, roaster = ?, roaster_notes = ?, 
            dose_weight = ?, total_doses = ?, remaining_doses = ?, origin = ?, roast_level = ?, roast_date = ?, freeze_date = ?,
-           total_weight_g = ?, remaining_weight_g = ?
+           total_weight_g = ?, remaining_weight_g = ?, sca_score = ?
        WHERE id = ?`,
-      [name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, newRemaining, origin, roast_level, roast_date, freeze_date, newTotalWeight, newRemainingWeight, req.params.id]
+      [name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, newRemaining, origin, roast_level, roast_date, freeze_date, newTotalWeight, newRemainingWeight, scaScoreNum, req.params.id]
     );
     res.json({ success: true, remaining_doses: newRemaining });
   } catch (err) {
@@ -579,10 +581,10 @@ app.post('/api/backup/import', async (req, res) => {
     }
 
     const insertBatchSql = mode === 'merge' 
-      ? `INSERT OR IGNORE INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      : `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      ? `INSERT OR IGNORE INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, sca_score, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      : `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, sca_score, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     for (const b of batches) {
       await db.run(insertBatchSql, [
@@ -590,6 +592,7 @@ app.post('/api/backup/import', async (req, res) => {
         b.dose_weight, b.total_doses, b.remaining_doses, b.origin, b.roast_level, b.roast_date, b.freeze_date,
         b.total_weight_g !== undefined ? b.total_weight_g : 0, 
         b.remaining_weight_g !== undefined ? b.remaining_weight_g : 0,
+        b.sca_score !== undefined && b.sca_score !== null && !isNaN(parseFloat(b.sca_score)) ? parseFloat(b.sca_score) : null,
         b.created_at
       ]);
     }
@@ -973,6 +976,7 @@ Extrae con la máxima precisión todos los datos técnicos disponibles:
 - Nivel de tueste (Claro, Medio, Oscuro) (roast_level)
 - Fecha de tueste en formato AAAA-MM-DD si es legible (roast_date)
 - Notas de cata descriptivas del tostador (roaster_notes)
+- Puntaje o calificación SCA numérico si figura explícitamente en la bolsa o tarjeta (sca_score: number | null, ej. 87.5)
 - Lista de descriptores individuales clasificados según la Rueda de Sabores SCA oficial (sca_flavor_tags: string[])
 
 Devuelve OBLIGATORIAMENTE un JSON estructurado con estas claves:
@@ -987,6 +991,7 @@ Devuelve OBLIGATORIAMENTE un JSON estructurado con estas claves:
   "roast_level": "Claro / Medio / Oscuro",
   "roast_date": "AAAA-MM-DD",
   "roaster_notes": "Notas completas del tostador",
+  "sca_score": 87.5,
   "sca_flavor_tags": ["Nota 1", "Nota 2", "Nota 3"]
 }`;
 

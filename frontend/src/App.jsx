@@ -7,7 +7,6 @@ import BrewHistory from './components/BrewHistory';
 import Settings from './components/Settings';
 import NfcToolsModal from './components/NfcToolsModal';
 import AuthModal from './components/AuthModal';
-import AuthView from './components/AuthView';
 import BottomNav from './components/BottomNav';
 import { apiUrl } from './utils/api';
 

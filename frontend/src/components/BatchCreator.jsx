@@ -44,6 +44,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
   const [roastLevel, setRoastLevel] = useState(batchToEdit ? batchToEdit.roast_level || 'Medio' : 'Medio');
   const [roastDate, setRoastDate] = useState(batchToEdit ? batchToEdit.roast_date || '' : '');
   const [freezeDate, setFreezeDate] = useState(batchToEdit ? batchToEdit.freeze_date || '' : '');
+  const [scaScore, setScaScore] = useState(batchToEdit ? (batchToEdit.sca_score !== null && batchToEdit.sca_score !== undefined ? String(batchToEdit.sca_score) : '') : '');
   const [selectedFlavorTags, setSelectedFlavorTags] = useState(getInitialFlavorTags());
   const [activeTab, setActiveTab] = useState('Floral');
   const [creatorStep, setCreatorStep] = useState(1);
@@ -218,7 +219,8 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
 
     const payload = {
       name, producer, altitude, variety, process, roaster, roaster_notes: combinedNotes, dose_weight: doseWeight, total_doses: totalDoses,
-      origin, roast_level: roastLevel, roast_date: roastDate, freeze_date: freezeDate
+      origin, roast_level: roastLevel, roast_date: roastDate, freeze_date: freezeDate,
+      sca_score: scaScore ? parseFloat(scaScore) : null
     };
 
     const url = batchToEdit ? apiUrl(`api/batches/${batchToEdit.id}`) : apiUrl('api/batches');
@@ -318,6 +320,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
           if (data.roaster) setRoaster(data.roaster);
           if (data.roast_level) setRoastLevel(data.roast_level);
           if (data.roast_date) setRoastDate(data.roast_date);
+          if (data.sca_score) setScaScore(String(data.sca_score));
           if (data.roaster_notes) setNotes(data.roaster_notes);
           if (data.sca_flavor_tags && Array.isArray(data.sca_flavor_tags)) {
             setSelectedFlavorTags(data.sca_flavor_tags);
@@ -498,6 +501,30 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
               <div className="form-group">
                 <label className="barista-label">Fecha de Congelado</label>
                 <input className="candy-input" value={freezeDate} onChange={(e) => setFreezeDate(e.target.value)} type="date" style={{ minHeight: '44px', fontSize: '13px' }} />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="barista-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Puntuación SCA / Catación</span>
+                  {scaScore && parseFloat(scaScore) >= 80 && (
+                    <span style={{ color: 'var(--color-crimson)', fontWeight: '700', fontSize: '11px', letterSpacing: '0.3px' }}>
+                      ★ {parseFloat(scaScore) >= 90 ? 'Excepcional (90+)' : (parseFloat(scaScore) >= 85 ? 'Excelente (85-89)' : 'Especialidad (80-84)')}
+                    </span>
+                  )}
+                </label>
+                <input
+                  className="candy-input"
+                  value={scaScore}
+                  onChange={(e) => setScaScore(e.target.value)}
+                  type="number"
+                  step="0.25"
+                  min="0"
+                  max="100"
+                  placeholder="Ej. 87.5"
+                  style={{ minHeight: '44px', fontSize: '13px' }}
+                />
               </div>
             </div>
           </div>
