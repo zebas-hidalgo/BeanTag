@@ -289,12 +289,12 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
   const s = normalizeCardStyle(style);
   const {
     method = recipeData.methodStr || 'V60',
-    brew_time = recipeData.time || '2:30',
+    brew_time = recipeData.time || recipeData.brew_time || '2:30',
     dose_in_g = recipeData.coffee_grams ?? 15,
     dose_out_g = recipeData.water_grams ?? 250,
-    ratio = '1:16.6',
-    temperature = recipeData.temp || '93°C',
-    grind = recipeData.grind_size || 'Medio'
+    ratio = recipeData.ratio || (dose_in_g && dose_out_g ? `1:${(dose_out_g / dose_in_g).toFixed(1)}` : '1:16.6'),
+    temperature = recipeData.temp || recipeData.temperature || '93°C',
+    grind = recipeData.grind_size || recipeData.grind || 'Medio'
   } = recipeData;
 
   const isEspresso = /espresso/i.test(method);
@@ -304,64 +304,101 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
   ctx.save();
 
   // Header of extraction timeline
-  ctx.font = '800 8px "JetBrains Mono", monospace';
+  ctx.font = '800 8.5px "JetBrains Mono", monospace';
   ctx.fillStyle = s === 'blueprint'
     ? '#38BDF8'
     : (s === 'diner' ? '#C92A2A' : (s === 'kissaten' ? '#DC2626' : '#000000'));
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  const methodLabel = `${(method || 'POUR OVER').toUpperCase()}${temperature ? ' • ' + temperature : ''}`;
-  const maxHeaderLeftW = width * 0.55;
+  const methodLabel = `${(method || 'POUR OVER').toUpperCase()}${temperature ? ' • ' + String(temperature).replace('°C', '') + '°C' : ''}`;
+  const maxHeaderLeftW = width * 0.52;
   drawCanvasTruncatedText(ctx, `TIMELINE DE EXTRACCIÓN // ${methodLabel}`, x, y, maxHeaderLeftW);
 
-  // Grind micron chip (truncated defensively to prevent collision with header)
+  // Target scale & grind chip on the right
   const microns = parseGrindToMicrons(grind);
-  const cleanGrind = grind && String(grind).length > 20 ? String(grind).slice(0, 18) + '…' : grind;
+  const cleanGrind = grind && String(grind).length > 16 ? String(grind).slice(0, 14) + '…' : grind;
   ctx.font = '700 7.5px "JetBrains Mono", monospace';
-  ctx.fillStyle = s === 'blueprint' ? '#93C5FD' : '#64748B';
+  ctx.fillStyle = s === 'blueprint' ? '#93C5FD' : (s === 'neobrutalist' ? '#000000' : '#64748B');
   ctx.textAlign = 'right';
-  const grindLabel = `MOLIENDA: ${microns}µm (${cleanGrind})`;
-  const maxHeaderRightW = width * 0.42;
-  if (ctx.measureText(grindLabel).width > maxHeaderRightW) {
-    ctx.fillText(`MOL: ${microns}µm`, x + width, y);
+  const ratioClean = ratio ? `1:${String(ratio).replace('1:', '')}` : '1:16.6';
+  const scaleInfo = `BALANZA: ${dose_out_g || 250}g (${ratioClean}) • ${microns ? microns + 'µm' : cleanGrind}`;
+  const maxHeaderRightW = width * 0.46;
+  if (ctx.measureText(scaleInfo).width > maxHeaderRightW) {
+    ctx.fillText(`${dose_out_g || 250}g • ${microns ? microns + 'µm' : 'MOL'}`, x + width, y);
   } else {
-    ctx.fillText(grindLabel, x + width, y);
+    ctx.fillText(scaleInfo, x + width, y);
   }
 
-  const barY = y + 13;
-  const barH = 10;
+  const barY = y + 14;
+  const barH = 11;
 
-  // Stages calculation based on method
+  // Stages calculation: Use real pours if available, otherwise method-adaptive fallbacks
   let stages = [];
-  if (isEspresso) {
+  const normalizedPours = normalizeRecipePours(recipeData);
+
+  if (normalizedPours && normalizedPours.length > 0) {
+    stages = normalizedPours.map((p, idx) => {
+      const isBloom = idx === 0;
+      let label = (p.label || (isBloom ? 'BLOOM' : `PULSO ${idx}`)).toUpperCase();
+      if (label.length > 10) label = label.slice(0, 9) + '…';
+      return {
+        label,
+        time: p.time || (idx === 0 ? '0:00' : ''),
+        weight: p.stepWater ? `+${p.stepWater}g` : '',
+        targetScale: p.totalWater ? `➜${p.totalWater}g` : '',
+        stepWater: p.stepWater || 0,
+        totalWater: p.totalWater || 0,
+        flex: Math.max(1, p.stepWater || 1.5),
+        color: '#18181B'
+      };
+    });
+
+    // Check if we should append a drainage/caída step
+    const lastPour = normalizedPours[normalizedPours.length - 1];
+    const cleanBrewTime = brew_time ? stripEmojis(String(brew_time)).replace(' min', '') : '';
+    if (cleanBrewTime && (!lastPour.time || lastPour.time !== cleanBrewTime) && !isEspresso) {
+      stages.push({
+        label: 'CAÍDA',
+        time: cleanBrewTime,
+        weight: 'Drenaje',
+        targetScale: lastPour.totalWater ? `➜${lastPour.totalWater}g` : '',
+        stepWater: 0,
+        totalWater: lastPour.totalWater,
+        flex: Math.max(1, Math.round((lastPour.totalWater || 250) * 0.15)),
+        color: '#64748B'
+      });
+    }
+  } else if (isEspresso) {
     const outG = dose_out_g ? `${dose_out_g}g` : '36g';
     stages = [
-      { label: 'PRE-INFUSIÓN', time: '0-6s', weight: 'Baja bar', flex: 1.5, color: '#1E293B' },
-      { label: 'RAMPA 9 BAR', time: '6-24s', weight: 'Extracción', flex: 3.5, color: '#0E7490' },
-      { label: 'CORTE', time: brew_time || '28s', weight: outG, flex: 1.2, color: '#DC2626' }
+      { label: 'PRE-INFUSIÓN', time: '0-6s', weight: 'Baja bar', targetScale: '➜ 4g', flex: 1.5, color: '#1E293B' },
+      { label: 'RAMPA 9 BAR', time: '6-24s', weight: 'Extracción', targetScale: `➜ ${outG}`, flex: 3.5, color: '#0E7490' },
+      { label: 'CORTE', time: brew_time || '28s', weight: outG, targetScale: 'Corte', flex: 1.2, color: '#DC2626' }
     ];
   } else if (isAeropress) {
+    const outG = dose_out_g ? `${dose_out_g}g` : '200g';
     stages = [
-      { label: 'INFUSIÓN', time: '0:00 - 1:15', weight: `${dose_out_g || 200}g`, flex: 3.0, color: '#1E293B' },
-      { label: 'AGITACIÓN', time: '1:15 - 1:30', weight: 'Swirl', flex: 1.2, color: '#3B82F6' },
-      { label: 'PRENSADO', time: brew_time || '1:45', weight: '30s Suave', flex: 1.8, color: '#10B981' }
+      { label: 'INFUSIÓN', time: '0:00 - 1:15', weight: `+${outG}`, targetScale: `➜ ${outG}`, flex: 3.0, color: '#1E293B' },
+      { label: 'AGITACIÓN', time: '1:15 - 1:30', weight: 'Swirl', targetScale: 'Costra', flex: 1.2, color: '#3B82F6' },
+      { label: 'PRENSADO', time: brew_time || '1:45', weight: '30s', targetScale: 'Taza', flex: 1.8, color: '#10B981' }
     ];
   } else if (isImmersion) {
+    const outG = dose_out_g ? `${dose_out_g}g` : '250g';
     stages = [
-      { label: 'INFUSIÓN', time: '0:00 - 3:30', weight: `${dose_out_g || 250}g`, flex: 3.5, color: '#1E293B' },
-      { label: 'TURBULENCIA', time: '3:30 - 4:00', weight: 'Costra', flex: 1.5, color: '#3B82F6' },
-      { label: 'PRENSADO', time: brew_time || '4:30', weight: 'Filtrado', flex: 1.2, color: '#10B981' }
+      { label: 'INFUSIÓN', time: '0:00 - 3:30', weight: `+${outG}`, targetScale: `➜ ${outG}`, flex: 3.5, color: '#1E293B' },
+      { label: 'TURBULENCIA', time: '3:30 - 4:00', weight: 'Romper', targetScale: 'Skim', flex: 1.5, color: '#3B82F6' },
+      { label: 'PRENSADO', time: brew_time || '4:30', weight: 'Filtro', targetScale: 'Taza', flex: 1.2, color: '#10B981' }
     ];
   } else {
-    // Pour-Over / Drip (V60, Chemex, Kalita, Origami, etc.)
+    // Standard Pour-Over
     const totalW = dose_out_g || (dose_in_g ? Math.round(dose_in_g * 16.6) : 250);
     const bloomW = Math.round(totalW * 0.2);
     const pulse1W = Math.round(totalW * 0.6);
     stages = [
-      { label: 'BLOOM', time: '0:00 - 0:45', weight: `${bloomW}g`, flex: 1.4, color: '#18181B' },
-      { label: 'PULSO 1', time: '0:45 - 1:30', weight: `${pulse1W}g`, flex: 2.0, color: '#3B82F6' },
-      { label: 'PULSO 2', time: '1:30 - 2:00', weight: `${totalW}g`, flex: 2.0, color: '#10B981' },
-      { label: 'CAÍDA', time: brew_time || '2:45', weight: 'Drenaje', flex: 1.3, color: '#64748B' }
+      { label: 'BLOOM', time: '0:00', weight: `+${bloomW}g`, targetScale: `➜${bloomW}g`, flex: 1.4, color: '#18181B' },
+      { label: 'PULSO 1', time: '0:45', weight: `+${pulse1W - bloomW}g`, targetScale: `➜${pulse1W}g`, flex: 2.0, color: '#3B82F6' },
+      { label: 'PULSO 2', time: '1:30', weight: `+${totalW - pulse1W}g`, targetScale: `➜${totalW}g`, flex: 2.0, color: '#10B981' },
+      { label: 'CAÍDA', time: brew_time || '2:45', weight: 'Drenaje', targetScale: `➜${totalW}g`, flex: 1.3, color: '#64748B' }
     ];
   }
 
@@ -373,35 +410,61 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
   stages.forEach((st, idx) => {
     const segW = (st.flex / totalFlex) * availableW;
 
-    // Segment background
+    // Segment background per style
     let segColor = st.color;
     if (s === 'neobrutalist') {
-      const neoColors = ['#FFE600', '#A3E635', '#38BDF8', '#F472B6'];
+      const neoColors = ['#D4FF00', '#FF3B14', '#D8B4FE', '#67E8F9', '#FED7AA', '#A3E635'];
       segColor = neoColors[idx % neoColors.length];
     } else if (s === 'blueprint') {
-      segColor = idx === 0 ? '#38BDF8' : (idx === 1 ? 'rgba(56, 189, 248, 0.7)' : (idx === 2 ? 'rgba(56, 189, 248, 0.45)' : 'rgba(56, 189, 248, 0.25)'));
+      const bpColors = ['#38BDF8', 'rgba(56, 189, 248, 0.75)', 'rgba(56, 189, 248, 0.50)', 'rgba(56, 189, 248, 0.30)', 'rgba(56, 189, 248, 0.18)'];
+      segColor = bpColors[idx % bpColors.length];
     } else if (s === 'diner') {
-      segColor = idx === 0 ? '#C92A2A' : (idx === 1 ? '#0E7490' : (idx === 2 ? '#F59E0B' : '#64748B'));
+      const dinerColors = ['#C92A2A', '#0E7490', '#F59E0B', '#64748B', '#991B1B'];
+      segColor = dinerColors[idx % dinerColors.length];
     } else if (s === 'kissaten') {
-      segColor = idx === 0 ? '#DC2626' : (idx === 1 ? '#27272A' : (idx === 2 ? '#52525B' : '#A1A1AA'));
+      const kissColors = ['#DC2626', '#27272A', '#52525B', '#71717A', '#A1A1AA'];
+      segColor = kissColors[idx % kissColors.length];
     }
 
     ctx.fillStyle = segColor;
-    ctx.strokeStyle = s === 'neobrutalist' ? '#000000' : 'transparent';
-    ctx.lineWidth = s === 'neobrutalist' ? 1.8 : 0;
-    drawRoundedRect(ctx, curX, barY, segW, barH, 2.5, true, s === 'neobrutalist');
+    ctx.strokeStyle = s === 'neobrutalist' ? '#000000' : (s === 'blueprint' ? '#38BDF8' : 'transparent');
+    ctx.lineWidth = s === 'neobrutalist' ? 1.8 : (s === 'blueprint' ? 0.8 : 0);
+    drawRoundedRect(ctx, curX, barY, segW, barH, 2.5, true, s === 'neobrutalist' || s === 'blueprint');
 
-    // Time label above
-    ctx.font = '700 6.5px "JetBrains Mono", monospace';
-    ctx.fillStyle = s === 'blueprint' ? '#93C5FD' : '#64748B';
+    // Time label above bar
+    ctx.font = '700 7px "JetBrains Mono", monospace';
+    ctx.fillStyle = s === 'blueprint' ? '#93C5FD' : (s === 'neobrutalist' ? '#000000' : '#64748B');
     ctx.textAlign = 'center';
-    ctx.fillText(st.time, curX + segW / 2, barY - 3);
+    if (st.time) {
+      ctx.fillText(st.time, curX + segW / 2, barY - 3);
+    }
 
-    // Stage + weight label below
-    ctx.font = '800 6.5px "JetBrains Mono", monospace';
+    // Line 1 below bar: Stage label + delta weight
+    ctx.font = '800 7px "JetBrains Mono", monospace';
     ctx.fillStyle = s === 'blueprint' ? '#FFFFFF' : (s === 'neobrutalist' ? '#000000' : '#18181B');
-    const stageText = segW >= 72 && st.weight ? `${st.label} (${st.weight})` : st.label;
+    let stageText = (segW >= 58 && st.weight) ? `${st.label} (${st.weight})` : st.label;
+    if (ctx.measureText(stageText).width > segW - 2) {
+      stageText = st.label;
+    }
+    if (ctx.measureText(stageText).width > segW - 2) {
+      let tr = stageText;
+      while (tr.length > 0 && ctx.measureText(tr + '…').width > segW - 2) {
+        tr = tr.slice(0, -1);
+      }
+      stageText = tr ? tr + '…' : '';
+    }
     ctx.fillText(stageText, curX + segW / 2, barY + barH + 9);
+
+    // Line 2 below bar: Target scale reading (➜ 150g)
+    if (st.targetScale && segW >= 36) {
+      ctx.font = '700 6.5px "JetBrains Mono", monospace';
+      ctx.fillStyle = s === 'blueprint' ? '#7DD3FC' : (s === 'neobrutalist' ? '#52525B' : (s === 'kissaten' ? '#71717A' : '#0E7490'));
+      let scaleText = st.targetScale;
+      if (ctx.measureText(scaleText).width > segW - 2) {
+        scaleText = scaleText.replace('➜', '');
+      }
+      ctx.fillText(scaleText, curX + segW / 2, barY + barH + 18);
+    }
 
     curX += segW + gap;
   });
