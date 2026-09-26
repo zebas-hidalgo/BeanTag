@@ -2167,11 +2167,11 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
       ctx.fillText(vaultText, paddingX + 12, vaultY + 21);
 
       // 6. Extraction Timeline
-      const timelineY = vaultY + vaultH + 14;
-      drawExtractionTimeline(ctx, paddingX, timelineY, availW, 36, rec, style);
+      const timelineY = vaultY + vaultH + 12;
+      drawExtractionTimeline(ctx, paddingX, timelineY, availW, 46, rec, style);
 
       // Footer
-      const footY = timelineY + 36 + 14;
+      const footY = timelineY + 46 + 14;
       ctx.fillStyle = '#78716C';
       ctx.font = '700 8.5px "Space Grotesk", sans-serif';
       ctx.fillText('ALL-DAY SPECIALTY COFFEE • SERVED FRESH DAILY • SATISFACTION GUARANTEED', paddingX, footY + 14);
@@ -2436,51 +2436,12 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         drawTruncatedText(m.sub, mx + 12, my + 70, colW - 24);
       });
 
-      // 3. Extraction Timeline / Curve Bar
-      const flowY = bentoY + (colH * 2) + bentoGap + 10;
-      const flowH = 62;
-
-      ctx.fillStyle = '#FBF9F5';
-      ctx.strokeStyle = '#E4E4E7';
-      ctx.lineWidth = 0.8;
-      drawRoundedRect(ctx, paddingX, flowY, availW, flowH, 4, true, true);
-
-      ctx.fillStyle = '#71717A';
-      ctx.font = '700 8px "Playfair Display", Georgia, serif';
-      ctx.fillText('注湯工程 // POUR TIMELINE & PROFILE:', paddingX + 12, flowY + 18);
-
-      const stepW = (availW - 24 - 16) / 3;
-      const normalizedPours = normalizeRecipePours(rec);
-      const steps = (normalizedPours.length > 0)
-        ? normalizedPours.slice(0, 3).map((p, i) => ({
-            title: p.label || p.title || `注ぎ 0${i + 1}`,
-            desc: `${p.totalWater}g (+${p.stepWater}g)${p.time ? ' • ' + p.time : ''}`
-          }))
-        : [
-            { title: '珈琲粉', desc: `${coffeeG}g molienda` },
-            { title: '注湯量', desc: `${waterG}g agua total` },
-            { title: '比率', desc: `1:${ratioStr.replace('1:', '')}` }
-          ];
-
-      steps.forEach((s, idx) => {
-        const sx = paddingX + 12 + idx * (stepW + 8);
-        const sy = flowY + 26;
-        ctx.fillStyle = '#FAF8F5';
-        ctx.fillRect(sx, sy, stepW, 28);
-        ctx.strokeStyle = '#E4E4E7';
-        ctx.lineWidth = 0.8;
-        ctx.strokeRect(sx, sy, stepW, 28);
-
-        ctx.fillStyle = '#18181B';
-        ctx.font = 'bold 8.5px "Playfair Display", Georgia, serif';
-        drawTruncatedText(s.title, sx + 6, sy + 12, stepW - 12);
-        ctx.fillStyle = '#71717A';
-        ctx.font = 'italic 8px "Playfair Display", Georgia, serif';
-        drawTruncatedText(s.desc, sx + 6, sy + 22, stepW - 12);
-      });
+      // 3. Unified Master Extraction Timeline (Real pours, delta weights, scale milestones & grind)
+      const timelineY = bentoY + (colH * 2) + bentoGap + 12;
+      drawExtractionTimeline(ctx, paddingX, timelineY, availW, 46, rec, style);
 
       // 4. Sensory Notes Pills Section
-      const notesBoxY = flowY + flowH + 10;
+      const notesBoxY = timelineY + 48 + 12;
       const notesH = 80;
       ctx.fillStyle = '#FBF9F5';
       ctx.strokeStyle = '#E4E4E7';
@@ -2543,16 +2504,51 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         : '☕ 純喫茶 自家焙煎 // EXTRACTION SPEC';
       ctx.fillText(cellarText, paddingX + 12, cellarY + 21);
 
-      // 6. Extraction Timeline
-      const timelineY = cellarY + cellarH + 14;
-      drawExtractionTimeline(ctx, paddingX, timelineY, availW, 36, rec, style);
+      // 6. Master Brew Notes / Tokyo Artisan Stamp
+      const adviceY = cellarY + cellarH + 10;
+      const recipeNotes = stripEmojis(rec.notes || rec.user_notes || '');
+      if (recipeNotes) {
+        const adviceH = 46;
+        ctx.fillStyle = '#FBF9F5';
+        ctx.strokeStyle = '#E4E4E7';
+        ctx.lineWidth = 0.8;
+        drawRoundedRect(ctx, paddingX, adviceY, availW, adviceH, 4, true, true);
+
+        ctx.fillStyle = '#DC2626';
+        ctx.beginPath();
+        ctx.arc(paddingX + 10, adviceY + 15, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#52525B';
+        ctx.font = 'bold 8px "Playfair Display", Georgia, serif';
+        ctx.fillText('喫茶店マスターの覚書 // MASTER’S BREW NOTES:', paddingX + 18, adviceY + 18);
+
+        ctx.fillStyle = '#18181B';
+        ctx.font = 'italic 8.5px "Playfair Display", Georgia, serif';
+        drawWrappedText(recipeNotes, paddingX + 12, adviceY + 30, availW - 24, 13, 2);
+      } else {
+        ctx.fillStyle = '#FBF9F5';
+        ctx.strokeStyle = '#E4E4E7';
+        ctx.lineWidth = 0.8;
+        drawRoundedRect(ctx, paddingX, adviceY, availW, 30, 4, true, true);
+
+        ctx.fillStyle = '#52525B';
+        ctx.font = 'bold 8px "Playfair Display", Georgia, serif';
+        ctx.fillText('自家焙煎 抽出手帳 // BEANTAG CRAFT ARCHIVE', paddingX + 12, adviceY + 19);
+
+        ctx.fillStyle = '#DC2626';
+        ctx.font = 'bold 8.5px "Playfair Display", Georgia, serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('抽出基準 合格 [合格印]', paddingX + availW - 12, adviceY + 19);
+        ctx.textAlign = 'left';
+      }
 
       // 7. Tokyo Kissaten Footer
-      const footY = timelineY + 36 + 14;
-      drawHankoSeal(ctx, baseW - paddingX - 16, footY + 12, 18, '珈琲');
+      const footY = baseH - paddingY - 26;
+      drawHankoSeal(ctx, baseW - paddingX - 16, footY + 10, 18, '珈琲');
       ctx.fillStyle = '#71717A';
       ctx.font = '600 8.5px "Playfair Display", Georgia, serif';
-      ctx.fillText(`純喫茶 自家焙煎 • BEANTAG ARCHIVE // TOKYO 1960`, paddingX, footY + 16);
+      ctx.fillText(`純喫茶 自家焙煎 • BEANTAG ARCHIVE // TOKYO 1960`, paddingX, footY + 14);
     }
   }
 
