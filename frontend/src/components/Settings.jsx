@@ -13,7 +13,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   });
   const [selectedModel, setSelectedModel] = useState(() => {
     const stored = localStorage.getItem('gemini-model');
-    if (!stored || stored.includes('2.0') || stored.includes('1.5') || stored.includes('3.7') || stored === 'gemini-2.5-flash') {
+    if (!stored || stored.includes('3.7')) {
       localStorage.setItem('gemini-model', 'gemini-3.6-flash');
       return 'gemini-3.6-flash';
     }
@@ -451,6 +451,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 style={{ fontSize: '12px', padding: '10px 12px', minHeight: '44px', width: '100%' }}
               >
                 <option value="gemini-3.6-flash">Gemini 3.6 Flash (Recomendado - Máxima Precisión & Velocidad)</option>
+                <option value="gemini-2.0-flash">Gemini 2.0 Flash (Alta Disponibilidad)</option>
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Máxima Estabilidad)</option>
                 <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (Ultra Rápido & Eficiente)</option>
                 <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
                 <option value="gemini-2.5-pro">Gemini 2.5 Pro (Máximo Razonamiento & OCR)</option>

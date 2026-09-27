@@ -6,6 +6,8 @@
 
 const VALID_GEMINI_MODELS = [
   'gemini-3.6-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
   'gemini-3.5-flash-lite',
   'gemini-2.5-flash',
   'gemini-2.5-pro'
@@ -22,15 +24,16 @@ function sanitizeModel(requestedModel) {
     return DEFAULT_GEMINI_MODEL;
   }
   const clean = requestedModel.trim().toLowerCase();
-  // Map legacy / discontinued model IDs (2.0, 1.5, 3.7) to active models
-  if (clean.includes('2.0') || clean.includes('1.5') || clean.includes('3.7')) {
-    if (clean.includes('lite')) return 'gemini-3.5-flash-lite';
-    if (clean.includes('pro')) return 'gemini-2.5-pro';
-    return 'gemini-3.6-flash';
-  }
   if (VALID_GEMINI_MODELS.includes(clean)) {
     return clean;
   }
+  // Map experimental/unsupported variants
+  if (clean.includes('3.7')) {
+    if (clean.includes('pro')) return 'gemini-2.5-pro';
+    return 'gemini-3.6-flash';
+  }
+  if (clean.includes('lite')) return 'gemini-3.5-flash-lite';
+  if (clean.includes('pro')) return 'gemini-2.5-pro';
   return DEFAULT_GEMINI_MODEL;
 }
 
@@ -773,8 +776,10 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
   const cascadeOrder = [
     modelToTry,
     DEFAULT_GEMINI_MODEL, // 'gemini-3.6-flash'
-    FALLBACK_GEMINI_MODEL, // 'gemini-3.5-flash-lite'
-    'gemini-2.5-flash'
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
+    'gemini-2.5-flash',
+    FALLBACK_GEMINI_MODEL // 'gemini-3.5-flash-lite'
   ];
   const models = [...new Set(cascadeOrder)];
 

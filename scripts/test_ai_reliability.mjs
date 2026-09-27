@@ -10,9 +10,8 @@ assert.equal(sanitizeModel('gemini-3.7-pro'), 'gemini-2.5-pro', 'Should map gemi
 assert.equal(sanitizeModel('gemini-3.6-flash'), 'gemini-3.6-flash', 'Should preserve valid gemini-3.6-flash');
 assert.equal(sanitizeModel('gemini-3.5-flash-lite'), 'gemini-3.5-flash-lite', 'Should preserve valid gemini-3.5-flash-lite');
 assert.equal(sanitizeModel('gemini-2.5-flash'), 'gemini-2.5-flash', 'Should preserve valid gemini-2.5-flash');
-assert.equal(sanitizeModel('gemini-2.0-flash'), 'gemini-3.6-flash', 'Should map deprecated gemini-2.0-flash to gemini-3.6-flash');
-assert.equal(sanitizeModel('gemini-2.0-flash-lite'), 'gemini-3.5-flash-lite', 'Should map deprecated gemini-2.0-flash-lite to gemini-3.5-flash-lite');
-assert.equal(sanitizeModel('gemini-1.5-flash'), 'gemini-3.6-flash', 'Should map deprecated gemini-1.5-flash to gemini-3.6-flash');
+assert.equal(sanitizeModel('gemini-2.0-flash'), 'gemini-2.0-flash', 'Should preserve valid gemini-2.0-flash');
+assert.equal(sanitizeModel('gemini-1.5-flash'), 'gemini-1.5-flash', 'Should preserve valid gemini-1.5-flash');
 assert.equal(sanitizeModel('gemini-1.5-pro'), 'gemini-2.5-pro', 'Should map deprecated gemini-1.5-pro to gemini-2.5-pro');
 assert.equal(sanitizeModel(null), 'gemini-3.6-flash', 'Should default null to gemini-3.6-flash');
 assert.equal(sanitizeModel(''), 'gemini-3.6-flash', 'Should default empty to gemini-3.6-flash');

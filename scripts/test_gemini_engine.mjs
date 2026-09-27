@@ -14,8 +14,12 @@ if (sanitizeModel('gemini-3.6-flash') !== 'gemini-3.6-flash') {
   console.error('❌ Valid model was not recognized');
   failed = true;
 }
-if (sanitizeModel('gemini-2.0-flash') !== 'gemini-3.6-flash') {
-  console.error('❌ Legacy model was not migrated to gemini-3.6-flash');
+if (sanitizeModel('gemini-3.7-flash') !== 'gemini-3.6-flash') {
+  console.error('❌ Experimental 3.7 model was not mapped to gemini-3.6-flash');
+  failed = true;
+}
+if (sanitizeModel('gemini-2.0-flash') !== 'gemini-2.0-flash') {
+  console.error('❌ Valid gemini-2.0-flash was not recognized');
   failed = true;
 }
 console.log('✅ Model sanitization operates correctly');

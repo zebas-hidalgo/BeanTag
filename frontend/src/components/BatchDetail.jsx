@@ -273,14 +273,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [aiError, setAiError] = useState('');
 
   const handleAiRecommend = () => {
-    const apiKey = localStorage.getItem('gemini-api-key');
-    if (!apiKey) {
-      if (showToast) {
-        showToast('Configura tu clave API de Gemini en Ajustes para usar la IA.', { type: 'error', duration: 4000 });
-      }
-      return;
-    }
-
+    const apiKey = localStorage.getItem('gemini-api-key') || '';
     const model = localStorage.getItem('gemini-model') || 'gemini-3.6-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
@@ -288,14 +281,18 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     setAiError('');
     setAiRecommendation(null);
 
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    if (apiKey) {
+      headers['x-gemini-key'] = apiKey;
+      headers['x-gemini-model'] = model;
+      headers['x-gemini-thinking'] = isThinking ? 'true' : 'false';
+    }
+
     fetch(apiUrl('api/recommend-recipe'), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-gemini-key': apiKey,
-        'x-gemini-model': model,
-        'x-gemini-thinking': isThinking ? 'true' : 'false'
-      },
+      headers,
       body: JSON.stringify({
         batch_name: batch.name,
         origin: batch.origin,
@@ -323,14 +320,21 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     .then(data => {
       setAiRecommendation(data);
       if (data._source === 'barista_fallback') {
-        if (showToast) showToast('Receta calibrada con motor Barista Offline (Multivariable)', { type: 'info', duration: 3000 });
+        if (showToast) {
+          showToast(
+            apiKey 
+              ? 'Receta calibrada con motor Barista Offline (Servidores Google AI con alta demanda)' 
+              : 'Receta calibrada con motor Barista Offline (Añade tu API Key en Ajustes para activar Gemini)',
+            { type: 'info', duration: 4000 }
+          );
+        }
       } else {
         if (showToast) showToast('¡Recomendación multivariable generada por la IA!', { type: 'success', duration: 2500 });
       }
     })
     .catch(err => {
       setAiError(err.message);
-      if (showToast) showToast('Error al obtener receta de IA.', { type: 'error', duration: 4000 });
+      if (showToast) showToast('Error al obtener receta de IA: ' + err.message, { type: 'error', duration: 4000 });
     })
     .finally(() => {
       setAiLoading(false);
