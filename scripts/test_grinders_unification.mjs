@@ -23,72 +23,74 @@ expectedIds.forEach(id => {
 console.log('✅ Passed: 8 grinders configured with specifications.');
 
 // 2. Verify Microns Calculation & Format Dial for each grinder
-console.log('Test 2: Verify Microns Calculation & Dial Formatter');
+console.log('Test 2: Verify Microns Calculation & Dial Formatter (SCA D50 Standards)');
 
-// J-Max (1.5.0) -> (90 + 50 + 0) * 8.8 = 1232 µm
+// J-Max (2.2.5 = 205 clicks) -> V60 Pour-over ~676 µm (SCA D50)
 const jmax = getGrinderConfig('jmax');
-const jmaxMicrons = jmax.calculateMicrons(1, 5, 0);
-assert.strictEqual(jmaxMicrons, 1232, `Expected 1232 µm for J-Max 1.5.0, got ${jmaxMicrons}`);
-const jmaxDial = jmax.formatDial(1, 5, 0);
-assert.strictEqual(jmaxDial, 'J-Max: 1.5.0');
+const jmaxMicrons = jmax.calculateMicrons(2, 2, 5);
+assert.ok(jmaxMicrons >= 650 && jmaxMicrons <= 750, `Expected 650-750 µm for J-Max V60 2.2.5, got ${jmaxMicrons}`);
+const jmaxEspresso = jmax.calculateMicrons(1, 4, 0); // 130 clicks
+assert.ok(jmaxEspresso >= 250 && jmaxEspresso <= 360, `Expected 250-360 µm for J-Max espresso 1.4.0, got ${jmaxEspresso}`);
+const jmaxDial = jmax.formatDial(2, 2, 5);
+assert.strictEqual(jmaxDial, 'J-Max: 2.2.5');
 
-// K-Ultra (9.5) -> 9.5 * 10 * 20 = 1900 µm
+// K-Ultra (8.0 = 80 clicks) -> V60 Pour-over ~762 µm
 const kUltra = getGrinderConfig('k_ultra');
-const kUltraMicrons = kUltra.calculateMicrons(9.5);
-assert.strictEqual(kUltraMicrons, 1900, `Expected 1900 µm for K-Ultra 9.5, got ${kUltraMicrons}`);
-assert.ok(kUltra.formatDial(9.5).includes('9.5'), 'K-Ultra dial should format 9.5');
+const kUltraMicrons = kUltra.calculateMicrons(8.0);
+assert.ok(kUltraMicrons >= 700 && kUltraMicrons <= 820, `Expected 700-820 µm for K-Ultra 8.0, got ${kUltraMicrons}`);
+assert.ok(kUltra.formatDial(8.0).includes('8.0'), 'K-Ultra dial should format 8.0');
 
-// Ode Gen 2 (5.0) -> 350 + 5.0 * 75 = 725 µm
+// Ode Gen 2 (4.2) -> V60 Pour-over ~732 µm
 const ode = getGrinderConfig('ode_gen2');
-const odeMicrons = ode.calculateMicrons(5.0);
-assert.strictEqual(odeMicrons, 725, `Expected 725 µm for Ode 5.0, got ${odeMicrons}`);
-assert.strictEqual(ode.formatDial(5.0), 'Ode Gen 2: Ajuste 5.0');
+const odeMicrons = ode.calculateMicrons(4.2);
+assert.ok(odeMicrons >= 680 && odeMicrons <= 780, `Expected 680-780 µm for Ode 4.2, got ${odeMicrons}`);
+assert.strictEqual(ode.formatDial(4.2), 'Ode Gen 2: Ajuste 4.2');
 
-// Comandante (24 clicks) -> 24 * 30 = 720 µm
+// Comandante (23 clicks) -> V60 Pour-over ~747 µm
 const com = getGrinderConfig('comandante');
-const comMicrons = com.calculateMicrons(24);
-assert.strictEqual(comMicrons, 720, `Expected 720 µm for Comandante 24 clicks, got ${comMicrons}`);
-assert.strictEqual(com.formatDial(24), 'Comandante: 24 clics');
+const comMicrons = com.calculateMicrons(23);
+assert.ok(comMicrons >= 700 && comMicrons <= 800, `Expected 700-800 µm for Comandante 23 clicks, got ${comMicrons}`);
+assert.strictEqual(com.formatDial(23), 'Comandante: 23 clics');
 
-// Femobook (60 clicks) -> 60 * 18 = 1080 µm
+// Femobook (60 clicks) -> V60 Pour-over ~750 µm
 const femo = getGrinderConfig('femobook');
 const femoMicrons = femo.calculateMicrons(60);
-assert.strictEqual(femoMicrons, 1080, `Expected 1080 µm for Femobook 60 clicks, got ${femoMicrons}`);
+assert.ok(femoMicrons >= 700 && femoMicrons <= 800, `Expected 700-800 µm for Femobook 60 clicks, got ${femoMicrons}`);
 
-// Kingrinder K6 (90 clicks) -> 90 * 16 = 1440 µm
+// Kingrinder K6 (92 clicks) -> V60 Pour-over ~732 µm
 const king = getGrinderConfig('kingrinder');
-const kingMicrons = king.calculateMicrons(90);
-assert.strictEqual(kingMicrons, 1440, `Expected 1440 µm for Kingrinder 90 clicks, got ${kingMicrons}`);
+const kingMicrons = king.calculateMicrons(92);
+assert.ok(kingMicrons >= 680 && kingMicrons <= 780, `Expected 680-780 µm for Kingrinder 92 clicks, got ${kingMicrons}`);
 
-// Timemore (18 clicks) -> 18 * 33 = 594 µm
+// Timemore (17 clicks) -> V60 Pour-over ~653 µm
 const time = getGrinderConfig('timemore');
-const timeMicrons = time.calculateMicrons(18);
-assert.strictEqual(timeMicrons, 594, `Expected 594 µm for Timemore 18 clicks, got ${timeMicrons}`);
+const timeMicrons = time.calculateMicrons(17);
+assert.ok(timeMicrons >= 600 && timeMicrons <= 750, `Expected 600-750 µm for Timemore 17 clicks, got ${timeMicrons}`);
 
-// Baratza (step 15) -> 400 + 15 * 30 = 850 µm
+// Baratza (step 15) -> V60 Pour-over ~641 µm
 const bar = getGrinderConfig('baratza');
 const barMicrons = bar.calculateMicrons(15);
-assert.strictEqual(barMicrons, 850, `Expected 850 µm for Baratza step 15, got ${barMicrons}`);
+assert.ok(barMicrons >= 600 && barMicrons <= 750, `Expected 600-750 µm for Baratza step 15, got ${barMicrons}`);
 
-console.log('✅ Passed: All 8 grinder micron calculations and formatters are mathematically exact.');
+console.log('✅ Passed: All 8 grinder micron calculations match real SCA specialty particle distributions.');
 
 // 3. Verify parseGrindToMicrons compatibility
 console.log('Test 3: Verify parseGrindToMicrons extracts accurate microns from all 8 grinder strings');
 
 const sampleGrinds = [
-  'J-Max: 1.5.0 (~1232 µm)',
-  '1Zpresso K-Ultra: 9.5 (~1900 µm)',
-  'Fellow Ode Gen 2: Ajuste 5.0 (~725 µm)',
-  'Comandante: 24 clics (~720 µm)',
-  'Femobook A2: 60 clics (~1080 µm)',
-  'Kingrinder K6: 90 clics (~1440 µm)',
-  'Timemore: 18 clics (~594 µm)',
-  'Baratza: Ajuste 15 (~850 µm)'
+  'J-Max: 2.2.5 (~720 µm)',
+  '1Zpresso K-Ultra: 8.0 (~760 µm)',
+  'Fellow Ode Gen 2: Ajuste 4.2 (~730 µm)',
+  'Comandante: 23 clics (~720 µm)',
+  'Femobook A2: 60 clics (~750 µm)',
+  'Kingrinder K6: 92 clics (~730 µm)',
+  'Timemore: 17 clics (~680 µm)',
+  'Baratza: Ajuste 15 (~720 µm)'
 ];
 
 sampleGrinds.forEach(str => {
   const extracted = parseGrindToMicrons(str);
-  assert.ok(extracted > 300 && extracted < 3000, `parseGrindToMicrons should extract valid micron value from '${str}', got ${extracted}`);
+  assert.ok(extracted >= 200 && extracted <= 1300, `parseGrindToMicrons should extract valid micron value from '${str}', got ${extracted}`);
 });
 console.log('✅ Passed: Card generator accurately extracts micron values from all 8 grinder strings.');
 

@@ -176,7 +176,9 @@ const kUltraRecipe = computeOfflineRecipe({
 });
 
 assert.equal(kUltraRecipe.active_grinder_dial.grinder_id, 'k_ultra');
-assert.ok(kUltraRecipe.grinders.k_ultra.match(/\d\.\d/), 'K-Ultra dial should be in decimal format (e.g. 7.2)');
+assert.ok(kUltraRecipe.grinders.k_ultra.match(/\d\.\d/), 'K-Ultra dial should be in decimal format (e.g. 7.3)');
+const kDialNum = parseFloat(kUltraRecipe.grinders.k_ultra);
+assert.ok(kDialNum >= 7.0 && kDialNum <= 8.8, `K-Ultra V60 dial must be in specialty pour-over range (7.0-8.8), got ${kDialNum}`);
 console.log('✅ K-Ultra active grinder test passed. Dial:', kUltraRecipe.active_grinder_dial.dial);
 
 console.log('\n🎉 ALL AI RELIABILITY & FALLBACK ENGINE TESTS PASSED!\n');

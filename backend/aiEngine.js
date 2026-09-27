@@ -81,28 +81,56 @@ function isFrozenBatch(batch) {
 }
 
 /**
- * Converts microns to K-Ultra dial setting (0.0 to 9.9).
- * 1Zpresso K-Ultra: 20 µm/click, 100 clicks per rotation, dial 0-9 with 10 ticks per number.
+ * Converts physical target microns (D50) to 1Zpresso J-Max setting.
+ * Range: Espresso 1.0.0-1.5.0 (~100-140 clics), Pour-over 2.0.0-2.5.0 (~180-225 clics), French Press 2.7.0-3.2.0.
  */
-function micronsToKUltra(microns) {
-  const safeM = Math.max(200, Math.min(2200, microns));
-  const totalClicks = Math.round(safeM / 20);
-  const num = Math.floor((totalClicks % 100) / 10);
-  const tick = totalClicks % 10;
-  return `${num}.${tick}`;
+function micronsToJMax(microns) {
+  const safeM = Math.max(180, Math.min(1300, microns));
+  let clicks;
+  if (safeM <= 380) {
+    clicks = Math.round(90 + ((safeM - 200) / 180) * 55);
+  } else {
+    clicks = Math.round(150 + ((safeM - 380) / 620) * 115);
+  }
+  const clampedClicks = Math.max(70, Math.min(330, clicks));
+  const jmaxObj = clicksToJMax(clampedClicks);
+  return {
+    ...jmaxObj,
+    totalClicks: clampedClicks
+  };
 }
 
 /**
- * Converts microns to Fellow Ode Gen 2 dial setting (1.0 to 11.0).
- * Flat 64mm burrs with 1/3 micro-clicks.
+ * Converts physical target microns (D50) to 1Zpresso K-Ultra dial setting (0.0 to 15.0).
+ * 100 clicks per rotation, 10 divisions per number.
+ * Espresso: 3.0 - 4.2 | AeroPress: 5.5 - 6.8 | Pour-over (V60): 7.2 - 8.8 | Cupping/French Press: 9.5 - 10.8
+ */
+function micronsToKUltra(microns) {
+  const safeM = Math.max(180, Math.min(1300, microns));
+  let dial;
+  if (safeM <= 380) {
+    dial = 2.5 + ((safeM - 180) / 200) * 1.7; // ~2.5 to 4.2
+  } else {
+    dial = 4.5 + ((safeM - 380) / 600) * 5.5; // ~4.5 to 10.0+
+  }
+  const clampedDial = Math.max(2.0, Math.min(13.0, dial));
+  const rounded = Math.round(clampedDial * 10) / 10;
+  const clicks = Math.round(rounded * 10);
+  return `${rounded.toFixed(1)} (${clicks} clics)`;
+}
+
+/**
+ * Converts physical target microns (D50) to Fellow Ode Gen 2 dial setting (1.0 to 11.0).
+ * Flat 64mm Gen 2 stainless burrs with 1/3 micro-clicks.
+ * Factory note: Not suitable for espresso (<450 µm).
+ * AeroPress: 1.2 - 2.2 | V60 / Pour-over: 3.1 - 5.2 | Chemex: 5.2 - 7.0 | French Press: 7.1 - 8.2
  */
 function micronsToOdeGen2(microns, isPulsar = false) {
-  if (isPulsar) return '4.0';
-  if (microns < 1300) return 'No apto para espresso';
-  // Range ~1400µm to 2600µm maps to ~3.1 to ~9.0
-  const normalized = (microns - 1400) / 1200;
-  const dialVal = 3.2 + (normalized * 5.0);
-  const clamped = Math.max(3.0, Math.min(10.0, dialVal));
+  if (microns < 450) return 'No apto para espresso';
+  if (isPulsar) return '3.0';
+  const safeM = Math.max(450, Math.min(1250, microns));
+  const dialVal = 1.0 + ((safeM - 450) / 750) * 8.5;
+  const clamped = Math.max(1.0, Math.min(11.0, dialVal));
   const intPart = Math.floor(clamped);
   const frac = clamped - intPart;
   const sub = frac < 0.33 ? 0 : (frac < 0.66 ? 1 : 2);
@@ -110,14 +138,87 @@ function micronsToOdeGen2(microns, isPulsar = false) {
 }
 
 /**
- * Converts microns to Kingrinder K6 dial setting.
- * 16 µm/click, 60 clicks per rotation.
+ * Converts physical target microns (D50) to Comandante C40 MK3/MK4 clicks.
+ * Espresso: 8 - 12 clics | AeroPress: 13 - 17 clics | V60: 20 - 26 clics | Cupping/French Press: 28 - 34 clics
+ */
+function micronsToComandante(microns) {
+  const safeM = Math.max(180, Math.min(1300, microns));
+  let clicks;
+  if (safeM <= 380) {
+    clicks = Math.round(7 + ((safeM - 180) / 200) * 5); // 7 to 12
+  } else {
+    clicks = Math.round(12 + ((safeM - 380) / 600) * 18); // 12 to 30+
+  }
+  const clamped = Math.max(6, Math.min(42, clicks));
+  return `${clamped} clics`;
+}
+
+/**
+ * Converts physical target microns (D50) to Femobook A2 clicks.
+ * 40 clicks per rotation.
+ * Espresso: 6 - 11 clics | AeroPress: 34 - 44 clics | V60: 54 - 68 clics | French Press: 78 - 92 clics
+ */
+function micronsToFemobook(microns) {
+  const safeM = Math.max(180, Math.min(1300, microns));
+  let clicks;
+  if (safeM <= 350) {
+    clicks = Math.round(5 + ((safeM - 180) / 170) * 6); // 5 to 11
+  } else {
+    clicks = Math.round(20 + ((safeM - 350) / 650) * 65); // 20 to 85+
+  }
+  const clamped = Math.max(4, Math.min(115, clicks));
+  const rot = (clamped / 40).toFixed(1);
+  return `${clamped} clics (~${rot} Rot.)`;
+}
+
+/**
+ * Converts physical target microns (D50) to Kingrinder K6 clicks.
+ * 60 clicks per rotation.
+ * Espresso: 18 - 35 clics | AeroPress: 60 - 75 clics | V60: 85 - 105 clics | French Press: 120 - 140 clics
  */
 function micronsToKingrinder(microns) {
-  const clicks = Math.max(20, Math.round(microns / 16));
-  const rot = Math.floor(clicks / 60);
-  const remClicks = clicks % 60;
-  return `${clicks} clics (${rot} Rot. ${remClicks} Clics)`;
+  const safeM = Math.max(180, Math.min(1300, microns));
+  let clicks;
+  if (safeM <= 350) {
+    clicks = Math.round(15 + ((safeM - 180) / 170) * 18); // 15 to 33
+  } else {
+    clicks = Math.round(45 + ((safeM - 350) / 650) * 80); // 45 to 125+
+  }
+  const clamped = Math.max(12, Math.min(170, clicks));
+  const rot = Math.floor(clamped / 60);
+  const rem = clamped % 60;
+  return `${clamped} clics (${rot} Rot. ${rem} Clics)`;
+}
+
+/**
+ * Converts physical target microns (D50) to Timemore C2/C3 clicks.
+ * Espresso: 7 - 9 clics | AeroPress: 11 - 14 clics | V60: 15 - 20 clics | French Press: 23 - 27 clics
+ */
+function micronsToTimemore(microns) {
+  const safeM = Math.max(180, Math.min(1300, microns));
+  let clicks;
+  if (safeM <= 350) {
+    clicks = Math.round(6 + ((safeM - 180) / 170) * 3); // 6 to 9
+  } else {
+    clicks = Math.round(10 + ((safeM - 350) / 650) * 15); // 10 to 25+
+  }
+  const clamped = Math.max(6, Math.min(34, clicks));
+  return `${clamped} clics`;
+}
+
+/**
+ * Converts physical target microns (D50) to Baratza Encore / Encore ESP dial.
+ * Espresso: ESP 8 - 14 | V60: Classic 14 - 18 / ESP 24 - 28 | French Press: Classic 26 - 32 / ESP 32 - 36
+ */
+function micronsToBaratza(microns, isEspresso = false) {
+  const safeM = Math.max(180, Math.min(1300, microns));
+  if (isEspresso || safeM <= 380) {
+    const espStep = Math.max(6, Math.min(16, Math.round(8 + ((safeM - 180) / 180) * 6)));
+    return `ESP Ajuste ${espStep} (Pasos micro 8-14)`;
+  }
+  const classicStep = Math.max(10, Math.min(36, Math.round(10 + ((safeM - 450) / 650) * 17)));
+  const espFilterStep = Math.min(40, classicStep + 10);
+  return `Ajuste ${classicStep} (ESP: ${espFilterStep})`;
 }
 
 /**
@@ -143,18 +244,13 @@ function computeOfflineRecipe(batch) {
   const altitudeMatch = String(rawAltitude).replace(/,/g, '').match(/\d{3,4}/);
   const altitudeMeters = altitudeMatch ? parseInt(altitudeMatch[0], 10) : 1500;
 
-  // 1. Method base parameters
+  // 1. Method base parameters according to physical SCA / Kruve D50 guidelines
   let ratioStr = '1:15';
   let ratioMultiplier = 15;
-  let baseJMaxClicks = 225; // 2.4.5 = 2*90 + 4*10 + 5 = 225 clicks
-  let baseFemobookClicks = 60; // 1.5 rot
-  let baseComandanteClicks = 23;
-  let baseTimemoreClicks = 17;
-  let baseBaratzaSetting = 15;
-  let baseTemp = 93;
+  let baseMicrons = 720;
+  let baseTemp = 92;
   let brewTime = '2:45 min';
   let grindDesc = 'Medio-Fino';
-  let grindMicrons = '1980 µm';
 
   const isEspresso = method.toLowerCase().includes('espresso');
   const isPulsar = method.toLowerCase().includes('pulsar');
@@ -170,66 +266,43 @@ function computeOfflineRecipe(batch) {
   if (isEspresso) {
     ratioMultiplier = isLightRoast ? 2.4 : (isDarkRoast ? 2.0 : 2.2);
     ratioStr = `1:${ratioMultiplier}`;
-    baseJMaxClicks = 125; // 1.3.5
-    baseFemobookClicks = 7;
-    baseComandanteClicks = 9;
-    baseTimemoreClicks = 8;
-    baseBaratzaSetting = 5;
+    baseMicrons = 270;
     baseTemp = isLightRoast ? 94 : (isDarkRoast ? 90 : 92);
     brewTime = isLightRoast ? '30s' : '26s';
     grindDesc = 'Espresso Fino';
-    grindMicrons = '1100 µm';
   } else if (isPulsar) {
     ratioMultiplier = (isLightRoast && isWashed) ? 16.6 : 16.0;
     ratioStr = `1:${ratioMultiplier}`;
-    baseJMaxClicks = 210; // 2.3.0
-    baseFemobookClicks = 54;
-    baseComandanteClicks = 21;
-    baseTimemoreClicks = 15;
-    baseBaratzaSetting = 13;
+    baseMicrons = 620;
     baseTemp = isLightRoast ? 95 : 93;
     brewTime = '3:20 min';
     grindDesc = 'Medio No-Bypass';
-    grindMicrons = '1850 µm';
   } else if (isAeropressGo) {
     // AeroPress Go compact chamber (max ~220ml water)
     ratioMultiplier = isLightRoast ? 14.5 : (isDarkRoast ? 13.0 : 14.3);
     ratioStr = `1:${ratioMultiplier}`;
-    baseJMaxClicks = 165; // 1.8.5
-    baseFemobookClicks = 36;
-    baseComandanteClicks = 15;
-    baseTimemoreClicks = 13;
-    baseBaratzaSetting = 11;
+    baseMicrons = 560;
     baseTemp = isLightRoast ? 92 : (isDarkRoast ? 87 : 90);
     brewTime = '1:45 min';
     grindDesc = 'Medio-Fina (AeroPress Go)';
-    grindMicrons = '1650 µm';
   } else if (isAeropress) {
     ratioMultiplier = isLightRoast ? 15.0 : 14.0;
     ratioStr = `1:${ratioMultiplier}`;
-    baseJMaxClicks = 175; // 1.8.5
-    baseFemobookClicks = 38;
-    baseComandanteClicks = 16;
-    baseTimemoreClicks = 14;
-    baseBaratzaSetting = 12;
+    baseMicrons = 580;
     baseTemp = isLightRoast ? 92 : (isDarkRoast ? 88 : 91);
     brewTime = '2:15 min';
     grindDesc = 'Medio Fino (AeroPress)';
-    grindMicrons = '1550 µm';
   } else if (isFrench) {
     ratioMultiplier = isDarkRoast ? 14.0 : 15.0;
     ratioStr = `1:${ratioMultiplier}`;
-    baseJMaxClicks = 290; // 3.2.0
-    baseFemobookClicks = 95;
-    baseComandanteClicks = 28;
-    baseTimemoreClicks = 22;
-    baseBaratzaSetting = 22;
+    baseMicrons = 1000;
     baseTemp = isLightRoast ? 95 : 92;
     brewTime = '4:00 min';
     grindDesc = 'Grueso (Inmersión)';
-    grindMicrons = '2600 µm';
   } else {
     // V60 / Pour-over adaptive ratio & temp
+    baseMicrons = 720;
+    grindDesc = 'Medio-Fino';
     if (isLightRoast && isWashed) {
       ratioMultiplier = 16.6;
       ratioStr = '1:16.6';
@@ -253,30 +326,22 @@ function computeOfflineRecipe(batch) {
     }
   }
 
-  // 2. Physical Terroir & Roast Adjustments
-  let clickDeltaJMax = 0;
-  let clickDeltaFemobook = 0;
-  let clickDeltaComandante = 0;
+  // 2. Physical Terroir & Roast Adjustments to Particle Size (D50)
+  let deltaMicrons = 0;
   const reasons = [];
 
   // Roast level adjustment
   if (isLightRoast) {
-    clickDeltaJMax -= 4; // Finer grind for dense bean
-    clickDeltaFemobook -= 3;
-    clickDeltaComandante -= 2;
+    deltaMicrons -= 40; // Finer grind for dense bean
     reasons.push('Tueste claro (grano denso: molienda fina y alta temp para maximizar solubilidad)');
   } else if (isDarkRoast) {
-    clickDeltaJMax += 5; // Coarser grind for brittle bean
-    clickDeltaFemobook += 4;
-    clickDeltaComandante += 3;
+    deltaMicrons += 60; // Coarser grind for brittle bean
     reasons.push('Tueste oscuro (grano poroso y soluble: molienda abierta y temp moderada para evitar amargor)');
   }
 
   // Process adjustment
   if (isNaturalOrAnaerobic) {
-    clickDeltaJMax += 3; // Naturals produce more fines
-    clickDeltaFemobook += 2;
-    clickDeltaComandante += 1;
+    deltaMicrons += 30; // Naturals produce more fines
     reasons.push('Proceso fermentativo/natural (alta carga de azúcares y finos: molienda ligeramente abierta)');
   } else if (isWashed) {
     reasons.push('Proceso lavado (taza limpia y acidez brillante: favorece percolación continua)');
@@ -284,9 +349,7 @@ function computeOfflineRecipe(batch) {
 
   // Altitude adjustment
   if (altitudeMeters > 1700) {
-    clickDeltaJMax -= 2;
-    clickDeltaFemobook -= 2;
-    clickDeltaComandante -= 1;
+    deltaMicrons -= 20;
     baseTemp = Math.min(96, baseTemp + 1);
     reasons.push(`Altitud SHB (${altitudeMeters}m: densidad celular alta)`);
   }
@@ -295,22 +358,19 @@ function computeOfflineRecipe(batch) {
   const isVeryFresh = daysSinceRoast !== null && daysSinceRoast < 7;
   if (daysSinceRoast !== null) {
     if (daysSinceRoast < 7) {
-      clickDeltaJMax += 2; // Compensate violent CO2 bubbling
-      clickDeltaFemobook += 1;
-      clickDeltaComandante += 1;
+      deltaMicrons += 20; // Compensate violent CO2 bubbling
       reasons.push(`Grano fresco (${daysSinceRoast} días de tueste: alta presión de CO₂, bloom extendido a 50s para desgasificar sin canalizaciones)`);
     } else if (daysSinceRoast >= 12 && daysSinceRoast <= 30) {
       reasons.push(`Ventana de tueste óptima (${daysSinceRoast} días: pico de solubilidad y balance aromático)`);
     } else if (daysSinceRoast > 45) {
-      clickDeltaJMax -= 1;
+      deltaMicrons -= 15;
       reasons.push(`Tueste maduro (${daysSinceRoast} días: baja presión de gas, molienda levemente más cerrada para sostener extracción)`);
     }
   }
 
   // Grano Congelado en Cava (-18°C)
   if (isFrozen) {
-    clickDeltaJMax -= 1; // Unimodal fracture, fewer erratic fines
-    clickDeltaFemobook -= 1;
+    deltaMicrons -= 15; // Unimodal fracture, fewer erratic fines
     reasons.push('Grano congelado en cava a -18°C (fractura criogénica unimodal con menor producción de finos)');
   }
 
@@ -321,14 +381,23 @@ function computeOfflineRecipe(batch) {
     reasons.push(`Variedad floral/frutal delicada (${variety}: agitación suave para proteger volátiles aromáticos)`);
   }
 
-  const finalJMaxClicks = Math.max(30, baseJMaxClicks + clickDeltaJMax);
-  const finalFemobookClicks = Math.max(3, baseFemobookClicks + clickDeltaFemobook);
-  const finalComandanteClicks = Math.max(6, baseComandanteClicks + clickDeltaComandante);
-  const jmaxObj = clicksToJMax(finalJMaxClicks);
-  const finalMicrons = Math.round(finalJMaxClicks * 8.8);
+  // Clamping within safe physical SCA particle size boundaries
+  let minSafeM = 200;
+  let maxSafeM = 1250;
+  if (isEspresso) { minSafeM = 180; maxSafeM = 360; }
+  else if (isFrench) { minSafeM = 850; maxSafeM = 1250; }
+  else if (isAeropressGo || isAeropress || isPulsar) { minSafeM = 480; maxSafeM = 720; }
+  else { minSafeM = 580; maxSafeM = 880; } // V60 / Pour-over
+
+  const finalMicrons = Math.max(minSafeM, Math.min(maxSafeM, Math.round(baseMicrons + deltaMicrons)));
+  const jmaxObj = micronsToJMax(finalMicrons);
   const finalKUltra = micronsToKUltra(finalMicrons);
   const finalOde = micronsToOdeGen2(finalMicrons, isPulsar);
+  const finalComandante = micronsToComandante(finalMicrons);
+  const finalFemobook = micronsToFemobook(finalMicrons);
   const finalKingrinder = micronsToKingrinder(finalMicrons);
+  const finalTimemore = micronsToTimemore(finalMicrons);
+  const finalBaratza = micronsToBaratza(finalMicrons, isEspresso);
 
   // Compute total water (respect AeroPress Go chamber limit of ~210g)
   let totalWaterG = Math.round(dose * ratioMultiplier);
@@ -360,7 +429,7 @@ function computeOfflineRecipe(batch) {
     ];
     steps = [
       `Distribuir uniformemente ${dose}g de café molido en portafiltro y tampear nivelado.`,
-      `Ajustar molino J-Max a ${jmaxObj.display} o Femobook A2 a ${finalFemobookClicks} clics.`,
+      `Ajustar molino J-Max a ${jmaxObj.display} o Femobook A2 a ${finalFemobook}.`,
       `Iniciar extracción con pre-infusión hasta alcanzar ${totalWaterG}g en taza.`,
       `Servir inmediatamente en taza pre-calentada y evaluar balance de crema.`
     ];
@@ -374,7 +443,7 @@ function computeOfflineRecipe(batch) {
     ];
     steps = [
       `Colocar filtro de papel enjuagado en NextLevel Pulsar Mini y cerrar la válvula de control.`,
-      `Añadir ${dose}g con molienda calibrada en ${jmaxObj.display} (J-Max) o ${finalFemobookClicks} clics (Femobook).`,
+      `Añadir ${dose}g con molienda calibrada en ${jmaxObj.display} (J-Max) o ${finalFemobook} (Femobook).`,
       `Colocar dispersor de agua. Verter ${bloomWaterG}g a ${baseTemp}°C y dejar florecer ${isVeryFresh ? '50s' : '45s'}.`,
       `Seguir la secuencia de apertura de válvula para máxima extracción homogénea.`
     ];
@@ -386,7 +455,7 @@ function computeOfflineRecipe(batch) {
     ];
     steps = [
       `Colocar filtro de papel en la tapa compacta de AeroPress Go y enjuagar con agua caliente.`,
-      `Añadir ${dose}g molidos a ajuste ${jmaxObj.display} (J-Max) o ${finalFemobookClicks} clics (Femobook A2).`,
+      `Añadir ${dose}g molidos a ajuste ${jmaxObj.display} (J-Max) o ${finalFemobook} (Femobook A2).`,
       `Verter ${bloomWaterG}g a ${baseTemp}°C, agitar 3 veces y verter el resto hasta alcanzar ${totalWaterG}g.`,
       `Colocar el émbolo para generar vacío y reposar hasta el minuto 1:15.`,
       `Prensar suavemente durante 30 segundos directo en la taza Go.`
@@ -399,7 +468,7 @@ function computeOfflineRecipe(batch) {
     ];
     steps = [
       `Preparar AeroPress en posición estándar o invertida con filtro enjuagado.`,
-      `Dosificar ${dose}g con molienda ${jmaxObj.display} (J-Max) o ${finalFemobookClicks} clics (Femobook).`,
+      `Dosificar ${dose}g con molienda ${jmaxObj.display} (J-Max) o ${finalFemobook} (Femobook).`,
       `Verter agua a ${baseTemp}°C en 2 fases y dejar reposar en inmersión.`,
       `Prensar suave y servir en taza precalentada.`
     ];
@@ -428,7 +497,7 @@ function computeOfflineRecipe(batch) {
     ];
     steps = [
       `Enjuagar filtro cónico con abundante agua caliente y precalentar el servidor.`,
-      `Moler ${dose}g a ajuste ${jmaxObj.display} (J-Max) o ${finalFemobookClicks} clics (Femobook A2).`,
+      `Moler ${dose}g a ajuste ${jmaxObj.display} (J-Max) o ${finalFemobook} (Femobook A2).`,
       `Realizar bloom de ${isVeryFresh ? '50' : '45'} segundos con agua a ${baseTemp}°C.`,
       `Completar los 3 pulsos continuos y servir al terminar el drenado total.`
     ];
@@ -443,7 +512,7 @@ function computeOfflineRecipe(batch) {
     ];
     steps = [
       `Enjuagar filtro de papel con agua caliente y descartar agua del servidor.`,
-      `Pesar ${dose}g de café y moler en ajuste ${jmaxObj.display} (J-Max) o ${finalFemobookClicks} clics (Femobook A2).`,
+      `Pesar ${dose}g de café y moler en ajuste ${jmaxObj.display} (J-Max) o ${finalFemobook} (Femobook A2).`,
       `Realizar Bloom de ${isVeryFresh ? '50' : '45'} segundos asegurando saturación homogénea.`,
       `Completar los vertidos con agua a ${baseTemp}°C y servir al finalizar el drenado.`
     ];
@@ -454,13 +523,13 @@ function computeOfflineRecipe(batch) {
   // Complete Grinders Map
   const grinders = {
     jmax: `${jmaxObj.display} (${jmaxObj.rot} Rot. ${jmaxObj.num} Núm. ${jmaxObj.click} Clics)`,
-    k_ultra: isEspresso ? '3.2 (32 clics)' : `${finalKUltra} (${Math.round(finalMicrons / 20)} clics)`,
-    ode_gen2: isEspresso ? 'No apto para espresso' : `Ajuste ${finalOde} (Muelas Planas 64mm)`,
-    comandante: `${finalComandanteClicks} clics`,
-    femobook_a2: `${finalFemobookClicks} clics (~${(finalFemobookClicks / 40).toFixed(1)} Rot.)`,
+    k_ultra: finalKUltra,
+    ode_gen2: finalOde === 'No apto para espresso' ? 'No apto para espresso' : `Ajuste ${finalOde} (Muelas Planas 64mm)`,
+    comandante: finalComandante,
+    femobook_a2: finalFemobook,
     kingrinder_k6: finalKingrinder,
-    timemore: `${baseTimemoreClicks} clics`,
-    baratza: isEspresso ? 'ESP Ajuste 9' : `Ajuste ${baseBaratzaSetting}`
+    timemore: finalTimemore,
+    baratza: finalBaratza
   };
 
   // Resolve Active Grinder
@@ -594,7 +663,9 @@ function computeOfflineTuning(data) {
   }
 
   const jmaxObj = clicksToJMax(currentTotalClicks);
-  const currentMicrons = Math.round(currentTotalClicks * 8.8);
+  const currentMicrons = currentTotalClicks <= 150
+    ? Math.round(200 + ((currentTotalClicks - 90) / 55) * 180)
+    : Math.round(380 + ((currentTotalClicks - 150) / 115) * 620);
   const isEsp = method.toLowerCase().includes('espresso');
   const isPulsar = method.toLowerCase().includes('pulsar');
   const isGo = method.toLowerCase().includes('go');
@@ -604,15 +675,16 @@ function computeOfflineTuning(data) {
   const bloomWater = isEsp ? Math.round(dose * 0.5) : (isGo ? 40 : 60);
   const remWater = totalWater - bloomWater;
 
+  const odeVal = micronsToOdeGen2(currentMicrons, isPulsar);
   const tunedGrinders = {
     jmax: `${jmaxObj.display} (${jmaxObj.rot} Rot. ${jmaxObj.num} Núm. ${jmaxObj.click} Clics)`,
-    k_ultra: isEsp ? '3.2 (32 clics)' : `${micronsToKUltra(currentMicrons)} (${Math.round(currentMicrons / 20)} clics)`,
-    ode_gen2: isEsp ? 'No apto para espresso' : `Ajuste ${micronsToOdeGen2(currentMicrons, isPulsar)} (Muelas Planas 64mm)`,
-    comandante: `${Math.round(currentTotalClicks * (8.8 / 30))} clics`,
-    femobook_a2: `${Math.round(currentTotalClicks * (8.8 / 18))} clics`,
+    k_ultra: micronsToKUltra(currentMicrons),
+    ode_gen2: (isEsp || odeVal === 'No apto para espresso') ? 'No apto para espresso' : `Ajuste ${odeVal} (Muelas Planas 64mm)`,
+    comandante: micronsToComandante(currentMicrons),
+    femobook_a2: micronsToFemobook(currentMicrons),
     kingrinder_k6: micronsToKingrinder(currentMicrons),
-    timemore: '17 clics',
-    baratza: isEsp ? 'ESP Ajuste 9' : 'Ajuste 15'
+    timemore: micronsToTimemore(currentMicrons),
+    baratza: micronsToBaratza(currentMicrons, isEsp)
   };
 
   const activeGrinderRaw = (data.grinder || 'jmax').toLowerCase();
@@ -807,9 +879,14 @@ module.exports = {
   jMaxToClicks,
   calculateDaysSinceRoast,
   isFrozenBatch,
+  micronsToJMax,
   micronsToKUltra,
   micronsToOdeGen2,
+  micronsToComandante,
+  micronsToFemobook,
   micronsToKingrinder,
+  micronsToTimemore,
+  micronsToBaratza,
   computeOfflineRecipe,
   computeOfflineTuning,
   callGeminiWithRetry

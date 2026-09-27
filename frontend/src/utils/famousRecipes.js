@@ -14,11 +14,11 @@ export const FAMOUS_RECIPES = [
     temperature: 92,
     brewTime: '3:30 min',
     grind: 'Gruesa (Tetsu 4:6)',
-    grindMicrons: 2200,
+    grindMicrons: 950,
     grinderSettings: {
-      jmax: { rot: 2, num: 7, click: 0, text: '2.7.0 (~2200 µm)' },
-      femobook: { clicks: 75, text: '75 clics (1.85 Rot.)' },
-      comandante: { clicks: 28, text: '28 clics' }
+      jmax: { rot: 2, num: 7, click: 0, text: '2.7.0 (~950 µm)' },
+      femobook: { clicks: 80, text: '80 clics (~2.0 Rot.)' },
+      comandante: { clicks: 29, text: '29 clics' }
     },
     calculatePours: (dose) => {
       const totalWater = Math.round(dose * 15);
@@ -52,11 +52,11 @@ export const FAMOUS_RECIPES = [
     temperature: 96,
     brewTime: '3:15 min',
     grind: 'Medio-Fina (Hoffmann)',
-    grindMicrons: 1800,
+    grindMicrons: 700,
     grinderSettings: {
-      jmax: { rot: 2, num: 3, click: 5, text: '2.3.5 (~1800 µm)' },
+      jmax: { rot: 2, num: 2, click: 0, text: '2.2.0 (~700 µm)' },
       femobook: { clicks: 56, text: '56 clics (1.4 Rot.)' },
-      comandante: { clicks: 21, text: '21 clics' }
+      comandante: { clicks: 22, text: '22 clics' }
     },
     calculatePours: (dose) => {
       const totalWater = Math.round(dose * 16.6); // ~330g para 20g
@@ -90,9 +90,9 @@ export const FAMOUS_RECIPES = [
     temperature: 90,
     brewTime: '2:45 min',
     grind: 'Media (Osmotic Sweetness)',
-    grindMicrons: 1980,
+    grindMicrons: 740,
     grinderSettings: {
-      jmax: { rot: 2, num: 4, click: 5, text: '2.4.5 (~1980 µm)' },
+      jmax: { rot: 2, num: 3, click: 0, text: '2.3.0 (~740 µm)' },
       femobook: { clicks: 60, text: '60 clics (1.5 Rot.)' },
       comandante: { clicks: 23, text: '23 clics' }
     },
@@ -138,10 +138,10 @@ export const FAMOUS_RECIPES = [
     temperature: 94,
     brewTime: '2:50 min',
     grind: 'Media (Lance Agitation)',
-    grindMicrons: 1900,
+    grindMicrons: 720,
     grinderSettings: {
-      jmax: { rot: 2, num: 4, click: 0, text: '2.4.0 (~1900 µm)' },
-      femobook: { clicks: 58, text: '58 clics (1.45 Rot.)' },
+      jmax: { rot: 2, num: 2, click: 5, text: '2.2.5 (~720 µm)' },
+      femobook: { clicks: 58, text: '58 clics (~1.45 Rot.)' },
       comandante: { clicks: 22, text: '22 clics' }
     },
     calculatePours: (dose) => {
@@ -175,9 +175,9 @@ export const FAMOUS_RECIPES = [
     temperature: 93,
     brewTime: '15s - 18s',
     grind: 'Espresso Grueso (Turbo Shot)',
-    grindMicrons: 1350,
+    grindMicrons: 360,
     grinderSettings: {
-      jmax: { rot: 1, num: 5, click: 5, text: '1.5.5 (~1350 µm)' },
+      jmax: { rot: 1, num: 4, click: 5, text: '1.4.5 (~360 µm)' },
       femobook: { clicks: 12, text: '12 clics' },
       comandante: { clicks: 12, text: '12 clics' }
     },
@@ -209,11 +209,11 @@ export const FAMOUS_RECIPES = [
     temperature: 85,
     brewTime: '1:30 min',
     grind: 'Gruesa (AeroPress Inverted)',
-    grindMicrons: 2050,
+    grindMicrons: 900,
     grinderSettings: {
-      jmax: { rot: 2, num: 6, click: 0, text: '2.6.0 (~2050 µm)' },
-      femobook: { clicks: 70, text: '70 clics (1.75 Rot.)' },
-      comandante: { clicks: 26, text: '26 clics' }
+      jmax: { rot: 2, num: 6, click: 0, text: '2.6.0 (~900 µm)' },
+      femobook: { clicks: 75, text: '75 clics (~1.9 Rot.)' },
+      comandante: { clicks: 28, text: '28 clics' }
     },
     calculatePours: (dose) => {
       return [
@@ -243,11 +243,11 @@ export const FAMOUS_RECIPES = [
     temperature: 90,
     brewTime: '1:45 min',
     grind: 'Medio-Fina (AeroPress Go)',
-    grindMicrons: 1650,
+    grindMicrons: 560,
     grinderSettings: {
-      jmax: { rot: 1, num: 8, click: 5, text: '1.8.5 (~1650 µm)' },
-      femobook: { clicks: 36, text: '36 clics (~0.9 Rot.)' },
-      comandante: { clicks: 15, text: '15 clics' }
+      jmax: { rot: 1, num: 8, click: 5, text: '1.8.5 (~560 µm)' },
+      femobook: { clicks: 42, text: '42 clics (~1.05 Rot.)' },
+      comandante: { clicks: 16, text: '16 clics' }
     },
     calculatePours: (dose) => {
       const totalWater = Math.min(210, Math.round(dose * 14.3));
@@ -280,11 +280,11 @@ export const FAMOUS_RECIPES = [
     temperature: 94,
     brewTime: '3:30 min',
     grind: 'Media (Rao Pulsar Mini)',
-    grindMicrons: 1900,
+    grindMicrons: 620,
     grinderSettings: {
-      jmax: { rot: 2, num: 4, click: 5, text: '2.4.5 (~1900 µm)' },
-      femobook: { clicks: 62, text: '62 clics (1.55 Rot.)' },
-      comandante: { clicks: 24, text: '24 clics' }
+      jmax: { rot: 2, num: 0, click: 5, text: '2.0.5 (~620 µm)' },
+      femobook: { clicks: 47, text: '47 clics (~1.18 Rot.)' },
+      comandante: { clicks: 19, text: '19 clics' }
     },
     calculatePours: (dose) => {
       const totalWater = Math.round(dose * (250 / 15));
@@ -344,11 +344,11 @@ export const FAMOUS_RECIPES = [
     temperature: 96,
     brewTime: '4:15 min',
     grind: 'Fina-Media (Gagné Micro)',
-    grindMicrons: 1750,
+    grindMicrons: 580,
     grinderSettings: {
-      jmax: { rot: 2, num: 3, click: 0, text: '2.3.0 (~1750 µm)' },
-      femobook: { clicks: 55, text: '55 clics (1.38 Rot.)' },
-      comandante: { clicks: 21, text: '21 clics' }
+      jmax: { rot: 1, num: 9, click: 5, text: '1.9.5 (~580 µm)' },
+      femobook: { clicks: 43, text: '43 clics (~1.08 Rot.)' },
+      comandante: { clicks: 17, text: '17 clics' }
     },
     calculatePours: (dose) => {
       const totalWater = Math.round(dose * 17);
@@ -407,11 +407,11 @@ export const FAMOUS_RECIPES = [
     temperature: 92,
     brewTime: '3:15 min',
     grind: 'Media-Gruesa',
-    grindMicrons: 2050,
+    grindMicrons: 800,
     grinderSettings: {
-      jmax: { rot: 2, num: 6, click: 0, text: '2.6.0 (~2050 µm)' },
-      femobook: { clicks: 68, text: '68 clics (1.70 Rot.)' },
-      comandante: { clicks: 26, text: '26 clics' }
+      jmax: { rot: 2, num: 4, click: 5, text: '2.4.5 (~800 µm)' },
+      femobook: { clicks: 65, text: '65 clics (~1.63 Rot.)' },
+      comandante: { clicks: 25, text: '25 clics' }
     },
     calculatePours: (dose) => {
       const totalWater = Math.round(dose * 14);

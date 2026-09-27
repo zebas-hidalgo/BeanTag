@@ -773,28 +773,30 @@ FÍSICA DE EXTRACCIÓN Y REGLAS CIENTÍFICAS OBLIGATORIAS:
 5. LIMITACIONES FÍSICAS DE DISPOSITIVOS:
    - AeroPress Go: Capacidad máxima de la cámara = ~215ml de agua. Si dosis * ratio > 215g, limita el agua total a 205-210g o formula método concentrado.
    - NextLevel Pulsar Mini: Gestionar válvula (🔒 cerrada para bloom con dispersor, ⚡ media 50%, 🔓 abierta para drenaje por gravedad).
-   - Espresso: Molienda fina de alta precisión (850-1150 µm), 25-32 segundos, ratio 1:2.0 a 1:2.4.
+    - Espresso: Molienda fina de alta precisión (200-350 µm D50), 25-32 segundos, ratio 1:2.0 a 1:2.4.
+    - Filtrados (V60, Kalita, Chemex, Pulsar): Granulometría media (600-850 µm D50).
+    - Inmersión (Prensa Francesa, Cupping): Granulometría gruesa (900-1150 µm D50).
 
 Genera un JSON con esta estructura exacta (calcula y calibra cada campo rigurosamente según este lote específico):
 {
   "method": "${targetMethod}",
   "ratio": "1:X (calculado según el café, reposo y método)",
   "water_total_g": 0, // Entero exacto: Math.round(dosis * ratio)
-  "grind": "Descripción granulométrica y dial para ${activeGrinder} (ej. 'Medio-Fino (2.3.8)')",
-  "grind_microns": "Micrones estimados (ej. '1920 µm')",
+  "grind": "Descripción granulométrica y dial para ${activeGrinder} (ej. 'Medio-Fino (2.2.5)')",
+  "grind_microns": "Micrones D50 estimados (ej. '720 µm')",
   "grind_adjustment_reason": "Explicación física concisa de la calibración según tueste, días de reposo, congelación y muelas (máx 25 palabras)",
   "jmax_rot": 0, // Entero de 0 a 3
   "jmax_num": 0, // Entero de 0 a 8
   "jmax_click": 0, // Entero de 0 a 9
   "grinders": {
-    "jmax": "Formato Rot.Num.Clic (ej. '2.3.8 (2 Rot. 3 Núm. 8 Clics)')",
-    "k_ultra": "Dial 0-9 con decimal (20 µm/clic, ej. '7.2 (72 clics)')",
-    "ode_gen2": "Dial Fellow Ode 1-11 con subdivisiones (ej. 'Ajuste 5.1' o 'No apto para espresso')",
-    "comandante": "Clics Comandante C40 (30 µm/clic, ej. '22 clics')",
-    "femobook_a2": "Clics Femobook A2 (18 µm/clic, ej. '56 clics (1.4 Rot.)')",
-    "kingrinder_k6": "Clics Kingrinder K6 (16 µm/clic, ej. '95 clics (1 Rot. 35 Clics)')",
-    "timemore": "Clics Timemore C2/C3 (ej. '16 clics')",
-    "baratza": "Ajuste Baratza Encore/ESP (ej. 'Ajuste 14')"
+    "jmax": "Formato Rot.Num.Clic (ej. '2.2.5 (2 Rot. 2 Núm. 5 Clics)')",
+    "k_ultra": "Dial 0-9 con decimal y clics (ej. '8.0 (80 clics)')",
+    "ode_gen2": "Dial Fellow Ode 1-11 con subdivisiones (ej. 'Ajuste 4.2' o 'No apto para espresso')",
+    "comandante": "Clics Comandante C40 (ej. '23 clics')",
+    "femobook_a2": "Clics Femobook A2 (ej. '60 clics (~1.5 Rot.)')",
+    "kingrinder_k6": "Clics Kingrinder K6 (ej. '92 clics (1 Rot. 32 Clics)')",
+    "timemore": "Clics Timemore C2/C3 (ej. '17 clics')",
+    "baratza": "Ajuste Baratza Encore/ESP (ej. 'Ajuste 15 (ESP: 25)' o 'ESP Ajuste 10')"
   },
   "active_grinder_dial": {
     "grinder_id": "${activeGrinder}",
