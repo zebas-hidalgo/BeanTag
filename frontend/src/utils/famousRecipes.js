@@ -279,12 +279,12 @@ export const FAMOUS_RECIPES = [
     defaultDose: 15,
     temperature: 94,
     brewTime: '3:30 min',
-    grind: 'Media (Rao Pulsar Mini)',
-    grindMicrons: 620,
+    grind: 'Media No-Bypass (Rao)',
+    grindMicrons: 800,
     grinderSettings: {
-      jmax: { rot: 2, num: 0, click: 5, text: '2.0.5 (~620 µm)' },
-      femobook: { clicks: 47, text: '47 clics (~1.18 Rot.)' },
-      comandante: { clicks: 19, text: '19 clics' }
+      jmax: { rot: 2, num: 4, click: 5, text: '2.4.5 (~800 µm)' },
+      femobook: { clicks: 72, text: '72 clics (~1.8 Rot.)' },
+      comandante: { clicks: 25, text: '25 clics' }
     },
     calculatePours: (dose) => {
       const totalWater = Math.round(dose * (250 / 15));
@@ -343,12 +343,12 @@ export const FAMOUS_RECIPES = [
     defaultDose: 15,
     temperature: 96,
     brewTime: '4:15 min',
-    grind: 'Fina-Media (Gagné Micro)',
-    grindMicrons: 580,
+    grind: 'Media-Fina No-Bypass (Gagné)',
+    grindMicrons: 780,
     grinderSettings: {
-      jmax: { rot: 1, num: 9, click: 5, text: '1.9.5 (~580 µm)' },
-      femobook: { clicks: 43, text: '43 clics (~1.08 Rot.)' },
-      comandante: { clicks: 17, text: '17 clics' }
+      jmax: { rot: 2, num: 4, click: 0, text: '2.4.0 (~780 µm)' },
+      femobook: { clicks: 70, text: '70 clics (~1.75 Rot.)' },
+      comandante: { clicks: 24, text: '24 clics' }
     },
     calculatePours: (dose) => {
       const totalWater = Math.round(dose * 17);
@@ -406,12 +406,12 @@ export const FAMOUS_RECIPES = [
     defaultDose: 18,
     temperature: 92,
     brewTime: '3:15 min',
-    grind: 'Media-Gruesa',
-    grindMicrons: 800,
+    grind: 'Media-Gruesa (Concentrado)',
+    grindMicrons: 840,
     grinderSettings: {
-      jmax: { rot: 2, num: 4, click: 5, text: '2.4.5 (~800 µm)' },
-      femobook: { clicks: 65, text: '65 clics (~1.63 Rot.)' },
-      comandante: { clicks: 25, text: '25 clics' }
+      jmax: { rot: 2, num: 5, click: 5, text: '2.5.5 (~840 µm)' },
+      femobook: { clicks: 76, text: '76 clics (~1.9 Rot.)' },
+      comandante: { clicks: 26, text: '26 clics' }
     },
     calculatePours: (dose) => {
       const totalWater = Math.round(dose * 14);

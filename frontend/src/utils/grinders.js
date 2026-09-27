@@ -91,13 +91,16 @@ export const GRINDERS = [
     type: 'clicks',
     min: 4,
     max: 120,
-    defaultVal: 60,
+    defaultVal: 65,
     calculateMicrons: (clicks) => {
-      const c = parseInt(clicks, 10) || 60;
-      if (c <= 11) {
-        return Math.round(180 + ((c - 5) / 6) * 170);
+      const c = parseInt(clicks, 10) || 65;
+      if (c <= 16) {
+        return Math.round(180 + ((c - 6) / 10) * 140);
       }
-      return Math.round(350 + ((c - 20) / 65) * 650);
+      if (c < 45) {
+        return Math.round(320 + ((c - 16) / 29) * 180);
+      }
+      return Math.round(500 + ((c - 45) / 45) * 500);
     },
     formatDial: (clicks) => `Femobook A2: ${clicks} clics (~${(clicks / 40).toFixed(1)} Rot.)`
   },

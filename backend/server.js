@@ -772,7 +772,7 @@ FÍSICA DE EXTRACCIÓN Y REGLAS CIENTÍFICAS OBLIGATORIAS:
    - Cafés SCA >= 88 o variedades delicadas (Geisha, Chiroso, Pink Bourbon, Sidra, Eugenioides, Wush Wush): No usar agitación violenta ni temperaturas extremas (>96°C) que degraden los terpenos y ésteres volátiles. Vertidos laminares suaves desde baja altura.
 5. LIMITACIONES FÍSICAS DE DISPOSITIVOS:
    - AeroPress Go: Capacidad máxima de la cámara = ~215ml de agua. Si dosis * ratio > 215g, limita el agua total a 205-210g o formula método concentrado.
-   - NextLevel Pulsar Mini: Gestionar válvula (🔒 cerrada para bloom con dispersor, ⚡ media 50%, 🔓 abierta para drenaje por gravedad).
+   - NextLevel Pulsar Mini: FÍSICA NO-BYPASS (0% bypass). Moliendas finas (<720 µm) saturan los poros del filtro y causan atasco total. REQUIERE molienda media / media-gruesa (780 - 850 µm D50; J-Max ~2.4.5, Femobook ~72-76 clics, Comandante ~24-26 clics, Ode ~4.2-5.0). Gestionar válvula (🔒 cerrada para bloom con dispersor, ⚡ media 50%, 🔓 abierta para drenaje por gravedad).
     - Espresso: Molienda fina de alta precisión (200-350 µm D50), 25-32 segundos, ratio 1:2.0 a 1:2.4.
     - Filtrados (V60, Kalita, Chemex, Pulsar): Granulometría media (600-850 µm D50).
     - Inmersión (Prensa Francesa, Cupping): Granulometría gruesa (900-1150 µm D50).
@@ -793,7 +793,7 @@ Genera un JSON con esta estructura exacta (calcula y calibra cada campo rigurosa
     "k_ultra": "Dial 0-9 con decimal y clics (ej. '8.0 (80 clics)')",
     "ode_gen2": "Dial Fellow Ode 1-11 con subdivisiones (ej. 'Ajuste 4.2' o 'No apto para espresso')",
     "comandante": "Clics Comandante C40 (ej. '23 clics')",
-    "femobook_a2": "Clics Femobook A2 (ej. '60 clics (~1.5 Rot.)')",
+    "femobook_a2": "Clics Femobook A2 (ej. '65 clics (~1.6 Rot.)' en V60, '74 clics (~1.85 Rot.)' en Pulsar Mini)",
     "kingrinder_k6": "Clics Kingrinder K6 (ej. '92 clics (1 Rot. 32 Clics)')",
     "timemore": "Clics Timemore C2/C3 (ej. '17 clics')",
     "baratza": "Ajuste Baratza Encore/ESP (ej. 'Ajuste 15 (ESP: 25)' o 'ESP Ajuste 10')"

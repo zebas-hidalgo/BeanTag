@@ -52,10 +52,12 @@ const comMicrons = com.calculateMicrons(23);
 assert.ok(comMicrons >= 700 && comMicrons <= 800, `Expected 700-800 µm for Comandante 23 clicks, got ${comMicrons}`);
 assert.strictEqual(com.formatDial(23), 'Comandante: 23 clics');
 
-// Femobook (60 clicks) -> V60 Pour-over ~750 µm
+// Femobook (65 clicks) -> V60 Pour-over ~722 µm
 const femo = getGrinderConfig('femobook');
-const femoMicrons = femo.calculateMicrons(60);
-assert.ok(femoMicrons >= 700 && femoMicrons <= 800, `Expected 700-800 µm for Femobook 60 clicks, got ${femoMicrons}`);
+const femoMicrons = femo.calculateMicrons(65);
+assert.ok(femoMicrons >= 700 && femoMicrons <= 800, `Expected 700-800 µm for Femobook 65 clicks, got ${femoMicrons}`);
+const femoPulsarMicrons = femo.calculateMicrons(74);
+assert.ok(femoPulsarMicrons >= 800 && femoPulsarMicrons <= 850, `Expected 800-850 µm for Femobook 74 clicks (Pulsar), got ${femoPulsarMicrons}`);
 
 // Kingrinder K6 (92 clicks) -> V60 Pour-over ~732 µm
 const king = getGrinderConfig('kingrinder');
@@ -82,7 +84,7 @@ const sampleGrinds = [
   '1Zpresso K-Ultra: 8.0 (~760 µm)',
   'Fellow Ode Gen 2: Ajuste 4.2 (~730 µm)',
   'Comandante: 23 clics (~720 µm)',
-  'Femobook A2: 60 clics (~750 µm)',
+  'Femobook A2: 65 clics (~720 µm)',
   'Kingrinder K6: 92 clics (~730 µm)',
   'Timemore: 17 clics (~680 µm)',
   'Baratza: Ajuste 15 (~720 µm)'

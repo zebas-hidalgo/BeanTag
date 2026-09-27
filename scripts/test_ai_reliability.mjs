@@ -74,7 +74,14 @@ const pulsarRecipe = computeOfflineRecipe({
 assert.equal(pulsarRecipe.method, 'NextLevel Pulsar Mini');
 assert.equal(pulsarRecipe.water_total_g, 240); // 1:16 ratio
 assert.ok(pulsarRecipe.pours.some(p => p.description.toLowerCase().includes('válvula') || p.label.toLowerCase().includes('bloom')), 'Should mention valve instructions');
-console.log('✅ Pulsar Mini offline calculation passed:', pulsarRecipe.grinders.jmax, '| Ratio:', pulsarRecipe.ratio);
+
+const pulsarMicrons = parseInt(pulsarRecipe.active_grinder_dial?.microns || pulsarRecipe.grind_microns, 10);
+assert.ok(pulsarMicrons >= 740 && pulsarMicrons <= 900, `Pulsar microns must be 740-900 µm to prevent filter stalling, got ${pulsarMicrons}`);
+
+const femoPulsarClicks = parseInt(pulsarRecipe.grinders.femobook_a2, 10);
+assert.ok(femoPulsarClicks >= 68 && femoPulsarClicks <= 80, `Femobook A2 for Pulsar Mini should be 68-80 clics, got ${femoPulsarClicks}`);
+
+console.log('✅ Pulsar Mini offline calculation passed:', pulsarRecipe.grinders.jmax, '| Femobook:', pulsarRecipe.grinders.femobook_a2, '| Microns:', pulsarMicrons + ' µm');
 
 // 4. Test Offline Recipe Computation for AeroPress Go
 console.log('\nTest 4: Offline Recipe Computation (AeroPress Go Compact Chamber)');

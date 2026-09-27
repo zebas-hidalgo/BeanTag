@@ -127,7 +127,6 @@ function micronsToKUltra(microns) {
  */
 function micronsToOdeGen2(microns, isPulsar = false) {
   if (microns < 450) return 'No apto para espresso';
-  if (isPulsar) return '3.0';
   const safeM = Math.max(450, Math.min(1250, microns));
   const dialVal = 1.0 + ((safeM - 450) / 750) * 8.5;
   const clamped = Math.max(1.0, Math.min(11.0, dialVal));
@@ -155,18 +154,23 @@ function micronsToComandante(microns) {
 
 /**
  * Converts physical target microns (D50) to Femobook A2 clicks.
- * 40 clicks per rotation.
- * Espresso: 6 - 11 clics | AeroPress: 34 - 44 clics | V60: 54 - 68 clics | French Press: 78 - 92 clics
+ * 40 clicks per rotation (18 µm screw pitch).
+ * Espresso: 6 - 16 clics | AeroPress: 50 - 58 clics | V60: 60 - 70 clics | Pulsar Mini: 72 - 78 clics | French Press: 85 - 100 clics
  */
 function micronsToFemobook(microns) {
   const safeM = Math.max(180, Math.min(1300, microns));
   let clicks;
-  if (safeM <= 350) {
-    clicks = Math.round(5 + ((safeM - 180) / 170) * 6); // 5 to 11
+  if (safeM <= 320) {
+    // Espresso: 180 to 320 µm -> 6 to 16 clics (0.15 - 0.40 Rot.)
+    clicks = Math.round(6 + ((safeM - 180) / 140) * 10);
+  } else if (safeM < 500) {
+    // Moka / Fine AeroPress: 320 to 500 µm -> 16 to 45 clics (0.40 - 1.12 Rot.)
+    clicks = Math.round(16 + ((safeM - 320) / 180) * 29);
   } else {
-    clicks = Math.round(20 + ((safeM - 350) / 650) * 65); // 20 to 85+
+    // Filter / Pour-over / Pulsar / French: 500 to 1000 µm -> 45 to 90 clics (1.12 - 2.25 Rot.)
+    clicks = Math.round(45 + ((safeM - 500) / 500) * 45);
   }
-  const clamped = Math.max(4, Math.min(115, clicks));
+  const clamped = Math.max(4, Math.min(120, clicks));
   const rot = (clamped / 40).toFixed(1);
   return `${clamped} clics (~${rot} Rot.)`;
 }
@@ -273,10 +277,10 @@ function computeOfflineRecipe(batch) {
   } else if (isPulsar) {
     ratioMultiplier = (isLightRoast && isWashed) ? 16.6 : 16.0;
     ratioStr = `1:${ratioMultiplier}`;
-    baseMicrons = 620;
+    baseMicrons = 800; // Scott Rao / Jonathan Gagné standard to prevent no-bypass filter stalling
     baseTemp = isLightRoast ? 95 : 93;
-    brewTime = '3:20 min';
-    grindDesc = 'Medio No-Bypass';
+    brewTime = '3:30 min';
+    grindDesc = 'Medio No-Bypass (780 - 840 µm)';
   } else if (isAeropressGo) {
     // AeroPress Go compact chamber (max ~220ml water)
     ratioMultiplier = isLightRoast ? 14.5 : (isDarkRoast ? 13.0 : 14.3);
@@ -386,7 +390,8 @@ function computeOfflineRecipe(batch) {
   let maxSafeM = 1250;
   if (isEspresso) { minSafeM = 180; maxSafeM = 360; }
   else if (isFrench) { minSafeM = 850; maxSafeM = 1250; }
-  else if (isAeropressGo || isAeropress || isPulsar) { minSafeM = 480; maxSafeM = 720; }
+  else if (isPulsar) { minSafeM = 740; maxSafeM = 900; } // Rango seguro no-bypass: evita colapso de flujo en filtro plano
+  else if (isAeropressGo || isAeropress) { minSafeM = 480; maxSafeM = 720; }
   else { minSafeM = 580; maxSafeM = 880; } // V60 / Pour-over
 
   const finalMicrons = Math.max(minSafeM, Math.min(maxSafeM, Math.round(baseMicrons + deltaMicrons)));
@@ -669,10 +674,10 @@ function computeOfflineTuning(data) {
   const isEsp = method.toLowerCase().includes('espresso');
   const isPulsar = method.toLowerCase().includes('pulsar');
   const isGo = method.toLowerCase().includes('go');
-  const ratioMultiplier = isEsp ? 2.2 : (isGo ? 14.3 : 15.5);
+  const ratioMultiplier = isEsp ? 2.2 : (isPulsar ? 16.2 : (isGo ? 14.3 : 15.5));
   let totalWater = Math.round(dose * ratioMultiplier);
   if (isGo && totalWater > 215) totalWater = 210;
-  const bloomWater = isEsp ? Math.round(dose * 0.5) : (isGo ? 40 : 60);
+  const bloomWater = isEsp ? Math.round(dose * 0.5) : (isPulsar ? Math.round(dose * 3) : (isGo ? 40 : 60));
   const remWater = totalWater - bloomWater;
 
   const odeVal = micronsToOdeGen2(currentMicrons, isPulsar);
