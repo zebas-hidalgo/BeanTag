@@ -17,7 +17,7 @@ export const FAMOUS_RECIPES = [
     grindMicrons: 950,
     grinderSettings: {
       jmax: { rot: 2, num: 7, click: 0, text: '2.7.0 (~950 µm)' },
-      femobook: { clicks: 80, text: '80 clics (~2.0 Rot.)' },
+      femobook: { clicks: 81, text: '81 clics (~2.0 Rot.)' },
       comandante: { clicks: 29, text: '29 clics' }
     },
     calculatePours: (dose) => {
@@ -55,7 +55,7 @@ export const FAMOUS_RECIPES = [
     grindMicrons: 700,
     grinderSettings: {
       jmax: { rot: 2, num: 2, click: 0, text: '2.2.0 (~700 µm)' },
-      femobook: { clicks: 56, text: '56 clics (1.4 Rot.)' },
+      femobook: { clicks: 59, text: '59 clics (~1.5 Rot.)' },
       comandante: { clicks: 22, text: '22 clics' }
     },
     calculatePours: (dose) => {
@@ -93,7 +93,7 @@ export const FAMOUS_RECIPES = [
     grindMicrons: 740,
     grinderSettings: {
       jmax: { rot: 2, num: 3, click: 0, text: '2.3.0 (~740 µm)' },
-      femobook: { clicks: 60, text: '60 clics (1.5 Rot.)' },
+      femobook: { clicks: 64, text: '64 clics (~1.6 Rot.)' },
       comandante: { clicks: 23, text: '23 clics' }
     },
     calculatePours: (dose) => {
@@ -141,7 +141,7 @@ export const FAMOUS_RECIPES = [
     grindMicrons: 720,
     grinderSettings: {
       jmax: { rot: 2, num: 2, click: 5, text: '2.2.5 (~720 µm)' },
-      femobook: { clicks: 58, text: '58 clics (~1.45 Rot.)' },
+      femobook: { clicks: 61, text: '61 clics (~1.5 Rot.)' },
       comandante: { clicks: 22, text: '22 clics' }
     },
     calculatePours: (dose) => {
@@ -212,7 +212,7 @@ export const FAMOUS_RECIPES = [
     grindMicrons: 900,
     grinderSettings: {
       jmax: { rot: 2, num: 6, click: 0, text: '2.6.0 (~900 µm)' },
-      femobook: { clicks: 75, text: '75 clics (~1.9 Rot.)' },
+      femobook: { clicks: 77, text: '77 clics (~1.9 Rot.)' },
       comandante: { clicks: 28, text: '28 clics' }
     },
     calculatePours: (dose) => {
@@ -246,7 +246,7 @@ export const FAMOUS_RECIPES = [
     grindMicrons: 560,
     grinderSettings: {
       jmax: { rot: 1, num: 8, click: 5, text: '1.8.5 (~560 µm)' },
-      femobook: { clicks: 42, text: '42 clics (~1.05 Rot.)' },
+      femobook: { clicks: 43, text: '43 clics (~1.1 Rot.)' },
       comandante: { clicks: 16, text: '16 clics' }
     },
     calculatePours: (dose) => {
@@ -283,7 +283,7 @@ export const FAMOUS_RECIPES = [
     grindMicrons: 800,
     grinderSettings: {
       jmax: { rot: 2, num: 4, click: 5, text: '2.4.5 (~800 µm)' },
-      femobook: { clicks: 72, text: '72 clics (~1.8 Rot.)' },
+      femobook: { clicks: 70, text: '70 clics (~1.8 Rot.)' },
       comandante: { clicks: 25, text: '25 clics' }
     },
     calculatePours: (dose) => {
@@ -347,7 +347,7 @@ export const FAMOUS_RECIPES = [
     grindMicrons: 780,
     grinderSettings: {
       jmax: { rot: 2, num: 4, click: 0, text: '2.4.0 (~780 µm)' },
-      femobook: { clicks: 70, text: '70 clics (~1.75 Rot.)' },
+      femobook: { clicks: 68, text: '68 clics (~1.7 Rot.)' },
       comandante: { clicks: 24, text: '24 clics' }
     },
     calculatePours: (dose) => {
@@ -410,7 +410,7 @@ export const FAMOUS_RECIPES = [
     grindMicrons: 840,
     grinderSettings: {
       jmax: { rot: 2, num: 5, click: 5, text: '2.5.5 (~840 µm)' },
-      femobook: { clicks: 76, text: '76 clics (~1.9 Rot.)' },
+      femobook: { clicks: 72, text: '72 clics (~1.8 Rot.)' },
       comandante: { clicks: 26, text: '26 clics' }
     },
     calculatePours: (dose) => {

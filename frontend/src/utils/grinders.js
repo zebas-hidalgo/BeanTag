@@ -91,16 +91,19 @@ export const GRINDERS = [
     type: 'clicks',
     min: 4,
     max: 120,
-    defaultVal: 65,
+    defaultVal: 68,
     calculateMicrons: (clicks) => {
-      const c = parseInt(clicks, 10) || 65;
-      if (c <= 16) {
-        return Math.round(180 + ((c - 6) / 10) * 140);
+      const c = parseInt(clicks, 10) || 68;
+      if (c <= 14) {
+        return Math.round(180 + ((c - 8) / 6) * 140);
       }
-      if (c < 45) {
-        return Math.round(320 + ((c - 16) / 29) * 180);
+      if (c <= 50) {
+        return Math.round(320 + ((c - 14) / 36) * 300);
       }
-      return Math.round(500 + ((c - 45) / 45) * 500);
+      if (c <= 68) {
+        return Math.round(620 + ((c - 50) / 18) * 160);
+      }
+      return Math.round(780 + ((c - 68) / 28) * 370);
     },
     formatDial: (clicks) => `Femobook A2: ${clicks} clics (~${(clicks / 40).toFixed(1)} Rot.)`
   },
@@ -179,7 +182,7 @@ export function parseGrindToMicrons(grind) {
   if (numMatch) return parseInt(numMatch[1], 10);
   if (lower.includes('espresso') || lower.includes('fino')) return 270;
   if (lower.includes('aeropress') || lower.includes('go')) return 580;
-  if (lower.includes('pulsar')) return 620;
+  if (lower.includes('pulsar')) return 780;
   if (lower.includes('v60') || lower.includes('medio fino') || lower.includes('medio-fino')) return 720;
   if (lower.includes('kalita') || lower.includes('chemex') || lower.includes('medio')) return 800;
   if (lower.includes('medio grueso') || lower.includes('medio-grueso')) return 900;
