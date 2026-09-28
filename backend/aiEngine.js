@@ -85,15 +85,24 @@ function isFrozenBatch(batch) {
 
 /**
  * Converts physical target microns (D50) to 1Zpresso J-Max setting.
- * Range: Espresso 1.0.0-1.5.0 (~100-140 clics), Pour-over 2.0.0-2.5.0 (~180-225 clics), French Press 2.7.0-3.2.0.
+ * Range: Espresso 1.1.0-1.4.5 (~100-135 clics), AeroPress 1.8.5-2.1.0, V60 2.2.0-2.4.0 (~200-216 clics),
+ * Pulsar Mini 2.3.5-2.5.5 (~212-230 clics), Chemex 2.6.0-2.8.5, French Press 2.9.0-3.2.0.
  */
 function micronsToJMax(microns) {
   const safeM = Math.max(180, Math.min(1300, microns));
   let clicks;
-  if (safeM <= 380) {
-    clicks = Math.round(90 + ((safeM - 200) / 180) * 55);
+  if (safeM <= 320) {
+    // Espresso: 180 - 320 µm -> 90 to 135 clics (1.0.0 - 1.4.5)
+    clicks = Math.round(90 + ((safeM - 180) / 140) * 45);
+  } else if (safeM <= 620) {
+    // Moka / AeroPress: 320 - 620 µm -> 135 to 185 clics (1.4.5 - 2.0.5)
+    clicks = Math.round(135 + ((safeM - 320) / 300) * 50);
+  } else if (safeM <= 780) {
+    // V60 / Pulsar Mini: 620 - 780 µm -> 185 to 222 clics (2.0.5 - 2.4.2)
+    clicks = Math.round(185 + ((safeM - 620) / 160) * 37);
   } else {
-    clicks = Math.round(150 + ((safeM - 380) / 620) * 115);
+    // Chemex / Prensa Francesa: 780 - 1150 µm -> 222 to 285 clics (2.4.2 - 3.1.5)
+    clicks = Math.round(222 + ((safeM - 780) / 370) * 63);
   }
   const clampedClicks = Math.max(70, Math.min(330, clicks));
   const jmaxObj = clicksToJMax(clampedClicks);
@@ -106,15 +115,23 @@ function micronsToJMax(microns) {
 /**
  * Converts physical target microns (D50) to 1Zpresso K-Ultra dial setting (0.0 to 15.0).
  * 100 clicks per rotation, 10 divisions per number.
- * Espresso: 3.0 - 4.2 | AeroPress: 5.5 - 6.8 | Pour-over (V60): 7.2 - 8.8 | Cupping/French Press: 9.5 - 10.8
+ * Espresso: 3.0 - 4.2 | AeroPress: 5.8 - 6.6 | V60: 7.2 - 8.2 | Pulsar Mini: 7.8 - 8.8 (78-88 clics) | Chemex: 8.8 - 9.8 | French Press: 9.8 - 11.2
  */
 function micronsToKUltra(microns) {
   const safeM = Math.max(180, Math.min(1300, microns));
   let dial;
-  if (safeM <= 380) {
-    dial = 2.5 + ((safeM - 180) / 200) * 1.7; // ~2.5 to 4.2
+  if (safeM <= 320) {
+    // Espresso: 180 - 320 µm -> 2.5 to 4.2
+    dial = 2.5 + ((safeM - 180) / 140) * 1.7;
+  } else if (safeM <= 620) {
+    // Moka / AeroPress: 320 - 620 µm -> 4.2 to 6.2
+    dial = 4.2 + ((safeM - 320) / 300) * 2.0;
+  } else if (safeM <= 780) {
+    // V60 / Pulsar Mini: 620 - 780 µm -> 6.2 to 8.2
+    dial = 6.2 + ((safeM - 620) / 160) * 2.0;
   } else {
-    dial = 4.5 + ((safeM - 380) / 600) * 5.5; // ~4.5 to 10.0+
+    // Chemex / Prensa: 780 - 1150 µm -> 8.2 to 11.2
+    dial = 8.2 + ((safeM - 780) / 370) * 3.0;
   }
   const clampedDial = Math.max(2.0, Math.min(13.0, dial));
   const rounded = Math.round(clampedDial * 10) / 10;
@@ -126,12 +143,22 @@ function micronsToKUltra(microns) {
  * Converts physical target microns (D50) to Fellow Ode Gen 2 dial setting (1.0 to 11.0).
  * Flat 64mm Gen 2 stainless burrs with 1/3 micro-clicks.
  * Factory note: Not suitable for espresso (<450 µm).
- * AeroPress: 1.2 - 2.2 | V60 / Pour-over: 3.1 - 5.2 | Chemex: 5.2 - 7.0 | French Press: 7.1 - 8.2
+ * AeroPress: 2.2 - 3.2 | V60 / Pour-over: 3.2 - 4.5 | Pulsar Mini: 4.1 - 5.1 | Chemex: 5.2 - 7.0 | French Press: 7.2 - 9.2
  */
 function micronsToOdeGen2(microns, isPulsar = false) {
   if (microns < 450) return 'No apto para espresso';
   const safeM = Math.max(450, Math.min(1250, microns));
-  const dialVal = 1.0 + ((safeM - 450) / 750) * 8.5;
+  let dialVal;
+  if (safeM <= 620) {
+    // AeroPress: 450 - 620 µm -> 1.1 to 2.6
+    dialVal = 1.1 + ((safeM - 450) / 170) * 1.5;
+  } else if (safeM <= 780) {
+    // V60 / Pulsar Mini: 620 - 780 µm -> 2.6 to 4.6
+    dialVal = 2.6 + ((safeM - 620) / 160) * 2.0;
+  } else {
+    // Chemex / Prensa: 780 - 1150 µm -> 4.6 to 8.6
+    dialVal = 4.6 + ((safeM - 780) / 370) * 4.0;
+  }
   const clamped = Math.max(1.0, Math.min(11.0, dialVal));
   const intPart = Math.floor(clamped);
   const frac = clamped - intPart;
@@ -141,55 +168,76 @@ function micronsToOdeGen2(microns, isPulsar = false) {
 
 /**
  * Converts physical target microns (D50) to Comandante C40 MK3/MK4 clicks.
- * Espresso: 8 - 12 clics | AeroPress: 13 - 17 clics | V60: 20 - 26 clics | Cupping/French Press: 28 - 34 clics
+ * Espresso: 8 - 12 clics | AeroPress: 15 - 18 clics | V60: 20 - 24 clics | Pulsar Mini: 23 - 26 clics | Chemex: 25 - 28 clics | French Press: 28 - 34 clics
  */
 function micronsToComandante(microns) {
   const safeM = Math.max(180, Math.min(1300, microns));
   let clicks;
-  if (safeM <= 380) {
-    clicks = Math.round(7 + ((safeM - 180) / 200) * 5); // 7 to 12
+  if (safeM <= 320) {
+    // Espresso: 180 - 320 µm -> 8 to 13 clics
+    clicks = Math.round(8 + ((safeM - 180) / 140) * 5);
+  } else if (safeM <= 620) {
+    // Moka / AeroPress: 320 - 620 µm -> 13 to 17 clics
+    clicks = Math.round(13 + ((safeM - 320) / 300) * 4);
+  } else if (safeM <= 780) {
+    // V60 / Pulsar Mini: 620 - 780 µm -> 17 to 25 clics
+    clicks = Math.round(17 + ((safeM - 620) / 160) * 8);
   } else {
-    clicks = Math.round(12 + ((safeM - 380) / 600) * 18); // 12 to 30+
+    // Chemex / Prensa: 780 - 1150 µm -> 25 to 33 clics
+    clicks = Math.round(25 + ((safeM - 780) / 370) * 8);
   }
-  const clamped = Math.max(6, Math.min(42, clicks));
+  const clamped = Math.max(6, Math.min(45, clicks));
   return `${clamped} clics`;
 }
 
 /**
  * Converts physical target microns (D50) to Femobook A2 clicks.
  * 40 clicks per rotation (18 µm screw pitch).
- * Espresso: 6 - 16 clics | AeroPress: 50 - 58 clics | V60: 60 - 70 clics | Pulsar Mini: 72 - 78 clics | French Press: 85 - 100 clics
+ * Espresso: 8 - 14 clics | AeroPress Go: 44 - 48 clics | AeroPress: 48 - 54 clics |
+ * V60: 58 - 65 clics | Pulsar Mini: 64 - 72 clics (~1.6 to 1.8 Rot.) | Chemex: 72 - 82 clics | French Press: 85 - 100 clics
  */
 function micronsToFemobook(microns) {
   const safeM = Math.max(180, Math.min(1300, microns));
   let clicks;
   if (safeM <= 320) {
-    // Espresso: 180 to 320 µm -> 6 to 16 clics (0.15 - 0.40 Rot.)
-    clicks = Math.round(6 + ((safeM - 180) / 140) * 10);
-  } else if (safeM < 500) {
-    // Moka / Fine AeroPress: 320 to 500 µm -> 16 to 45 clics (0.40 - 1.12 Rot.)
-    clicks = Math.round(16 + ((safeM - 320) / 180) * 29);
+    // safeM <= 320: Espresso: Math.round(8 + ((safeM - 180) / 140) * 6) (8 to 14)
+    clicks = Math.round(8 + ((safeM - 180) / 140) * 6);
+  } else if (safeM <= 620) {
+    // 320 < safeM <= 620: Moka/AeroPress: Math.round(14 + ((safeM - 320) / 300) * 36) (14 to 50)
+    clicks = Math.round(14 + ((safeM - 320) / 300) * 36);
+  } else if (safeM <= 780) {
+    // 620 < safeM <= 780: V60/Pulsar: Math.round(50 + ((safeM - 620) / 160) * 18) (50 to 68)
+    clicks = Math.round(50 + ((safeM - 620) / 160) * 18);
   } else {
-    // Filter / Pour-over / Pulsar / French: 500 to 1000 µm -> 45 to 90 clics (1.12 - 2.25 Rot.)
-    clicks = Math.round(45 + ((safeM - 500) / 500) * 45);
+    // 780 < safeM <= 1150: Chemex/Prensa: Math.round(68 + ((safeM - 780) / 370) * 28) (68 to 96)
+    clicks = Math.round(68 + ((safeM - 780) / 370) * 28);
   }
-  const clamped = Math.max(4, Math.min(120, clicks));
+  const clamped = Math.max(6, Math.min(120, clicks));
   const rot = (clamped / 40).toFixed(1);
   return `${clamped} clics (~${rot} Rot.)`;
 }
 
 /**
  * Converts physical target microns (D50) to Kingrinder K6 clicks.
- * 60 clicks per rotation.
- * Espresso: 18 - 35 clics | AeroPress: 60 - 75 clics | V60: 85 - 105 clics | French Press: 120 - 140 clics
+ * 60 clicks per rotation (16 µm/clic).
+ * Espresso: 20 - 36 clics | AeroPress: 68 - 80 clics | V60: 85 - 100 clics |
+ * Pulsar Mini: 95 - 108 clics (1 Rot. 35-48 clics) | Chemex: 108 - 125 clics | French Press: 125 - 145 clics
  */
 function micronsToKingrinder(microns) {
   const safeM = Math.max(180, Math.min(1300, microns));
   let clicks;
-  if (safeM <= 350) {
-    clicks = Math.round(15 + ((safeM - 180) / 170) * 18); // 15 to 33
+  if (safeM <= 320) {
+    // Espresso: 180 - 320 µm -> 18 to 38 clics
+    clicks = Math.round(18 + ((safeM - 180) / 140) * 20);
+  } else if (safeM <= 620) {
+    // Moka / AeroPress: 320 - 620 µm -> 38 to 74 clics
+    clicks = Math.round(38 + ((safeM - 320) / 300) * 36);
+  } else if (safeM <= 780) {
+    // V60 / Pulsar Mini: 620 - 780 µm -> 74 to 102 clics
+    clicks = Math.round(74 + ((safeM - 620) / 160) * 28);
   } else {
-    clicks = Math.round(45 + ((safeM - 350) / 650) * 80); // 45 to 125+
+    // Chemex / Prensa: 780 - 1150 µm -> 102 to 142 clics
+    clicks = Math.round(102 + ((safeM - 780) / 370) * 40);
   }
   const clamped = Math.max(12, Math.min(170, clicks));
   const rot = Math.floor(clamped / 60);
@@ -199,15 +247,23 @@ function micronsToKingrinder(microns) {
 
 /**
  * Converts physical target microns (D50) to Timemore C2/C3 clicks.
- * Espresso: 7 - 9 clics | AeroPress: 11 - 14 clics | V60: 15 - 20 clics | French Press: 23 - 27 clics
+ * Espresso: 7 - 9 clics | AeroPress: 12 - 15 clics | V60: 16 - 20 clics | Pulsar Mini: 18 - 21 clics | Chemex: 20 - 24 clics | French Press: 23 - 27 clics
  */
 function micronsToTimemore(microns) {
   const safeM = Math.max(180, Math.min(1300, microns));
   let clicks;
-  if (safeM <= 350) {
-    clicks = Math.round(6 + ((safeM - 180) / 170) * 3); // 6 to 9
+  if (safeM <= 320) {
+    // Espresso: 180 - 320 µm -> 7 to 9 clics
+    clicks = Math.round(7 + ((safeM - 180) / 140) * 2);
+  } else if (safeM <= 620) {
+    // Moka / AeroPress: 320 - 620 µm -> 9 to 14 clics
+    clicks = Math.round(9 + ((safeM - 320) / 300) * 5);
+  } else if (safeM <= 780) {
+    // V60 / Pulsar Mini: 620 - 780 µm -> 14 to 19 clics
+    clicks = Math.round(14 + ((safeM - 620) / 160) * 5);
   } else {
-    clicks = Math.round(10 + ((safeM - 350) / 650) * 15); // 10 to 25+
+    // Chemex / Prensa: 780 - 1150 µm -> 19 to 26 clics
+    clicks = Math.round(19 + ((safeM - 780) / 370) * 7);
   }
   const clamped = Math.max(6, Math.min(34, clicks));
   return `${clamped} clics`;
@@ -215,17 +271,29 @@ function micronsToTimemore(microns) {
 
 /**
  * Converts physical target microns (D50) to Baratza Encore / Encore ESP dial.
- * Espresso: ESP 8 - 14 | V60: Classic 14 - 18 / ESP 24 - 28 | French Press: Classic 26 - 32 / ESP 32 - 36
+ * Espresso: ESP 8 - 14 | AeroPress: 12 - 15 (ESP 22-25) | V60: 14 - 17 (ESP 24-27) |
+ * Pulsar Mini: 16 - 19 (ESP 26-29) | Chemex: 20 - 24 (ESP 30-34) | French Press: 26 - 32 (ESP 36-40)
  */
 function micronsToBaratza(microns, isEspresso = false) {
   const safeM = Math.max(180, Math.min(1300, microns));
-  if (isEspresso || safeM <= 380) {
-    const espStep = Math.max(6, Math.min(16, Math.round(8 + ((safeM - 180) / 180) * 6)));
+  if (isEspresso || safeM <= 320) {
+    const espStep = Math.max(6, Math.min(16, Math.round(8 + ((safeM - 180) / 140) * 6)));
     return `ESP Ajuste ${espStep} (Pasos micro 8-14)`;
   }
-  const classicStep = Math.max(10, Math.min(36, Math.round(10 + ((safeM - 450) / 650) * 17)));
-  const espFilterStep = Math.min(40, classicStep + 10);
-  return `Ajuste ${classicStep} (ESP: ${espFilterStep})`;
+  let classicStep;
+  if (safeM <= 620) {
+    // AeroPress: 320 - 620 µm -> 10 to 14
+    classicStep = Math.round(10 + ((safeM - 320) / 300) * 4);
+  } else if (safeM <= 780) {
+    // V60 / Pulsar Mini: 620 - 780 µm -> 14 to 18
+    classicStep = Math.round(14 + ((safeM - 620) / 160) * 4);
+  } else {
+    // Chemex / Prensa: 780 - 1150 µm -> 18 to 28
+    classicStep = Math.round(18 + ((safeM - 780) / 370) * 10);
+  }
+  const clampedClassic = Math.max(8, Math.min(40, classicStep));
+  const espFilterStep = Math.min(40, clampedClassic + 10);
+  return `Ajuste ${clampedClassic} (ESP: ${espFilterStep})`;
 }
 
 /**
@@ -255,7 +323,7 @@ function computeOfflineRecipe(batch) {
   let ratioStr = '1:15';
   let ratioMultiplier = 15;
   let baseMicrons = 720;
-  let baseTemp = 92;
+  let baseTemp = 93;
   let brewTime = '2:45 min';
   let grindDesc = 'Medio-Fino';
 
@@ -264,66 +332,76 @@ function computeOfflineRecipe(batch) {
   const isAeropressGo = method.toLowerCase().includes('go');
   const isAeropress = !isAeropressGo && method.toLowerCase().includes('aero');
   const isFrench = method.toLowerCase().includes('prensa') || method.toLowerCase().includes('french');
+  const isChemex = method.toLowerCase().includes('chemex');
 
   const isLightRoast = roast.includes('claro') || roast.includes('light');
   const isDarkRoast = roast.includes('oscuro') || roast.includes('dark');
   const isWashed = process.includes('lavad') || process.includes('wash');
-  const isNaturalOrAnaerobic = process.includes('natural') || process.includes('anaerob') || process.includes('macer') || process.includes('ferment') || process.includes('honey');
+  const isAnaerobic = process.includes('anaerob') || process.includes('macer') || process.includes('ferment') || process.includes('co-ferment');
+  const isNaturalOrAnaerobic = process.includes('natural') || isAnaerobic || process.includes('honey');
 
   if (isEspresso) {
     ratioMultiplier = isLightRoast ? 2.4 : (isDarkRoast ? 2.0 : 2.2);
     ratioStr = `1:${ratioMultiplier}`;
-    baseMicrons = 270;
+    baseMicrons = 260;
     baseTemp = isLightRoast ? 94 : (isDarkRoast ? 90 : 92);
     brewTime = isLightRoast ? '30s' : '26s';
     grindDesc = 'Espresso Fino';
   } else if (isPulsar) {
     ratioMultiplier = (isLightRoast && isWashed) ? 16.6 : 16.0;
-    ratioStr = `1:${ratioMultiplier}`;
-    baseMicrons = 800; // Scott Rao / Jonathan Gagné standard to prevent no-bypass filter stalling
-    baseTemp = isLightRoast ? 95 : 93;
+    ratioStr = '1:16';
+    baseMicrons = 780;
+    baseTemp = isLightRoast ? 94 : 93;
     brewTime = '3:30 min';
-    grindDesc = 'Medio No-Bypass (780 - 840 µm)';
+    grindDesc = 'Medio No-Bypass (750 - 830 µm)';
   } else if (isAeropressGo) {
     // AeroPress Go compact chamber (max ~220ml water)
-    ratioMultiplier = isLightRoast ? 14.5 : (isDarkRoast ? 13.0 : 14.3);
-    ratioStr = `1:${ratioMultiplier}`;
-    baseMicrons = 560;
-    baseTemp = isLightRoast ? 92 : (isDarkRoast ? 87 : 90);
+    ratioMultiplier = isLightRoast ? 14.5 : (isDarkRoast ? 13.0 : 14.0);
+    ratioStr = isLightRoast ? '1:14.5' : (isDarkRoast ? '1:13' : '1:14');
+    baseMicrons = 580;
+    baseTemp = 90;
     brewTime = '1:45 min';
     grindDesc = 'Medio-Fina (AeroPress Go)';
   } else if (isAeropress) {
-    ratioMultiplier = isLightRoast ? 15.0 : 14.0;
-    ratioStr = `1:${ratioMultiplier}`;
-    baseMicrons = 580;
-    baseTemp = isLightRoast ? 92 : (isDarkRoast ? 88 : 91);
+    ratioMultiplier = isLightRoast ? 15.0 : 14.5;
+    ratioStr = isLightRoast ? '1:15' : '1:14.5';
+    baseMicrons = 620;
+    baseTemp = 90;
     brewTime = '2:15 min';
     grindDesc = 'Medio Fino (AeroPress)';
   } else if (isFrench) {
     ratioMultiplier = isDarkRoast ? 14.0 : 15.0;
     ratioStr = `1:${ratioMultiplier}`;
-    baseMicrons = 1000;
-    baseTemp = isLightRoast ? 95 : 92;
+    baseMicrons = 1050;
+    baseTemp = 94;
     brewTime = '4:00 min';
     grindDesc = 'Grueso (Inmersión)';
+  } else if (isChemex) {
+    ratioMultiplier = 16.0;
+    ratioStr = '1:16';
+    baseMicrons = 880;
+    baseTemp = 94;
+    brewTime = '4:00 min';
+    grindDesc = 'Medio-Grueso (Chemex)';
   } else {
     // V60 / Pour-over adaptive ratio & temp
     baseMicrons = 720;
     grindDesc = 'Medio-Fino';
+    baseTemp = 93;
     if (isLightRoast && isWashed) {
       ratioMultiplier = 16.6;
       ratioStr = '1:16.6';
-      baseTemp = 95;
+      baseTemp = 93;
       brewTime = '3:00 min';
     } else if (isLightRoast && isNaturalOrAnaerobic) {
       ratioMultiplier = 15.5;
       ratioStr = '1:15.5';
-      baseTemp = 93;
+      baseTemp = 92;
       brewTime = '2:45 min';
     } else if (isDarkRoast) {
       ratioMultiplier = 14.5;
       ratioStr = '1:14.5';
-      baseTemp = 89;
+      baseTemp = 92;
       brewTime = '2:25 min';
     } else {
       ratioMultiplier = 15.0;
@@ -339,38 +417,53 @@ function computeOfflineRecipe(batch) {
 
   // Roast level adjustment
   if (isLightRoast) {
-    deltaMicrons -= 40; // Finer grind for dense bean
+    deltaMicrons -= 20; // Finer grind for dense bean
+    if (!isPulsar && !isAeropress && !isAeropressGo && !isEspresso) {
+      baseTemp = Math.min(96, baseTemp + 2);
+    }
     reasons.push('Tueste claro (grano denso: molienda fina y alta temp para maximizar solubilidad)');
   } else if (isDarkRoast) {
-    deltaMicrons += 60; // Coarser grind for brittle bean
+    deltaMicrons += 40; // Coarser grind for brittle bean
+    if (!isPulsar && !isAeropress && !isAeropressGo && !isEspresso) {
+      baseTemp = Math.max(86, baseTemp - 3);
+    }
     reasons.push('Tueste oscuro (grano poroso y soluble: molienda abierta y temp moderada para evitar amargor)');
   }
 
   // Process adjustment
-  if (isNaturalOrAnaerobic) {
+  if (isAnaerobic) {
+    deltaMicrons += 25;
+    baseTemp = Math.max(88, baseTemp - 2);
+    reasons.push('Proceso anaeróbico / maceración carbónica (grano ultra-soluble: molienda abierta y menor temperatura para evitar sobre-extracción alcohólica o amarga)');
+  } else if (isNaturalOrAnaerobic) {
     deltaMicrons += 30; // Naturals produce more fines
-    reasons.push('Proceso fermentativo/natural (alta carga de azúcares y finos: molienda ligeramente abierta)');
+    reasons.push('Proceso natural / honey (alta carga de azúcares y finos: molienda abierta para evitar compactación)');
   } else if (isWashed) {
     reasons.push('Proceso lavado (taza limpia y acidez brillante: favorece percolación continua)');
   }
 
   // Altitude adjustment
   if (altitudeMeters > 1700) {
-    deltaMicrons -= 20;
+    deltaMicrons -= 10;
     baseTemp = Math.min(96, baseTemp + 1);
     reasons.push(`Altitud SHB (${altitudeMeters}m: densidad celular alta)`);
+  } else if (altitudeMeters < 1200) {
+    deltaMicrons += 10;
+    baseTemp = Math.max(86, baseTemp - 1);
+    reasons.push(`Baja altitud (${altitudeMeters}m: grano menos denso)`);
   }
 
   // Días de Reposo / Desgasificación de CO2
   const isVeryFresh = daysSinceRoast !== null && daysSinceRoast < 7;
   if (daysSinceRoast !== null) {
     if (daysSinceRoast < 7) {
-      deltaMicrons += 20; // Compensate violent CO2 bubbling
-      reasons.push(`Grano fresco (${daysSinceRoast} días de tueste: alta presión de CO₂, bloom extendido a 50s para desgasificar sin canalizaciones)`);
-    } else if (daysSinceRoast >= 12 && daysSinceRoast <= 30) {
+      deltaMicrons += 15; // Compensate violent CO2 bubbling
+      reasons.push(`Grano recién tostado (<7 días: alta presión de CO₂, bloom extendido a 50-60s para desgasificar sin canalizaciones)`);
+    } else if (daysSinceRoast >= 8 && daysSinceRoast <= 25) {
       reasons.push(`Ventana de tueste óptima (${daysSinceRoast} días: pico de solubilidad y balance aromático)`);
     } else if (daysSinceRoast > 45) {
       deltaMicrons -= 15;
+      baseTemp = Math.min(96, baseTemp + 1);
       reasons.push(`Tueste maduro (${daysSinceRoast} días: baja presión de gas, molienda levemente más cerrada para sostener extracción)`);
     }
   }
@@ -393,8 +486,9 @@ function computeOfflineRecipe(batch) {
   let maxSafeM = 1250;
   if (isEspresso) { minSafeM = 180; maxSafeM = 360; }
   else if (isFrench) { minSafeM = 850; maxSafeM = 1250; }
-  else if (isPulsar) { minSafeM = 740; maxSafeM = 900; } // Rango seguro no-bypass: evita colapso de flujo en filtro plano
+  else if (isPulsar) { minSafeM = 740; maxSafeM = 880; } // Rango seguro no-bypass: evita colapso de flujo en filtro plano
   else if (isAeropressGo || isAeropress) { minSafeM = 480; maxSafeM = 720; }
+  else if (isChemex) { minSafeM = 800; maxSafeM = 1000; }
   else { minSafeM = 580; maxSafeM = 880; } // V60 / Pour-over
 
   const finalMicrons = Math.max(minSafeM, Math.min(maxSafeM, Math.round(baseMicrons + deltaMicrons)));
@@ -444,16 +538,47 @@ function computeOfflineRecipe(batch) {
   } else if (isPulsar) {
     const pulse1 = Math.round(remainingWaterG * 0.5);
     const pulse2 = totalWaterG - bloomWaterG - pulse1;
+    const bloomSec = isVeryFresh ? '55-60s' : '45-50s';
+    const bloomTime = isVeryFresh ? '0:00 - 0:55' : '0:00 - 0:45';
+    const p1Time = isVeryFresh ? '0:55 - 1:50' : '0:45 - 1:45';
     pours = [
-      { step: 1, label: 'Bloom / Válvula Cerrada', water_g: bloomWaterG, total_water_g: bloomWaterG, time: isVeryFresh ? '0:00 - 0:50' : '0:00 - 0:45', description: '🔒 Válvula cerrada. Verter agua con dispersor y aplicar Wet-WDT suave.' },
-      { step: 2, label: '1º Pulso / Válvula Media', water_g: pulse1, total_water_g: bloomWaterG + pulse1, time: isVeryFresh ? '0:50 - 1:45' : '0:45 - 1:45', description: '⚡ Abrir válvula al 50%. Mantener nivel de agua constante.' },
-      { step: 3, label: '2º Pulso / Válvula Abierta', water_g: pulse2, total_water_g: totalWaterG, time: '1:45 - 3:20', description: '🔓 Válvula al 100%. Dejar drenar por gravedad sin bypass.' }
+      {
+        step: 1,
+        title: 'Bloom e Inmersión (🔒 Válvula CERRADA)',
+        label: 'Bloom e Inmersión (🔒 Válvula CERRADA)',
+        valve: 'closed',
+        water_g: bloomWaterG,
+        total_water_g: bloomWaterG,
+        time: bloomTime,
+        description: `Verter agua a través de la tapa de dispersión con válvula 100% cerrada. Bloom estático de ${bloomSec} para saturar la cama sin pérdidas.`
+      },
+      {
+        step: 2,
+        title: '1º Vertido Percolación (⚡ Válvula 45-50% de flujo)',
+        label: '1º Vertido Percolación (⚡ Válvula 45-50% de flujo)',
+        valve: 'half',
+        water_g: pulse1,
+        total_water_g: bloomWaterG + pulse1,
+        time: p1Time,
+        description: 'Abrir la válvula al 45-50% de flujo (~2-2.5 ml/s). Verter manteniendo 1 cm de columna de agua limpia sobre el dispersor.'
+      },
+      {
+        step: 3,
+        title: '2º Vertido y Caída Final (🔓 Válvula 100% ABIERTA)',
+        label: '2º Vertido y Caída Final (🔓 Válvula 100% ABIERTA)',
+        valve: 'open',
+        water_g: pulse2,
+        total_water_g: totalWaterG,
+        time: '1:45 - 3:30',
+        description: 'Verter el resto del agua y abrir la válvula al 100% para una caída final limpia y una cama de café perfectamente plana.'
+      }
     ];
     steps = [
-      `Colocar filtro de papel enjuagado en NextLevel Pulsar Mini y cerrar la válvula de control.`,
-      `Añadir ${dose}g con molienda calibrada en ${jmaxObj.display} (J-Max) o ${finalFemobook} (Femobook).`,
-      `Colocar dispersor de agua. Verter ${bloomWaterG}g a ${baseTemp}°C y dejar florecer ${isVeryFresh ? '50s' : '45s'}.`,
-      `Seguir la secuencia de apertura de válvula para máxima extracción homogénea.`
+      `Colocar filtro de papel enjuagado en NextLevel Pulsar Mini y cerrar la válvula de control al 100%.`,
+      `Añadir ${dose}g con molienda calibrada en ${jmaxObj.display} (J-Max) o ${finalFemobook} (Femobook A2).`,
+      `Colocar dispersor de agua. Verter ${bloomWaterG}g a ${baseTemp}°C a través de la tapa con válvula cerrada (bloom de ${bloomSec}).`,
+      `Abrir la válvula al 45-50% de flujo (~2-2.5 ml/s) y verter ${pulse1}g manteniendo columna de agua de ~1 cm sobre el dispersor.`,
+      `Verter los últimos ${pulse2}g y abrir la válvula al 100% para una caída final limpia y una cama de café perfectamente plana.`
     ];
   } else if (isAeropressGo) {
     pours = [
@@ -762,6 +887,107 @@ function computeOfflineTuning(data) {
 }
 
 /**
+ * Master Barista System Prompt & Recalibrated Extraction Directives
+ * Injects unified SCA D50 extraction physics, 8-grinder manufacturer dials,
+ * and 3-phase valve protocol for NextLevel Pulsar Mini.
+ */
+const BARISTA_SYSTEM_PROMPT = `Eres el Maestro Barista de Especialidad de BeanTag V3.0, experto en física de fluidos, hidrodinámica de lecho y granulometría SCA D50.
+
+MATRIZ UNIFICADA DE CALIBRACIÓN DE LOS 8 MOLINOS:
+1. 1Zpresso J-Max (8.8 µm/clic, 90 clics/rot):
+   - Espresso (260 µm): 1.1.0 - 1.4.5 (~100-135 clics)
+   - AeroPress (620 µm): 1.8.5 - 2.1.0 (~175-190 clics)
+   - V60 (720 µm): 2.2.0 - 2.4.0 (~200-216 clics)
+   - Pulsar Mini (780 µm): 2.3.5 - 2.5.5 (~212-230 clics)
+   - Chemex (880 µm): 2.6.0 - 2.8.5 (~234-257 clics)
+   - Prensa Francesa (1050 µm): 2.9.0 - 3.2.0 (~261-288 clics)
+   - Formato requerido: "Rot.Num.Clic (X Rot. Y Núm. Z Clics)"
+
+2. 1Zpresso K-Ultra (20 µm/clic, 100 clics/rot):
+   - Espresso: 3.0 - 4.2 | AeroPress: 5.8 - 6.6 | V60: 7.2 - 8.2 | Pulsar Mini: 7.8 - 8.8 (78-88 clics) | Chemex: 8.8 - 9.8 | Prensa: 9.8 - 11.2
+   - Formato requerido: "Dial (X clics)" (ej. "8.2 (82 clics)")
+
+3. Femobook A2 (18 µm/clic, 40 clics/rot):
+   - Espresso (260 µm): 8 - 14 clics
+   - AeroPress Go (580 µm): 44 - 48 clics
+   - AeroPress (620 µm): 48 - 54 clics
+   - V60 (720 µm): 58 - 65 clics
+   - NextLevel Pulsar Mini (780 µm, rango seguro 740 - 830 µm): 64 - 72 clics (~1.6 a 1.8 Rot.)
+   - Chemex (880 µm): 72 - 82 clics
+   - Prensa Francesa (1050 µm): 85 - 100 clics
+   - Formato requerido: "X clics (~Y Rot.)" (ej. "68 clics (~1.7 Rot.)")
+
+4. Comandante C40 MK4 (~30 µm/clic):
+   - Espresso: 8 - 12 clics | AeroPress: 15 - 18 clics | V60: 20 - 24 clics | Pulsar Mini: 23 - 26 clics | Chemex: 25 - 28 clics | Prensa: 28 - 34 clics
+   - Formato requerido: "X clics"
+
+5. Fellow Ode Gen 2 (Planas 64mm Gen 2):
+   - Espresso: "No apto para espresso" (menor a 450 µm)
+   - AeroPress: 2.2 - 3.2 | V60: 3.2 - 4.5 | Pulsar Mini: 4.1 - 5.1 | Chemex: 5.2 - 7.0 | Prensa: 7.2 - 9.2
+   - Formato requerido: "Ajuste X.Y (Muelas Planas 64mm)"
+
+6. Kingrinder K6 (16 µm/clic, 60 clics/rot):
+   - Espresso: 20 - 36 clics | AeroPress: 68 - 80 clics | V60: 85 - 100 clics | Pulsar Mini: 95 - 108 clics (1 Rot. 35-48 clics) | Chemex: 108 - 125 clics | Prensa: 125 - 145 clics
+   - Formato requerido: "X clics (Y Rot. Z Clics)"
+
+7. Timemore C2/C3 (Cónicas 38mm):
+   - Espresso: 7 - 9 clics | AeroPress: 12 - 15 clics | V60: 16 - 20 clics | Pulsar Mini: 18 - 21 clics | Chemex: 20 - 24 clics | Prensa: 23 - 27 clics
+   - Formato requerido: "X clics"
+
+8. Baratza Encore / ESP (40 pasos dial):
+   - Espresso: ESP 8 - 14 | AeroPress: 12 - 15 (ESP 22-25) | V60: 14 - 17 (ESP 24-27) | Pulsar Mini: 16 - 19 (ESP 26-29) | Chemex: 20 - 24 (ESP 30-34) | Prensa: 26 - 32 (ESP 36-40)
+   - Formato requerido: "Ajuste X (ESP: Y)" o "ESP Ajuste X (Pasos micro 8-14)"
+
+PROTOCOLOS DE EXTRACCIÓN Y VÁLVULA:
+- NEXTLEVEL PULSAR MINI (CERO BYPASS):
+  * FÍSICA NO-BYPASS: Cama cilíndrica de 45mm con 0% de bypass. Moliendas menores a 740 µm colmatan el lecho de filtro. Rango estricto: 740 - 830 µm (Femobook A2 64-72 clics).
+  * PROTOCOLO DE VÁLVULA DE 3 FASES OBLIGATORIO:
+    1. Fase 1: Bloom e Inmersión con Válvula 100% CERRADA ('closed'). Verter 3x a 4x de agua (45-60g) con dispersor de ducha. Mantener cerrada 45-50s (o 55-60s si tueste < 7 días).
+    2. Fase 2: Percolación Continua con Válvula al 45-50% de flujo ('half', caudal controlado ~2-2.5 ml/s). Verter manteniendo ~1 cm de columna de agua sobre el dispersor.
+    3. Fase 3: Drenaje y Caída Final con Válvula 100% ABIERTA ('open') para un flujo por gravedad libre y cama plana. Tiempo total: 3:15 a 3:45 min.
+  * Todo vertido generado para Pulsar Mini DEBE incluir: "title", "label", "valve" ('closed', 'half', o 'open'), "water_g", "total_water_g", "time", "description".`;
+
+/**
+ * Generates the full barista recipe AI prompt with exact physical directives and schema enforcement.
+ */
+function generateAiRecipePrompt(batch) {
+  const origin = batch.origin || 'Origen Especialidad';
+  const variety = batch.variety || 'Variedad Arábica';
+  const process = batch.process || 'Lavado';
+  const altitude = batch.altitude || '1500m';
+  const roast_level = batch.roast_level || 'Medio';
+  const roast_date = batch.roast_date || null;
+  const freeze_date = batch.freeze_date || null;
+  const sca_score = batch.sca_score || null;
+  const roaster_notes = batch.roaster_notes || '';
+  const targetMethod = batch.method || 'V60 (Filtrado)';
+  const dose = parseFloat(batch.dose_in_g) || 15.0;
+  const activeGrinder = batch.grinder || 'jmax';
+  const daysSinceRoast = calculateDaysSinceRoast(roast_date);
+  const isFrozen = isFrozenBatch(batch);
+
+  return `${BARISTA_SYSTEM_PROMPT}
+
+LOTE DE CAFÉ:
+- Origen: ${origin}
+- Variedad: ${variety}
+- Proceso: ${process}
+- Altitud: ${altitude}
+- Nivel de Tueste: ${roast_level}
+- Fecha de Tueste: ${roast_date || 'No especificada'} (${daysSinceRoast !== null ? `${daysSinceRoast} días desde tueste` : 'Reposo estándar'})
+- Conservación Criogénica: ${isFrozen ? '❄️ Sí, congelado en Cava a -18°C' : 'Temperatura ambiente'}
+- Calificación SCA: ${sca_score ? `${sca_score} puntos` : 'Especialidad'}
+- Notas del Tostador: ${roaster_notes || 'Notas de origen'}
+
+EQUIPO:
+- Método: "${targetMethod}"
+- Dosis (In): "${dose}g"
+- Molino Activo: "${activeGrinder}"
+
+Devuelve un JSON calibrado respetando la matriz de molinos y el protocolo de válvula de 3 fases para Pulsar Mini.`;
+}
+
+/**
  * Executes a Gemini prompt or multimodal request with retry on 503/429 and automatic cascading fallback across active models.
  */
 async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enableThinking = false) {
@@ -884,6 +1110,8 @@ module.exports = {
   VALID_GEMINI_MODELS,
   DEFAULT_GEMINI_MODEL,
   FALLBACK_GEMINI_MODEL,
+  BARISTA_SYSTEM_PROMPT,
+  generateAiRecipePrompt,
   sanitizeModel,
   clicksToJMax,
   jMaxToClicks,
