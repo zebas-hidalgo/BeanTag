@@ -19,10 +19,10 @@ export const GRINDERS = [
       const n = parseInt(num, 10) || 0;
       const c = parseInt(click, 10) || 0;
       const totalClicks = (r * 90) + (n * 10) + c;
-      if (totalClicks <= 150) {
-        return Math.round(200 + ((totalClicks - 90) / 55) * 180);
-      }
-      return Math.round(380 + ((totalClicks - 150) / 115) * 620);
+      if (totalClicks <= 135) return Math.max(180, Math.round(180 + ((totalClicks - 90) / 45) * 140));
+      if (totalClicks <= 185) return Math.round(320 + ((totalClicks - 135) / 50) * 300);
+      if (totalClicks <= 222) return Math.round(620 + ((totalClicks - 185) / 37) * 160);
+      return Math.min(1300, Math.round(780 + ((totalClicks - 222) / 63) * 370));
     },
     formatDial: (rot, num, click) => `J-Max: ${rot}.${num}.${click}`
   },
@@ -38,11 +38,11 @@ export const GRINDERS = [
     step: 0.1,
     defaultVal: 8.0,
     calculateMicrons: (dial) => {
-      const d = parseFloat(dial) || 8.0;
-      if (d <= 4.2) {
-        return Math.round(200 + ((d - 2.5) / 1.7) * 180);
-      }
-      return Math.round(380 + ((d - 4.5) / 5.5) * 600);
+      const d = Number.isFinite(parseFloat(dial)) ? parseFloat(dial) : 8.0;
+      if (d <= 4.2) return Math.max(180, Math.round(180 + ((d - 2.5) / 1.7) * 140));
+      if (d <= 6.2) return Math.round(320 + ((d - 4.2) / 2.0) * 300);
+      if (d <= 8.2) return Math.round(620 + ((d - 6.2) / 2.0) * 160);
+      return Math.min(1300, Math.round(780 + ((d - 8.2) / 3.0) * 370));
     },
     formatDial: (dial) => `K-Ultra: ${parseFloat(dial).toFixed(1)} (${Math.round(parseFloat(dial) * 10)} clics)`
   },
@@ -58,8 +58,10 @@ export const GRINDERS = [
     step: 0.1,
     defaultVal: 4.2,
     calculateMicrons: (dial) => {
-      const d = parseFloat(dial) || 4.2;
-      return Math.round(450 + ((d - 1.0) / 8.5) * 750);
+      const d = Number.isFinite(parseFloat(dial)) ? parseFloat(dial) : 4.2;
+      if (d <= 2.6) return Math.max(450, Math.round(450 + ((d - 1.1) / 1.5) * 170));
+      if (d <= 4.6) return Math.round(620 + ((d - 2.6) / 2.0) * 160);
+      return Math.min(1300, Math.round(780 + ((d - 4.6) / 4.0) * 370));
     },
     formatDial: (dial) => `Ode Gen 2: Ajuste ${parseFloat(dial).toFixed(1)}`
   },
@@ -74,11 +76,11 @@ export const GRINDERS = [
     max: 45,
     defaultVal: 23,
     calculateMicrons: (clicks) => {
-      const c = parseInt(clicks, 10) || 23;
-      if (c <= 12) {
-        return Math.round(180 + ((c - 7) / 5) * 200);
-      }
-      return Math.round(380 + ((c - 12) / 18) * 600);
+      const c = Number.isFinite(parseInt(clicks, 10)) ? parseInt(clicks, 10) : 23;
+      if (c <= 13) return Math.max(180, Math.round(180 + ((c - 8) / 5) * 140));
+      if (c <= 17) return Math.round(320 + ((c - 13) / 4) * 300);
+      if (c <= 25) return Math.round(620 + ((c - 17) / 8) * 160);
+      return Math.min(1300, Math.round(780 + ((c - 25) / 8) * 370));
     },
     formatDial: (clicks) => `Comandante: ${clicks} clics`
   },
@@ -93,17 +95,11 @@ export const GRINDERS = [
     max: 120,
     defaultVal: 68,
     calculateMicrons: (clicks) => {
-      const c = parseInt(clicks, 10) || 68;
-      if (c <= 14) {
-        return Math.round(180 + ((c - 8) / 6) * 140);
-      }
-      if (c <= 50) {
-        return Math.round(320 + ((c - 14) / 36) * 300);
-      }
-      if (c <= 68) {
-        return Math.round(620 + ((c - 50) / 18) * 160);
-      }
-      return Math.round(780 + ((c - 68) / 28) * 370);
+      const c = Number.isFinite(parseInt(clicks, 10)) ? parseInt(clicks, 10) : 68;
+      if (c <= 14) return Math.max(180, Math.round(180 + ((c - 8) / 6) * 140));
+      if (c <= 50) return Math.round(320 + ((c - 14) / 36) * 300);
+      if (c <= 68) return Math.round(620 + ((c - 50) / 18) * 160);
+      return Math.min(1300, Math.round(780 + ((c - 68) / 28) * 370));
     },
     formatDial: (clicks) => `Femobook A2: ${clicks} clics (~${(clicks / 40).toFixed(1)} Rot.)`
   },
@@ -118,11 +114,11 @@ export const GRINDERS = [
     max: 180,
     defaultVal: 92,
     calculateMicrons: (clicks) => {
-      const c = parseInt(clicks, 10) || 92;
-      if (c <= 35) {
-        return Math.round(180 + ((c - 15) / 18) * 170);
-      }
-      return Math.round(350 + ((c - 45) / 80) * 650);
+      const c = Number.isFinite(parseInt(clicks, 10)) ? parseInt(clicks, 10) : 92;
+      if (c <= 38) return Math.max(180, Math.round(180 + ((c - 18) / 20) * 140));
+      if (c <= 74) return Math.round(320 + ((c - 38) / 36) * 300);
+      if (c <= 102) return Math.round(620 + ((c - 74) / 28) * 160);
+      return Math.min(1300, Math.round(780 + ((c - 102) / 40) * 370));
     },
     formatDial: (clicks) => `Kingrinder K6: ${clicks} clics (~${Math.floor(clicks / 60)}.${clicks % 60})`
   },
@@ -137,11 +133,11 @@ export const GRINDERS = [
     max: 36,
     defaultVal: 17,
     calculateMicrons: (clicks) => {
-      const c = parseInt(clicks, 10) || 17;
-      if (c <= 9) {
-        return Math.round(180 + ((c - 6) / 3) * 170);
-      }
-      return Math.round(350 + ((c - 10) / 15) * 650);
+      const c = Number.isFinite(parseInt(clicks, 10)) ? parseInt(clicks, 10) : 17;
+      if (c <= 9) return Math.max(180, Math.round(180 + ((c - 7) / 2) * 140));
+      if (c <= 14) return Math.round(320 + ((c - 9) / 5) * 300);
+      if (c <= 19) return Math.round(620 + ((c - 14) / 5) * 160);
+      return Math.min(1300, Math.round(780 + ((c - 19) / 7) * 370));
     },
     formatDial: (clicks) => `Timemore: ${clicks} clics`
   },
@@ -156,11 +152,11 @@ export const GRINDERS = [
     max: 40,
     defaultVal: 15,
     calculateMicrons: (step) => {
-      const s = parseInt(step, 10) || 15;
-      if (s <= 14) {
-        return Math.round(180 + ((s - 6) / 8) * 200);
-      }
-      return Math.round(450 + ((s - 10) / 17) * 650);
+      const s = Number.isFinite(parseInt(step, 10)) ? parseInt(step, 10) : 15;
+      if (s <= 9) return Math.max(180, Math.round(180 + ((s - 1) / 8) * 140));
+      if (s <= 14) return Math.round(320 + ((s - 10) / 4) * 300);
+      if (s <= 18) return Math.round(620 + ((s - 14) / 4) * 160);
+      return Math.min(1300, Math.round(780 + ((s - 18) / 10) * 370));
     },
     formatDial: (step) => `Baratza: Ajuste ${step}`
   }

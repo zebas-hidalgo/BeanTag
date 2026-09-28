@@ -178,7 +178,7 @@ export const FAMOUS_RECIPES = [
     grindMicrons: 360,
     grinderSettings: {
       jmax: { rot: 1, num: 4, click: 5, text: '1.4.5 (~360 µm)' },
-      femobook: { clicks: 12, text: '12 clics' },
+      femobook: { clicks: 19, text: '19 clics (~360 µm)' },
       comandante: { clicks: 12, text: '12 clics' }
     },
     calculatePours: (dose) => {
