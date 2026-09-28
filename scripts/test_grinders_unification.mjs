@@ -52,12 +52,12 @@ const comMicrons = com.calculateMicrons(23);
 assert.ok(comMicrons >= 700 && comMicrons <= 800, `Expected 700-800 µm for Comandante 23 clicks, got ${comMicrons}`);
 assert.strictEqual(com.formatDial(23), 'Comandante: 23 clics');
 
-// Femobook (65 clicks) -> V60 Pour-over ~722 µm
+// Femobook (65 clicks) -> V60 Pour-over ~740–760 µm
 const femo = getGrinderConfig('femobook');
 const femoMicrons = femo.calculateMicrons(65);
-assert.ok(femoMicrons >= 700 && femoMicrons <= 800, `Expected 700-800 µm for Femobook 65 clicks, got ${femoMicrons}`);
-const femoPulsarMicrons = femo.calculateMicrons(74);
-assert.ok(femoPulsarMicrons >= 800 && femoPulsarMicrons <= 850, `Expected 800-850 µm for Femobook 74 clicks (Pulsar), got ${femoPulsarMicrons}`);
+assert.ok(femoMicrons >= 740 && femoMicrons <= 760, `Expected 740-760 µm for Femobook 65 clicks, got ${femoMicrons}`);
+const femoPulsarMicrons = femo.calculateMicrons(68);
+assert.ok(femoPulsarMicrons >= 770 && femoPulsarMicrons <= 795, `Expected 770-795 µm for Femobook 68 clicks (Pulsar sweet spot), got ${femoPulsarMicrons}`);
 
 // Kingrinder K6 (92 clicks) -> V60 Pour-over ~732 µm
 const king = getGrinderConfig('kingrinder');
