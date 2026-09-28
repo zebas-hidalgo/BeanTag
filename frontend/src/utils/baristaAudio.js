@@ -46,7 +46,7 @@ function scheduleTone(ctx, frequency, startTime, duration, type = 'sine', volume
     osc.frequency.setValueAtTime(frequency, startTime);
 
     const attack = Math.min(0.01, duration * 0.25);
-    const targetVolume = Math.max(0.0001, volume);
+    const targetVolume = Math.min(1.0, Math.max(0.0001, volume));
 
     // Envelope: ramp up from silence then exponential decay
     gain.gain.setValueAtTime(0.0001, startTime);
@@ -56,17 +56,15 @@ function scheduleTone(ctx, frequency, startTime, duration, type = 'sine', volume
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    osc.start(startTime);
-    osc.stop(startTime + duration + 0.05);
-
-    // Clean up nodes after completion
-    const cleanupDelay = Math.max(0, (startTime - ctx.currentTime + duration + 0.1) * 1000);
-    setTimeout(() => {
+    osc.onended = () => {
       try {
         osc.disconnect();
         gain.disconnect();
       } catch (_) {}
-    }, cleanupDelay);
+    };
+
+    osc.start(startTime);
+    osc.stop(startTime + duration + 0.05);
   } catch (err) {
     console.warn('Error scheduling tone:', err);
   }
