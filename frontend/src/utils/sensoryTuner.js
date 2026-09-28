@@ -9,36 +9,37 @@ import { getGrinderConfig } from './grinders.js';
 /**
  * Evaluates sensory feedback dimensions and produces a diagnosis and rating score.
  * 
- * @param {Object} feedback
+ * @param {Object} [feedback={}]
  * @param {'sour'|'balanced'|'bitter'} [feedback.taste]
  * @param {'fast'|'on_time'|'slow'} [feedback.flow]
  * @param {'thin'|'balanced'|'astringent'} [feedback.body]
  * @returns {{ diagnosis: 'sub-extracted'|'over-extracted'|'balanced', rating: number, score: number, defects: number }}
  */
 export function evaluateDiagnosis(feedback = {}) {
+  const fb = feedback || {};
   let score = 0;
   let defects = 0;
 
-  if (feedback.taste === 'sour') {
+  if (fb.taste === 'sour') {
     score -= 2;
     defects++;
-  } else if (feedback.taste === 'bitter') {
+  } else if (fb.taste === 'bitter') {
     score += 2;
     defects++;
   }
 
-  if (feedback.flow === 'fast') {
+  if (fb.flow === 'fast') {
     score -= 1;
     defects++;
-  } else if (feedback.flow === 'slow') {
+  } else if (fb.flow === 'slow') {
     score += 1;
     defects++;
   }
 
-  if (feedback.body === 'thin') {
+  if (fb.body === 'thin') {
     score -= 1;
     defects++;
-  } else if (feedback.body === 'astringent') {
+  } else if (fb.body === 'astringent') {
     score += 1;
     defects++;
   }
@@ -64,7 +65,7 @@ export function evaluateDiagnosis(feedback = {}) {
  * @param {string} grinderId - Active grinder ID (e.g. 'femobook', 'jmax', 'k_ultra', etc.)
  * @param {string|number} currentDialText - Current dial setting string or value
  * @param {number|string} currentTemp - Current brew water temperature in °C
- * @param {Object} feedback - Sensory feedback object
+ * @param {Object} [feedback={}] - Sensory feedback object
  * @returns {{
  *   newGrindText: string,
  *   newTemp: number,
@@ -76,12 +77,15 @@ export function evaluateDiagnosis(feedback = {}) {
  * }}
  */
 export function computeSensoryCorrection(grinderId, currentDialText, currentTemp, feedback = {}) {
-  const { diagnosis, rating } = evaluateDiagnosis(feedback);
+  const fb = feedback || {};
+  const { diagnosis, rating } = evaluateDiagnosis(fb);
 
-  // Parse temperature safely
-  const rawTemp = typeof currentTemp === 'number'
-    ? currentTemp
-    : parseInt(String(currentTemp || '').replace(/[^\d]/g, ''), 10);
+  // Parse temperature safely with decimal support
+  let rawTemp = typeof currentTemp === 'number' ? currentTemp : NaN;
+  if (!Number.isFinite(rawTemp)) {
+    const match = String(currentTemp || '').match(/\d+(?:\.\d+)?/);
+    rawTemp = match ? Math.round(parseFloat(match[0])) : 93;
+  }
   const temp = Number.isFinite(rawTemp) && rawTemp > 0 ? rawTemp : 93;
 
   let tempDelta = 0;
@@ -98,7 +102,11 @@ export function computeSensoryCorrection(grinderId, currentDialText, currentTemp
     explanation = '¡Extracción impecable! Esta receta ha alcanzado el equilibrio óptimo de dulzor, acidez y claridad para este lote.';
   }
 
-  const newTemp = temp + tempDelta;
+  // Clamp new temperature within safe specialty range [85, 96]
+  const MIN_TEMP = 85;
+  const MAX_TEMP = 96;
+  const newTemp = Math.max(MIN_TEMP, Math.min(MAX_TEMP, temp + tempDelta));
+  const effectiveTempDelta = newTemp - temp;
 
   // Resolve grinder config
   const grinderConfig = getGrinderConfig(grinderId);
@@ -126,8 +134,9 @@ export function computeSensoryCorrection(grinderId, currentDialText, currentTemp
       } else if (diagnosis === 'over-extracted') {
         delta = 10;
       }
-      clickDelta = delta;
-      const newTotalClicks = Math.max(0, totalClicks + delta);
+      const newTotalClicks = Math.max(0, Math.min(450, totalClicks + delta));
+      clickDelta = newTotalClicks - totalClicks;
+
       const newRot = Math.floor(newTotalClicks / 90);
       const rem = newTotalClicks % 90;
       const newNum = Math.floor(rem / 10);
@@ -142,20 +151,21 @@ export function computeSensoryCorrection(grinderId, currentDialText, currentTemp
       const clean = dialStr.replace(/^.*?(?:1Zpresso\s*)?K-Ultra:?\s*/i, '');
       const kMatch = clean.match(/(\d+(?:\.\d+)?)/);
       const currentVal = kMatch ? parseFloat(kMatch[1]) : 8.0;
-      let deltaClicks = 0;
+      const initialClicks = Math.round(currentVal * 10);
+
       let dialDelta = 0;
       if (diagnosis === 'sub-extracted') {
-        deltaClicks = -2;
         dialDelta = -0.2;
       } else if (diagnosis === 'over-extracted') {
-        deltaClicks = 2;
         dialDelta = 0.2;
       }
-      clickDelta = deltaClicks;
       const newVal = parseFloat(Math.max(2.0, Math.min(13.0, currentVal + dialDelta)).toFixed(1));
+      const newClicks = Math.round(newVal * 10);
+      clickDelta = newClicks - initialClicks;
+
       if (dialStr.includes('clic')) {
         const prefix = dialStr.includes('1Zpresso K-Ultra:') ? '1Zpresso K-Ultra: ' : (dialStr.includes('K-Ultra:') ? 'K-Ultra: ' : '');
-        newGrindText = `${prefix}${newVal.toFixed(1)} (${Math.round(newVal * 10)} clics)`;
+        newGrindText = `${prefix}${newVal.toFixed(1)} (${newClicks} clics)`;
       } else if (dialStr.includes('1Zpresso K-Ultra:')) {
         newGrindText = `1Zpresso K-Ultra: ${newVal.toFixed(1)}`;
       } else if (dialStr.includes('K-Ultra:')) {
@@ -171,17 +181,18 @@ export function computeSensoryCorrection(grinderId, currentDialText, currentTemp
       const clean = dialStr.replace(/^.*?(?:(?:Fellow\s*)?Ode(?:\s*Gen\s*2)?:?\s*(?:Ajuste\s*)?|Ajuste\s*)/i, '');
       const odeMatch = clean.match(/(\d+(?:\.\d+)?)/);
       const currentVal = odeMatch ? parseFloat(odeMatch[1]) : 4.2;
-      let deltaClicks = 0;
+      const initialClicks = Math.round(currentVal * 10);
+
       let dialDelta = 0;
       if (diagnosis === 'sub-extracted') {
-        deltaClicks = -2;
         dialDelta = -0.2;
       } else if (diagnosis === 'over-extracted') {
-        deltaClicks = 2;
         dialDelta = 0.2;
       }
-      clickDelta = deltaClicks;
       const newVal = parseFloat(Math.max(1.0, Math.min(11.0, currentVal + dialDelta)).toFixed(1));
+      const newClicks = Math.round(newVal * 10);
+      clickDelta = newClicks - initialClicks;
+
       if (dialStr.includes('Fellow Ode Gen 2: Ajuste')) {
         newGrindText = `Fellow Ode Gen 2: Ajuste ${newVal.toFixed(1)}`;
       } else if (dialStr.includes('Fellow Ode Gen 2:')) {
@@ -209,8 +220,9 @@ export function computeSensoryCorrection(grinderId, currentDialText, currentTemp
       } else if (diagnosis === 'over-extracted') {
         deltaClicks = 2;
       }
-      clickDelta = deltaClicks;
       const newClicks = Math.max(6, Math.min(45, currentClicks + deltaClicks));
+      clickDelta = newClicks - currentClicks;
+
       if (dialStr.includes('Comandante C40:')) {
         newGrindText = `Comandante C40: ${newClicks} clics`;
       } else if (dialStr.includes('Comandante:')) {
@@ -234,8 +246,9 @@ export function computeSensoryCorrection(grinderId, currentDialText, currentTemp
       } else if (diagnosis === 'over-extracted') {
         deltaClicks = 2;
       }
-      clickDelta = deltaClicks;
       const newClicks = Math.max(4, Math.min(120, currentClicks + deltaClicks));
+      clickDelta = newClicks - currentClicks;
+
       const rotStr = (Math.round((newClicks / 40) * 10) / 10).toFixed(1);
       const prefix = dialStr.includes('Femobook A2:') ? 'Femobook A2: ' : (dialStr.includes('Femobook:') ? 'Femobook: ' : '');
 
@@ -260,8 +273,9 @@ export function computeSensoryCorrection(grinderId, currentDialText, currentTemp
       } else if (diagnosis === 'over-extracted') {
         deltaClicks = 2;
       }
-      clickDelta = deltaClicks;
       const newClicks = Math.max(12, Math.min(180, currentClicks + deltaClicks));
+      clickDelta = newClicks - currentClicks;
+
       const prefix = dialStr.includes('Kingrinder K6:') ? 'Kingrinder K6: ' : (dialStr.includes('Kingrinder:') ? 'Kingrinder: ' : '');
 
       if (dialStr.includes('~')) {
@@ -287,13 +301,14 @@ export function computeSensoryCorrection(grinderId, currentDialText, currentTemp
       } else if (diagnosis === 'over-extracted') {
         deltaClicks = 2;
       }
-      clickDelta = deltaClicks;
       const newClicks = Math.max(6, Math.min(36, currentClicks + deltaClicks));
+      clickDelta = newClicks - currentClicks;
+
       const prefix = dialStr.includes('Timemore C2:') ? 'Timemore C2: ' : (dialStr.includes('Timemore C3:') ? 'Timemore C3: ' : (dialStr.includes('Timemore:') ? 'Timemore: ' : ''));
       if (prefix) {
         newGrindText = `${prefix}${newClicks} clics`;
       } else if (dialStr.includes('clic')) {
-        newGrindText = `${newClicks} clics`;
+        newGrindText = `${prefix}${newClicks} clics`;
       } else {
         newGrindText = `${newClicks}`;
       }
@@ -311,8 +326,9 @@ export function computeSensoryCorrection(grinderId, currentDialText, currentTemp
       } else if (diagnosis === 'over-extracted') {
         deltaStep = 1;
       }
-      clickDelta = deltaStep;
       const newStep = Math.max(1, Math.min(40, currentStep + deltaStep));
+      clickDelta = newStep - currentStep;
+
       if (dialStr.includes('Baratza: Ajuste')) {
         newGrindText = `Baratza: Ajuste ${newStep}`;
       } else if (dialStr.includes('Baratza Encore: Ajuste')) {
@@ -338,7 +354,7 @@ export function computeSensoryCorrection(grinderId, currentDialText, currentTemp
     newGrindText,
     newTemp,
     clickDelta,
-    tempDelta,
+    tempDelta: effectiveTempDelta,
     diagnosis,
     rating,
     explanation

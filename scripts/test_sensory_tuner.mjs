@@ -148,4 +148,29 @@ assert.strictEqual(baratzaFormatted.newGrindText, 'Baratza: Ajuste 14');
 
 console.log('✅ Passed Test 4: All 8 grinders correctly calibrated.\n');
 
+// 5. Verification of boundary clamping, safe parsing, and null feedback
+console.log('Test 5: Boundary clamping, safe decimal parsing, and null feedback guard');
+
+// Temp at 96°C on sub-extraction remains at 96°C (effectiveTempDelta === 0)
+const maxTempRes = computeSensoryCorrection('femobook', '68 clics (~1.7 Rot.)', 96, { taste: 'sour' });
+assert.strictEqual(maxTempRes.newTemp, 96, 'Temperature should clamp at 96°C');
+assert.strictEqual(maxTempRes.tempDelta, 0, 'effectiveTempDelta should be 0 when at max ceiling');
+
+// Decimal temp string "93.5°C" parses as 94°C
+const decimalTempRes = computeSensoryCorrection('femobook', '68 clics (~1.7 Rot.)', '93.5°C', { taste: 'balanced' });
+assert.strictEqual(decimalTempRes.newTemp, 94, 'Decimal temp 93.5°C should round to 94°C');
+
+// Grinder at min boundary (Comandante at 6 clicks on sour) does not drop below 6 and reports clickDelta === 0
+const minComandante = computeSensoryCorrection('comandante', '6 clics', 93, { taste: 'sour' });
+assert.strictEqual(minComandante.newGrindText, '6 clics', 'Comandante at min 6 clicks should remain at 6');
+assert.strictEqual(minComandante.clickDelta, 0, 'clickDelta should be 0 when clamped at min boundary');
+
+// computeSensoryCorrection(..., null) handles null safely without throwing
+const nullFbRes = computeSensoryCorrection('femobook', '68 clics (~1.7 Rot.)', 93, null);
+assert.strictEqual(nullFbRes.diagnosis, 'balanced', 'Null feedback should safely default to balanced');
+assert.strictEqual(nullFbRes.rating, 5, 'Null feedback rating should default to 5');
+assert.strictEqual(nullFbRes.clickDelta, 0, 'Null feedback clickDelta should be 0');
+
+console.log('✅ Passed Test 5: Boundary clamping and safe null guard verified.\n');
+
 console.log('🎉 ALL SENSORY TUNER TESTS PASSED SUCCESSFULLY!');
