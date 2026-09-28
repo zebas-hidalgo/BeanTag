@@ -75,7 +75,7 @@ const naturalBatch = {
 };
 
 const washedRecipe = computeOfflineRecipe(washedBatch);
-const washedClicksMatch = (washedRecipe.active_grinder_dial?.dial || washedRecipe.grinders?.femobook_a2 || '').match(/(\d+)\s*clics/);
+const washedClicksMatch = (washedRecipe.active_grinder_dial?.dial || washedRecipe.grinders?.femobook_a2 || '').match(/(\d+)\s*(?:clics?|clicks?)/i);
 const washedClicks = washedClicksMatch ? parseInt(washedClicksMatch[1], 10) : 0;
 const washedMicrons = parseInt(washedRecipe.grind_microns, 10);
 
@@ -90,7 +90,7 @@ assert.ok(
 );
 
 const naturalRecipe = computeOfflineRecipe(naturalBatch);
-const naturalClicksMatch = (naturalRecipe.active_grinder_dial?.dial || naturalRecipe.grinders?.femobook_a2 || '').match(/(\d+)\s*clics/);
+const naturalClicksMatch = (naturalRecipe.active_grinder_dial?.dial || naturalRecipe.grinders?.femobook_a2 || '').match(/(\d+)\s*(?:clics?|clicks?)/i);
 const naturalClicks = naturalClicksMatch ? parseInt(naturalClicksMatch[1], 10) : 0;
 const naturalMicrons = parseInt(naturalRecipe.grind_microns, 10);
 

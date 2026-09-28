@@ -1,12 +1,5 @@
 import assert from 'assert';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
 import { GRINDERS, getGrinderConfig, parseGrindToMicrons } from '../frontend/src/utils/grinders.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const assetsDir = path.resolve(__dirname, '../backend/public/assets');
 
 console.log('🧪 Running Grinder Unification & Dial Formatter Unit Tests...');
 
@@ -76,6 +69,29 @@ assert.ok(barMicrons >= 600 && barMicrons <= 750, `Expected 600-750 µm for Bara
 
 console.log('✅ Passed: All 8 grinder micron calculations match real SCA specialty particle distributions.');
 
+// 2b. Verify non-NaN microns across all 8 grinders (min, default, max, and multi-setting J-Max)
+console.log('Test 2b: Verify all 8 grinders return valid non-NaN microns across min, default, max');
+GRINDERS.forEach(g => {
+  if (g.id === 'jmax') {
+    const jmaxSettings = [[1, 4, 0], [2, 2, 5], [2, 4, 0], [3, 2, 0]];
+    jmaxSettings.forEach(([rot, num, click]) => {
+      const microns = g.calculateMicrons(rot, num, click);
+      assert.strictEqual(typeof microns, 'number', `J-Max [${rot}, ${num}, ${click}] must return a number`);
+      assert.ok(!Number.isNaN(microns), `J-Max [${rot}, ${num}, ${click}] must not return NaN`);
+      assert.ok(microns > 0, `J-Max [${rot}, ${num}, ${click}] must return > 0 microns`);
+    });
+  } else {
+    const testValues = [g.min, g.defaultVal, g.max];
+    testValues.forEach(val => {
+      const microns = g.calculateMicrons(val);
+      assert.strictEqual(typeof microns, 'number', `${g.name} at setting ${val} must return a number`);
+      assert.ok(!Number.isNaN(microns), `${g.name} at setting ${val} must not return NaN`);
+      assert.ok(microns > 0, `${g.name} at setting ${val} must return > 0 microns`);
+    });
+  }
+});
+console.log('✅ Passed: All 8 grinders produce valid, non-NaN microns across all operational ranges.');
+
 // 3. Verify parseGrindToMicrons compatibility
 console.log('Test 3: Verify parseGrindToMicrons extracts accurate microns from all 8 grinder strings');
 
@@ -84,7 +100,7 @@ const sampleGrinds = [
   '1Zpresso K-Ultra: 8.0 (~760 µm)',
   'Fellow Ode Gen 2: Ajuste 4.2 (~730 µm)',
   'Comandante: 23 clics (~720 µm)',
-  'Femobook A2: 65 clics (~720 µm)',
+  'Femobook A2: 65 clics (~750 µm)',
   'Kingrinder K6: 92 clics (~730 µm)',
   'Timemore: 17 clics (~680 µm)',
   'Baratza: Ajuste 15 (~720 µm)'
