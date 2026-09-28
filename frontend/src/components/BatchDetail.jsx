@@ -8,6 +8,7 @@ import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMen
 import { FAMOUS_RECIPES } from '../utils/famousRecipes';
 import ScaRadarChart from './ScaRadarChart';
 import DialInAssistant from './DialInAssistant';
+import BrewGuideModal from './BrewGuideModal';
 import { GRINDERS, getGrinderConfig } from '../utils/grinders';
 
 const calculateMicrons = (rot, num, click) => {
@@ -98,6 +99,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [sensoryBody, setSensoryBody] = useState('Medio');
   const [sensoryExtraction, setSensoryExtraction] = useState('En Punto');
   const [notes, setNotes] = useState('');
+
+  // Interactive Barista Brew Guide Modal States
+  const [isBrewGuideOpen, setIsBrewGuideOpen] = useState(false);
+  const [activeBrewRecipe, setActiveBrewRecipe] = useState(null);
 
   // Main Tab Navigation State ('brew' | 'history' | 'tools')
   const [activeTab, setActiveTab] = useState('brew');
@@ -735,6 +740,77 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     setNotes('');
   };
 
+  const handleSaveTunedRecipe = async (tunedData) => {
+    try {
+      const waterTotalG = method === 'Espresso' ? doseOutG : Math.round(doseInG * ratioVal);
+      const setTemperature = (t) => {
+        const parsed = typeof t === 'number' ? t : parseInt(t, 10);
+        if (!isNaN(parsed)) setWaterTemp(parsed);
+      };
+
+      const payload = {
+        batch_id: batch?.id,
+        method: tunedData.method || method,
+        ratio: tunedData.ratio || `1:${ratioVal}`,
+        grind: tunedData.grind,
+        temperature: typeof tunedData.temperature === 'number' ? `${tunedData.temperature}°C` : tunedData.temperature,
+        brew_time: tunedData.brew_time,
+        notes: tunedData.notes,
+        rating: tunedData.rating || 5,
+        dose_in_g: tunedData.dose_in_g || doseInG,
+        dose_out_g: tunedData.water_total_g || waterTotalG
+      };
+
+      if (typeof onSaveRecipe === 'function') {
+        await onSaveRecipe(payload);
+      } else {
+        await fetch(apiUrl('/api/recipes'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      if (tunedData.temperature) setTemperature(typeof tunedData.temperature === 'number' ? tunedData.temperature : parseInt(tunedData.temperature, 10));
+      if (showToast) showToast('¡Receta afinada y guardada con éxito en tu historial!', { type: 'success' });
+      setIsBrewGuideOpen(false);
+    } catch (err) {
+      console.error('Error saving tuned recipe:', err);
+      if (showToast) showToast('Error al guardar la receta afinada', { type: 'error' });
+    }
+  };
+
+  const handleStartBrewGuide = (customRecipe = null) => {
+    const waterTotalG = method === 'Espresso' ? doseOutG : Math.round(doseInG * ratioVal);
+    const temperature = waterTemp;
+    const grinderConfig = getGrinderConfig(grinderType);
+    const getFormattedDialString = () => getGrindString();
+
+    let rec = customRecipe || aiRecommendation || {
+      method,
+      dose_in_g: doseInG,
+      water_total_g: waterTotalG,
+      ratio: `1:${ratioVal}`,
+      temperature: `${temperature}°C`,
+      brew_time: brewTime,
+      grind: getFormattedDialString ? getFormattedDialString() : (grinderConfig?.formatDial ? grinderConfig.formatDial() : `${jmaxRot}.${jmaxNum}.${jmaxClick}`),
+      active_grinder_dial: {
+        grinder_id: grinderType,
+        dial: getFormattedDialString ? getFormattedDialString() : ''
+      }
+    };
+
+    if (rec && !rec.water_total_g && (rec.dose_out_g || rec.ratio)) {
+      rec = {
+        ...rec,
+        water_total_g: rec.dose_out_g || Math.round((parseFloat(rec.dose_in_g) || doseInG) * (parseFloat(String(rec.ratio || '').replace('1:', '')) || ratioVal))
+      };
+    }
+
+    setActiveBrewRecipe(rec);
+    setIsBrewGuideOpen(true);
+  };
+
 
 
   // R3: Skeleton loading state
@@ -1367,6 +1443,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     </ol>
                   )}
 
+                  <button type="button" className="btn-candy primary" onClick={() => handleStartBrewGuide(aiRecommendation)} style={{ width: '100%', marginBottom: '8px', backgroundColor: '#F59E0B', color: '#000', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}> <Play size={14} fill="#000" /> ▶ Iniciar Extracción (Modo Barista) </button>
+
                   <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                     <button type="button" className="btn-candy primary" onClick={handleApplyAiRecipe} style={{ flex: 1, padding: '8px', fontSize: '11px', minHeight: '36px' }}>
                       Aplicar al Formulario
@@ -1381,6 +1459,45 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   {aiLoading ? 'Generando receta con Thinking Mode... 🧠' : 'Diseñar Receta IA ✨'}
                 </button>
               )}
+            </div>
+
+            {/* Quick Action: Iniciar Cronómetro Barista con parámetros actuales */}
+            <div style={{ marginBottom: '14px' }}>
+              <button
+                type="button"
+                className="btn-candy"
+                onClick={() => handleStartBrewGuide({
+                  method,
+                  dose_in_g: doseInG,
+                  water_total_g: method === 'Espresso' ? doseOutG : Math.round(doseInG * ratioVal),
+                  ratio: method === 'Espresso' ? `1:${(doseOutG / doseInG).toFixed(1)}` : `1:${ratioVal}`,
+                  temperature: `${waterTemp}°C`,
+                  brew_time: brewTime,
+                  grind: getGrindString(),
+                  active_grinder_dial: {
+                    grinder_id: grinderType,
+                    dial: getGrindString()
+                  }
+                })}
+                style={{
+                  width: '100%',
+                  padding: '11px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  fontWeight: '800',
+                  fontSize: '13px',
+                  backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                  border: '1.5px solid rgba(245, 158, 11, 0.45)',
+                  color: 'var(--color-text-main, #d97706)',
+                  borderRadius: '12px',
+                  cursor: 'pointer'
+                }}
+              >
+                <Play size={15} fill="currentColor" />
+                <span>▶ Iniciar Extracción con Parámetros Actuales (Modo Barista)</span>
+              </button>
             </div>
 
             {/* Formulario Bento Grid con Steppers Cupertino */}
@@ -1809,9 +1926,19 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {batch.recipes.map(r => (
                 <div key={r.id} className="candy-card static" style={{ padding: '12px', fontSize: '11px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold' }}>
                     <span>{r.method} ({r.ratio})</span>
-                    <span>{r.temperature} • {r.brew_time}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>{r.temperature} • {r.brew_time}</span>
+                      <button 
+                        type="button"
+                        className="btn-candy" 
+                        onClick={() => handleStartBrewGuide(r)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '11px', margin: 0 }}
+                      > 
+                        <Play size={12} fill="currentColor" /> Preparar 
+                      </button>
+                    </div>
                   </div>
                   <div style={{ color: 'var(--color-crimson)', fontWeight: 'bold', marginTop: '2px' }}>
                     Molienda: {r.grind}
@@ -2264,6 +2391,15 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           </div>
         </div>
       )}
+
+      {/* Interactive Barista Brew Guide Modal */}
+      <BrewGuideModal
+        isOpen={isBrewGuideOpen}
+        onClose={() => setIsBrewGuideOpen(false)}
+        recipe={activeBrewRecipe}
+        batch={batch}
+        onSaveTunedRecipe={handleSaveTunedRecipe}
+      />
     </div>
   );
 }
