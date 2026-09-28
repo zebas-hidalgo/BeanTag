@@ -113,10 +113,11 @@ function parseStages(recipe) {
 
       runningTime = endSec;
 
-      const stepWater = parseFloat(p.water_g || p.water) || 0;
+      const parsedStep = parseFloat(p.water_g || p.water);
       const totalWater = p.total_water_g !== undefined
         ? parseFloat(p.total_water_g)
-        : (runningWater + stepWater);
+        : (runningWater + (Number.isFinite(parsedStep) ? parsedStep : 0));
+      const stepWater = Number.isFinite(parsedStep) ? parsedStep : Math.max(0, totalWater - runningWater);
       runningWater = totalWater;
 
       // Extract valve configuration
@@ -345,6 +346,8 @@ export default function BrewGuideModal({
       setFeedback({ taste: 'balanced', flow: 'on_time', body: 'balanced' });
       setSaveSuccess(false);
       setIsSaving(false);
+    } else {
+      setIsActive(false);
     }
   }, [isOpen]);
 
@@ -398,7 +401,7 @@ export default function BrewGuideModal({
 
   // 3. Extraction High-Precision Timer (Interval runs every 250ms with Date.now() drift compensation)
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive || !isOpen) return;
 
     startTimestampRef.current = Date.now();
     baseElapsedRef.current = elapsedSeconds;
@@ -421,7 +424,7 @@ export default function BrewGuideModal({
     }, 250);
 
     return () => clearInterval(interval);
-  }, [isActive, totalBrewDuration, isMuted]);
+  }, [isActive, isOpen, totalBrewDuration, isMuted]);
 
   // 4. Audio: 3-2-1 Countdown Beeps
   useEffect(() => {
@@ -509,6 +512,18 @@ export default function BrewGuideModal({
       onClose();
     }
   }, [isActive, onClose]);
+
+  // Escape key handler
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        handleCloseModal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleCloseModal]);
 
   // Handler: Save Tuned Recipe
   const handleSaveTuned = async () => {
