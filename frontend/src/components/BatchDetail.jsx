@@ -9,6 +9,7 @@ import { FAMOUS_RECIPES } from '../utils/famousRecipes';
 import ScaRadarChart from './ScaRadarChart';
 import DialInAssistant from './DialInAssistant';
 import BrewGuideModal from './BrewGuideModal';
+import DialInTimeline from './DialInTimeline';
 import { GRINDERS, getGrinderConfig } from '../utils/grinders';
 
 const calculateMicrons = (rot, num, click) => {
@@ -107,6 +108,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   // Main Tab Navigation State ('brew' | 'history' | 'tools')
   const [activeTab, setActiveTab] = useState('brew');
   const [aiSubTab, setAiSubTab] = useState('pours');
+
+  // Recipe History View Mode ('timeline' | 'cards')
+  const [recipeViewMode, setRecipeViewMode] = useState('timeline');
 
   // Interactive Calculator State
   const [calcVisible, setCalcVisible] = useState(false);
@@ -1925,35 +1929,73 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             </div>
           )}
 
-          {Array.isArray(batch?.recipes) && batch.recipes.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {batch.recipes.map(r => (
-                <div key={r.id} className="candy-card static" style={{ padding: '12px', fontSize: '11px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold' }}>
-                    <span>{r.method} ({r.ratio})</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span>{r.temperature} • {r.brew_time}</span>
-                      <button 
-                        type="button"
-                        className="btn-candy" 
-                        onClick={() => handleStartBrewGuide(r)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '11px', margin: 0 }}
-                      > 
-                        <Play size={12} fill="currentColor" /> Preparar 
-                      </button>
-                    </div>
-                  </div>
-                  <div style={{ color: 'var(--color-crimson)', fontWeight: 'bold', marginTop: '2px' }}>
-                    Molienda: {r.grind}
-                  </div>
-                  {r.notes && <div style={{ fontStyle: 'italic', marginTop: '4px', color: 'var(--color-text-muted)', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>"{r.notes}"</div>}
-                </div>
-              ))}
-            </div>
+          {/* Sub-selector de vista: Linaje Dial-in vs Lista de Recetas */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', padding: '4px', backgroundColor: 'var(--bg-card, rgba(0,0,0,0.2))', borderRadius: '10px', border: '1px solid var(--border-color, rgba(255,255,255,0.08))' }}>
+            <button
+              type="button"
+              className={`cupertino-segmented-btn ${recipeViewMode === 'timeline' ? 'active' : ''}`}
+              style={{ flex: 1, padding: '7px 10px', fontSize: '12px', fontWeight: '700', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.15s ease', background: recipeViewMode === 'timeline' ? 'var(--color-crimson, #E11D48)' : 'transparent', color: recipeViewMode === 'timeline' ? '#fff' : 'var(--color-text-muted, #94A3B8)' }}
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(6);
+                setRecipeViewMode('timeline');
+              }}
+            >
+              <span>🎯 Linaje Dial-in</span>
+            </button>
+            <button
+              type="button"
+              className={`cupertino-segmented-btn ${recipeViewMode === 'cards' ? 'active' : ''}`}
+              style={{ flex: 1, padding: '7px 10px', fontSize: '12px', fontWeight: '700', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.15s ease', background: recipeViewMode === 'cards' ? 'var(--color-crimson, #E11D48)' : 'transparent', color: recipeViewMode === 'cards' ? '#fff' : 'var(--color-text-muted, #94A3B8)' }}
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(6);
+                setRecipeViewMode('cards');
+              }}
+            >
+              <span>📋 Lista de Recetas</span>
+            </button>
+          </div>
+
+          {recipeViewMode === 'timeline' ? (
+            <DialInTimeline
+              recipes={batch?.recipes || []}
+              activeGrinderId={grinderType}
+              onSelectRecipe={(rec) => {
+                handleLoadRecipeToForm(rec);
+                if (showToast) showToast('Parámetros de extracción cargados al preparador.', { type: 'info' });
+              }}
+              onBrewRecipe={(rec) => handleStartBrewGuide(rec)}
+            />
           ) : (
-            <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-text-muted)', fontSize: '12px' }}>
-              No hay preparaciones registradas aún para este lote.
-            </div>
+            Array.isArray(batch?.recipes) && batch.recipes.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {batch.recipes.map(r => (
+                  <div key={r.id} className="candy-card static" style={{ padding: '12px', fontSize: '11px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold' }}>
+                      <span>{r.method} ({r.ratio})</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>{r.temperature} • {r.brew_time}</span>
+                        <button 
+                          type="button"
+                          className="btn-candy" 
+                          onClick={() => handleStartBrewGuide(r)}
+                          style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '11px', margin: 0 }}
+                        > 
+                          <Play size={12} fill="currentColor" /> Preparar 
+                        </button>
+                      </div>
+                    </div>
+                    <div style={{ color: 'var(--color-crimson)', fontWeight: 'bold', marginTop: '2px' }}>
+                      Molienda: {r.grind}
+                    </div>
+                    {r.notes && <div style={{ fontStyle: 'italic', marginTop: '4px', color: 'var(--color-text-muted)', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>"{r.notes}"</div>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-text-muted)', fontSize: '12px' }}>
+                No hay preparaciones registradas aún para este lote.
+              </div>
+            )
           )}
         </div>
       )}
