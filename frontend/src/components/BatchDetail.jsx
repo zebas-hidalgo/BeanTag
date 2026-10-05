@@ -306,7 +306,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         process: batch.process,
         altitude: batch.altitude,
         roast_level: batch.roast_level,
-        roaster_notes: batch.roaster_notes,
+        roaster_notes: batch.roaster_notes || batch.notes || '',
         roast_date: batch.roast_date,
         freeze_date: batch.freeze_date,
         sca_score: batch.sca_score,
@@ -325,16 +325,17 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     .then(data => {
       setAiRecommendation(data);
       if (data._source === 'barista_fallback') {
+        const errorDetail = data._gemini_error || data._error;
         if (showToast) {
           showToast(
             apiKey 
-              ? 'Receta calibrada con motor Barista Offline (Servidores Google AI con alta demanda)' 
-              : 'Receta calibrada con motor Barista Offline (Añade tu API Key en Ajustes para activar Gemini)',
-            { type: 'info', duration: 4000 }
+              ? (errorDetail ? `Modo Contingencia (${errorDetail.slice(0, 50)})` : 'Receta calculada con motor Barista Offline (Servidores Google AI con alta demanda)') 
+              : 'Receta calculada con motor Barista Offline (Añade tu API Key en Ajustes para activar Gemini)',
+            { type: apiKey ? 'warning' : 'info', duration: 4500 }
           );
         }
       } else {
-        if (showToast) showToast('¡Recomendación multivariable generada por la IA!', { type: 'success', duration: 2500 });
+        if (showToast) showToast('¡Recomendación multivariable generada por Gemini AI!', { type: 'success', duration: 2500 });
       }
     })
     .catch(err => {
@@ -1282,7 +1283,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     </div>
                     <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                       <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>Temp</div>
-                      <strong style={{ fontSize: '12px' }}>{aiRecommendation.temperature}°C</strong>
+                      <strong style={{ fontSize: '12px' }}>{String(aiRecommendation.temperature || 93).replace(/°C/i, '')}°C</strong>
                     </div>
                     <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                       <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>Tiempo</div>
@@ -1294,7 +1295,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', fontSize: '9.5px' }}>
                     {aiRecommendation.is_frozen && <span style={{ background: '#DBEAFE', color: '#1E40AF', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>❄️ Frozen Dosing (-18°C)</span>}
                     {aiRecommendation.days_since_roast !== null && <span style={{ background: '#FEF3C7', color: '#92400E', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>⏱️ Reposo: Día {aiRecommendation.days_since_roast}</span>}
+                    {aiRecommendation.water_profile && <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>💧 {aiRecommendation.water_profile}</span>}
                     {aiRecommendation.active_grinder_dial && <span style={{ background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: '800' }}>⚙️ {aiRecommendation.active_grinder_dial.grinder_name}: {aiRecommendation.active_grinder_dial.dial}</span>}
+                    {aiRecommendation._source === 'barista_fallback' && <span style={{ background: '#FEE2E2', color: '#991B1B', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>⚠️ Modo Offline</span>}
                   </div>
 
                   {/* Sub-pestañas para organizar Vertidos, Molinos, Física y Pasos */}

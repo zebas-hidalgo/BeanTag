@@ -16,6 +16,7 @@ const {
   isFrozenBatch,
   computeOfflineRecipe,
   computeOfflineTuning,
+  generateAiRecipePrompt,
   callGeminiWithRetry
 } = require('./aiEngine');
 
@@ -693,160 +694,81 @@ app.post('/api/test-gemini', async (req, res) => {
 // 1. AI Recommendation Endpoint (Gemini Flash + Offline Barista Engine Fallback)
 app.post('/api/recommend-recipe', async (req, res) => {
   const { apiKey, model, enableThinking } = getGeminiConfig(req);
-  const {
+  const body = req.body || {};
+  const batchData = body.batch || {};
+
+  const origin = body.origin || batchData.origin || 'Origen Especialidad';
+  const variety = body.variety || batchData.variety || 'Variedad Arábica';
+  const process = body.process || batchData.process || 'Lavado';
+  const altitude = body.altitude !== undefined ? body.altitude : (batchData.altitude || '1500m');
+  const roast_level = body.roast_level || batchData.roast_level || 'Medio';
+  const roaster_notes = body.roaster_notes || batchData.roaster_notes || batchData.notes || '';
+  const roast_date = body.roast_date || batchData.roast_date || null;
+  const freeze_date = body.freeze_date || batchData.freeze_date || null;
+  const sca_score = body.sca_score !== undefined ? body.sca_score : batchData.sca_score;
+  const producer = body.producer || batchData.producer || '';
+  const batch_name = body.batch_name || batchData.name || 'Café de Especialidad';
+  const targetMethod = body.method || 'V60 (Filtrado)';
+  const dose = parseFloat(body.dose_in_g) || 20.0;
+  const activeGrinder = (body.grinder || batchData.grinder || 'jmax').toLowerCase();
+
+  const daysSinceRoast = calculateDaysSinceRoast(roast_date);
+  const isFrozen = isFrozenBatch({ freeze_date });
+
+  const recipeParams = {
+    batch_name,
     origin,
+    producer,
     variety,
     process,
     altitude,
     roast_level,
     roaster_notes,
-    method,
-    dose_in_g,
     roast_date,
     freeze_date,
     sca_score,
-    producer,
-    batch_name,
-    grinder
-  } = req.body;
+    method: targetMethod,
+    dose_in_g: dose,
+    grinder: activeGrinder
+  };
 
-  const dose = parseFloat(dose_in_g) || 20.0;
-  const targetMethod = method || 'V60 (Filtrado)';
-  const daysSinceRoast = calculateDaysSinceRoast(roast_date);
-  const isFrozen = isFrozenBatch({ freeze_date });
-  const activeGrinder = (grinder || 'jmax').toLowerCase();
-
-  // If no API key is provided, gracefully serve the offline barista calculation
+  // If no API key is provided, gracefully serve the deterministic offline barista calculation
   if (!apiKey) {
-    const offlineRec = computeOfflineRecipe({
-      origin,
-      variety,
-      process,
-      altitude,
-      roast_level,
-      roaster_notes,
-      method: targetMethod,
-      dose_in_g: dose,
-      roast_date,
-      freeze_date,
-      sca_score,
-      producer,
-      grinder: activeGrinder
-    });
+    const offlineRec = computeOfflineRecipe(recipeParams);
+    offlineRec.is_frozen = isFrozen;
+    offlineRec.days_since_roast = daysSinceRoast;
+    offlineRec._source = 'barista_fallback';
     offlineRec.notes = `${offlineRec.notes} (Modo Barista Offline - Configura tu API Key en Ajustes para activar Gemini)`;
     return res.json(offlineRec);
   }
 
-  const prompt = `Eres un Barista Campeón Mundial de Café de Especialidad y Doctor en Física de Fluidos y Extracción de Café.
-Analiza con máximo rigor científico y multivariable este lote de café y su equipo de molienda:
-
-PARÁMETROS DEL CAFÉ:
-- Nombre / Lote: ${batch_name || 'Café de Especialidad'}
-- Origen / Terroir: ${origin || 'Desconocido'}
-- Productor / Finca: ${producer || 'No especificado'}
-- Variedad Genética: ${variety || 'Arábica'}
-- Proceso de Beneficio: ${process || 'Lavado'}
-- Altitud de Cultivo: ${altitude || '1500m'}
-- Nivel de Tueste: ${roast_level || 'Medio'}
-- Fecha de Tueste: ${roast_date || 'No especificada'} (${daysSinceRoast !== null ? `${daysSinceRoast} días desde tueste` : 'Reposo estándar óptimo'})
-- Conservación Criogénica: ${isFrozen ? '❄️ Sí, congelado en Cava a -18°C (Frozen Bean Dosing)' : 'Temperatura ambiente'}
-- Calificación SCA: ${sca_score ? `${sca_score} puntos` : 'Especialidad'}
-- Notas Sensoriales del Tostador: ${roaster_notes || 'Notas de origen'}
-
-EQUIPO Y MÉTODO:
-- Método de Extracción: "${targetMethod}"
-- Dosis de Café (In): "${dose}g"
-- Molino Principal del Barista: "${activeGrinder}"
-
-FÍSICA DE EXTRACCIÓN Y REGLAS CIENTÍFICAS OBLIGATORIAS:
-1. DESGASIFICACIÓN Y DÍAS DE REPOSO (CINÉTICA DE CO₂):
-   - Si tiene menos de 7 días de tueste (<7d): El grano está sobresaturado de CO₂ presurizado. DEBES extender el Bloom a 45-60s y/o usar 3.2x a 3.5x de agua en el bloom para evitar que el burbujeo violento genere canalizaciones ("volcano effect") y zonas secas. Abre la molienda 1 a 2 clics para evitar atascos.
-   - Entre 12 y 30 días: Pico aromático ("Peak Flavor Window"). Solubilidad y desgasificación equilibradas.
-   - Más de 45 días: Grano desgasificado. Para compensar la pérdida de presión aromática y volatilidad, ajusta el ratio levemente más corto (ej. 1:15 en vez de 1:16.6) y afina 1 clic la molienda.
-2. DOSIS CONGELADA EN CAVA (-18°C):
-   - Al moler el grano a -18°C, la matriz celular se fractura de forma frágil y más uniforme (curva unimodal con significativa reducción de finos erráticos). Permite moler 1 a 2 clics más fino sin riesgo de sobre-extracción amarga, logrando mayor TDS y claridad de taza.
-3. GEOMETRÍA DE MUELAS (PLANAS VS. CÓNICAS):
-   - Muelas Planas (ej. Fellow Ode Gen 2, DF64, EK43): Molienda unimodal de alta uniformidad y finos mínimos. Destaca acidez cítrica brillante, dulzor limpio y separación aromática. Tolera moliendas más cerradas.
-   - Muelas Cónicas (ej. 1Zpresso J-Max/K-Ultra, Comandante C40, Femobook A2, Timemore C2/C3, Kingrinder K6): Molienda bimodal con pico secundario de finos. Aporta cuerpo untuoso, textura aterciopelada y notas chocolatadas/caramelo. Requiere cuidar el número de vertidos para no compactar el lecho.
-4. CALIDAD SCA Y GENÉTICAS FLORALES:
-   - Cafés SCA >= 88 o variedades delicadas (Geisha, Chiroso, Pink Bourbon, Sidra, Eugenioides, Wush Wush): No usar agitación violenta ni temperaturas extremas (>96°C) que degraden los terpenos y ésteres volátiles. Vertidos laminares suaves desde baja altura.
-5. LIMITACIONES FÍSICAS DE DISPOSITIVOS:
-   - AeroPress Go: Capacidad máxima de la cámara = ~215ml de agua. Si dosis * ratio > 215g, limita el agua total a 205-210g o formula método concentrado.
-   - NextLevel Pulsar Mini: FÍSICA NO-BYPASS (0% bypass). Moliendas finas (<720 µm) saturan los poros del filtro y causan atasco total. REQUIERE molienda media / media-gruesa (780 - 850 µm D50; J-Max ~2.4.5, Femobook ~72-76 clics, Comandante ~24-26 clics, Ode ~4.2-5.0). Gestionar válvula (🔒 cerrada para bloom con dispersor, ⚡ media 50%, 🔓 abierta para drenaje por gravedad).
-    - Espresso: Molienda fina de alta precisión (200-350 µm D50), 25-32 segundos, ratio 1:2.0 a 1:2.4.
-    - Filtrados (V60, Kalita, Chemex, Pulsar): Granulometría media (600-850 µm D50).
-    - Inmersión (Prensa Francesa, Cupping): Granulometría gruesa (900-1150 µm D50).
-
-Genera un JSON con esta estructura exacta (calcula y calibra cada campo rigurosamente según este lote específico):
-{
-  "method": "${targetMethod}",
-  "ratio": "1:X (calculado según el café, reposo y método)",
-  "water_total_g": 0, // Entero exacto: Math.round(dosis * ratio)
-  "grind": "Descripción granulométrica y dial para ${activeGrinder} (ej. 'Medio-Fino (2.2.5)')",
-  "grind_microns": "Micrones D50 estimados (ej. '720 µm')",
-  "grind_adjustment_reason": "Explicación física concisa de la calibración según tueste, días de reposo, congelación y muelas (máx 25 palabras)",
-  "jmax_rot": 0, // Entero de 0 a 3
-  "jmax_num": 0, // Entero de 0 a 8
-  "jmax_click": 0, // Entero de 0 a 9
-  "grinders": {
-    "jmax": "Formato Rot.Num.Clic (ej. '2.2.5 (2 Rot. 2 Núm. 5 Clics)')",
-    "k_ultra": "Dial 0-9 con decimal y clics (ej. '8.0 (80 clics)')",
-    "ode_gen2": "Dial Fellow Ode 1-11 con subdivisiones (ej. 'Ajuste 4.2' o 'No apto para espresso')",
-    "comandante": "Clics Comandante C40 (ej. '23 clics')",
-    "femobook_a2": "Clics Femobook A2 (ej. '65 clics (~1.6 Rot.)' en V60, '74 clics (~1.85 Rot.)' en Pulsar Mini)",
-    "kingrinder_k6": "Clics Kingrinder K6 (ej. '92 clics (1 Rot. 32 Clics)')",
-    "timemore": "Clics Timemore C2/C3 (ej. '17 clics')",
-    "baratza": "Ajuste Baratza Encore/ESP (ej. 'Ajuste 15 (ESP: 25)' o 'ESP Ajuste 10')"
-  },
-  "active_grinder_dial": {
-    "grinder_id": "${activeGrinder}",
-    "grinder_name": "Nombre comercial del molino",
-    "dial": "Ajuste exacto recomendado para este molino",
-    "burr_type": "Geometría de muelas (Planas / Cónicas) y tamaño",
-    "microns": "Micrones objetivo"
-  },
-  "physics_analysis": {
-    "roast_and_density": "Análisis de densidad celular según altitud y desarrollo de tueste",
-    "degas_and_rest": "Diagnóstico de desgasificación de CO₂ y estado de reposo / congelación",
-    "burr_and_fines": "Comportamiento de finos y flujo hidrodinámico según el molino activo",
-    "extraction_strategy": "Fundamento científico de la estrategia de vertidos y temperatura"
-  },
-  "temperature": 0, // Entero en °C (entre 87 y 96)
-  "brew_time": "Tiempo total estimado (ej. '2:45 min', '1:45 min', '28s')",
-  "pours": [
-    // Array con las fases reales de vertido.
-    // Incluye: "step", "label", "water_g", "total_water_g", "time", "description" (técnica de vertido o estado de válvula).
-    // Suma de water_g = water_total_g y total_water_g del último paso = water_total_g.
-  ],
-  "steps": [
-    // 3 a 5 pasos concretos para preparar este lote con este método y molienda
-  ],
-  "notes": "Perfil sensorial esperado conectando origen, proceso, tueste y notas del tostador"
-}`;
+  const prompt = generateAiRecipePrompt(recipeParams);
 
   try {
     const recommendation = await callGeminiWithRetry(prompt, apiKey, model, enableThinking);
-    res.json(recommendation);
+    if (recommendation) {
+      if (typeof recommendation.temperature === 'string') {
+        recommendation.temperature = parseInt(recommendation.temperature.replace(/[^\d]/g, ''), 10) || 93;
+      }
+      if (!recommendation.water_total_g) {
+        const ratioNum = parseFloat(String(recommendation.ratio || '').replace('1:', '')) || 16.0;
+        recommendation.water_total_g = Math.round(dose * ratioNum);
+      }
+      recommendation.is_frozen = isFrozen;
+      recommendation.days_since_roast = daysSinceRoast;
+      recommendation._source = 'gemini_ai';
+    }
+    return res.json(recommendation);
   } catch (err) {
     console.warn(`[AI Recommend Fallback] Error with Gemini (${model}): ${err.message}. Serving deterministic barista recipe.`);
-    const fallbackRec = computeOfflineRecipe({
-      origin,
-      variety,
-      process,
-      altitude,
-      roast_level,
-      roaster_notes,
-      method: targetMethod,
-      dose_in_g: dose,
-      roast_date,
-      freeze_date,
-      sca_score,
-      producer,
-      grinder: activeGrinder
-    });
+    const fallbackRec = computeOfflineRecipe(recipeParams);
+    fallbackRec.is_frozen = isFrozen;
+    fallbackRec.days_since_roast = daysSinceRoast;
+    fallbackRec._source = 'barista_fallback';
+    fallbackRec._gemini_error = err.message;
     fallbackRec._error = err.message;
     fallbackRec.notes = `${fallbackRec.notes} (Receta calculada localmente: servidores de Google no disponibles o saturados)`;
-    res.json(fallbackRec);
+    return res.json(fallbackRec);
   }
 });
 
