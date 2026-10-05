@@ -947,9 +947,14 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
   const activeGrinderObj = rec.active_grinder_dial || (rec.grinder_id ? { grinder_id: rec.grinder_id, dial: rec.grind } : null);
   const grinderId = (activeGrinderObj && activeGrinderObj.grinder_id) || rec.grinder_id || rec.grinder || batch.grinder || null;
   const grinderConfig = (GRINDERS && Array.isArray(GRINDERS)) ? (GRINDERS.find(g => g.id === grinderId || (grinderId && String(grinderId).includes(g.id)) || (grinderId && g.id.includes(String(grinderId)))) || null) : null;
-  const grinderName = (activeGrinderObj && activeGrinderObj.grinder_name) || (grinderConfig ? (grinderConfig.shortName || grinderConfig.name) : (typeof rec.grinder === 'string' && rec.grinder ? rec.grinder : null));
+  const grinderName = (activeGrinderObj && activeGrinderObj.grinder_name)
+    || (grinderConfig ? (grinderConfig.shortName || grinderConfig.name) : null)
+    || (typeof rec.grinder === 'string' && rec.grinder ? rec.grinder : (typeof batch.grinder === 'string' && batch.grinder ? batch.grinder : null));
 
-  const rawDial = (activeGrinderObj && activeGrinderObj.dial) || rec.grind_size || rec.grind || '';
+  let rawDial = (activeGrinderObj && activeGrinderObj.dial) || rec.grind_size || rec.grind || '';
+  if (grinderName && rawDial.toLowerCase().startsWith(grinderName.toLowerCase())) {
+    rawDial = rawDial.slice(grinderName.length).replace(/^[:\s-]+/, '');
+  }
   const grindDisplayVal = stripEmojis(rawDial || 'Medio');
   const cleanRatio = String(ratioStr || '1:15').replace('1:', '');
   const parsedRating = (rec.rating !== undefined && rec.rating !== null && Number.isFinite(parseFloat(rec.rating))) ? parseFloat(rec.rating) : null;
