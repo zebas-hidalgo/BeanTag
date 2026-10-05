@@ -15,7 +15,7 @@
 **Files:**
 - Create: `scripts/test_dialin_timeline.mjs`
 
-- [ ] **Step 1: Write test suite for timeline sorting, sweet-spot detection, and delta extraction**
+- [x] **Step 1: Write test suite for timeline sorting, sweet-spot detection, and delta extraction**
 
 ```javascript
 import assert from 'node:assert/strict';
@@ -94,11 +94,11 @@ assert.equal(lineage[1].tempDelta, 1, 'Temperature delta from 93 to 94 should be
 console.log('✅ Passed: Dial-in Lineage logic verified successfully!\n');
 ```
 
-- [ ] **Step 2: Run test to verify it passes**
+- [x] **Step 2: Run test to verify it passes**
 Run: `node scripts/test_dialin_timeline.mjs`
 Expected: `✅ Passed: Dial-in Lineage logic verified successfully!`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add scripts/test_dialin_timeline.mjs
 git commit -m "test(barista): add unit test suite for dial-in lineage and sweet spot detection"
@@ -111,7 +111,7 @@ git commit -m "test(barista): add unit test suite for dial-in lineage and sweet 
 **Files:**
 - Create: `frontend/src/components/DialInTimeline.jsx`
 
-- [ ] **Step 1: Implement `DialInTimeline.jsx` component**
+- [x] **Step 1: Implement `DialInTimeline.jsx` component**
 Write modular React component rendering:
 - Step circles connected by vertical track line.
 - Badge for iteration `#1, #2...`.
@@ -120,11 +120,11 @@ Write modular React component rendering:
 - Sensory feedback notes.
 - Action button `▶ Preparar Esta Versión`.
 
-- [ ] **Step 2: Verify component compiles cleanly**
+- [x] **Step 2: Verify component compiles cleanly**
 Run: `npm --prefix frontend run build`
 Expected: Build succeeds.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add frontend/src/components/DialInTimeline.jsx
 git commit -m "feat(ui): implement DialInTimeline component for recipe evolution tracking"
@@ -137,18 +137,18 @@ git commit -m "feat(ui): implement DialInTimeline component for recipe evolution
 **Files:**
 - Modify: `frontend/src/utils/cardGenerator.js`
 
-- [ ] **Step 1: Enhance `drawRecipeDetails` in `cardGenerator.js`**
+- [x] **Step 1: Enhance `drawRecipeDetails` in `cardGenerator.js`**
 Ensure that when `incRecipe` is true:
 - The active grinder name and formatted dial are drawn prominently (e.g. `FEMOBOOK A2: 68 CLICS`).
 - Dosis In / Dosis Out is displayed in large monospace text (`15.0g IN ➔ 240g OUT`).
 - Method and extraction time are cleanly aligned.
 - Star rating glyphs and flavor notes are styled with high visual hierarchy.
 
-- [ ] **Step 2: Verify card rendering script passes**
+- [x] **Step 2: Verify card rendering script passes**
 Run: `node scripts/verify_cards_render.mjs`
 Expected: 100% pass across all 4 templates.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add frontend/src/utils/cardGenerator.js
 git commit -m "feat(cards): enhance cardGenerator with prominent active grinder dial and minimalist dose in/out"
@@ -161,16 +161,16 @@ git commit -m "feat(cards): enhance cardGenerator with prominent active grinder 
 **Files:**
 - Modify: `frontend/src/components/BatchDetail.jsx`
 
-- [ ] **Step 1: Add view mode state (`recipeViewMode: 'timeline' | 'cards'`) in `BatchDetail.jsx`**
+- [x] **Step 1: Add view mode state (`recipeViewMode: 'timeline' | 'cards'`) in `BatchDetail.jsx`**
 - Import `DialInTimeline`.
 - Render segment controls: `[ 🎯 Linaje Dial-in ]` and `[ 📋 Lista de Recetas ]`.
 - Pass `batch.recipes`, `grinderType`, and connect `onBrewRecipe` to `handleStartBrewGuide`.
 
-- [ ] **Step 2: Run build to ensure 0 lint/Vite errors**
+- [x] **Step 2: Run build to ensure 0 lint/Vite errors**
 Run: `npm --prefix frontend run build`
 Expected: Exit code 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add frontend/src/components/BatchDetail.jsx
 git commit -m "feat(batch-detail): integrate DialInTimeline with direct brew action"
@@ -189,22 +189,22 @@ git commit -m "feat(batch-detail): integrate DialInTimeline with direct brew act
   - `node scripts/test_sensory_tuner.mjs`
   - `node scripts/verify_cards_render.mjs`
 
-- [ ] **Step 1: Execute all test suites**
+- [x] **Step 1: Execute all test suites**
 Run: `node scripts/test_dialin_timeline.mjs && node scripts/test_ai_endpoint_e2e.mjs && node scripts/test_pulsar_mini.mjs && node scripts/test_grinders_unification.mjs && node scripts/test_sensory_tuner.mjs && node scripts/verify_cards_render.mjs`
 Expected: ALL PASS.
 
-- [ ] **Step 2: Build production frontend bundle**
+- [x] **Step 2: Build production frontend bundle**
 Run: `npm --prefix frontend run build`
 Expected: Clean build.
 
-- [ ] **Step 3: Push to GitHub `main`**
+- [x] **Step 3: Push to GitHub `main`**
 Run: `git push origin main`
 Expected: Successful push.
 
-- [ ] **Step 4: Deploy to VPS `5.189.152.68` and reload PM2**
+- [x] **Step 4: Deploy to VPS `5.189.152.68` and reload PM2**
 Run: `/Users/zebas/.gemini/config/skills/zerker/scripts/run_vps_cmd.sh "cd /var/www/beantag && git pull origin main && npm --prefix frontend run build && pm2 reload beantag"`
 Expected: PM2 reload success, status online.
 
-- [ ] **Step 5: Verify live service status**
+- [x] **Step 5: Verify live service status**
 Run: `/Users/zebas/.gemini/config/skills/zerker/scripts/run_vps_cmd.sh "pm2 status beantag"`
 Expected: PID online.
