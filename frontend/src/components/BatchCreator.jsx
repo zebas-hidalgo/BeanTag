@@ -279,7 +279,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
       return;
     }
 
-    const model = localStorage.getItem('gemini-model') || 'gemini-3.6-flash';
+    const model = localStorage.getItem('gemini-model') || 'gemini-3.8-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
     setIsScanning(true);

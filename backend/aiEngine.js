@@ -5,16 +5,15 @@
  */
 
 const VALID_GEMINI_MODELS = [
+  'gemini-3.8-flash',
+  'gemini-3.8-flash-lite',
   'gemini-3.6-flash',
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
   'gemini-3.5-flash-lite',
-  'gemini-2.5-flash',
   'gemini-2.5-pro'
 ];
 
-const DEFAULT_GEMINI_MODEL = 'gemini-3.6-flash';
-const FALLBACK_GEMINI_MODEL = 'gemini-3.5-flash-lite';
+const DEFAULT_GEMINI_MODEL = 'gemini-3.8-flash';
+const FALLBACK_GEMINI_MODEL = 'gemini-3.8-flash-lite';
 
 /**
  * Sanitizes model name: maps deprecated/invalid model names to supported Google AI Studio models.
@@ -28,12 +27,19 @@ function sanitizeModel(requestedModel) {
     return clean;
   }
   // Map experimental/unsupported variants
-  if (clean.includes('3.7')) {
-    if (clean.includes('pro')) return 'gemini-2.5-pro';
-    return 'gemini-3.6-flash';
+  if (clean.includes('3.8')) {
+    if (clean.includes('lite')) return 'gemini-3.8-flash-lite';
+    return 'gemini-3.8-flash';
   }
-  if (clean.includes('lite')) return 'gemini-3.5-flash-lite';
+  if (clean.includes('3.7') || clean.includes('3.6')) {
+    if (clean.includes('lite')) return 'gemini-3.8-flash-lite';
+    return 'gemini-3.8-flash';
+  }
+  if (clean.includes('lite')) return 'gemini-3.8-flash-lite';
   if (clean.includes('pro')) return 'gemini-2.5-pro';
+  if (clean.includes('1.5') || clean.includes('2.0') || clean.includes('2.5')) {
+    return 'gemini-3.8-flash';
+  }
   return DEFAULT_GEMINI_MODEL;
 }
 
@@ -1085,11 +1091,12 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
   // Cascading priority across active Google AI models
   const cascadeOrder = [
     modelToTry,
-    DEFAULT_GEMINI_MODEL, // 'gemini-3.6-flash'
-    'gemini-2.0-flash',
-    'gemini-1.5-flash',
-    'gemini-2.5-flash',
-    FALLBACK_GEMINI_MODEL // 'gemini-3.5-flash-lite'
+    DEFAULT_GEMINI_MODEL, // 'gemini-3.8-flash'
+    'gemini-3.8-flash-lite',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-2.5-pro',
+    FALLBACK_GEMINI_MODEL // 'gemini-3.8-flash-lite'
   ];
   const models = [...new Set(cascadeOrder)];
 

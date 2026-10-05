@@ -135,7 +135,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
       return;
     }
 
-    const model = localStorage.getItem('gemini-model') || 'gemini-3.6-flash';
+    const model = localStorage.getItem('gemini-model') || 'gemini-3.8-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
     setSommelierLoading(true);
