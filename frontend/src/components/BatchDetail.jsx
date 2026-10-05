@@ -1959,10 +1959,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             <DialInTimeline
               recipes={batch?.recipes || []}
               activeGrinderId={grinderType}
-              onSelectRecipe={(rec) => {
-                handleLoadRecipeToForm(rec);
-                if (showToast) showToast('Parámetros de extracción cargados al preparador.', { type: 'info' });
-              }}
+              onSelectRecipe={(rec) => handleLoadRecipeToForm(rec)}
               onBrewRecipe={(rec) => handleStartBrewGuide(rec)}
             />
           ) : (
