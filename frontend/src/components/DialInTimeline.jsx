@@ -8,8 +8,7 @@ import {
   Thermometer,
   Scale,
   Coffee,
-  ArrowDownUp,
-  Sparkles
+  ArrowDownUp
 } from 'lucide-react';
 import { getGrinderConfig } from '../utils/grinders.js';
 
@@ -72,9 +71,9 @@ function calculateDoseOut(rec) {
  */
 function extractClickDelta(rec, prevRec) {
   // 1. Explicit properties
-  if (rec.click_delta != null) return Number(rec.click_delta);
-  if (rec.clickDelta != null) return Number(rec.clickDelta);
-  if (rec.correction?.clickDelta != null) return Number(rec.correction.clickDelta);
+  if (rec.click_delta != null && Number.isFinite(Number(rec.click_delta))) return Number(rec.click_delta);
+  if (rec.clickDelta != null && Number.isFinite(Number(rec.clickDelta))) return Number(rec.clickDelta);
+  if (rec.correction?.clickDelta != null && Number.isFinite(Number(rec.correction.clickDelta))) return Number(rec.correction.clickDelta);
 
   // 2. Parse from notes (e.g. "+2 clics", "-1 clic", "sugirió +2 clics")
   if (rec.notes) {
@@ -119,10 +118,11 @@ export default function DialInTimeline({
 
   // Process recipes chronologically to determine iterations, sweet spots, and deltas
   const processedRecipes = useMemo(() => {
-    if (!Array.isArray(recipes) || recipes.length === 0) return [];
+    const validRecipes = Array.isArray(recipes) ? recipes.filter(Boolean) : [];
+    if (validRecipes.length === 0) return [];
 
     // Sort chronologically (oldest to newest)
-    const sorted = [...recipes].sort((a, b) => {
+    const sorted = [...validRecipes].sort((a, b) => {
       const parseTime = (item) => {
         if (!item) return 0;
         const raw = item.created_at || item.date || item.timestamp;
@@ -436,7 +436,7 @@ export default function DialInTimeline({
                 style={{
                   padding: '14px 16px',
                   margin: 0,
-                  backgroundColor: isSweetSpot
+                  background: isSweetSpot
                     ? 'linear-gradient(180deg, var(--bg-card) 0%, rgba(217, 119, 6, 0.04) 100%)'
                     : 'var(--bg-card)',
                   border: isSweetSpot
@@ -503,7 +503,7 @@ export default function DialInTimeline({
                         boxShadow: '0 2px 6px var(--barista-accent-honey-glow, rgba(217, 119, 6, 0.2))'
                       }}
                     >
-                      <span>🏆 Sweet Spot Calibrado (⭐ {Number(rec.rating || 5).toFixed(1)})</span>
+                      <span>🏆 Sweet Spot Calibrado (⭐ {Number.isFinite(Number(rec.rating)) ? Number(rec.rating).toFixed(1) : '5.0'})</span>
                     </div>
                   )}
                 </div>
