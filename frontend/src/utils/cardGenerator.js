@@ -946,11 +946,13 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
   const activeGrinderObj = rec.active_grinder_dial || (rec.grinder_id ? { grinder_id: rec.grinder_id, dial: rec.grind } : null);
   const grinderId = (activeGrinderObj && activeGrinderObj.grinder_id) || rec.grinder_id || rec.grinder || batch.grinder || null;
-  const grinderConfig = (GRINDERS && Array.isArray(GRINDERS)) ? (GRINDERS.find(g => g.id === grinderId) || null) : null;
-  const grinderName = grinderConfig ? (grinderConfig.shortName || grinderConfig.name) : (typeof rec.grinder === 'string' && rec.grinder ? rec.grinder : null);
+  const grinderConfig = (GRINDERS && Array.isArray(GRINDERS)) ? (GRINDERS.find(g => g.id === grinderId || (grinderId && String(grinderId).includes(g.id)) || (grinderId && g.id.includes(String(grinderId)))) || null) : null;
+  const grinderName = (activeGrinderObj && activeGrinderObj.grinder_name) || (grinderConfig ? (grinderConfig.shortName || grinderConfig.name) : (typeof rec.grinder === 'string' && rec.grinder ? rec.grinder : null));
 
   const rawDial = (activeGrinderObj && activeGrinderObj.dial) || rec.grind_size || rec.grind || '';
   const grindDisplayVal = stripEmojis(rawDial || 'Medio');
+  const cleanRatio = String(ratioStr || '1:15').replace('1:', '');
+  const parsedRating = (rec.rating !== undefined && rec.rating !== null && Number.isFinite(parseFloat(rec.rating))) ? parseFloat(rec.rating) : null;
 
   const paddingX = 26;
   const paddingY = 26;
@@ -1193,11 +1195,11 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.textAlign = 'right';
         ctx.fillText(`SCA: ${scaScore}★`, paddingX + availW - 12, specBoxY + 20);
         ctx.textAlign = 'left';
-      } else if (rec.rating) {
+      } else if (parsedRating !== null) {
         ctx.fillStyle = '#FBBF24';
         ctx.font = '800 8.5px "JetBrains Mono", monospace';
         ctx.textAlign = 'right';
-        ctx.fillText(`BARISTA: ${'★'.repeat(Math.min(5, Math.max(1, Math.round(rec.rating))))} (${rec.rating})`, paddingX + availW - 12, specBoxY + 20);
+        ctx.fillText(`BARISTA: ${'★'.repeat(Math.min(5, Math.max(1, Math.round(parsedRating))))} (${parsedRating.toFixed(1)})`, paddingX + availW - 12, specBoxY + 20);
         ctx.textAlign = 'left';
       } else {
         ctx.fillStyle = '#93C5FD';
@@ -1217,7 +1219,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       const metrics = [
         { lbl: 'MÉTODO // EXTRACCIÓN', val: methodStr.toUpperCase(), sub: rawMethodStr.toUpperCase() },
-        { lbl: 'DOSIS IN ➔ OUT', val: (coffeeG && waterG) ? `${coffeeG}g ➔ ${waterG}g` : (ratioStr ? `1:${ratioStr.replace('1:', '')}` : '—'), sub: `RATIO 1:${ratioStr.replace('1:', '')} // ${coffeeG ? coffeeG + 'g IN' : 'FORMULA'}` },
+        { lbl: 'DOSIS IN ➔ OUT', val: (coffeeG && waterG) ? `${coffeeG}g ➔ ${waterG}g` : (ratioStr ? `1:${cleanRatio}` : '—'), sub: `RATIO 1:${cleanRatio} // ${coffeeG ? coffeeG + 'g IN' : 'FORMULA'}` },
         { lbl: grinderName ? `MOLINO // ${grinderName.toUpperCase()}` : 'MOLIENDA // DIAL', val: grindDisplayVal.toUpperCase(), sub: grindSub },
         { lbl: 'TIEMPO & TEMPERATURA', val: (timeStr && !timeStr.includes('min') && !timeStr.includes('s')) ? `${timeStr} MIN` : (timeStr || '—'), sub: tempStr ? `${tempStr} • AGUA` : 'TEMP ESTÁNDAR' }
       ];
@@ -1655,7 +1657,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.textAlign = 'center';
         ctx.fillText(`SCA SCORE: ${scaScore}★`, sBadgeX + sBadgeW / 2, sBadgeY + 17);
         ctx.textAlign = 'left';
-      } else if (rec.rating) {
+      } else if (parsedRating !== null) {
         const sBadgeW = 120;
         const sBadgeH = 26;
         const sBadgeX = paddingX + availW - sBadgeW - 8;
@@ -1671,7 +1673,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.fillStyle = '#000000';
         ctx.font = '900 10px "Space Grotesk", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`BARISTA: ${'★'.repeat(Math.min(5, Math.max(1, Math.round(rec.rating))))}`, sBadgeX + sBadgeW / 2, sBadgeY + 17);
+        ctx.fillText(`BARISTA: ${'★'.repeat(Math.min(5, Math.max(1, Math.round(parsedRating))))}`, sBadgeX + sBadgeW / 2, sBadgeY + 17);
         ctx.textAlign = 'left';
       }
 
@@ -1683,7 +1685,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       const metrics = [
         { lbl: 'MÉTODO // EXT', val: methodStr.toUpperCase(), sub: rawMethodStr ? rawMethodStr.toUpperCase() : 'EXTRACCIÓN FILTRO', bg: '#D4FF00', valColor: '#000000' },
-        { lbl: 'DOSIS // IN ➔ OUT', val: (coffeeG && waterG) ? `${coffeeG}g ➔ ${waterG}g` : `1:${ratioStr.replace('1:', '')}`, sub: `RATIO 1:${ratioStr.replace('1:', '')} // ${coffeeG ? coffeeG + 'g IN' : 'FORMULA'}`, bg: '#FFFFFF', valColor: '#000000' },
+        { lbl: 'DOSIS // IN ➔ OUT', val: (coffeeG && waterG) ? `${coffeeG}g ➔ ${waterG}g` : `1:${cleanRatio}`, sub: `RATIO 1:${cleanRatio} // ${coffeeG ? coffeeG + 'g IN' : 'FORMULA'}`, bg: '#FFFFFF', valColor: '#000000' },
         { lbl: grinderName ? `MOLINO // ${grinderName.toUpperCase()}` : 'MOLIENDA // CALIBRATION', val: grindDisplayVal.toUpperCase(), sub: microns ? `~${microns} µm MICRONES` : 'MOLIENDA CALIBRADA', bg: '#FF3B14', valColor: '#FFFFFF' },
         { lbl: 'TIEMPO & TEMPERATURA', val: timeStr ? `${timeStr} MIN` : 'TIEMPO LIBRE', sub: tempStr ? `${tempStr} • EXTRACCIÓN` : 'AGUA A PUNTO', bg: '#FFFFFF', valColor: '#000000' }
       ];
@@ -2050,11 +2052,11 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.textAlign = 'right';
         ctx.fillText(`SCA ${scaScore}★`, paddingX + availW - 12, specBoxY + 21);
         ctx.textAlign = 'left';
-      } else if (rec.rating) {
+      } else if (parsedRating !== null) {
         ctx.fillStyle = '#D97706';
         ctx.font = '900 9.5px "Space Grotesk", sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillText(`${'★'.repeat(Math.min(5, Math.max(1, Math.round(rec.rating))))} (${rec.rating})`, paddingX + availW - 12, specBoxY + 21);
+        ctx.fillText(`${'★'.repeat(Math.min(5, Math.max(1, Math.round(parsedRating))))} (${parsedRating.toFixed(1)})`, paddingX + availW - 12, specBoxY + 21);
         ctx.textAlign = 'left';
       }
 
@@ -2066,7 +2068,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       const metrics = [
         { lbl: 'MÉTODO // EQUIPMENT', val: methodStr, sub: 'Extracción de especialidad' },
-        { lbl: 'DOSIS // IN ➔ OUT', val: (coffeeG && waterG) ? `${coffeeG}g ➔ ${waterG}g` : `1:${ratioStr.replace('1:', '')}`, sub: `Ratio 1:${ratioStr.replace('1:', '')} (${coffeeG ? coffeeG + 'g In' : ''})` },
+        { lbl: 'DOSIS // IN ➔ OUT', val: (coffeeG && waterG) ? `${coffeeG}g ➔ ${waterG}g` : `1:${cleanRatio}`, sub: `Ratio 1:${cleanRatio} (${coffeeG ? coffeeG + 'g In' : ''})` },
         { lbl: grinderName ? `MOLINO // ${grinderName.toUpperCase()}` : 'MOLIENDA // CLICS', val: grindDisplayVal, sub: microns ? `~${microns} µm` : 'Molienda ajustada' },
         { lbl: 'TIEMPO & TEMPERATURA', val: timeStr ? `${timeStr} MIN` : 'TIEMPO LIBRE', sub: tempStr ? `${tempStr} • TEMPERATURA` : 'Agua a punto' }
       ];
@@ -2414,11 +2416,11 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
         ctx.textAlign = 'right';
         ctx.fillText(`★ SCA ${scaScore}`, paddingX + availW - 12, stripY + 21);
         ctx.textAlign = 'left';
-      } else if (rec.rating) {
+      } else if (parsedRating !== null) {
         ctx.fillStyle = '#DC2626';
         ctx.font = 'bold 9.5px "Playfair Display", Georgia, serif';
         ctx.textAlign = 'right';
-        ctx.fillText(`★ ${Number(rec.rating).toFixed(1)} / 5.0`, paddingX + availW - 12, stripY + 21);
+        ctx.fillText(`★ ${parsedRating.toFixed(1)} / 5.0`, paddingX + availW - 12, stripY + 21);
         ctx.textAlign = 'left';
       }
 
@@ -2430,7 +2432,7 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
 
       const metrics = [
         { lbl: '抽出器具 // MÉTODO', val: methodStr, sub: 'Extracción artesanal' },
-        { lbl: '粉量・湯量 // DOSIS', val: (coffeeG && waterG) ? `${coffeeG}g ➔ ${waterG}g` : `1:${ratioStr.replace('1:', '')}`, sub: `1:${ratioStr.replace('1:', '')} (${coffeeG ? coffeeG + 'g in' : ''})` },
+        { lbl: '粉量・湯量 // DOSIS', val: (coffeeG && waterG) ? `${coffeeG}g ➔ ${waterG}g` : `1:${cleanRatio}`, sub: `1:${cleanRatio} (${coffeeG ? coffeeG + 'g in' : ''})` },
         { lbl: grinderName ? `ミル // ${grinderName.toUpperCase()}` : '粒度 // MOLIENDA', val: grindDisplayVal, sub: microns ? `~${microns} µm` : 'Calibrado' },
         { lbl: '時間・温度 // TIEMPO & TEMP', val: timeStr ? `${timeStr} MIN` : 'TIEMPO LIBRE', sub: tempStr ? `${tempStr} • Extracción` : 'Agua a punto' }
       ];
