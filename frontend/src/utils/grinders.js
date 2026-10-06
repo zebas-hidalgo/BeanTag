@@ -186,3 +186,136 @@ export function parseGrindToMicrons(grind) {
   if (lower.includes('cold brew')) return 1150;
   return 720;
 }
+
+/**
+ * Calculates physical micron delta (D50) based on dose changes according to Darcy's law bed depth resistance.
+ * Espresso: ~5.0 µm/g
+ * Filter/Pour-Over/Immersion: ~8.0 µm/g
+ *
+ * @param {string} method - Brew method (e.g., 'V60 (Filtrado)', 'Espresso')
+ * @param {number} fromDose - Initial dose in grams
+ * @param {number} toDose - Target dose in grams
+ * @returns {number} Micron delta (rounded integer)
+ */
+export function calculateDoseDeltaMicrons(method, fromDose, toDose) {
+  const f = parseFloat(fromDose);
+  const t = parseFloat(toDose);
+  if (!Number.isFinite(f) || !Number.isFinite(t) || f === t) return 0;
+  const isEspresso = typeof method === 'string' && method.toLowerCase().includes('espresso');
+  const rate = isEspresso ? 5.0 : 8.0;
+  return Math.round((t - f) * rate);
+}
+
+/**
+ * Scales a grinder's dial or click setting to compensate for a change in dose.
+ *
+ * @param {string} grinderId - Grinder identifier
+ * @param {number|object} currentVal - Current grinder setting (clicks, dial float, or J-Max {rot, num, click})
+ * @param {number} fromDose - Initial dose in grams
+ * @param {number} toDose - Target dose in grams
+ * @param {string} method - Brew method
+ * @returns {{ newVal: any, delta: number, deltaMicrons: number, direction: 'coarser'|'finer'|'same', description: string }}
+ */
+export function scaleGrinderSettingForDose(grinderId, currentVal, fromDose, toDose, method) {
+  const grinder = getGrinderConfig(grinderId);
+  const gid = grinder ? grinder.id : String(grinderId).toLowerCase();
+  const deltaMicrons = calculateDoseDeltaMicrons(method, fromDose, toDose);
+
+  if (deltaMicrons === 0) {
+    return {
+      newVal: currentVal,
+      delta: 0,
+      deltaMicrons: 0,
+      direction: 'same',
+      description: 'Sin variación de dosis'
+    };
+  }
+
+  const direction = deltaMicrons > 0 ? 'coarser' : (deltaMicrons < 0 ? 'finer' : 'same');
+  let newVal = currentVal;
+  let delta = 0;
+
+  switch (gid) {
+    case 'femobook': {
+      delta = Math.round(deltaMicrons / 18);
+      const curr = Number.isFinite(parseInt(currentVal, 10)) ? parseInt(currentVal, 10) : 68;
+      newVal = Math.max(4, Math.min(120, curr + delta));
+      break;
+    }
+    case 'jmax': {
+      delta = Math.round(deltaMicrons / 8.8);
+      let totalClicks = 0;
+      if (typeof currentVal === 'object' && currentVal !== null) {
+        const r = parseInt(currentVal.rot, 10) || 0;
+        const n = parseInt(currentVal.num, 10) || 0;
+        const c = parseInt(currentVal.click, 10) || 0;
+        totalClicks = (r * 90) + (n * 10) + c;
+      } else {
+        totalClicks = parseInt(currentVal, 10) || 0;
+      }
+      const clamped = Math.max(0, Math.min(360, totalClicks + delta));
+      const rot = Math.floor(clamped / 90);
+      const rem = clamped % 90;
+      const num = Math.floor(rem / 10);
+      const click = rem % 10;
+      newVal = { rot, num, click };
+      break;
+    }
+    case 'k_ultra': {
+      delta = Number((Math.round(deltaMicrons / 20) * 0.1).toFixed(1));
+      const curr = Number.isFinite(parseFloat(currentVal)) ? parseFloat(currentVal) : 8.0;
+      const target = curr + delta;
+      newVal = Number(Math.max(2.0, Math.min(13.0, target)).toFixed(1));
+      break;
+    }
+    case 'ode_gen2': {
+      delta = Number((Math.round(deltaMicrons / 35) * 0.1).toFixed(1));
+      const curr = Number.isFinite(parseFloat(currentVal)) ? parseFloat(currentVal) : 4.2;
+      const target = curr + delta;
+      newVal = Number(Math.max(1.0, Math.min(11.0, target)).toFixed(1));
+      break;
+    }
+    case 'comandante': {
+      delta = Math.round(deltaMicrons / 30);
+      const curr = Number.isFinite(parseInt(currentVal, 10)) ? parseInt(currentVal, 10) : 23;
+      newVal = Math.max(6, Math.min(45, curr + delta));
+      break;
+    }
+    case 'kingrinder': {
+      delta = Math.round(deltaMicrons / 16);
+      const curr = Number.isFinite(parseInt(currentVal, 10)) ? parseInt(currentVal, 10) : 92;
+      newVal = Math.max(12, Math.min(180, curr + delta));
+      break;
+    }
+    case 'timemore': {
+      delta = Math.round(deltaMicrons / 28);
+      const curr = Number.isFinite(parseInt(currentVal, 10)) ? parseInt(currentVal, 10) : 17;
+      newVal = Math.max(6, Math.min(36, curr + delta));
+      break;
+    }
+    case 'baratza': {
+      delta = Math.round(deltaMicrons / 35);
+      const curr = Number.isFinite(parseInt(currentVal, 10)) ? parseInt(currentVal, 10) : 15;
+      newVal = Math.max(1, Math.min(40, curr + delta));
+      break;
+    }
+    default: {
+      delta = Math.round(deltaMicrons / 20);
+      const curr = Number.isFinite(parseInt(currentVal, 10)) ? parseInt(currentVal, 10) : 0;
+      newVal = curr + delta;
+      break;
+    }
+  }
+
+  const description = direction === 'coarser'
+    ? `+${deltaMicrons} µm (más grueso por mayor lecho)`
+    : `${deltaMicrons} µm (más fino por menor lecho)`;
+
+  return {
+    newVal,
+    delta,
+    deltaMicrons,
+    direction,
+    description
+  };
+}
