@@ -1,6 +1,32 @@
+const path = require('path');
+const fs = require('fs');
+
+// 1. Load environment variables immediately before initializing dependencies
+try { require('dotenv').config({ path: path.join(__dirname, '.env') }); } catch (e) {}
+try { require('dotenv').config({ path: path.join(__dirname, '../.env') }); } catch (e) {}
+
+// Fallback zero-dependency .env loader in case dotenv is not yet installed
+[path.join(__dirname, '.env'), path.join(__dirname, '../.env')].forEach(envFile => {
+  try {
+    if (fs.existsSync(envFile)) {
+      const content = fs.readFileSync(envFile, 'utf8');
+      content.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#')) {
+          const eqIdx = trimmed.indexOf('=');
+          if (eqIdx > 0) {
+            const key = trimmed.slice(0, eqIdx).trim();
+            const val = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, '');
+            if (!process.env[key]) process.env[key] = val;
+          }
+        }
+      });
+    }
+  } catch (e) {}
+});
+
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { OAuth2Client } = require('google-auth-library');
@@ -23,8 +49,6 @@ const {
 const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'beantag_secret_jwt_key_2026';
-try { require('dotenv').config({ path: path.join(__dirname, '.env') }); } catch (e) {}
-try { require('dotenv').config({ path: path.join(__dirname, '../.env') }); } catch (e) {}
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
@@ -66,8 +90,19 @@ app.post('/api/auth/register', async (req, res) => {
   }
   try {
     const db = await getDb();
-    const existing = await db.get('SELECT id FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+    const existing = await db.get('SELECT * FROM users WHERE email = ?', [email.toLowerCase().trim()]);
     if (existing) {
+      if (!existing.password_hash) {
+        // User originally registered via Google and has no password: link the password!
+        const passwordHash = await bcrypt.hash(password, 10);
+        await db.run(
+          'UPDATE users SET password_hash = ?, name = COALESCE(name, ?) WHERE id = ?',
+          [passwordHash, name || null, existing.id]
+        );
+        const userData = { id: existing.id, email: existing.email, name: existing.name || name || email.split('@')[0], picture: existing.picture };
+        const token = jwt.sign(userData, JWT_SECRET, { expiresIn: '30d' });
+        return res.json({ success: true, token, user: userData, linked: true, message: 'Contraseña vinculada a tu cuenta con éxito.' });
+      }
       return res.status(400).json({ error: 'Ya existe una cuenta con este correo electrónico.' });
     }
 
@@ -97,8 +132,14 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const db = await getDb();
     const user = await db.get('SELECT * FROM users WHERE email = ?', [email.toLowerCase().trim()]);
-    if (!user || !user.password_hash) {
-      return res.status(401).json({ error: 'Credenciales inválidas o cuenta de Google.' });
+    if (!user) {
+      return res.status(401).json({ error: 'Correo o contraseña incorrectos.' });
+    }
+    if (!user.password_hash) {
+      return res.status(401).json({
+        error: 'Esta cuenta fue registrada con Google y aún no tiene contraseña. Usa el botón de Google o ingresa en la pestaña "Crear Cuenta" con este correo para vincularle una contraseña.',
+        isGoogleOnly: true
+      });
     }
 
     const valid = await bcrypt.compare(password, user.password_hash);

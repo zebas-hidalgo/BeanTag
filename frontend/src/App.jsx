@@ -105,16 +105,29 @@ export default function App() {
     batchName: ''
   });
 
-  const handleAuthSuccess = (userData, authToken) => {
+  const handleAuthSuccess = (arg1, arg2) => {
+    // Defensively handle both (userData, authToken) and (responseObj)
+    const userData = (arg1 && arg1.user) ? arg1.user : arg1;
+    const authToken = arg2 || (arg1 && arg1.token) || '';
+
     setCurrentUser(userData);
     setToken(authToken);
+
+    if (userData) {
+      localStorage.setItem('beantag-user', JSON.stringify(userData));
+    }
+    if (authToken) {
+      localStorage.setItem('beantag-token', authToken);
+    }
+
     setShowAuthModal(false);
-    showToast(`¡Bienvenido, ${userData.name}!`, { type: 'success', duration: 3000 });
+    showToast(`¡Bienvenido, ${userData?.name || 'Barista'}! ☕`, { type: 'success', duration: 3000 });
     fetchBatches(authToken);
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
+    setToken('');
     localStorage.removeItem('beantag-token');
     localStorage.removeItem('beantag-user');
     showToast('Has cerrado sesión.', { type: 'info', duration: 2000 });
@@ -138,7 +151,30 @@ export default function App() {
   };
 
   useEffect(() => {
-    fetchBatches();
+    const savedToken = localStorage.getItem('beantag-token');
+    if (savedToken) {
+      fetch(apiUrl('api/auth/me'), {
+        headers: { 'Authorization': `Bearer ${savedToken}` }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Token expirado');
+        return res.json();
+      })
+      .then(data => {
+        if (data && data.user) {
+          setCurrentUser(data.user);
+          localStorage.setItem('beantag-user', JSON.stringify(data.user));
+          fetchBatches(savedToken);
+        } else {
+          fetchBatches('');
+        }
+      })
+      .catch(() => {
+        fetchBatches(savedToken);
+      });
+    } else {
+      fetchBatches('');
+    }
     
     const route = getInitialRoute();
     if (route.view === 'detail' && route.batchId) {

@@ -9,25 +9,49 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isGoogleOnlyError, setIsGoogleOnlyError] = useState(false);
   const [googleInitialized, setGoogleInitialized] = useState(false);
-  const googleBtnRef = useRef(null);
+  const [googleClientId, setGoogleClientId] = useState('167578250344-6e3dbkah789lpad56abbijv4j6vcb9jt.apps.googleusercontent.com');
+  const googleBtnContainerRef = useRef(null);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    setErrorMsg('');
+  const renderNativeBtn = () => {
+    if (googleBtnContainerRef.current && window.google?.accounts?.id) {
+      try {
+        googleBtnContainerRef.current.innerHTML = '';
+        window.google.accounts.id.renderButton(googleBtnContainerRef.current, {
+          theme: 'outline',
+          size: 'large',
+          text: 'continue_with',
+          shape: 'pill',
+          locale: 'es',
+          width: 300,
+          logo_alignment: 'left'
+        });
+      } catch (e) {
+        console.warn("Error rendering Google button:", e);
+      }
+    }
+  };
 
-    const defaultCId = '167578250344-6e3dbkah789lpad56abbijv4j6vcb9jt.apps.googleusercontent.com';
-    loadAndInitGoogle(defaultCId);
-
-    fetch(apiUrl('api/auth/config'))
-      .then(res => res.json())
-      .then(data => {
-        if (data.googleClientId && data.googleClientId !== defaultCId) {
-          loadAndInitGoogle(data.googleClientId);
-        }
-      })
-      .catch(() => {});
-  }, [isOpen, mode]);
+  const initGoogleAuth = (cId) => {
+    if (!cId) return;
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      try {
+        window.google.accounts.id.initialize({
+          client_id: cId,
+          callback: handleGoogleCallback,
+          auto_select: false,
+          ux_mode: 'popup'
+        });
+        setGoogleInitialized(true);
+        renderNativeBtn();
+        setTimeout(renderNativeBtn, 150);
+        setTimeout(renderNativeBtn, 500);
+      } catch (e) {
+        console.warn("Google Auth Init error:", e);
+      }
+    }
+  };
 
   const loadAndInitGoogle = (cId) => {
     if (!cId) return;
@@ -44,63 +68,43 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
     }
   };
 
-  const initGoogleAuth = (cId) => {
-    if (!cId) return;
-    if (window.google && window.google.accounts && window.google.accounts.id) {
-      try {
-        window.google.accounts.id.initialize({
-          client_id: cId,
-          callback: handleGoogleCallback,
-          auto_select: false,
-          ux_mode: 'popup'
-        });
-        setGoogleInitialized(true);
+  useEffect(() => {
+    if (!isOpen) return;
+    setErrorMsg('');
+    setIsGoogleOnlyError(false);
 
-        // Try rendering official button into container with retries to ensure DOM readiness
-        const renderNativeBtn = () => {
-          const btnContainer = document.getElementById('google-btn-container');
-          if (btnContainer) {
-            btnContainer.innerHTML = '';
-            window.google.accounts.id.renderButton(btnContainer, {
-              theme: 'filled_blue',
-              size: 'large',
-              text: 'continue_with',
-              shape: 'pill',
-              locale: 'es',
-              width: 300,
-              logo_alignment: 'left'
-            });
-          }
-        };
+    const defaultCId = '167578250344-6e3dbkah789lpad56abbijv4j6vcb9jt.apps.googleusercontent.com';
 
-        renderNativeBtn();
-        setTimeout(renderNativeBtn, 100);
-        setTimeout(renderNativeBtn, 500);
+    fetch(apiUrl('api/auth/config'))
+      .then(res => res.json())
+      .then(data => {
+        const cId = data.googleClientId || defaultCId;
+        setGoogleClientId(cId);
+        loadAndInitGoogle(cId);
+      })
+      .catch(() => {
+        loadAndInitGoogle(defaultCId);
+      });
+  }, [isOpen]);
 
-      } catch (e) {
-        console.warn("Google Auth Init error:", e);
-      }
+  useEffect(() => {
+    if (isOpen && googleInitialized) {
+      renderNativeBtn();
+      const t = setTimeout(renderNativeBtn, 200);
+      return () => clearTimeout(t);
     }
-  };
+  }, [isOpen, googleInitialized, mode]);
 
-  const handleCustomGoogleClick = () => {
-    if (window.google && window.google.accounts && window.google.accounts.id) {
-      // 1. Try clicking Google rendered iframe if available
-      const btnContainer = document.getElementById('google-btn-container');
-      const iframeOrBtn = btnContainer ? btnContainer.querySelector('iframe, div[role="button"]') : null;
-      if (iframeOrBtn) {
-        iframeOrBtn.click();
-        return;
-      }
-      
-      // 2. Fallback to Google One-Tap prompt
+  const handlePromptFallback = () => {
+    if (window.google?.accounts?.id) {
       window.google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          console.warn("Google prompt skipped or not displayed:", notification.getNotDisplayedReason());
+          console.warn("Google prompt skipped:", notification.getNotDisplayedReason());
+          if (showToast) showToast('Google One-Tap no disponible en este navegador. Usa correo y contraseña abajo.', { type: 'info' });
         }
       });
     } else {
-      if (showToast) showToast('Cargando Google Sign-In, reintenta en un segundo...', { type: 'info' });
+      if (showToast) showToast('Cargando servicio Google, un momento...', { type: 'info' });
     }
   };
 
@@ -108,6 +112,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
     if (!response || !response.credential) return;
     setLoading(true);
     setErrorMsg('');
+    setIsGoogleOnlyError(false);
 
     fetch(apiUrl('api/auth/google'), {
       method: 'POST',
@@ -117,14 +122,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
     .then(res => res.json())
     .then(data => {
       if (data.success && data.token) {
+        localStorage.setItem('beantag-token', data.token);
+        localStorage.setItem('beantag-user', JSON.stringify(data.user));
         if (showToast) showToast(`¡Bienvenido, ${data.user.name}! ☕`, { type: 'success', duration: 3000 });
-        onSuccess(data);
+        if (onSuccess) onSuccess(data.user, data.token);
         onClose();
       } else {
         setErrorMsg(data.error || 'Error al iniciar sesión con Google.');
       }
     })
-    .catch(err => {
+    .catch(() => {
       setErrorMsg('Error de red al autenticar con Google.');
     })
     .finally(() => setLoading(false));
@@ -139,6 +146,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
 
     setLoading(true);
     setErrorMsg('');
+    setIsGoogleOnlyError(false);
 
     const endpoint = mode === 'login' ? 'api/auth/login' : 'api/auth/register';
     const payload = mode === 'login' ? { email, password } : { email, password, name };
@@ -151,11 +159,19 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
     .then(res => res.json())
     .then(data => {
       if (data.success && data.token) {
-        if (showToast) showToast(mode === 'login' ? `¡Sesión iniciada como ${data.user.name}! ☕` : '¡Cuenta creada con éxito! ☕', { type: 'success', duration: 3000 });
-        onSuccess(data);
+        localStorage.setItem('beantag-token', data.token);
+        localStorage.setItem('beantag-user', JSON.stringify(data.user));
+        const toastMsg = data.linked
+          ? `¡Contraseña vinculada a tu cuenta con éxito! Sesión iniciada como ${data.user.name} ☕`
+          : (mode === 'login' ? `¡Sesión iniciada como ${data.user.name}! ☕` : '¡Cuenta creada con éxito! ☕');
+        if (showToast) showToast(toastMsg, { type: 'success', duration: 3000 });
+        if (onSuccess) onSuccess(data.user, data.token);
         onClose();
       } else {
         setErrorMsg(data.error || 'Error al procesar la solicitud.');
+        if (data.isGoogleOnly) {
+          setIsGoogleOnlyError(true);
+        }
       }
     })
     .catch(() => {
@@ -190,52 +206,51 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
 
         {errorMsg && (
           <div style={{ background: '#FEE2E2', color: '#991B1B', padding: '10px 12px', borderRadius: '10px', fontSize: '12px', marginBottom: '14px', fontWeight: 'bold' }}>
-            ⚠️ {errorMsg}
+            <div>⚠️ {errorMsg}</div>
+            {isGoogleOnlyError && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('register');
+                  setErrorMsg('');
+                  setIsGoogleOnlyError(false);
+                }}
+                className="btn-candy secondary"
+                style={{ width: '100%', marginTop: '8px', fontSize: '11.5px', padding: '7px 10px', background: '#FFFFFF', color: '#991B1B', borderColor: '#FCA5A5' }}
+              >
+                🔑 Asignar contraseña a este correo en "Crear Cuenta"
+              </button>
+            )}
           </div>
         )}
 
-        {/* HERO: Custom React Google Sign-In Button with 4-Color Google Icon */}
+        {/* HERO: Google Sign-In Container */}
         <div style={{ background: 'var(--color-bg, #F9FAFB)', border: '1.5px solid var(--color-border, #E5E7EB)', borderRadius: '16px', padding: '16px 14px', textAlign: 'center', marginBottom: '18px' }}>
           <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '12px', color: 'var(--color-text)' }}>
             Acceso Rápido con tu Cuenta de Google
           </div>
 
-          {/* Primary Custom React Button */}
-          <button
-            type="button"
-            onClick={handleCustomGoogleClick}
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '11px 16px',
-              borderRadius: '26px',
-              border: '1.5px solid #DADCE0',
-              background: '#FFFFFF',
-              color: '#3C4043',
-              fontWeight: '700',
-              fontSize: '13.5px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              cursor: 'pointer',
-              boxShadow: '0 2px 6px rgba(60,64,67,0.12)',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            <svg style={{ width: '20px', height: '20px', flexShrink: 0 }} viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-            </svg>
-            <span>Continuar con Google</span>
-          </button>
-
-          {/* Hidden Container for GSI Rendered Button */}
-          <div style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: '1px', height: '1px', overflow: 'hidden' }}>
-            <div id="google-btn-container"></div>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '44px', width: '100%' }}>
+            <div ref={googleBtnContainerRef} id="google-btn-container" style={{ display: 'flex', justifyContent: 'center', width: '100%', minHeight: '40px' }}></div>
           </div>
+
+          {!googleInitialized && (
+            <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '8px' }}>
+              Cargando Google Sign-In... o ingresa con tu correo abajo.
+            </div>
+          )}
+
+          {googleInitialized && (
+            <div style={{ marginTop: '8px' }}>
+              <button
+                type="button"
+                onClick={handlePromptFallback}
+                style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontSize: '11px', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+              >
+                ¿No puedes hacer clic? Abrir selector Google One-Tap
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Divider */}
@@ -249,7 +264,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
         <div style={{ display: 'flex', background: 'var(--color-bg, #F3F4F6)', borderRadius: '12px', padding: '4px', marginBottom: '14px' }}>
           <button
             type="button"
-            onClick={() => { setMode('login'); setErrorMsg(''); }}
+            onClick={() => { setMode('login'); setErrorMsg(''); setIsGoogleOnlyError(false); }}
             style={{
               flex: 1, padding: '7px', borderRadius: '8px', border: 'none', fontWeight: 'bold', fontSize: '11.5px', cursor: 'pointer',
               background: mode === 'login' ? 'var(--color-surface, #FFF)' : 'transparent',
@@ -261,7 +276,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
           </button>
           <button
             type="button"
-            onClick={() => { setMode('register'); setErrorMsg(''); }}
+            onClick={() => { setMode('register'); setErrorMsg(''); setIsGoogleOnlyError(false); }}
             style={{
               flex: 1, padding: '7px', borderRadius: '8px', border: 'none', fontWeight: 'bold', fontSize: '11.5px', cursor: 'pointer',
               background: mode === 'register' ? 'var(--color-surface, #FFF)' : 'transparent',
