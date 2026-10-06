@@ -210,6 +210,18 @@ const m20 = parseInt(recipe20g.grind_microns, 10);
 assert.equal(m20 - m15, 40, `Increasing V60 dose by +5g should add exactly +40 microns in offline engine (got ${m15} -> ${m20})`);
 assert.ok(recipe20g.notes.includes('Escalado de dosis') || recipe20g.notes.includes('cama de café'), 'Recipe notes should mention dose scaling reason');
 
+// Compare V60 at 15g vs V60 at 12g (scaling down -3g -> -24 µm)
+const recipe12g = computeOfflineRecipe({
+  origin: 'Colombia Huila',
+  roast_level: 'Medio',
+  method: 'V60 (Filtrado)',
+  dose_in_g: 12
+});
+
+const m12 = parseInt(recipe12g.grind_microns, 10);
+assert.equal(m12 - m15, -24, `Decreasing V60 dose by -3g should subtract exactly -24 microns in offline engine (got ${m15} -> ${m12})`);
+assert.ok(recipe12g.notes.includes('Escalado de dosis') && recipe12g.notes.includes('-24µm'), 'Recipe notes should mention -24µm scaling down reason');
+
 // Compare Espresso at 18g vs Espresso at 20g
 const esp18 = computeOfflineRecipe({
   origin: 'Colombia Huila',

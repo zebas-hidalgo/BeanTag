@@ -334,7 +334,8 @@ function computeOfflineRecipe(batch) {
     refDose = 15.0;
   }
 
-  const dose = parseFloat(batch.dose_in_g) || refDose;
+  const parsedDose = parseFloat(batch.dose_in_g);
+  const dose = (Number.isFinite(parsedDose) && parsedDose > 0) ? parsedDose : refDose;
 
   const roastDateStr = batch.roast_date || null;
   const daysSinceRoast = calculateDaysSinceRoast(roastDateStr);
@@ -1077,7 +1078,15 @@ function generateAiRecipePrompt(batch) {
   const sca_score = batch.sca_score || null;
   const roaster_notes = batch.roaster_notes || '';
   const targetMethod = batch.method || 'V60 (Filtrado)';
-  const dose = parseFloat(batch.dose_in_g) || 15.0;
+  const mLower = targetMethod.toLowerCase();
+  let refDose = 15.0;
+  if (mLower.includes('espresso')) refDose = 18.0;
+  else if (mLower.includes('chemex')) refDose = 30.0;
+  else if (mLower.includes('prensa') || mLower.includes('french')) refDose = 20.0;
+  else if (mLower.includes('go')) refDose = 14.0;
+
+  const parsedDose = parseFloat(batch.dose_in_g);
+  const dose = (Number.isFinite(parsedDose) && parsedDose > 0) ? parsedDose : refDose;
   const activeGrinder = batch.grinder || 'jmax';
   const daysSinceRoast = calculateDaysSinceRoast(roast_date);
   const isFrozen = isFrozenBatch(batch);
