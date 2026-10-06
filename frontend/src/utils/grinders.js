@@ -217,8 +217,9 @@ export function calculateDoseDeltaMicrons(method, fromDose, toDose) {
  * @returns {{ newVal: any, delta: number, deltaMicrons: number, direction: 'coarser'|'finer'|'same', description: string }}
  */
 export function scaleGrinderSettingForDose(grinderId, currentVal, fromDose, toDose, method) {
-  const grinder = getGrinderConfig(grinderId);
-  const gid = grinder ? grinder.id : String(grinderId).toLowerCase();
+  const cleanId = grinderId ? String(grinderId).toLowerCase().replace(/[^a-z0-9_]/g, '') : '';
+  const grinder = GRINDERS.find(g => g.id === cleanId || cleanId.includes(g.id));
+  const gid = grinder ? grinder.id : cleanId;
   const deltaMicrons = calculateDoseDeltaMicrons(method, fromDose, toDose);
 
   if (deltaMicrons === 0) {
@@ -244,14 +245,14 @@ export function scaleGrinderSettingForDose(grinderId, currentVal, fromDose, toDo
     }
     case 'jmax': {
       delta = Math.round(deltaMicrons / 8.8);
-      let totalClicks = 0;
+      let totalClicks = 205; // Default 2.2.5 (205 clicks)
       if (typeof currentVal === 'object' && currentVal !== null) {
         const r = parseInt(currentVal.rot, 10) || 0;
         const n = parseInt(currentVal.num, 10) || 0;
         const c = parseInt(currentVal.click, 10) || 0;
         totalClicks = (r * 90) + (n * 10) + c;
-      } else {
-        totalClicks = parseInt(currentVal, 10) || 0;
+      } else if (Number.isFinite(parseInt(currentVal, 10))) {
+        totalClicks = parseInt(currentVal, 10);
       }
       const clamped = Math.max(0, Math.min(360, totalClicks + delta));
       const rot = Math.floor(clamped / 90);
