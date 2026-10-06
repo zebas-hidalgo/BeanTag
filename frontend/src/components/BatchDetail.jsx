@@ -10,7 +10,7 @@ import ScaRadarChart from './ScaRadarChart';
 import DialInAssistant from './DialInAssistant';
 import BrewGuideModal from './BrewGuideModal';
 import DialInTimeline from './DialInTimeline';
-import { GRINDERS, getGrinderConfig } from '../utils/grinders';
+import { GRINDERS, getGrinderConfig, scaleGrinderSettingForDose, calculateDoseDeltaMicrons } from '../utils/grinders';
 
 const calculateMicrons = (rot, num, click) => {
   const r = parseInt(rot) || 0;
@@ -87,6 +87,18 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   // Advanced Coffee Fields (Improvement 6 & 8)
   const [doseInG, setDoseInG] = useState(20.0);
+  const baseDoseRef = useRef(20.0);
+  const baseGrinderRef = useRef({
+    jmax: { rot: 1, num: 5, click: 0 },
+    k_ultra: 9.0,
+    ode_gen2: 5.0,
+    femobook: 60,
+    comandante: 24,
+    kingrinder: 90,
+    timemore: 18,
+    baratza: 15
+  });
+  const [doseAdjustmentFeedback, setDoseAdjustmentFeedback] = useState(null);
   const [doseOutG, setDoseOutG] = useState(36.0);
   const [waterTemp, setWaterTemp] = useState(93);
   const [espressoPressure, setEspressoPressure] = useState(9);
@@ -461,6 +473,23 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       });
     }
 
+    baseDoseRef.current = doseInG;
+    baseGrinderRef.current = {
+      jmax: {
+        rot: aiRecommendation.jmax_rot !== undefined ? (parseInt(aiRecommendation.jmax_rot) || 0) : jmaxRot,
+        num: aiRecommendation.jmax_num !== undefined ? (parseInt(aiRecommendation.jmax_num) || 0) : jmaxNum,
+        click: aiRecommendation.jmax_click !== undefined ? (parseInt(aiRecommendation.jmax_click) || 0) : jmaxClick
+      },
+      k_ultra: aiRecommendation.grinders?.k_ultra ? (parseFloat(String(aiRecommendation.grinders.k_ultra).match(/(\d+(?:\.\d+)?)/)?.[1]) || kUltraDial) : kUltraDial,
+      ode_gen2: aiRecommendation.grinders?.ode_gen2 ? (parseFloat(String(aiRecommendation.grinders.ode_gen2).match(/(?:Ajuste\s*)?(\d+(?:\.\d+)?)/i)?.[1]) || odeDial) : odeDial,
+      femobook: aiRecommendation.grinders?.femobook_a2 ? (parseInt(String(aiRecommendation.grinders.femobook_a2).match(/(\d+)\s*clic/i)?.[1]) || femobookClicks) : femobookClicks,
+      comandante: aiRecommendation.grinders?.comandante ? (parseInt(String(aiRecommendation.grinders.comandante).match(/(\d+)/)?.[1]) || comandanteClicks) : comandanteClicks,
+      kingrinder: aiRecommendation.grinders?.kingrinder_k6 ? (parseInt(String(aiRecommendation.grinders.kingrinder_k6).match(/(\d+)\s*clic/i)?.[1]) || kingrinderClicks) : kingrinderClicks,
+      timemore: aiRecommendation.grinders?.timemore ? (parseInt(String(aiRecommendation.grinders.timemore).match(/(\d+)\s*clic/i)?.[1]) || timemoreClicks) : timemoreClicks,
+      baratza: aiRecommendation.grinders?.baratza ? (parseInt(String(aiRecommendation.grinders.baratza).match(/(?:Ajuste\s*)?(\d+)/i)?.[1]) || baratzaStep) : baratzaStep
+    };
+    setDoseAdjustmentFeedback(null);
+
     if (showToast) showToast('Receta sugerida por IA aplicada al formulario.', { type: 'success', duration: 3000 });
     setAiRecommendation(null);
   };
@@ -473,6 +502,18 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     if (famous.defaultDose || famous.method === 'NextLevel Pulsar Mini') {
       setDoseInG(effectiveDose);
     }
+    baseDoseRef.current = effectiveDose;
+    baseGrinderRef.current = {
+      jmax: famous.grinderSettings?.jmax ? { ...famous.grinderSettings.jmax } : { rot: jmaxRot, num: jmaxNum, click: jmaxClick },
+      femobook: famous.grinderSettings?.femobook?.clicks ?? femobookClicks,
+      comandante: famous.grinderSettings?.comandante?.clicks ?? comandanteClicks,
+      k_ultra: kUltraDial,
+      ode_gen2: odeDial,
+      kingrinder: kingrinderClicks,
+      timemore: timemoreClicks,
+      baratza: baratzaStep
+    };
+    setDoseAdjustmentFeedback(null);
     if (famous.ratioVal) setRatioVal(famous.ratioVal);
     else if (famous.method === 'NextLevel Pulsar Mini') setRatioVal(16.6);
     if (famous.temperature) setWaterTemp(famous.temperature);
@@ -567,7 +608,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
             // Pre-populate new fields
             const defaultDoseForMethod = loadedMethod === 'NextLevel Pulsar Mini' ? 15.0 : (parseFloat(data.dose_weight) || 20.0);
-            setDoseInG(targetRecipe.dose_in_g !== null && targetRecipe.dose_in_g !== undefined ? targetRecipe.dose_in_g : defaultDoseForMethod);
+            const initDose = targetRecipe.dose_in_g !== null && targetRecipe.dose_in_g !== undefined ? (parseFloat(targetRecipe.dose_in_g) || defaultDoseForMethod) : defaultDoseForMethod;
+            setDoseInG(initDose);
+            baseDoseRef.current = initDose;
+            setDoseAdjustmentFeedback(null);
             setDoseOutG(targetRecipe.dose_out_g !== null && targetRecipe.dose_out_g !== undefined ? targetRecipe.dose_out_g : 36.0);
             setWaterTemp(targetRecipe.temperature ? parseInt(targetRecipe.temperature) || 93 : 93);
             setEspressoPressure(targetRecipe.espresso_pressure !== null && targetRecipe.espresso_pressure !== undefined ? targetRecipe.espresso_pressure : 9);
@@ -579,7 +623,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             if (targetRecipe.notes) setNotes(targetRecipe.notes);
           } else {
             // Defaults
-            setDoseInG(parseFloat(data.dose_weight) || 20.0);
+            const defDose = parseFloat(data.dose_weight) || 20.0;
+            setDoseInG(defDose);
+            baseDoseRef.current = defDose;
+            setDoseAdjustmentFeedback(null);
             setDoseOutG(36.0);
             setWaterTemp(93);
             setEspressoPressure(9);
@@ -644,7 +691,13 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const handleLoadRecipeToForm = (rec) => {
     if (!rec) return;
     if (rec.method) setMethod(rec.method);
-    if (rec.dose_in_g) setDoseInG(rec.dose_in_g);
+    if (rec.dose_in_g) {
+      const parsed = parseFloat(rec.dose_in_g);
+      if (Number.isFinite(parsed) && parsed > 0) {
+        setDoseInG(parsed);
+        baseDoseRef.current = parsed;
+      }
+    }
     if (rec.dose_out_g) setDoseOutG(rec.dose_out_g);
     if (rec.temperature) {
       const t = parseInt(rec.temperature);
@@ -652,6 +705,17 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     }
     if (rec.brew_time) setBrewTime(rec.brew_time);
     if (rec.notes) setNotes(rec.notes);
+    baseGrinderRef.current = {
+      jmax: { rot: jmaxRot, num: jmaxNum, click: jmaxClick },
+      k_ultra: kUltraDial,
+      ode_gen2: odeDial,
+      femobook: femobookClicks,
+      comandante: comandanteClicks,
+      kingrinder: kingrinderClicks,
+      timemore: timemoreClicks,
+      baratza: baratzaStep
+    };
+    setDoseAdjustmentFeedback(null);
     setActiveTab('brew');
     if (showToast) showToast('Parámetros cargados en el preparador.', { type: 'info', duration: 2000 });
   };
@@ -922,6 +986,86 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   const activeGrinderMeta = getGrinderConfig(grinderType);
 
+  const updateManualGrinder = (grinderId, val) => {
+    baseGrinderRef.current = {
+      ...baseGrinderRef.current,
+      [grinderId]: val
+    };
+    baseDoseRef.current = doseInG;
+    setDoseAdjustmentFeedback(null);
+  };
+
+  const getDoseFeedbackForGrinder = (feedback, gId) => {
+    if (!feedback) return null;
+    const { fromDose, toDose, deltaMicrons } = feedback;
+    let deltaText = '';
+
+    if (gId === 'k_ultra' || gId === 'ode_gen2') {
+      const stepMicrons = gId === 'k_ultra' ? 20 : 35;
+      const dialDelta = Math.round((deltaMicrons / stepMicrons) * 10) / 10 * 0.1;
+      const roundedDial = Number(dialDelta.toFixed(1));
+      deltaText = `${roundedDial > 0 ? '+' : ''}${roundedDial.toFixed(1)} dial`;
+    } else if (gId === 'baratza') {
+      const stepDelta = Math.round(deltaMicrons / 35);
+      deltaText = `${stepDelta > 0 ? '+' : ''}${stepDelta} ${Math.abs(stepDelta) === 1 ? 'paso' : 'pasos'}`;
+    } else {
+      const clickMicrons = gId === 'femobook' ? 18 : (gId === 'jmax' ? 8.8 : (gId === 'kingrinder' ? 16 : (gId === 'timemore' ? 28 : 30)));
+      const clickDelta = Math.round(deltaMicrons / clickMicrons);
+      deltaText = `${clickDelta > 0 ? '+' : ''}${clickDelta} ${Math.abs(clickDelta) === 1 ? 'clic' : 'clics'}`;
+    }
+
+    return {
+      deltaText,
+      fromDose,
+      toDose,
+      deltaMicrons,
+      description: toDose > fromDose ? 'Cama más profunda (+resistencia)' : 'Cama menos profunda (-resistencia)'
+    };
+  };
+
+  const handleDoseChange = (nextDose) => {
+    const parsed = typeof nextDose === 'number' ? nextDose : parseFloat(nextDose);
+    if (!Number.isFinite(parsed) || parsed <= 0) return;
+    const toDose = Math.max(1, Math.min(100, parseFloat(parsed.toFixed(1))));
+    const fromDose = Number.isFinite(baseDoseRef.current) && baseDoseRef.current > 0 ? baseDoseRef.current : toDose;
+
+    setDoseInG(toDose);
+
+    if (fromDose === toDose) {
+      setDoseAdjustmentFeedback(null);
+      return;
+    }
+
+    // Scale all 8 grinders relative to the calibrated base dose
+    const resJmax = scaleGrinderSettingForDose('jmax', baseGrinderRef.current.jmax, fromDose, toDose, method);
+    const resFemobook = scaleGrinderSettingForDose('femobook', baseGrinderRef.current.femobook, fromDose, toDose, method);
+    const resKUltra = scaleGrinderSettingForDose('k_ultra', baseGrinderRef.current.k_ultra, fromDose, toDose, method);
+    const resOde = scaleGrinderSettingForDose('ode_gen2', baseGrinderRef.current.ode_gen2, fromDose, toDose, method);
+    const resComandante = scaleGrinderSettingForDose('comandante', baseGrinderRef.current.comandante, fromDose, toDose, method);
+    const resKingrinder = scaleGrinderSettingForDose('kingrinder', baseGrinderRef.current.kingrinder, fromDose, toDose, method);
+    const resTimemore = scaleGrinderSettingForDose('timemore', baseGrinderRef.current.timemore, fromDose, toDose, method);
+    const resBaratza = scaleGrinderSettingForDose('baratza', baseGrinderRef.current.baratza, fromDose, toDose, method);
+
+    setJmaxRot(resJmax.newVal.rot);
+    setJmaxNum(resJmax.newVal.num);
+    setJmaxClick(resJmax.newVal.click);
+    setFemobookClicks(resFemobook.newVal);
+    setKUltraDial(resKUltra.newVal);
+    setOdeDial(resOde.newVal);
+    setComandanteClicks(resComandante.newVal);
+    setKingrinderClicks(resKingrinder.newVal);
+    setTimemoreClicks(resTimemore.newVal);
+    setBaratzaStep(resBaratza.newVal);
+
+    const deltaMicrons = calculateDoseDeltaMicrons(method, fromDose, toDose);
+    setDoseAdjustmentFeedback({
+      fromDose,
+      toDose,
+      deltaMicrons,
+      method
+    });
+  };
+
   const handleSelectGrinder = (id) => {
     setGrinderType(id);
     localStorage.setItem('default-grinder', id);
@@ -1180,10 +1324,18 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       }
                       setMethod(m.id);
                       if (m.id === 'NextLevel Pulsar Mini') {
-                        if (!doseInG || doseInG === 20.0) setDoseInG(15.0);
+                        if (!doseInG || doseInG === 20.0) {
+                          setDoseInG(15.0);
+                          baseDoseRef.current = 15.0;
+                          setDoseAdjustmentFeedback(null);
+                        }
                         if (!ratioVal || ratioVal === 15.0) setRatioVal(16.6);
                       } else if (m.id === 'AeroPress Go') {
-                        if (!doseInG || doseInG === 20.0 || doseInG > 15.0) setDoseInG(14.0);
+                        if (!doseInG || doseInG === 20.0 || doseInG > 15.0) {
+                          setDoseInG(14.0);
+                          baseDoseRef.current = 14.0;
+                          setDoseAdjustmentFeedback(null);
+                        }
                         if (!ratioVal || ratioVal === 15.0) setRatioVal(14.3);
                       }
                     }}
@@ -1520,7 +1672,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     className="cupertino-stepper-btn"
                     onClick={() => {
                       if (navigator.vibrate) navigator.vibrate(8);
-                      setDoseInG(d => Math.max(5, parseFloat((d - 0.5).toFixed(1))));
+                      const next = Math.max(5, parseFloat(((parseFloat(doseInG) || 20) - 0.5).toFixed(1)));
+                      handleDoseChange(next);
                     }}
                     aria-label="Menos dosis"
                   >
@@ -1532,7 +1685,20 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       inputMode="decimal"
                       step="0.5"
                       value={doseInG}
-                      onChange={(e) => setDoseInG(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => setDoseInG(e.target.value === '' ? '' : (parseFloat(e.target.value) || 0))}
+                      onBlur={() => {
+                        if (doseInG && doseInG > 0) {
+                          handleDoseChange(doseInG);
+                        } else {
+                          setDoseInG(baseDoseRef.current || 20.0);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && doseInG && doseInG > 0) {
+                          handleDoseChange(doseInG);
+                          e.currentTarget.blur();
+                        }
+                      }}
                       style={{ width: '46px', maxWidth: '48px', minWidth: 0, textAlign: 'center', fontSize: '18px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
                     />
                     <span className="unit" style={{ marginLeft: '2px' }}>g</span>
@@ -1542,7 +1708,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     className="cupertino-stepper-btn"
                     onClick={() => {
                       if (navigator.vibrate) navigator.vibrate(8);
-                      setDoseInG(d => Math.min(50, parseFloat((d + 0.5).toFixed(1))));
+                      const next = Math.min(50, parseFloat(((parseFloat(doseInG) || 20) + 0.5).toFixed(1)));
+                      handleDoseChange(next);
                     }}
                     aria-label="Más dosis"
                   >
@@ -1737,16 +1904,85 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   </div>
                 </div>
 
+                {/* Auto-ajuste por Dosis Feedback Chip */}
+                {doseAdjustmentFeedback && (() => {
+                  const currentFb = getDoseFeedbackForGrinder(doseAdjustmentFeedback, grinderType);
+                  if (!currentFb) return null;
+                  return (
+                    <div
+                      style={{
+                        margin: '4px 0 10px 0',
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                        border: '1px solid rgba(245, 158, 11, 0.35)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '8px',
+                        fontSize: '11px',
+                        color: 'var(--color-text)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '13px' }}>⚖️</span>
+                        <span>
+                          <strong style={{ color: '#F59E0B' }}>Auto-ajuste por dosis:</strong>{' '}
+                          <span style={{ fontWeight: '800' }}>{currentFb.deltaText}</span> al pasar a {currentFb.toDose}g{' '}
+                          <span style={{ color: 'var(--color-text-muted)', fontSize: '10px' }}>({currentFb.description})</span>
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleDoseChange(currentFb.fromDose);
+                            setDoseAdjustmentFeedback(null);
+                          }}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--color-text-muted)',
+                            cursor: 'pointer',
+                            fontSize: '10px',
+                            textDecoration: 'underline',
+                            padding: 0
+                          }}
+                          title={`Restablecer a ${currentFb.fromDose}g`}
+                        >
+                          Restablecer
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDoseAdjustmentFeedback(null)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--color-text-muted)',
+                            cursor: 'pointer',
+                            padding: '2px',
+                            display: 'flex',
+                            alignItems: 'center'
+                          }}
+                          aria-label="Cerrar aviso"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* 1. 1Zpresso J-Max Controls */}
                 {grinderType === 'jmax' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0' }}>
-                    <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxRot} onChange={(e) => setJmaxRot(parseInt(e.target.value) || 0)}>
+                    <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxRot} onChange={(e) => { const v = parseInt(e.target.value) || 0; setJmaxRot(v); updateManualGrinder('jmax', { rot: v, num: jmaxNum, click: jmaxClick }); }}>
                       {[0, 1, 2, 3, 4].map(v => <option key={v} value={v}>Rot: {v}</option>)}
                     </select>
-                    <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxNum} onChange={(e) => setJmaxNum(parseInt(e.target.value) || 0)}>
+                    <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxNum} onChange={(e) => { const v = parseInt(e.target.value) || 0; setJmaxNum(v); updateManualGrinder('jmax', { rot: jmaxRot, num: v, click: jmaxClick }); }}>
                       {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(v => <option key={v} value={v}>Num: {v}</option>)}
                     </select>
-                    <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxClick} onChange={(e) => setJmaxClick(parseInt(e.target.value) || 0)}>
+                    <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxClick} onChange={(e) => { const v = parseInt(e.target.value) || 0; setJmaxClick(v); updateManualGrinder('jmax', { rot: jmaxRot, num: jmaxNum, click: v }); }}>
                       {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(v => <option key={v} value={v}>Clic: {v}</option>)}
                     </select>
                   </div>
@@ -1755,85 +1991,85 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 {/* 2. 1Zpresso K-Ultra Controls */}
                 {grinderType === 'k_ultra' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKUltraDial(prev => Math.max(1.0, Math.round((prev - 0.5) * 10) / 10))}>-0.5</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKUltraDial(prev => Math.max(1.0, Math.round((prev - 0.1) * 10) / 10))}>-0.1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(1.0, Math.round((kUltraDial - 0.5) * 10) / 10); setKUltraDial(v); updateManualGrinder('k_ultra', v); }}>-0.5</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(1.0, Math.round((kUltraDial - 0.1) * 10) / 10); setKUltraDial(v); updateManualGrinder('k_ultra', v); }}>-0.1</button>
                     <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                      <input type="number" step="0.1" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={kUltraDial} min="1.0" max="15.0" onChange={(e) => setKUltraDial(Math.max(1.0, Math.min(15.0, parseFloat(e.target.value) || 1.0)))} />
+                      <input type="number" step="0.1" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={kUltraDial} min="1.0" max="15.0" onChange={(e) => { const v = Math.max(1.0, Math.min(15.0, parseFloat(e.target.value) || 1.0)); setKUltraDial(v); updateManualGrinder('k_ultra', v); }} />
                     </div>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKUltraDial(prev => Math.min(15.0, Math.round((prev + 0.1) * 10) / 10))}>+0.1</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKUltraDial(prev => Math.min(15.0, Math.round((prev + 0.5) * 10) / 10))}>+0.5</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(15.0, Math.round((kUltraDial + 0.1) * 10) / 10); setKUltraDial(v); updateManualGrinder('k_ultra', v); }}>+0.1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(15.0, Math.round((kUltraDial + 0.5) * 10) / 10); setKUltraDial(v); updateManualGrinder('k_ultra', v); }}>+0.5</button>
                   </div>
                 )}
 
                 {/* 3. Fellow Ode Gen 2 Controls */}
                 {grinderType === 'ode_gen2' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setOdeDial(prev => Math.max(1.0, Math.round((prev - 0.5) * 10) / 10))}>-0.5</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setOdeDial(prev => Math.max(1.0, Math.round((prev - 0.1) * 10) / 10))}>-0.1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(1.0, Math.round((odeDial - 0.5) * 10) / 10); setOdeDial(v); updateManualGrinder('ode_gen2', v); }}>-0.5</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(1.0, Math.round((odeDial - 0.1) * 10) / 10); setOdeDial(v); updateManualGrinder('ode_gen2', v); }}>-0.1</button>
                     <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                      <input type="number" step="0.1" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={odeDial} min="1.0" max="11.0" onChange={(e) => setOdeDial(Math.max(1.0, Math.min(11.0, parseFloat(e.target.value) || 1.0)))} />
+                      <input type="number" step="0.1" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={odeDial} min="1.0" max="11.0" onChange={(e) => { const v = Math.max(1.0, Math.min(11.0, parseFloat(e.target.value) || 1.0)); setOdeDial(v); updateManualGrinder('ode_gen2', v); }} />
                     </div>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setOdeDial(prev => Math.min(11.0, Math.round((prev + 0.1) * 10) / 10))}>+0.1</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setOdeDial(prev => Math.min(11.0, Math.round((prev + 0.5) * 10) / 10))}>+0.5</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(11.0, Math.round((odeDial + 0.1) * 10) / 10); setOdeDial(v); updateManualGrinder('ode_gen2', v); }}>+0.1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(11.0, Math.round((odeDial + 0.5) * 10) / 10); setOdeDial(v); updateManualGrinder('ode_gen2', v); }}>+0.5</button>
                   </div>
                 )}
 
                 {/* 4. Comandante C40 Controls */}
                 {grinderType === 'comandante' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setComandanteClicks(prev => Math.max(0, prev - 1))}>-1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(0, comandanteClicks - 1); setComandanteClicks(v); updateManualGrinder('comandante', v); }}>-1</button>
                     <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={comandanteClicks} min="0" max="45" onChange={(e) => setComandanteClicks(Math.max(0, Math.min(45, parseInt(e.target.value) || 0)))} />
+                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={comandanteClicks} min="0" max="45" onChange={(e) => { const v = Math.max(0, Math.min(45, parseInt(e.target.value) || 0)); setComandanteClicks(v); updateManualGrinder('comandante', v); }} />
                     </div>
-                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setComandanteClicks(prev => Math.min(45, prev + 1))}>+1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(45, comandanteClicks + 1); setComandanteClicks(v); updateManualGrinder('comandante', v); }}>+1</button>
                   </div>
                 )}
 
                 {/* 5. Femobook A2 Controls */}
                 {grinderType === 'femobook' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setFemobookClicks(prev => Math.max(0, prev - 5))}>-5</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setFemobookClicks(prev => Math.max(0, prev - 1))}>-1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(0, femobookClicks - 5); setFemobookClicks(v); updateManualGrinder('femobook', v); }}>-5</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(0, femobookClicks - 1); setFemobookClicks(v); updateManualGrinder('femobook', v); }}>-1</button>
                     <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={femobookClicks} min="0" max="120" onChange={(e) => setFemobookClicks(Math.max(0, Math.min(120, parseInt(e.target.value) || 0)))} />
+                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={femobookClicks} min="0" max="120" onChange={(e) => { const v = Math.max(0, Math.min(120, parseInt(e.target.value) || 0)); setFemobookClicks(v); updateManualGrinder('femobook', v); }} />
                     </div>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setFemobookClicks(prev => Math.min(120, prev + 1))}>+1</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setFemobookClicks(prev => Math.min(120, prev + 5))}>+5</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(120, femobookClicks + 1); setFemobookClicks(v); updateManualGrinder('femobook', v); }}>+1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(120, femobookClicks + 5); setFemobookClicks(v); updateManualGrinder('femobook', v); }}>+5</button>
                   </div>
                 )}
 
                 {/* 6. Kingrinder K6 Controls */}
                 {grinderType === 'kingrinder' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKingrinderClicks(prev => Math.max(0, prev - 5))}>-5</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKingrinderClicks(prev => Math.max(0, prev - 1))}>-1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(0, kingrinderClicks - 5); setKingrinderClicks(v); updateManualGrinder('kingrinder', v); }}>-5</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(0, kingrinderClicks - 1); setKingrinderClicks(v); updateManualGrinder('kingrinder', v); }}>-1</button>
                     <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={kingrinderClicks} min="0" max="180" onChange={(e) => setKingrinderClicks(Math.max(0, Math.min(180, parseInt(e.target.value) || 0)))} />
+                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={kingrinderClicks} min="0" max="180" onChange={(e) => { const v = Math.max(0, Math.min(180, parseInt(e.target.value) || 0)); setKingrinderClicks(v); updateManualGrinder('kingrinder', v); }} />
                     </div>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKingrinderClicks(prev => Math.min(180, prev + 1))}>+1</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setKingrinderClicks(prev => Math.min(180, prev + 5))}>+5</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(180, kingrinderClicks + 1); setKingrinderClicks(v); updateManualGrinder('kingrinder', v); }}>+1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(180, kingrinderClicks + 5); setKingrinderClicks(v); updateManualGrinder('kingrinder', v); }}>+5</button>
                   </div>
                 )}
 
                 {/* 7. Timemore C2/C3 Controls */}
                 {grinderType === 'timemore' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setTimemoreClicks(prev => Math.max(6, prev - 1))}>-1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(6, timemoreClicks - 1); setTimemoreClicks(v); updateManualGrinder('timemore', v); }}>-1</button>
                     <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={timemoreClicks} min="6" max="36" onChange={(e) => setTimemoreClicks(Math.max(6, Math.min(36, parseInt(e.target.value) || 6)))} />
+                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={timemoreClicks} min="6" max="36" onChange={(e) => { const v = Math.max(6, Math.min(36, parseInt(e.target.value) || 6)); setTimemoreClicks(v); updateManualGrinder('timemore', v); }} />
                     </div>
-                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setTimemoreClicks(prev => Math.min(36, prev + 1))}>+1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(36, timemoreClicks + 1); setTimemoreClicks(v); updateManualGrinder('timemore', v); }}>+1</button>
                   </div>
                 )}
 
                 {/* 8. Baratza Encore/ESP Controls */}
                 {grinderType === 'baratza' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setBaratzaStep(prev => Math.max(1, prev - 1))}>-1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(1, baratzaStep - 1); setBaratzaStep(v); updateManualGrinder('baratza', v); }}>-1</button>
                     <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={baratzaStep} min="1" max="40" onChange={(e) => setBaratzaStep(Math.max(1, Math.min(40, parseInt(e.target.value) || 1)))} />
+                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={baratzaStep} min="1" max="40" onChange={(e) => { const v = Math.max(1, Math.min(40, parseInt(e.target.value) || 1)); setBaratzaStep(v); updateManualGrinder('baratza', v); }} />
                     </div>
-                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => setBaratzaStep(prev => Math.min(40, prev + 1))}>+1</button>
+                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(40, baratzaStep + 1); setBaratzaStep(v); updateManualGrinder('baratza', v); }}>+1</button>
                   </div>
                 )}
 
