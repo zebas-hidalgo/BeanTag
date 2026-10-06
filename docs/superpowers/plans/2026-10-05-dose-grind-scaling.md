@@ -123,7 +123,7 @@ git commit -m "feat(ai): integrate physical dose-grind bed depth compensation in
 **Files:**
 - Modify: `frontend/src/components/BatchDetail.jsx`
 
-- [ ] **Step 1: Integrate dose-grind scaling on dose change in `BatchDetail.jsx`**
+- [x] **Step 1: Integrate dose-grind scaling on dose change in `BatchDetail.jsx`**
 - Track `prevDoseRef` to know previous dose.
 - When `doseInG` changes via stepper or input:
   - Calculate delta with `scaleGrinderSettingForDose`.
@@ -133,11 +133,11 @@ git commit -m "feat(ai): integrate physical dose-grind bed depth compensation in
   `⚖️ Auto-ajuste por dosis: +2 clics al subir a 20.0g (Cama más profunda)`
   With an option to dismiss or reset.
 
-- [ ] **Step 2: Build production frontend bundle**
+- [x] **Step 2: Build production frontend bundle**
 Run: `npm --prefix frontend run build`
 Expected: 0 errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 ```bash
 git add frontend/src/components/BatchDetail.jsx
 git commit -m "feat(batch-detail): auto-adapt grinder clicks and dials in real-time when recipe dose changes"
@@ -157,22 +157,22 @@ git commit -m "feat(batch-detail): auto-adapt grinder clicks and dials in real-t
   - `node scripts/verify_cards_render.mjs`
   - `node scripts/test_ai_endpoint_e2e.mjs`
 
-- [ ] **Step 1: Execute all test suites**
+- [x] **Step 1: Execute all test suites**
 Run: `node scripts/test_dose_grind_scaling.mjs && node scripts/test_dialin_timeline.mjs && node scripts/test_pulsar_mini.mjs && node scripts/test_grinders_unification.mjs && node scripts/test_sensory_tuner.mjs && node scripts/verify_cards_render.mjs && node scripts/test_ai_endpoint_e2e.mjs`
 Expected: ALL PASS.
 
-- [ ] **Step 2: Build production frontend bundle**
+- [x] **Step 2: Build production frontend bundle**
 Run: `npm --prefix frontend run build`
 Expected: Clean build.
 
-- [ ] **Step 3: Push to GitHub `main`**
+- [x] **Step 3: Push to GitHub `main`**
 Run: `git push origin main`
 Expected: Successful push.
 
-- [ ] **Step 4: Deploy to VPS `5.189.152.68` and reload PM2**
+- [x] **Step 4: Deploy to VPS `5.189.152.68` and reload PM2**
 Run: `/Users/zebas/.gemini/config/skills/zerker/scripts/run_vps_cmd.sh "cd /var/www/beantag && git pull origin main && npm --prefix frontend run build && pm2 reload beantag"`
 Expected: PM2 reload success, status online.
 
-- [ ] **Step 5: Verify live service status**
+- [x] **Step 5: Verify live service status**
 Run: `/Users/zebas/.gemini/config/skills/zerker/scripts/run_vps_cmd.sh "pm2 status beantag"`
 Expected: PID online.
