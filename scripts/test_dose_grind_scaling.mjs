@@ -20,7 +20,12 @@ assert.equal(calculateDoseDeltaMicrons('Espresso', 18, 20), 10, '2g increase in 
 assert.equal(calculateDoseDeltaMicrons('espresso', 18, 16), -10, '2g decrease in espresso should subtract -10 microns');
 assert.equal(calculateDoseDeltaMicrons('Espresso Doble', 18, 18), 0, '0g dose change in espresso should yield 0 delta');
 
-console.log('✅ Passed Test 1: Micron delta calculations accurate across methods.');
+// Decimal Doses & Fractional Deltas
+assert.equal(calculateDoseDeltaMicrons('V60', 15.0, 15.5), 4, '0.5g increase in V60 should yield +4 microns');
+assert.equal(calculateDoseDeltaMicrons('Espresso', 18.0, 18.5), 3, '0.5g increase in espresso should round to +3 microns (0.5 * 5 = 2.5 -> 3)');
+assert.equal(calculateDoseDeltaMicrons('V60', 20.5, 18.0), -20, '-2.5g decrease in V60 should yield -20 microns');
+
+console.log('✅ Passed Test 1: Micron delta calculations accurate across methods and decimal doses.');
 
 // ============================================================================
 // 2. Grinder Adjustments on +5g Filter Dose Increase (15g -> 20g, +40 µm)
@@ -39,40 +44,44 @@ assert.deepEqual(jmaxAdj.newVal, { rot: 2, num: 2, click: 5 }, 'J-Max should sca
 assert.equal(jmaxAdj.delta, 5, 'J-Max delta should be +5');
 assert.equal(jmaxAdj.direction, 'coarser', 'Direction should be coarser');
 
+// J-Max Digit Rollover (click + delta >= 10, e.g. 2.2.8 + 5 clicks -> 2.3.3)
+const jmaxRollUp = scaleGrinderSettingForDose('jmax', { rot: 2, num: 2, click: 8 }, 15, 20, 'V60 (Filtrado)');
+assert.deepEqual(jmaxRollUp.newVal, { rot: 2, num: 3, click: 3 }, 'J-Max should carry over clicks to number (2.2.8 + 5 -> 2.3.3)');
+
 // 1Zpresso K-Ultra: 20 µm/click (0.1 dial) -> +40 µm / 20 = 2 clicks -> +0.2 dial (8.0 -> 8.2)
 const kUltraAdj = scaleGrinderSettingForDose('k_ultra', 8.0, 15, 20, 'V60 (Filtrado)');
 assert.equal(Number(kUltraAdj.newVal.toFixed(1)), 8.2, 'K-Ultra should scale from 8.0 to 8.2 dial');
 assert.equal(Number(kUltraAdj.delta.toFixed(1)), 0.2, 'K-Ultra delta should be +0.2');
-assert.equal(kUltraAdj.direction, 'coarser');
+assert.equal(kUltraAdj.direction, 'coarser', 'Direction should be coarser');
 
 // Fellow Ode Gen 2: 35 µm/division -> +40 µm / 35 = 1.14 clicks -> +0.1 or +0.2 dial (4.2 -> 4.3 or 4.4)
 const odeAdj = scaleGrinderSettingForDose('ode_gen2', 4.2, 15, 20, 'V60 (Filtrado)');
 assert.ok([4.3, 4.4].includes(Number(odeAdj.newVal.toFixed(1))), `Ode Gen 2 should scale to 4.3 or 4.4, got ${odeAdj.newVal}`);
-assert.equal(odeAdj.direction, 'coarser');
+assert.equal(odeAdj.direction, 'coarser', 'Direction should be coarser');
 
 // Comandante C40: 30 µm/click -> +40 µm / 30 = 1.33 -> +1 click (23 -> 24)
 const comAdj = scaleGrinderSettingForDose('comandante', 23, 15, 20, 'V60 (Filtrado)');
 assert.equal(comAdj.newVal, 24, 'Comandante should scale from 23 to 24 clicks');
 assert.equal(comAdj.delta, 1, 'Comandante delta should be +1');
-assert.equal(comAdj.direction, 'coarser');
+assert.equal(comAdj.direction, 'coarser', 'Direction should be coarser');
 
 // Kingrinder K6: 16 µm/click -> +40 µm / 16 = 2.5 -> +3 clicks (92 -> 95)
 const kingAdj = scaleGrinderSettingForDose('kingrinder', 92, 15, 20, 'V60 (Filtrado)');
 assert.equal(kingAdj.newVal, 95, 'Kingrinder should scale from 92 to 95 clicks');
 assert.equal(kingAdj.delta, 3, 'Kingrinder delta should be +3');
-assert.equal(kingAdj.direction, 'coarser');
+assert.equal(kingAdj.direction, 'coarser', 'Direction should be coarser');
 
 // Timemore C2/C3: 28 µm/click -> +40 µm / 28 = 1.43 -> +1 click (17 -> 18)
 const timeAdj = scaleGrinderSettingForDose('timemore', 17, 15, 20, 'V60 (Filtrado)');
 assert.equal(timeAdj.newVal, 18, 'Timemore should scale from 17 to 18 clicks');
 assert.equal(timeAdj.delta, 1, 'Timemore delta should be +1');
-assert.equal(timeAdj.direction, 'coarser');
+assert.equal(timeAdj.direction, 'coarser', 'Direction should be coarser');
 
 // Baratza Encore/ESP: 35 µm/step -> +40 µm / 35 = 1.14 -> +1 step (15 -> 16)
 const barAdj = scaleGrinderSettingForDose('baratza', 15, 15, 20, 'V60 (Filtrado)');
 assert.equal(barAdj.newVal, 16, 'Baratza should scale from 15 to 16 steps');
 assert.equal(barAdj.delta, 1, 'Baratza delta should be +1');
-assert.equal(barAdj.direction, 'coarser');
+assert.equal(barAdj.direction, 'coarser', 'Direction should be coarser');
 
 console.log('✅ Passed Test 2: Grinder scaling for +5g filter increase verified across all 8 grinders.');
 
@@ -87,7 +96,17 @@ assert.equal(femoDown.newVal, 67, 'Femobook should scale down by 1 click for -3g
 assert.equal(femoDown.delta, -1, 'Femobook delta should be -1');
 assert.equal(femoDown.direction, 'finer', 'Direction should be finer');
 
-console.log('✅ Passed Test 3: Grinder scaling down verified.');
+// J-Max Borrow Underflow across digits on negative deltas:
+// -24 µm / 8.8 = -2.73 -> -3 clicks from 2.0.2 (total clicks: 2*90 + 0*10 + 2 = 182 - 3 = 179 clicks -> 1.8.9)
+const jmaxRollDown = scaleGrinderSettingForDose('jmax', { rot: 2, num: 0, click: 2 }, 15, 12, 'V60 (Filtrado)');
+assert.deepEqual(jmaxRollDown.newVal, { rot: 1, num: 8, click: 9 }, 'J-Max should borrow across rotations on negative delta (2.0.2 - 3 -> 1.8.9)');
+
+// K-Ultra Float Precision on negative delta (8.0 - 0.1 = 7.9)
+const kUltraDown = scaleGrinderSettingForDose('k_ultra', 8.0, 15, 12.5, 'V60 (Filtrado)'); // -2.5g (-20 µm -> -0.1 dial)
+assert.equal(kUltraDown.newVal, 7.9, 'K-Ultra should accurately round float on decrement (8.0 -> 7.9)');
+assert.equal(kUltraDown.direction, 'finer');
+
+console.log('✅ Passed Test 3: Grinder scaling down & borrow underflows verified.');
 
 // ============================================================================
 // 4. Zero Dose Change (15g -> 15g)
@@ -114,19 +133,23 @@ assert.equal(femoMax.newVal, 120, 'Femobook must clamp at max (120)');
 const femoMin = scaleGrinderSettingForDose('femobook', 4, 15, 5, 'V60'); // -10g (-80 µm -> -4 clicks)
 assert.equal(femoMin.newVal, 4, 'Femobook must clamp at min (4)');
 
+// J-Max: min 0.0.0 (0 clicks), max 4.0.0 (360 clicks)
+const jmaxMin = scaleGrinderSettingForDose('jmax', { rot: 0, num: 0, click: 1 }, 15, 5, 'V60');
+assert.deepEqual(jmaxMin.newVal, { rot: 0, num: 0, click: 0 }, 'J-Max must clamp at 0.0.0 minimum');
+
 // K-Ultra: min 2.0, max 13.0
 const kUltraMax = scaleGrinderSettingForDose('k_ultra', 12.9, 15, 30, 'V60');
-assert.ok(kUltraMax.newVal <= 13.0, 'K-Ultra must not exceed max 13.0');
+assert.equal(kUltraMax.newVal, 13.0, 'K-Ultra must clamp exactly at max 13.0');
 
 const kUltraMin = scaleGrinderSettingForDose('k_ultra', 2.1, 15, 5, 'V60');
-assert.ok(kUltraMin.newVal >= 2.0, 'K-Ultra must not go below min 2.0');
+assert.equal(kUltraMin.newVal, 2.0, 'K-Ultra must clamp exactly at min 2.0');
 
 // Ode Gen 2: min 1.0, max 11.0
 const odeMax = scaleGrinderSettingForDose('ode_gen2', 10.9, 15, 30, 'V60');
-assert.ok(odeMax.newVal <= 11.0, 'Ode Gen 2 must not exceed max 11.0');
+assert.equal(odeMax.newVal, 11.0, 'Ode Gen 2 must clamp exactly at max 11.0');
 
 const odeMin = scaleGrinderSettingForDose('ode_gen2', 1.1, 15, 5, 'V60');
-assert.ok(odeMin.newVal >= 1.0, 'Ode Gen 2 must not go below min 1.0');
+assert.equal(odeMin.newVal, 1.0, 'Ode Gen 2 must clamp exactly at min 1.0');
 
 // Comandante: min 6, max 45
 const comMax = scaleGrinderSettingForDose('comandante', 45, 15, 30, 'V60');
@@ -156,5 +179,5 @@ assert.equal(barMax.newVal, 40, 'Baratza must clamp at max 40');
 const barMin = scaleGrinderSettingForDose('baratza', 1, 15, 5, 'V60');
 assert.equal(barMin.newVal, 1, 'Baratza must clamp at min 1');
 
-console.log('✅ Passed Test 5: Boundary clamping verified across all grinders.');
+console.log('✅ Passed Test 5: Boundary clamping verified across all 8 grinders.');
 console.log('\n🎉 ALL DOSE-GRIND SCALING UNIT TESTS PASSED!');
