@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Mail, Lock, User, LogIn, UserPlus, Sparkles } from 'lucide-react';
+import { X, Mail, Lock, User, LogIn, UserPlus, Sparkles, AlertCircle, KeyRound } from 'lucide-react';
 import { apiUrl } from '../utils/api';
 
 export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
@@ -205,8 +205,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
         </div>
 
         {errorMsg && (
-          <div style={{ background: '#FEE2E2', color: '#991B1B', padding: '10px 12px', borderRadius: '10px', fontSize: '12px', marginBottom: '14px', fontWeight: 'bold' }}>
-            <div>⚠️ {errorMsg}</div>
+          <div style={{ background: '#FEE2E2', color: '#991B1B', padding: '10px 12px', borderRadius: '10px', fontSize: '12px', marginBottom: '14px', fontWeight: '600', border: '1px solid #FECACA' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <AlertCircle size={15} color="#DC2626" style={{ flexShrink: 0 }} />
+              <span>{errorMsg}</span>
+            </div>
             {isGoogleOnlyError && (
               <button
                 type="button"
@@ -216,9 +219,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
                   setIsGoogleOnlyError(false);
                 }}
                 className="btn-candy secondary"
-                style={{ width: '100%', marginTop: '8px', fontSize: '11.5px', padding: '7px 10px', background: '#FFFFFF', color: '#991B1B', borderColor: '#FCA5A5' }}
+                style={{ width: '100%', marginTop: '8px', fontSize: '11.5px', padding: '8px 10px', background: '#FFFFFF', color: '#991B1B', borderColor: '#FCA5A5', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
-                🔑 Asignar contraseña a este correo en "Crear Cuenta"
+                <KeyRound size={14} />
+                <span>Asignar contraseña a este correo en "Crear Cuenta"</span>
               </button>
             )}
           </div>

@@ -8,7 +8,8 @@ import {
   Thermometer,
   Scale,
   Coffee,
-  ArrowDownUp
+  ArrowDownUp,
+  Star
 } from 'lucide-react';
 import { getGrinderConfig } from '../utils/grinders.js';
 
@@ -503,7 +504,10 @@ export default function DialInTimeline({
                         boxShadow: '0 2px 6px var(--barista-accent-honey-glow, rgba(217, 119, 6, 0.2))'
                       }}
                     >
-                      <span>🏆 Sweet Spot Calibrado (⭐ {Number.isFinite(Number(rec.rating)) ? Number(rec.rating).toFixed(1) : '5.0'})</span>
+                      <span>Sweet Spot Calibrado</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', marginLeft: '3px' }}>
+                        <Star size={10} fill="currentColor" /> {Number.isFinite(Number(rec.rating)) ? Number(rec.rating).toFixed(1) : '5.0'}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -674,10 +678,13 @@ export default function DialInTimeline({
                               color: 'var(--barista-accent-honey, #D97706)',
                               padding: '2px 6px',
                               borderRadius: '4px',
-                              border: '1px solid rgba(217, 119, 6, 0.25)'
+                              border: '1px solid rgba(217, 119, 6, 0.25)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
                             }}
                           >
-                            ⚖️ {rec.sensory_balance}
+                            <Scale size={11} /> {rec.sensory_balance}
                           </span>
                         )}
                         {rec.sensory_body && (
@@ -689,10 +696,13 @@ export default function DialInTimeline({
                               color: '#2563EB',
                               padding: '2px 6px',
                               borderRadius: '4px',
-                              border: '1px solid rgba(59, 130, 246, 0.25)'
+                              border: '1px solid rgba(59, 130, 246, 0.25)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
                             }}
                           >
-                            🍯 {rec.sensory_body}
+                            <Coffee size={11} /> {rec.sensory_body}
                           </span>
                         )}
                         {rec.sensory_extraction && (
@@ -704,10 +714,13 @@ export default function DialInTimeline({
                               color: rec.sensory_extraction === 'En Punto' ? '#059669' : '#DC2626',
                               padding: '2px 6px',
                               borderRadius: '4px',
-                              border: `1px solid ${rec.sensory_extraction === 'En Punto' ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`
+                              border: `1px solid ${rec.sensory_extraction === 'En Punto' ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
                             }}
                           >
-                            🧪 {rec.sensory_extraction}
+                            <SlidersHorizontal size={11} /> {rec.sensory_extraction}
                           </span>
                         )}
                       </div>

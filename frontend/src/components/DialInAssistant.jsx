@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sliders, Sparkles, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Sliders, Sparkles, AlertCircle, CheckCircle2, ArrowRight, Lightbulb } from 'lucide-react';
 
 export default function DialInAssistant({ onApplyRecommendation }) {
   const [selectedTaste, setSelectedTaste] = useState(null);
@@ -129,8 +129,9 @@ export default function DialInAssistant({ onApplyRecommendation }) {
             <span>Diagnóstico & Recomendación Barista:</span>
           </div>
 
-          <div style={{ fontSize: '11.5px', color: 'var(--color-text, #064E3B)', marginBottom: '10px', fontWeight: '600' }}>
-            💡 {currentOption.recommendation.tip}
+          <div style={{ fontSize: '11.5px', color: 'var(--color-text, #064E3B)', marginBottom: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Lightbulb size={14} color="var(--barista-accent-honey, #D97706)" style={{ flexShrink: 0 }} />
+            <span>{currentOption.recommendation.tip}</span>
           </div>
 
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>

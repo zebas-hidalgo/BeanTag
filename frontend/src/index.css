@@ -78,6 +78,12 @@
   --barista-instr-bg: #FFFBEB;
   --barista-instr-border: #FDE68A;
   --barista-instr-text: #92400E;
+  --barista-accent-honey-bg: #FEF3C7;
+  --barista-accent-honey-text: #92400E;
+  --barista-accent-mint-bg: #D1FAE5;
+  --barista-accent-mint-text: #065F46;
+  --barista-accent-danger-bg: #FEE2E2;
+  --barista-accent-danger-text: #991B1B;
 }
 
 /* 🌑 True OLED Pure Dark Mode (#000000 Pitch Black / Neutral Charcoal - No Muddy Blue) */
@@ -634,6 +640,37 @@ main {
 
 .btn-candy.accent:hover {
   background-color: rgba(16, 185, 129, 0.2);
+}
+
+.btn-candy.secondary {
+  background-color: var(--barista-bg-surface, #FFFFFF);
+  color: var(--barista-text-primary, var(--color-text));
+  border: 1.5px solid var(--barista-border-hairline, var(--border-color));
+}
+
+.btn-candy.secondary:hover {
+  background-color: var(--barista-bg-elevated, var(--bg-canvas));
+  border-color: var(--barista-border-active, #CBD5E1);
+  transform: translateY(-1px);
+}
+
+.btn-candy.danger {
+  background-color: var(--barista-accent-danger-bg, #FEE2E2);
+  color: var(--barista-accent-danger-text, #991B1B);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.btn-candy.danger:hover {
+  background-color: #FCA5A5;
+  transform: translateY(-1px);
+}
+
+.btn-candy:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .app-bar-btn {
@@ -1461,10 +1498,11 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .bento-widget .cupertino-stepper-btn {
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
-  font-size: 16px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  font-size: 18px;
 }
 
 .bento-widget.accent {

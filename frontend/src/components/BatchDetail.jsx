@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers, SlidersHorizontal, Cylinder, Compass } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers, SlidersHorizontal, Cylinder, Compass, Target, Trophy, Sliders, Lightbulb, Check } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText, generateCoffeeStickerImage } from '../utils/cardGenerator';
@@ -1534,10 +1534,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   {/* Chips resumen multivariable */}
                   <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', fontSize: '9.5px' }}>
                     {aiRecommendation.is_frozen && <span style={{ background: '#DBEAFE', color: '#1E40AF', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>❄️ Frozen Dosing (-18°C)</span>}
-                    {aiRecommendation.days_since_roast !== null && <span style={{ background: '#FEF3C7', color: '#92400E', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>⏱️ Reposo: Día {aiRecommendation.days_since_roast}</span>}
-                    {aiRecommendation.water_profile && <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>💧 {aiRecommendation.water_profile}</span>}
-                    {aiRecommendation.active_grinder_dial && <span style={{ background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: '800' }}>⚙️ {aiRecommendation.active_grinder_dial.grinder_name}: {aiRecommendation.active_grinder_dial.dial}</span>}
-                    {aiRecommendation._source === 'barista_fallback' && <span style={{ background: '#FEE2E2', color: '#991B1B', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>⚠️ Modo Offline</span>}
+                    {aiRecommendation.days_since_roast !== null && <span style={{ background: '#FEF3C7', color: '#92400E', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Timer size={10} /> Reposo: Día {aiRecommendation.days_since_roast}</span>}
+                    {aiRecommendation.water_profile && <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Droplet size={10} /> {aiRecommendation.water_profile}</span>}
+                    {aiRecommendation.active_grinder_dial && <span style={{ background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><SlidersHorizontal size={10} /> {aiRecommendation.active_grinder_dial.grinder_name}: {aiRecommendation.active_grinder_dial.dial}</span>}
+                    {aiRecommendation._source === 'barista_fallback' && <span style={{ background: '#FEE2E2', color: '#991B1B', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><AlertCircle size={10} /> Modo Offline</span>}
                   </div>
 
                   {/* Sub-pestañas para organizar Vertidos, Molinos, Física y Pasos */}
@@ -1580,7 +1580,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                                 <span style={{ fontWeight: '800', color: 'var(--color-crimson)', fontSize: '12px', wordBreak: 'break-word', flex: '1 1 180px' }}>
                                   {p.step || idx + 1}. {p.label}
                                 </span>
-                                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>⏱️ {p.time}</span>
+                                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                  <Timer size={11} /> {p.time}
+                                </span>
                               </div>
                               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
                                 <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
@@ -1594,9 +1596,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                                   padding: '2px 8px',
                                   borderRadius: '4px',
                                   border: '1px solid var(--barista-border-hairline, var(--border-color))',
-                                  fontFamily: 'var(--font-mono)'
+                                  fontFamily: 'var(--font-mono)',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px'
                                 }}>
-                                  🎯 Acumulado: {totalW}g
+                                  <Target size={11} /> Acumulado: {totalW}g
                                 </span>
                               </div>
                               {p.description && <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '4px', lineHeight: '1.3' }}>{p.description}</div>}
@@ -1666,13 +1671,13 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       )}
                       {aiRecommendation.physics_analysis.burr_and_fines && (
                         <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '10px' }}>⚙️ Muelas & Finos:</strong>
+                          <strong style={{ color: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px' }}><SlidersHorizontal size={11} /> Muelas & Finos:</strong>
                           <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.burr_and_fines}</span>
                         </div>
                       )}
                       {aiRecommendation.physics_analysis.extraction_strategy && (
                         <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '10px' }}>🎯 Estrategia Hidrodinámica:</strong>
+                          <strong style={{ color: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px' }}><Target size={11} /> Estrategia Hidrodinámica:</strong>
                           <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.extraction_strategy}</span>
                         </div>
                       )}
@@ -1686,20 +1691,30 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     </ol>
                   )}
 
-                  <button type="button" className="btn-candy primary" onClick={() => handleStartBrewGuide(aiRecommendation)} style={{ width: '100%', marginBottom: '8px', backgroundColor: '#F59E0B', color: '#000', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}> <Play size={14} fill="#000" /> ▶ Iniciar Extracción (Modo Barista) </button>
+                  <button type="button" className="btn-candy primary" onClick={() => handleStartBrewGuide(aiRecommendation)} style={{ width: '100%', marginBottom: '8px', minHeight: '44px', backgroundColor: 'var(--barista-accent-honey, #D97706)', color: '#FFFFFF', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <Play size={15} fill="#FFFFFF" />
+                    <span>Iniciar Extracción (Modo Barista)</span>
+                  </button>
 
                   <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                    <button type="button" className="btn-candy primary" onClick={handleApplyAiRecipe} style={{ flex: 1, padding: '8px', fontSize: '11px', minHeight: '36px' }}>
+                    <button type="button" className="btn-candy primary" onClick={handleApplyAiRecipe} style={{ flex: 1, padding: '8px', fontSize: '11px', minHeight: '38px' }}>
                       Aplicar al Formulario
                     </button>
-                    <button type="button" className="btn-candy" onClick={() => setAiRecommendation(null)} style={{ padding: '8px 12px', fontSize: '11px', minHeight: '36px', margin: 0 }}>
+                    <button type="button" className="btn-candy secondary" onClick={() => setAiRecommendation(null)} style={{ padding: '8px 12px', fontSize: '11px', minHeight: '38px', margin: 0 }}>
                       Cerrar
                     </button>
                   </div>
                 </div>
               ) : (
-                <button type="button" className="btn-candy" onClick={handleAiRecommend} disabled={aiLoading} style={{ width: '100%', marginTop: '10px', padding: '8px', fontSize: '11.5px', minHeight: '38px' }}>
-                  {aiLoading ? 'Generando receta con Thinking Mode... 🧠' : 'Diseñar Receta IA ✨'}
+                <button type="button" className="btn-candy secondary" onClick={handleAiRecommend} disabled={aiLoading} style={{ width: '100%', marginTop: '10px', padding: '8px', fontSize: '11.5px', minHeight: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  {aiLoading ? (
+                    <span>Generando receta con Thinking Mode...</span>
+                  ) : (
+                    <>
+                      <Sparkles size={14} color="var(--barista-accent-honey, #D97706)" />
+                      <span>Diseñar Receta IA</span>
+                    </>
+                  )}
                 </button>
               )}
             </div>
@@ -1724,6 +1739,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 })}
                 style={{
                   width: '100%',
+                  minHeight: '44px',
                   padding: '11px 16px',
                   display: 'flex',
                   alignItems: 'center',
@@ -1731,15 +1747,15 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   gap: '8px',
                   fontWeight: '800',
                   fontSize: '13px',
-                  backgroundColor: 'rgba(245, 158, 11, 0.12)',
-                  border: '1.5px solid rgba(245, 158, 11, 0.45)',
-                  color: 'var(--color-text-main, #d97706)',
+                  backgroundColor: 'rgba(217, 119, 6, 0.12)',
+                  border: '1.5px solid rgba(217, 119, 6, 0.45)',
+                  color: 'var(--barista-accent-honey, #D97706)',
                   borderRadius: '12px',
                   cursor: 'pointer'
                 }}
               >
                 <Play size={15} fill="currentColor" />
-                <span>▶ Iniciar Extracción con Parámetros Actuales (Modo Barista)</span>
+                <span>Iniciar Extracción con Parámetros Actuales (Modo Barista)</span>
               </button>
             </div>
 
@@ -1995,25 +2011,25 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   return (
                     <div
                       style={{
-                        margin: '4px 0 10px 0',
-                        padding: '6px 10px',
-                        borderRadius: '8px',
-                        backgroundColor: 'rgba(245, 158, 11, 0.12)',
-                        border: '1px solid rgba(245, 158, 11, 0.35)',
+                        margin: '6px 0 10px 0',
+                        padding: '7px 12px',
+                        borderRadius: '10px',
+                        backgroundColor: 'var(--barista-accent-honey-bg, #FEF3C7)',
+                        border: '1.5px solid #FDE68A',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         gap: '8px',
                         fontSize: '11px',
-                        color: 'var(--color-text)'
+                        color: 'var(--barista-accent-honey-text, #92400E)'
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '13px' }}>⚖️</span>
+                        <Scale size={14} color="var(--barista-accent-honey, #D97706)" style={{ flexShrink: 0 }} />
                         <span>
-                          <strong style={{ color: '#F59E0B' }}>Auto-ajuste por dosis:</strong>{' '}
+                          <strong style={{ color: 'var(--barista-accent-honey, #D97706)' }}>Auto-ajuste por dosis:</strong>{' '}
                           <span style={{ fontWeight: '800' }}>{currentFb.deltaText}</span> al pasar a {currentFb.toDose}g{' '}
-                          <span style={{ color: 'var(--color-text-muted)', fontSize: '10px' }}>({currentFb.description})</span>
+                          <span style={{ color: 'var(--barista-accent-honey-text, #92400E)', opacity: 0.85, fontSize: '10px' }}>({currentFb.description})</span>
                         </span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
@@ -2242,8 +2258,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 </button>
               ) : (
                 <button className="barista-btn-secondary" onClick={() => handleLoadRecipeToForm(lastRecipe)} style={{ width: '100%', marginTop: '10px', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                  <Zap size={14} />
-                  ⚡ Cargar Parámetros al Preparador
+                  <Zap size={15} />
+                  <span>Cargar Parámetros al Preparador</span>
                 </button>
               )}
             </div>
@@ -2254,24 +2270,26 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             <button
               type="button"
               className={`cupertino-segmented-btn ${recipeViewMode === 'timeline' ? 'active' : ''}`}
-              style={{ flex: 1, padding: '7px 10px', fontSize: '12px', fontWeight: '700', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.15s ease', background: recipeViewMode === 'timeline' ? 'var(--color-crimson, #E11D48)' : 'transparent', color: recipeViewMode === 'timeline' ? '#fff' : 'var(--color-text-muted, #94A3B8)' }}
+              style={{ flex: 1, padding: '8px 12px', minHeight: '38px', fontSize: '12px', fontWeight: '700', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.15s ease', background: recipeViewMode === 'timeline' ? 'var(--color-crimson, #E11D48)' : 'transparent', color: recipeViewMode === 'timeline' ? '#fff' : 'var(--color-text-muted, #94A3B8)' }}
               onClick={() => {
                 if (navigator.vibrate) navigator.vibrate(6);
                 setRecipeViewMode('timeline');
               }}
             >
-              <span>🎯 Linaje Dial-in</span>
+              <Target size={14} />
+              <span>Linaje Dial-in</span>
             </button>
             <button
               type="button"
               className={`cupertino-segmented-btn ${recipeViewMode === 'cards' ? 'active' : ''}`}
-              style={{ flex: 1, padding: '7px 10px', fontSize: '12px', fontWeight: '700', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.15s ease', background: recipeViewMode === 'cards' ? 'var(--color-crimson, #E11D48)' : 'transparent', color: recipeViewMode === 'cards' ? '#fff' : 'var(--color-text-muted, #94A3B8)' }}
+              style={{ flex: 1, padding: '8px 12px', minHeight: '38px', fontSize: '12px', fontWeight: '700', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.15s ease', background: recipeViewMode === 'cards' ? 'var(--color-crimson, #E11D48)' : 'transparent', color: recipeViewMode === 'cards' ? '#fff' : 'var(--color-text-muted, #94A3B8)' }}
               onClick={() => {
                 if (navigator.vibrate) navigator.vibrate(6);
                 setRecipeViewMode('cards');
               }}
             >
-              <span>📋 Lista de Recetas</span>
+              <ListOrdered size={14} />
+              <span>Lista de Recetas</span>
             </button>
           </div>
 
@@ -2347,10 +2365,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             </button>
           </div>
 
-          {/* Tabla de Equivalencias de Molinos (J-Max vs Femobook A2 vs Comandante) */}
           <div className="candy-card static" style={{ padding: '14px' }}>
-            <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '8px', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              ⚙️ Equivalencias de Molienda
+            <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '8px', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <SlidersHorizontal size={14} />
+              <span>Equivalencias de Molienda</span>
             </div>
             <p style={{ fontSize: '10.5px', color: 'var(--color-text-muted)', margin: '0 0 10px 0' }}>
               Comparativa física entre molinos manuales y eléctricos de precisión:
@@ -2486,7 +2504,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       cursor: 'pointer'
                     }}
                   >
-                    🎫 Ficha
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <Share2 size={12} /> Ficha
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -2505,7 +2525,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       cursor: 'pointer'
                     }}
                   >
-                    🏷️ Sticker Story
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <ImageIcon size={12} /> Sticker Story
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -2524,7 +2546,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       cursor: 'pointer'
                     }}
                   >
-                    📋 Carta ({batches && batches.length > 0 ? batches.length : 1})
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <Coffee size={12} /> Carta ({batches && batches.length > 0 ? batches.length : 1})
+                    </span>
                   </button>
                 </div>
 
