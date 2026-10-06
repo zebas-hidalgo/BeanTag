@@ -1,0 +1,160 @@
+import assert from 'node:assert/strict';
+import { calculateDoseDeltaMicrons, scaleGrinderSettingForDose } from '../frontend/src/utils/grinders.js';
+
+console.log('🧪 Testing Dose-Grind Scaling Physical Calculations...');
+
+// ============================================================================
+// 1. Physical Micron Delta Calculations (calculateDoseDeltaMicrons)
+// ============================================================================
+console.log('Test 1: Physical micron delta calculations (Darcy law bed depth compensation)');
+
+// Filter methods (+8.0 µm/g): V60, Chemex, Pulsar, etc.
+assert.equal(calculateDoseDeltaMicrons('V60 (Filtrado)', 15, 20), 40, '5g increase in V60 should add +40 microns');
+assert.equal(calculateDoseDeltaMicrons('Chemex', 15, 20), 40, '5g increase in Chemex should add +40 microns');
+assert.equal(calculateDoseDeltaMicrons('NextLevel Pulsar Mini', 15, 20), 40, '5g increase in Pulsar should add +40 microns');
+assert.equal(calculateDoseDeltaMicrons('V60', 15, 12), -24, '3g decrease in V60 should subtract -24 microns');
+assert.equal(calculateDoseDeltaMicrons('Filtrado', 15, 15), 0, '0g dose change in filter should yield 0 delta');
+
+// Espresso (+5.0 µm/g)
+assert.equal(calculateDoseDeltaMicrons('Espresso', 18, 20), 10, '2g increase in espresso should add +10 microns');
+assert.equal(calculateDoseDeltaMicrons('espresso', 18, 16), -10, '2g decrease in espresso should subtract -10 microns');
+assert.equal(calculateDoseDeltaMicrons('Espresso Doble', 18, 18), 0, '0g dose change in espresso should yield 0 delta');
+
+console.log('✅ Passed Test 1: Micron delta calculations accurate across methods.');
+
+// ============================================================================
+// 2. Grinder Adjustments on +5g Filter Dose Increase (15g -> 20g, +40 µm)
+// ============================================================================
+console.log('Test 2: Grinder scaling for +5g increase in filter (15g -> 20g)');
+
+// Femobook A2: 18 µm/click -> +40 µm / 18 = 2.22 -> +2 clicks (68 -> 70)
+const femoAdj = scaleGrinderSettingForDose('femobook', 68, 15, 20, 'V60 (Filtrado)');
+assert.equal(femoAdj.newVal, 70, 'Femobook should scale from 68 to 70 clicks');
+assert.equal(femoAdj.delta, 2, 'Femobook delta should be +2');
+assert.equal(femoAdj.direction, 'coarser', 'Direction should be coarser');
+
+// 1Zpresso J-Max: 8.8 µm/click -> +40 µm / 8.8 = 4.55 -> +5 clicks
+const jmaxAdj = scaleGrinderSettingForDose('jmax', { rot: 2, num: 2, click: 0 }, 15, 20, 'V60 (Filtrado)');
+assert.deepEqual(jmaxAdj.newVal, { rot: 2, num: 2, click: 5 }, 'J-Max should scale +5 clicks (2.2.0 -> 2.2.5)');
+assert.equal(jmaxAdj.delta, 5, 'J-Max delta should be +5');
+assert.equal(jmaxAdj.direction, 'coarser', 'Direction should be coarser');
+
+// 1Zpresso K-Ultra: 20 µm/click (0.1 dial) -> +40 µm / 20 = 2 clicks -> +0.2 dial (8.0 -> 8.2)
+const kUltraAdj = scaleGrinderSettingForDose('k_ultra', 8.0, 15, 20, 'V60 (Filtrado)');
+assert.equal(Number(kUltraAdj.newVal.toFixed(1)), 8.2, 'K-Ultra should scale from 8.0 to 8.2 dial');
+assert.equal(Number(kUltraAdj.delta.toFixed(1)), 0.2, 'K-Ultra delta should be +0.2');
+assert.equal(kUltraAdj.direction, 'coarser');
+
+// Fellow Ode Gen 2: 35 µm/division -> +40 µm / 35 = 1.14 clicks -> +0.1 or +0.2 dial (4.2 -> 4.3 or 4.4)
+const odeAdj = scaleGrinderSettingForDose('ode_gen2', 4.2, 15, 20, 'V60 (Filtrado)');
+assert.ok([4.3, 4.4].includes(Number(odeAdj.newVal.toFixed(1))), `Ode Gen 2 should scale to 4.3 or 4.4, got ${odeAdj.newVal}`);
+assert.equal(odeAdj.direction, 'coarser');
+
+// Comandante C40: 30 µm/click -> +40 µm / 30 = 1.33 -> +1 click (23 -> 24)
+const comAdj = scaleGrinderSettingForDose('comandante', 23, 15, 20, 'V60 (Filtrado)');
+assert.equal(comAdj.newVal, 24, 'Comandante should scale from 23 to 24 clicks');
+assert.equal(comAdj.delta, 1, 'Comandante delta should be +1');
+assert.equal(comAdj.direction, 'coarser');
+
+// Kingrinder K6: 16 µm/click -> +40 µm / 16 = 2.5 -> +3 clicks (92 -> 95)
+const kingAdj = scaleGrinderSettingForDose('kingrinder', 92, 15, 20, 'V60 (Filtrado)');
+assert.equal(kingAdj.newVal, 95, 'Kingrinder should scale from 92 to 95 clicks');
+assert.equal(kingAdj.delta, 3, 'Kingrinder delta should be +3');
+assert.equal(kingAdj.direction, 'coarser');
+
+// Timemore C2/C3: 28 µm/click -> +40 µm / 28 = 1.43 -> +1 click (17 -> 18)
+const timeAdj = scaleGrinderSettingForDose('timemore', 17, 15, 20, 'V60 (Filtrado)');
+assert.equal(timeAdj.newVal, 18, 'Timemore should scale from 17 to 18 clicks');
+assert.equal(timeAdj.delta, 1, 'Timemore delta should be +1');
+assert.equal(timeAdj.direction, 'coarser');
+
+// Baratza Encore/ESP: 35 µm/step -> +40 µm / 35 = 1.14 -> +1 step (15 -> 16)
+const barAdj = scaleGrinderSettingForDose('baratza', 15, 15, 20, 'V60 (Filtrado)');
+assert.equal(barAdj.newVal, 16, 'Baratza should scale from 15 to 16 steps');
+assert.equal(barAdj.delta, 1, 'Baratza delta should be +1');
+assert.equal(barAdj.direction, 'coarser');
+
+console.log('✅ Passed Test 2: Grinder scaling for +5g filter increase verified across all 8 grinders.');
+
+// ============================================================================
+// 3. Scaling Down for -3g Decrease in V60 (15g -> 12g, -24 µm)
+// ============================================================================
+console.log('Test 3: Grinder scaling for -3g decrease in filter (15g -> 12g)');
+
+// Femobook A2: -24 µm / 18 = -1.33 -> -1 click (68 -> 67)
+const femoDown = scaleGrinderSettingForDose('femobook', 68, 15, 12, 'V60 (Filtrado)');
+assert.equal(femoDown.newVal, 67, 'Femobook should scale down by 1 click for -3g (68 -> 67)');
+assert.equal(femoDown.delta, -1, 'Femobook delta should be -1');
+assert.equal(femoDown.direction, 'finer', 'Direction should be finer');
+
+console.log('✅ Passed Test 3: Grinder scaling down verified.');
+
+// ============================================================================
+// 4. Zero Dose Change (15g -> 15g)
+// ============================================================================
+console.log('Test 4: Zero dose change behavior');
+
+const zeroAdj = scaleGrinderSettingForDose('femobook', 68, 15, 15, 'V60');
+assert.equal(zeroAdj.newVal, 68, 'New value should equal current value');
+assert.equal(zeroAdj.delta, 0, 'Delta should be 0');
+assert.equal(zeroAdj.deltaMicrons, 0, 'Delta microns should be 0');
+assert.equal(zeroAdj.direction, 'same', 'Direction should be same');
+
+console.log('✅ Passed Test 4: Zero dose change handled cleanly.');
+
+// ============================================================================
+// 5. Boundary Clamping to Min/Max of Each Grinder
+// ============================================================================
+console.log('Test 5: Boundary clamping for all grinders');
+
+// Femobook: min 4, max 120
+const femoMax = scaleGrinderSettingForDose('femobook', 120, 15, 30, 'V60'); // +15g (+120 µm -> +7 clicks)
+assert.equal(femoMax.newVal, 120, 'Femobook must clamp at max (120)');
+
+const femoMin = scaleGrinderSettingForDose('femobook', 4, 15, 5, 'V60'); // -10g (-80 µm -> -4 clicks)
+assert.equal(femoMin.newVal, 4, 'Femobook must clamp at min (4)');
+
+// K-Ultra: min 2.0, max 13.0
+const kUltraMax = scaleGrinderSettingForDose('k_ultra', 12.9, 15, 30, 'V60');
+assert.ok(kUltraMax.newVal <= 13.0, 'K-Ultra must not exceed max 13.0');
+
+const kUltraMin = scaleGrinderSettingForDose('k_ultra', 2.1, 15, 5, 'V60');
+assert.ok(kUltraMin.newVal >= 2.0, 'K-Ultra must not go below min 2.0');
+
+// Ode Gen 2: min 1.0, max 11.0
+const odeMax = scaleGrinderSettingForDose('ode_gen2', 10.9, 15, 30, 'V60');
+assert.ok(odeMax.newVal <= 11.0, 'Ode Gen 2 must not exceed max 11.0');
+
+const odeMin = scaleGrinderSettingForDose('ode_gen2', 1.1, 15, 5, 'V60');
+assert.ok(odeMin.newVal >= 1.0, 'Ode Gen 2 must not go below min 1.0');
+
+// Comandante: min 6, max 45
+const comMax = scaleGrinderSettingForDose('comandante', 45, 15, 30, 'V60');
+assert.equal(comMax.newVal, 45, 'Comandante must clamp at max 45');
+
+const comMin = scaleGrinderSettingForDose('comandante', 6, 15, 5, 'V60');
+assert.equal(comMin.newVal, 6, 'Comandante must clamp at min 6');
+
+// Kingrinder: min 12, max 180
+const kingMax = scaleGrinderSettingForDose('kingrinder', 180, 15, 30, 'V60');
+assert.equal(kingMax.newVal, 180, 'Kingrinder must clamp at max 180');
+
+const kingMin = scaleGrinderSettingForDose('kingrinder', 12, 15, 5, 'V60');
+assert.equal(kingMin.newVal, 12, 'Kingrinder must clamp at min 12');
+
+// Timemore: min 6, max 36
+const timeMax = scaleGrinderSettingForDose('timemore', 36, 15, 30, 'V60');
+assert.equal(timeMax.newVal, 36, 'Timemore must clamp at max 36');
+
+const timeMin = scaleGrinderSettingForDose('timemore', 6, 15, 5, 'V60');
+assert.equal(timeMin.newVal, 6, 'Timemore must clamp at min 6');
+
+// Baratza: min 1, max 40
+const barMax = scaleGrinderSettingForDose('baratza', 40, 15, 30, 'V60');
+assert.equal(barMax.newVal, 40, 'Baratza must clamp at max 40');
+
+const barMin = scaleGrinderSettingForDose('baratza', 1, 15, 5, 'V60');
+assert.equal(barMin.newVal, 1, 'Baratza must clamp at min 1');
+
+console.log('✅ Passed Test 5: Boundary clamping verified across all grinders.');
+console.log('\n🎉 ALL DOSE-GRIND SCALING UNIT TESTS PASSED!');
