@@ -313,7 +313,28 @@ function computeOfflineRecipe(batch) {
   const roast = (batch.roast_level || 'Medio').toLowerCase();
   const rawAltitude = batch.altitude || '';
   const method = batch.method || 'V60 (Filtrado)';
-  const dose = parseFloat(batch.dose_in_g) || 20.0;
+
+  const isEspresso = method.toLowerCase().includes('espresso');
+  const isPulsar = method.toLowerCase().includes('pulsar');
+  const isAeropressGo = method.toLowerCase().includes('go');
+  const isAeropress = !isAeropressGo && method.toLowerCase().includes('aero');
+  const isFrench = method.toLowerCase().includes('prensa') || method.toLowerCase().includes('french');
+  const isChemex = method.toLowerCase().includes('chemex');
+
+  let refDose = 15.0;
+  if (isEspresso) {
+    refDose = 18.0;
+  } else if (isChemex) {
+    refDose = 30.0;
+  } else if (isFrench) {
+    refDose = 20.0;
+  } else if (isAeropressGo) {
+    refDose = 14.0;
+  } else {
+    refDose = 15.0;
+  }
+
+  const dose = parseFloat(batch.dose_in_g) || refDose;
 
   const roastDateStr = batch.roast_date || null;
   const daysSinceRoast = calculateDaysSinceRoast(roastDateStr);
@@ -332,13 +353,6 @@ function computeOfflineRecipe(batch) {
   let baseTemp = 93;
   let brewTime = '2:45 min';
   let grindDesc = 'Medio-Fino';
-
-  const isEspresso = method.toLowerCase().includes('espresso');
-  const isPulsar = method.toLowerCase().includes('pulsar');
-  const isAeropressGo = method.toLowerCase().includes('go');
-  const isAeropress = !isAeropressGo && method.toLowerCase().includes('aero');
-  const isFrench = method.toLowerCase().includes('prensa') || method.toLowerCase().includes('french');
-  const isChemex = method.toLowerCase().includes('chemex');
 
   const isLightRoast = roast.includes('claro') || roast.includes('light');
   const isDarkRoast = roast.includes('oscuro') || roast.includes('dark');
@@ -420,6 +434,14 @@ function computeOfflineRecipe(batch) {
   // 2. Physical Terroir & Roast Adjustments to Particle Size (D50)
   let deltaMicrons = 0;
   const reasons = [];
+
+  // Escalado físico por profundidad del lecho (Ley de Darcy)
+  const doseDeltaMicrons = Math.round((dose - refDose) * (isEspresso ? 5.0 : 8.0));
+  deltaMicrons += doseDeltaMicrons;
+  if (Math.abs(dose - refDose) >= 0.5) {
+    const directionWord = dose > refDose ? 'más profunda, molienda +' : 'menos profunda, molienda -';
+    reasons.push(`Escalado de dosis (${dose}g vs base ${refDose}g: cama de café ${directionWord}${Math.abs(doseDeltaMicrons)}µm para regular tiempo de contacto)`);
+  }
 
   // Roast level adjustment
   if (isLightRoast) {
@@ -923,6 +945,11 @@ FÍSICA DE EXTRACCIÓN Y REGLAS CIENTÍFICAS OBLIGATORIAS:
 6. QUÍMICA DEL AGUA:
    - Recomendar siempre un perfil de mineralización ("water_profile") adaptado al café (ej. "Agua blanda / 75-100 ppm TDS, baja alcalinidad para resaltar acidez viva").
 
+7. RESISTENCIA HIDRÁULICA Y ESCALADO DE DOSIS (LEY DE DARCY):
+   - Al variar los gramos de café (Dosis In), la profundidad de la pastilla o lecho modifica radicalmente la resistencia hidráulica.
+   - Si la dosis es mayor a la base de referencia (Filtrados base 15g, Espresso base 18g, Chemex base 30g, Prensa 20g), DEBES abrir la molienda (+8.0 µm/g en filtrados, +5.0 µm/g en espresso) para compensar la columna de café y evitar colapso de flujo o astringencia.
+   - Si la dosis es menor a la base, DEBES cerrar la molienda (-8.0 µm/g en filtrados, -5.0 µm/g en espresso) para mantener tiempo de contacto adecuado y evitar sub-extracción débil.
+
 MATRIZ UNIFICADA DE CALIBRACIÓN DE LOS 8 MOLINOS:
 1. 1Zpresso J-Max (8.8 µm/clic, 90 clics/rot):
    - Espresso (260 µm): 1.1.0 - 1.4.5 (~100-135 clics)
@@ -1074,7 +1101,7 @@ EQUIPO SELECCIONADO:
 - Dosis de Café (In): "${dose}g"
 - Molino Principal Activo: "${activeGrinder}"
 
-Instrucción estricta: Analiza la solubilidad según el proceso (${process}), la densidad según la altitud (${altitude}), y la desgasificación según los días de reposo. Devuelve un JSON rigurosamente calibrado respetando la matriz de molinos y el protocolo de válvula de 3 fases si el método es NextLevel Pulsar.`;
+Instrucción estricta: Analiza la solubilidad según el proceso (${process}), la densidad según la altitud (${altitude}), la desgasificación según los días de reposo, y COMPENSA LA RESISTENCIA HIDRÁULICA DEL LECHO según la dosis (${dose}g vs dosis base del método). Devuelve un JSON rigurosamente calibrado respetando la matriz de molinos y el protocolo de válvula de 3 fases si el método es NextLevel Pulsar.`;
 }
 
 /**

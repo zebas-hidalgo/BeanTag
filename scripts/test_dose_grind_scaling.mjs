@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import { calculateDoseDeltaMicrons, scaleGrinderSettingForDose } from '../frontend/src/utils/grinders.js';
+
+const require = createRequire(import.meta.url);
+const { computeOfflineRecipe } = require('../backend/aiEngine.js');
 
 console.log('🧪 Testing Dose-Grind Scaling Physical Calculations...');
 
@@ -180,4 +184,50 @@ const barMin = scaleGrinderSettingForDose('baratza', 1, 15, 5, 'V60');
 assert.equal(barMin.newVal, 1, 'Baratza must clamp at min 1');
 
 console.log('✅ Passed Test 5: Boundary clamping verified across all 8 grinders.');
+
+// ============================================================================
+// 6. Backend computeOfflineRecipe Physical Bed Depth Compensation
+// ============================================================================
+console.log('Test 6: Backend computeOfflineRecipe Physical Bed Depth Compensation');
+
+// Compare V60 at 15g vs V60 at 20g
+const recipe15g = computeOfflineRecipe({
+  origin: 'Colombia Huila',
+  roast_level: 'Medio',
+  method: 'V60 (Filtrado)',
+  dose_in_g: 15
+});
+
+const recipe20g = computeOfflineRecipe({
+  origin: 'Colombia Huila',
+  roast_level: 'Medio',
+  method: 'V60 (Filtrado)',
+  dose_in_g: 20
+});
+
+const m15 = parseInt(recipe15g.grind_microns, 10);
+const m20 = parseInt(recipe20g.grind_microns, 10);
+assert.equal(m20 - m15, 40, `Increasing V60 dose by +5g should add exactly +40 microns in offline engine (got ${m15} -> ${m20})`);
+assert.ok(recipe20g.notes.includes('Escalado de dosis') || recipe20g.notes.includes('cama de café'), 'Recipe notes should mention dose scaling reason');
+
+// Compare Espresso at 18g vs Espresso at 20g
+const esp18 = computeOfflineRecipe({
+  origin: 'Colombia Huila',
+  roast_level: 'Medio',
+  method: 'Espresso',
+  dose_in_g: 18
+});
+
+const esp20 = computeOfflineRecipe({
+  origin: 'Colombia Huila',
+  roast_level: 'Medio',
+  method: 'Espresso',
+  dose_in_g: 20
+});
+
+const espM18 = parseInt(esp18.grind_microns, 10);
+const espM20 = parseInt(esp20.grind_microns, 10);
+assert.equal(espM20 - espM18, 10, `Increasing Espresso dose by +2g should add exactly +10 microns in offline engine (got ${espM18} -> ${espM20})`);
+console.log('✅ Passed Test 6: Backend computeOfflineRecipe physical bed depth scaling verified.');
+
 console.log('\n🎉 ALL DOSE-GRIND SCALING UNIT TESTS PASSED!');
