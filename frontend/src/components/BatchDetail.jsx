@@ -596,15 +596,78 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               setRatioVal(16.6);
             }
             
-            // Try parsing J-Max grind settings (format: "J-Max: R.N.C")
-            if (targetRecipe.grind && targetRecipe.grind.includes('J-Max:')) {
-              const grindParts = targetRecipe.grind.replace('J-Max:', '').trim().split('.');
-              if (grindParts.length === 3) {
-                setJmaxRot(parseInt(grindParts[0]) || 1);
-                setJmaxNum(parseInt(grindParts[1]) || 5);
-                setJmaxClick(parseInt(grindParts[2]) || 0);
+            // Parse grind settings and synchronize initial baseline
+            let loadedJmax = { rot: 1, num: 5, click: 0 };
+            let loadedFemobook = femobookClicks;
+            let loadedKUltra = kUltraDial;
+            let loadedOde = odeDial;
+            let loadedComandante = comandanteClicks;
+            let loadedKingrinder = kingrinderClicks;
+            let loadedTimemore = timemoreClicks;
+            let loadedBaratza = baratzaStep;
+
+            if (targetRecipe.grind) {
+              const gStr = targetRecipe.grind;
+              if (gStr.includes('J-Max:')) {
+                const grindParts = gStr.replace('J-Max:', '').trim().split('.');
+                if (grindParts.length === 3) {
+                  loadedJmax = {
+                    rot: parseInt(grindParts[0]) || 1,
+                    num: parseInt(grindParts[1]) || 5,
+                    click: parseInt(grindParts[2]) || 0
+                  };
+                  setJmaxRot(loadedJmax.rot);
+                  setJmaxNum(loadedJmax.num);
+                  setJmaxClick(loadedJmax.click);
+                }
+              }
+              const femoMatch = gStr.match(/Femobook(?:\s*A2)?:\s*(\d+)/i);
+              if (femoMatch) {
+                loadedFemobook = parseInt(femoMatch[1]) || 60;
+                setFemobookClicks(loadedFemobook);
+              }
+              const comMatch = gStr.match(/Comandante:\s*(\d+)/i);
+              if (comMatch) {
+                loadedComandante = parseInt(comMatch[1]) || 24;
+                setComandanteClicks(loadedComandante);
+              }
+              const kMatch = gStr.match(/1Zpresso K-Ultra:\s*(\d+(?:\.\d+)?)/i);
+              if (kMatch) {
+                loadedKUltra = parseFloat(kMatch[1]) || 9.0;
+                setKUltraDial(loadedKUltra);
+              }
+              const odeMatch = gStr.match(/Fellow Ode(?:\s*Gen\s*2)?:\s*(?:Ajuste\s*)?(\d+(?:\.\d+)?)/i);
+              if (odeMatch) {
+                loadedOde = parseFloat(odeMatch[1]) || 5.0;
+                setOdeDial(loadedOde);
+              }
+              const kinMatch = gStr.match(/Kingrinder(?:\s*K6)?:\s*(\d+)/i);
+              if (kinMatch) {
+                loadedKingrinder = parseInt(kinMatch[1]) || 90;
+                setKingrinderClicks(loadedKingrinder);
+              }
+              const timeMatch = gStr.match(/Timemore:\s*(\d+)/i);
+              if (timeMatch) {
+                loadedTimemore = parseInt(timeMatch[1]) || 18;
+                setTimemoreClicks(loadedTimemore);
+              }
+              const barMatch = gStr.match(/Baratza:\s*(?:Ajuste\s*)?(\d+)/i);
+              if (barMatch) {
+                loadedBaratza = parseInt(barMatch[1]) || 15;
+                setBaratzaStep(loadedBaratza);
               }
             }
+
+            baseGrinderRef.current = {
+              jmax: loadedJmax,
+              k_ultra: loadedKUltra,
+              ode_gen2: loadedOde,
+              femobook: loadedFemobook,
+              comandante: loadedComandante,
+              kingrinder: loadedKingrinder,
+              timemore: loadedTimemore,
+              baratza: loadedBaratza
+            };
 
             // Pre-populate new fields
             const defaultDoseForMethod = loadedMethod === 'NextLevel Pulsar Mini' ? 15.0 : (parseFloat(data.dose_weight) || 20.0);
@@ -626,6 +689,16 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             const defDose = parseFloat(data.dose_weight) || 20.0;
             setDoseInG(defDose);
             baseDoseRef.current = defDose;
+            baseGrinderRef.current = {
+              jmax: { rot: 1, num: 5, click: 0 },
+              k_ultra: 9.0,
+              ode_gen2: 5.0,
+              femobook: 60,
+              comandante: 24,
+              kingrinder: 90,
+              timemore: 18,
+              baratza: 15
+            };
             setDoseAdjustmentFeedback(null);
             setDoseOutG(36.0);
             setWaterTemp(93);
@@ -991,27 +1064,26 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       ...baseGrinderRef.current,
       [grinderId]: val
     };
-    baseDoseRef.current = doseInG;
+    const currentValidDose = (Number.isFinite(parseFloat(doseInG)) && parseFloat(doseInG) > 0)
+      ? parseFloat(doseInG)
+      : (Number.isFinite(baseDoseRef.current) && baseDoseRef.current > 0 ? baseDoseRef.current : 20.0);
+    baseDoseRef.current = currentValidDose;
     setDoseAdjustmentFeedback(null);
   };
 
   const getDoseFeedbackForGrinder = (feedback, gId) => {
     if (!feedback) return null;
-    const { fromDose, toDose, deltaMicrons } = feedback;
+    const { fromDose, toDose, deltaMicrons, method: fMethod } = feedback;
+    const baseVal = baseGrinderRef.current?.[gId];
+    const res = scaleGrinderSettingForDose(gId, baseVal, fromDose, toDose, fMethod || method);
     let deltaText = '';
 
     if (gId === 'k_ultra' || gId === 'ode_gen2') {
-      const stepMicrons = gId === 'k_ultra' ? 20 : 35;
-      const dialDelta = Math.round((deltaMicrons / stepMicrons) * 10) / 10 * 0.1;
-      const roundedDial = Number(dialDelta.toFixed(1));
-      deltaText = `${roundedDial > 0 ? '+' : ''}${roundedDial.toFixed(1)} dial`;
+      deltaText = `${res.delta > 0 ? '+' : ''}${res.delta.toFixed(1)} dial`;
     } else if (gId === 'baratza') {
-      const stepDelta = Math.round(deltaMicrons / 35);
-      deltaText = `${stepDelta > 0 ? '+' : ''}${stepDelta} ${Math.abs(stepDelta) === 1 ? 'paso' : 'pasos'}`;
+      deltaText = `${res.delta > 0 ? '+' : ''}${res.delta} ${Math.abs(res.delta) === 1 ? 'paso' : 'pasos'}`;
     } else {
-      const clickMicrons = gId === 'femobook' ? 18 : (gId === 'jmax' ? 8.8 : (gId === 'kingrinder' ? 16 : (gId === 'timemore' ? 28 : 30)));
-      const clickDelta = Math.round(deltaMicrons / clickMicrons);
-      deltaText = `${clickDelta > 0 ? '+' : ''}${clickDelta} ${Math.abs(clickDelta) === 1 ? 'clic' : 'clics'}`;
+      deltaText = `${res.delta > 0 ? '+' : ''}${res.delta} ${Math.abs(res.delta) === 1 ? 'clic' : 'clics'}`;
     }
 
     return {
@@ -1032,6 +1104,18 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     setDoseInG(toDose);
 
     if (fromDose === toDose) {
+      if (baseGrinderRef.current) {
+        setJmaxRot(baseGrinderRef.current.jmax.rot);
+        setJmaxNum(baseGrinderRef.current.jmax.num);
+        setJmaxClick(baseGrinderRef.current.jmax.click);
+        setFemobookClicks(baseGrinderRef.current.femobook);
+        setKUltraDial(baseGrinderRef.current.k_ultra);
+        setOdeDial(baseGrinderRef.current.ode_gen2);
+        setComandanteClicks(baseGrinderRef.current.comandante);
+        setKingrinderClicks(baseGrinderRef.current.kingrinder);
+        setTimemoreClicks(baseGrinderRef.current.timemore);
+        setBaratzaStep(baseGrinderRef.current.baratza);
+      }
       setDoseAdjustmentFeedback(null);
       return;
     }
