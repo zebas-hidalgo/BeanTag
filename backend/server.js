@@ -685,7 +685,7 @@ app.get('/manifest.json', (req, res) => {
 // --- GEMINI AI CORE ENGINE (WITH RESILIENT FALLBACK) ---
 
 function getGeminiConfig(req) {
-  const apiKey = req.headers['x-gemini-key'];
+  const apiKey = req.headers['x-gemini-key'] || process.env.GEMINI_API_KEY;
   const requestedModel = req.headers['x-gemini-model'];
   const enableThinking = req.headers['x-gemini-thinking'] === 'true' || req.headers['x-gemini-thinking'] === true;
 
@@ -918,13 +918,14 @@ app.post('/api/ai/scan-bag', async (req, res) => {
     return res.status(400).json({ error: 'Falta la clave API de Gemini en las cabeceras' });
   }
 
-  const { imageBase64, mimeType = 'image/jpeg' } = req.body;
-  if (!imageBase64) {
+  const { imageBase64, mimeType = 'image/jpeg' } = req.body || {};
+  if (!imageBase64 || typeof imageBase64 !== 'string' || imageBase64.trim().length < 20) {
     return res.status(400).json({ error: 'Falta la imagen de la bolsa de café en base64' });
   }
 
   // Clean base64 string
-  const cleanBase64 = imageBase64.replace(/^data:image\/[a-z]+;base64,/, '');
+  const cleanBase64 = imageBase64.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '').trim();
+  const validMime = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'].includes(mimeType) ? mimeType : 'image/jpeg';
 
   const prompt = `Eres un sommelier y catador Q-Grader experto en café de especialidad con visión OCR de precisión.
 Analiza detenidamente la imagen adjunta de la bolsa, tarjeta o recibo de café de especialidad.
@@ -965,7 +966,7 @@ Devuelve OBLIGATORIAMENTE un JSON estructurado con estas claves:
           { text: prompt },
           {
             inlineData: {
-              mimeType: mimeType,
+              mimeType: validMime,
               data: cleanBase64
             }
           }

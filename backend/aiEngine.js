@@ -5,15 +5,18 @@
  */
 
 const VALID_GEMINI_MODELS = [
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-1.5-pro',
+  'gemini-2.5-pro',
   'gemini-3.8-flash',
   'gemini-3.8-flash-lite',
   'gemini-3.6-flash',
-  'gemini-3.5-flash-lite',
-  'gemini-2.5-pro'
+  'gemini-3.5-flash-lite'
 ];
 
-const DEFAULT_GEMINI_MODEL = 'gemini-3.8-flash';
-const FALLBACK_GEMINI_MODEL = 'gemini-3.8-flash-lite';
+const DEFAULT_GEMINI_MODEL = 'gemini-2.0-flash';
+const FALLBACK_GEMINI_MODEL = 'gemini-1.5-flash';
 
 /**
  * Sanitizes model name: maps deprecated/invalid model names to supported Google AI Studio models.
@@ -26,20 +29,17 @@ function sanitizeModel(requestedModel) {
   if (VALID_GEMINI_MODELS.includes(clean)) {
     return clean;
   }
-  // Map experimental/unsupported variants
+  if (clean.includes('2.0') || clean.includes('2-0')) return 'gemini-2.0-flash';
+  if (clean.includes('1.5') && clean.includes('pro')) return 'gemini-1.5-pro';
+  if (clean.includes('1.5')) return 'gemini-1.5-flash';
+  if (clean.includes('2.5') && clean.includes('pro')) return 'gemini-2.5-pro';
   if (clean.includes('3.8')) {
     if (clean.includes('lite')) return 'gemini-3.8-flash-lite';
     return 'gemini-3.8-flash';
   }
-  if (clean.includes('3.7') || clean.includes('3.6')) {
-    if (clean.includes('lite')) return 'gemini-3.8-flash-lite';
-    return 'gemini-3.8-flash';
-  }
-  if (clean.includes('lite')) return 'gemini-3.8-flash-lite';
-  if (clean.includes('pro')) return 'gemini-2.5-pro';
-  if (clean.includes('1.5') || clean.includes('2.0') || clean.includes('2.5')) {
-    return 'gemini-3.8-flash';
-  }
+  if (clean.includes('3.6')) return 'gemini-3.6-flash';
+  if (clean.includes('lite')) return 'gemini-1.5-flash';
+  if (clean.includes('pro')) return 'gemini-1.5-pro';
   return DEFAULT_GEMINI_MODEL;
 }
 
@@ -1323,12 +1323,12 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
   // Cascading priority across active Google AI models
   const cascadeOrder = [
     modelToTry,
-    DEFAULT_GEMINI_MODEL, // 'gemini-3.8-flash'
-    'gemini-3.8-flash-lite',
-    'gemini-3.6-flash',
-    'gemini-3.5-flash-lite',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
+    'gemini-1.5-pro',
     'gemini-2.5-pro',
-    FALLBACK_GEMINI_MODEL // 'gemini-3.8-flash-lite'
+    DEFAULT_GEMINI_MODEL,
+    FALLBACK_GEMINI_MODEL
   ];
   const models = [...new Set(cascadeOrder)];
 
@@ -1375,8 +1375,15 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
 
         if (response.ok) {
           const data = await response.json();
-          let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-          text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+          const candidateParts = data.candidates?.[0]?.content?.parts || [];
+          const textPart = candidateParts.find(p => p.text && !p.thought) || candidateParts.find(p => p.text) || candidateParts[0];
+          let text = textPart?.text || '{}';
+          text = text.replace(/```json/gi, '').replace(/```/gi, '').trim();
+          const firstBrace = text.indexOf('{');
+          const lastBrace = text.lastIndexOf('}');
+          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            text = text.slice(firstBrace, lastBrace + 1);
+          }
           const parsed = JSON.parse(text);
           parsed._source = 'gemini';
           parsed._model = currentModel;

@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { Save, X, ClipboardCopy, Camera, Sparkles, Loader2 } from 'lucide-react';
+import { Save, X, ClipboardCopy, Camera, Sparkles, Loader2, Key } from 'lucide-react';
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
+import { compressImageForOcr } from '../utils/imageCompressor';
 
 export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCancel, showToast }) {
   const handleCancel = onBack || onCancel;
@@ -268,6 +269,86 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
 
   const fileInputRef = useRef(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState('');
+  const [pendingScanFile, setPendingScanFile] = useState(null);
+
+  const handleTriggerScan = () => {
+    const apiKey = localStorage.getItem('gemini-api-key');
+    if (!apiKey) {
+      setShowApiKeyModal(true);
+      return;
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const processBagScan = async (file, currentApiKey) => {
+    const apiKey = currentApiKey || localStorage.getItem('gemini-api-key');
+    if (!apiKey) {
+      setPendingScanFile(file);
+      setShowApiKeyModal(true);
+      return;
+    }
+
+    const model = localStorage.getItem('gemini-model') || 'gemini-2.0-flash';
+    const isThinking = localStorage.getItem('gemini-thinking') === 'true';
+
+    setIsScanning(true);
+    if (showToast) showToast('Optimizando imagen y analizando bolsa con Gemini Vision...', { type: 'info', duration: 3000 });
+
+    try {
+      // 1. High-speed client-side canvas compression (~250KB JPEG, keeping text razor sharp)
+      const compressed = await compressImageForOcr(file, 1600, 0.85);
+
+      // 2. Multimodal OCR API Call
+      const res = await fetch(apiUrl('api/ai/scan-bag'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-gemini-key': apiKey,
+          'x-gemini-model': model,
+          'x-gemini-thinking': isThinking ? 'true' : 'false'
+        },
+        body: JSON.stringify({
+          imageBase64: compressed.base64Data,
+          mimeType: compressed.mimeType || 'image/jpeg'
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        const errorMsg = data.error || `Error ${res.status}: no fue posible analizar la imagen`;
+        if (showToast) showToast(`Error al escanear: ${errorMsg}`, { type: 'error', duration: 4000 });
+        return;
+      }
+
+      // Autopopulate fields from Gemini Vision
+      if (data.name) setName(data.name);
+      if (data.producer) setProducer(data.producer);
+      if (data.origin) setOrigin(data.origin);
+      if (data.altitude) setAltitude(data.altitude);
+      if (data.variety) setVariety(data.variety);
+      if (data.process) setProcess(data.process);
+      if (data.roaster) setRoaster(data.roaster);
+      if (data.roast_level) setRoastLevel(data.roast_level);
+      if (data.roast_date) setRoastDate(data.roast_date);
+      if (data.sca_score) setScaScore(String(data.sca_score));
+      if (data.roaster_notes) setNotes(data.roaster_notes);
+      if (data.sca_flavor_tags && Array.isArray(data.sca_flavor_tags)) {
+        setSelectedFlavorTags(data.sca_flavor_tags);
+      }
+
+      if (showToast) showToast('¡Bolsa escaneada y datos extraídos con éxito! ☕📸', { type: 'success', duration: 3500 });
+    } catch (err) {
+      console.error('OCR Error:', err);
+      if (showToast) showToast(`Error al procesar: ${err.message || 'Error de conexión'}`, { type: 'error', duration: 3500 });
+    } finally {
+      setIsScanning(false);
+      setPendingScanFile(null);
+    }
+  };
 
   const handleImageSelected = async (e) => {
     const file = e.target.files?.[0];
@@ -275,68 +356,12 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
 
     const apiKey = localStorage.getItem('gemini-api-key');
     if (!apiKey) {
-      if (showToast) showToast('Configura tu clave API de Gemini en Ajustes para usar el escáner.', { type: 'error', duration: 4000 });
+      setPendingScanFile(file);
+      setShowApiKeyModal(true);
       return;
     }
 
-    const model = localStorage.getItem('gemini-model') || 'gemini-3.8-flash';
-    const isThinking = localStorage.getItem('gemini-thinking') === 'true';
-
-    setIsScanning(true);
-    if (showToast) showToast('Analizando bolsa de café con Gemini Vision...', { type: 'info', duration: 3000 });
-
-    try {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64Data = reader.result;
-        try {
-          const res = await fetch(apiUrl('api/ai/scan-bag'), {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-gemini-key': apiKey,
-              'x-gemini-model': model,
-              'x-gemini-thinking': isThinking ? 'true' : 'false'
-            },
-            body: JSON.stringify({
-              imageBase64: base64Data,
-              mimeType: file.type || 'image/jpeg'
-            })
-          });
-
-          const data = await res.json();
-          if (data.error) {
-            if (showToast) showToast(`Error al escanear: ${data.error}`, { type: 'error', duration: 4000 });
-            return;
-          }
-
-          // Autopopulate fields from Gemini Vision
-          if (data.name) setName(data.name);
-          if (data.producer) setProducer(data.producer);
-          if (data.origin) setOrigin(data.origin);
-          if (data.altitude) setAltitude(data.altitude);
-          if (data.variety) setVariety(data.variety);
-          if (data.process) setProcess(data.process);
-          if (data.roaster) setRoaster(data.roaster);
-          if (data.roast_level) setRoastLevel(data.roast_level);
-          if (data.roast_date) setRoastDate(data.roast_date);
-          if (data.sca_score) setScaScore(String(data.sca_score));
-          if (data.roaster_notes) setNotes(data.roaster_notes);
-          if (data.sca_flavor_tags && Array.isArray(data.sca_flavor_tags)) {
-            setSelectedFlavorTags(data.sca_flavor_tags);
-          }
-
-          if (showToast) showToast('¡Bolsa escaneada y datos extraídos con éxito! ☕📸', { type: 'success', duration: 3500 });
-        } catch (err) {
-          if (showToast) showToast('Error al conectar con Gemini.', { type: 'error', duration: 3500 });
-        } finally {
-          setIsScanning(false);
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      setIsScanning(false);
-    }
+    await processBagScan(file, apiKey);
   };
 
   const copyUrl = () => {
@@ -346,13 +371,13 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
 
   return (
     <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
-      {/* Hidden File/Camera Input */}
+      {/* Hidden File/Camera Input (no capture lock to support both camera and album) */}
       <input 
         type="file" 
         accept="image/*" 
-        capture="environment" 
         ref={fileInputRef} 
         onChange={handleImageSelected} 
+        onClick={(e) => { e.target.value = null; }}
         style={{ display: 'none' }} 
       />
 
@@ -374,7 +399,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
             className="btn-candy primary" 
             disabled={isScanning}
             aria-label="Escanear bolsa de café con cámara"
-            onClick={() => fileInputRef.current && fileInputRef.current.click()} 
+            onClick={handleTriggerScan} 
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -752,6 +777,114 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
               <ClipboardCopy size={16} strokeWidth={2.5} />
               Copiar
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para configurar la API Key de Gemini en sitio */}
+      {showApiKeyModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.72)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '16px'
+        }}>
+          <div className="candy-card static" style={{
+            maxWidth: '440px',
+            width: '100%',
+            padding: '24px',
+            backgroundColor: 'var(--bg-card)',
+            border: '2px solid var(--border-color)',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.35)',
+            position: 'relative'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+              <div style={{
+                width: '36px', height: '36px', borderRadius: '10px',
+                background: 'var(--bg-header)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '1.5px solid var(--border-color)'
+              }}>
+                <Key size={20} color="var(--color-crimson)" />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '15px', fontFamily: 'var(--font-heading)', textTransform: 'uppercase' }}>
+                  Clave API de Gemini
+                </h3>
+                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  Google AI Studio • Visión OCR Multimodal
+                </span>
+              </div>
+            </div>
+
+            <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', lineHeight: 1.45, margin: '0 0 14px 0' }}>
+              Para que la IA reconozca automáticamente la bolsa de café, varietal, proceso y notas SCA a partir de una foto, introduce tu clave API gratuita.
+            </p>
+
+            <div style={{ marginBottom: '14px' }}>
+              <label className="barista-label" style={{ marginBottom: '6px' }}>Clave API (AIzaSy...)</label>
+              <input 
+                type="password"
+                className="candy-input"
+                autoFocus
+                value={tempApiKey}
+                onChange={(e) => setTempApiKey(e.target.value)}
+                placeholder="AIzaSy..."
+                style={{ width: '100%', boxSizing: 'border-box', fontFamily: 'var(--font-mono)', fontSize: '13px' }}
+              />
+              <div style={{ marginTop: '6px', fontSize: '10px', color: 'var(--color-text-muted)' }}>
+                💡 Puedes obtener tu clave gratis en{' '}
+                <a 
+                  href="https://aistudio.google.com/app/apikey" 
+                  target="_blank" 
+                  rel="noreferrer"
+                  style={{ color: 'var(--color-crimson)', fontWeight: 'bold', textDecoration: 'underline' }}
+                >
+                  aistudio.google.com
+                </a>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <button
+                type="button"
+                className="btn-candy"
+                onClick={() => {
+                  setShowApiKeyModal(false);
+                  setPendingScanFile(null);
+                }}
+                style={{ padding: '8px 14px', fontSize: '12px' }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="btn-candy primary"
+                onClick={() => {
+                  const key = tempApiKey.trim();
+                  if (!key) {
+                    if (showToast) showToast('Por favor introduce tu clave API.', { type: 'error', duration: 2500 });
+                    return;
+                  }
+                  localStorage.setItem('gemini-api-key', key);
+                  setShowApiKeyModal(false);
+                  if (showToast) showToast('Clave API guardada con éxito.', { type: 'success', duration: 2000 });
+                  
+                  if (pendingScanFile) {
+                    processBagScan(pendingScanFile, key);
+                  } else if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
+                }}
+                style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 'bold' }}
+              >
+                Guardar y Escanear
+              </button>
+            </div>
           </div>
         </div>
       )}

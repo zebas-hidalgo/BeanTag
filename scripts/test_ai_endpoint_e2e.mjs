@@ -156,4 +156,24 @@ assert.ok(dataMulti.grinders?.k_ultra, 'Endpoint should include K-Ultra dial');
 assert.ok(dataMulti.grinders?.kingrinder_k6, 'Endpoint should include Kingrinder K6 dial');
 console.log('✅ Passed: Multivariable endpoint test returned complete physics analysis and active grinder dial.\n');
 
+// Test 6: POST /api/ai/scan-bag with missing API key
+console.log('Test 6: POST /api/ai/scan-bag with Missing API Key');
+const resScanNoKey = await mockRequest(app, 'POST', '/api/ai/scan-bag', {}, {
+  imageBase64: 'data:image/jpeg;base64,dGVzdA=='
+});
+assert.equal(resScanNoKey.status, 400, 'Should return 400 when API key is missing');
+assert.ok(resScanNoKey.json().error.includes('clave API'), 'Error should mention missing API key');
+console.log('✅ Passed: /api/ai/scan-bag correctly rejects missing API key with 400.\n');
+
+// Test 7: POST /api/ai/scan-bag with missing or empty image payload
+console.log('Test 7: POST /api/ai/scan-bag with Missing Image Payload');
+const resScanNoImage = await mockRequest(app, 'POST', '/api/ai/scan-bag', {
+  'x-gemini-key': 'AIzaSyTestKeyDummy12345'
+}, {
+  imageBase64: ''
+});
+assert.equal(resScanNoImage.status, 400, 'Should return 400 when image is missing');
+assert.ok(resScanNoImage.json().error.includes('imagen'), 'Error should mention missing image');
+console.log('✅ Passed: /api/ai/scan-bag correctly rejects empty image payload with 400.\n');
+
 console.log('🎉 ALL END-TO-END AI ENDPOINT INTEGRATION TESTS PASSED!\n');
