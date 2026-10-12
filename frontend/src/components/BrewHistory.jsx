@@ -501,11 +501,11 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                     {item.batch_name}
                   </span>
                 </div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#4A5568' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)' }}>
                   {new Date(item.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                 </span>
               </div>
-              <div style={{ fontSize: '12px', marginTop: '8px', borderTop: '1px solid #E2E8F0', paddingTop: '6px' }}>
+              <div style={{ fontSize: '12px', marginTop: '8px', borderTop: '1px solid var(--border-color)', paddingTop: '6px' }}>
                 <p style={{ margin: '2px 0' }}>
                   <strong>Molienda:</strong> {item.grind || 'N/A'} {microns ? `(~${microns} µm)` : ''} | <strong>Ratio:</strong> {item.ratio || 'N/A'}
                 </p>
@@ -514,22 +514,22 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 {(item.sensory_balance || item.sensory_body || item.sensory_extraction) && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', margin: '6px 0' }}>
                     {item.sensory_balance && (
-                      <span style={{ fontSize: '9px', fontWeight: 'bold', background: '#FEEBC8', color: '#C05621', padding: '2px 6px', borderRadius: '4px', border: '1px solid #FBD38D' }}>
+                      <span style={{ fontSize: '9px', fontWeight: 'bold', background: 'var(--barista-accent-mint-bg)', color: 'var(--barista-accent-mint-text)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
                         ⚖️ {item.sensory_balance}
                       </span>
                     )}
                     {item.sensory_body && (
-                      <span style={{ fontSize: '9px', fontWeight: 'bold', background: '#EBF8FF', color: '#2B6CB0', padding: '2px 6px', borderRadius: '4px', border: '1px solid #BEE3F8' }}>
+                      <span style={{ fontSize: '9px', fontWeight: 'bold', background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
                         🍯 {item.sensory_body}
                       </span>
                     )}
                     {item.sensory_extraction && (
                       <span style={{
                         fontSize: '9px', fontWeight: 'bold',
-                        background: item.sensory_extraction === 'En Punto' ? '#C6F6D5' : '#FED7D7',
-                        color: item.sensory_extraction === 'En Punto' ? '#22543D' : '#9B2C2C',
+                        background: item.sensory_extraction === 'En Punto' ? 'var(--barista-accent-mint-bg)' : 'var(--barista-accent-danger-bg)',
+                        color: item.sensory_extraction === 'En Punto' ? 'var(--barista-accent-mint-text)' : 'var(--barista-accent-danger-text)',
                         padding: '2px 6px', borderRadius: '4px',
-                        border: item.sensory_extraction === 'En Punto' ? '1px solid #9AE6B4' : '1px solid #FEB2B2'
+                        border: '1px solid var(--border-color)'
                       }}>
                         🧪 {item.sensory_extraction === 'Sub' ? 'Sub-ext' : item.sensory_extraction === 'Sobre' ? 'Sobre-ext' : 'En Punto'}
                       </span>
@@ -588,7 +588,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   {selectedRecipe.batch_name}
                 </span>
               </div>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#4A5568', background: '#EDF2F7', padding: '3px 8px', borderRadius: '4px', border: '2px solid var(--border-color)' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-text-muted)', background: 'var(--segmented-bg)', padding: '3px 8px', borderRadius: '4px', border: '2px solid var(--border-color)' }}>
                 {new Date(selectedRecipe.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
               </span>
             </div>
@@ -623,20 +623,20 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 </h4>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {selectedRecipe.sensory_balance && (
-                    <span style={{ fontSize: '10px', fontWeight: 'bold', background: '#FEEBC8', color: '#C05621', padding: '4px 8px', borderRadius: '4px', border: '2px solid var(--border-color)' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 'bold', background: 'var(--barista-accent-mint-bg)', color: 'var(--barista-accent-mint-text)', padding: '4px 8px', borderRadius: '4px', border: '2px solid var(--border-color)' }}>
                       ⚖️ {selectedRecipe.sensory_balance}
                     </span>
                   )}
                   {selectedRecipe.sensory_body && (
-                    <span style={{ fontSize: '10px', fontWeight: 'bold', background: '#EBF8FF', color: '#2B6CB0', padding: '4px 8px', borderRadius: '4px', border: '2px solid var(--border-color)' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 'bold', background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', padding: '4px 8px', borderRadius: '4px', border: '2px solid var(--border-color)' }}>
                       🍯 {selectedRecipe.sensory_body}
                     </span>
                   )}
                   {selectedRecipe.sensory_extraction && (
                     <span style={{
                       fontSize: '10px', fontWeight: 'bold',
-                      background: selectedRecipe.sensory_extraction === 'En Punto' ? '#C6F6D5' : '#FED7D7',
-                      color: selectedRecipe.sensory_extraction === 'En Punto' ? '#22543D' : '#9B2C2C',
+                      background: selectedRecipe.sensory_extraction === 'En Punto' ? 'var(--barista-accent-mint-bg)' : 'var(--barista-accent-danger-bg)',
+                      color: selectedRecipe.sensory_extraction === 'En Punto' ? 'var(--barista-accent-mint-text)' : 'var(--barista-accent-danger-text)',
                       padding: '4px 8px', borderRadius: '4px',
                       border: '2px solid var(--border-color)'
                     }}>
@@ -900,7 +900,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       style={{
                         flex: 1, padding: '6px', fontSize: '11px', fontWeight: 'bold', borderRadius: '6px',
                         border: editForm.sensory_extraction === ext ? '2px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                        background: editForm.sensory_extraction === ext ? 'var(--bg-header)' : '#FFF',
+                        background: editForm.sensory_extraction === ext ? 'var(--bg-header)' : 'var(--bg-card, #FFF)',
+                        color: 'var(--color-text)',
                         cursor: 'pointer'
                       }}
                     >
@@ -1246,8 +1247,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             
             {shareStatus && (
               <div style={{
-                background: shareStatus.includes('❌') ? '#FED7D7' : (shareStatus.includes('✅') || shareStatus.includes('📋') || shareStatus.includes('📥')) ? '#C6F6D5' : '#FEFCBF',
-                color: shareStatus.includes('❌') ? '#9B2C2C' : (shareStatus.includes('✅') || shareStatus.includes('📋') || shareStatus.includes('📥')) ? '#22543D' : '#744210',
+                background: shareStatus.includes('❌') ? 'var(--barista-accent-danger-bg)' : (shareStatus.includes('✅') || shareStatus.includes('📋') || shareStatus.includes('📥')) ? 'var(--barista-accent-mint-bg)' : 'var(--barista-accent-honey-bg)',
+                color: shareStatus.includes('❌') ? 'var(--barista-accent-danger-text)' : (shareStatus.includes('✅') || shareStatus.includes('📋') || shareStatus.includes('📥')) ? 'var(--barista-accent-mint-text)' : 'var(--barista-accent-honey-text)',
                 border: '1.5px solid var(--border-color)',
                 borderRadius: '6px',
                 padding: '6px 10px',

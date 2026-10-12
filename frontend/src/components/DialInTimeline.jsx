@@ -312,9 +312,9 @@ export default function DialInTimeline({
                 fontWeight: '800',
                 padding: '2px 8px',
                 borderRadius: '12px',
-                background: 'rgba(217, 119, 6, 0.12)',
+                background: 'var(--barista-accent-honey-bg, rgba(217, 119, 6, 0.12))',
                 border: '1px solid var(--barista-accent-honey, #D97706)',
-                color: 'var(--barista-accent-honey, #D97706)',
+                color: 'var(--barista-accent-honey-text, #D97706)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '4px'
@@ -495,9 +495,9 @@ export default function DialInTimeline({
                         gap: '5px',
                         padding: '3px 8px',
                         borderRadius: '20px',
-                        background: 'rgba(217, 119, 6, 0.15)',
+                        background: 'var(--barista-accent-honey-bg, rgba(217, 119, 6, 0.15))',
                         border: '1.5px solid var(--barista-accent-honey, #D97706)',
-                        color: 'var(--barista-accent-honey, #D97706)',
+                        color: 'var(--barista-accent-honey-text, #D97706)',
                         fontWeight: '800',
                         fontSize: '11px',
                         letterSpacing: '0.3px',
@@ -546,7 +546,7 @@ export default function DialInTimeline({
                           padding: '1px 6px',
                           borderRadius: '6px',
                           background: clickDelta > 0 ? 'rgba(217, 119, 6, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                          color: clickDelta > 0 ? 'var(--barista-accent-honey, #D97706)' : '#059669',
+                          color: clickDelta > 0 ? 'var(--barista-accent-honey, #D97706)' : 'var(--barista-accent-mint-text, #059669)',
                           border: `1px solid ${clickDelta > 0 ? 'rgba(217, 119, 6, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`
                         }}
                       >
@@ -616,7 +616,7 @@ export default function DialInTimeline({
                             padding: '1px 5px',
                             borderRadius: '5px',
                             background: tempDelta > 0 ? 'rgba(217, 119, 6, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                            color: tempDelta > 0 ? 'var(--barista-accent-honey, #D97706)' : '#059669',
+                            color: tempDelta > 0 ? 'var(--barista-accent-honey, #D97706)' : 'var(--barista-accent-mint-text, #059669)',
                             border: `1px solid ${tempDelta > 0 ? 'rgba(217, 119, 6, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`
                           }}
                         >
@@ -693,7 +693,7 @@ export default function DialInTimeline({
                               fontSize: '10px',
                               fontWeight: '700',
                               background: 'rgba(59, 130, 246, 0.12)',
-                              color: '#2563EB',
+                              color: 'var(--barista-accent-cryo-text, #2563EB)',
                               padding: '2px 6px',
                               borderRadius: '4px',
                               border: '1px solid rgba(59, 130, 246, 0.25)',
@@ -711,7 +711,7 @@ export default function DialInTimeline({
                               fontSize: '10px',
                               fontWeight: '700',
                               background: rec.sensory_extraction === 'En Punto' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-                              color: rec.sensory_extraction === 'En Punto' ? '#059669' : '#DC2626',
+                              color: rec.sensory_extraction === 'En Punto' ? 'var(--barista-accent-mint-text, #059669)' : 'var(--barista-accent-danger-text, #DC2626)',
                               padding: '2px 6px',
                               borderRadius: '4px',
                               border: `1px solid ${rec.sensory_extraction === 'En Punto' ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`,

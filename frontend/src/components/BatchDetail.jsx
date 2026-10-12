@@ -420,8 +420,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     }
 
     // Extract Femobook A2 clicks
-    if (aiRecommendation.grinders?.femobook_a2) {
-      const match = String(aiRecommendation.grinders.femobook_a2).match(/(\d+)\s*clic/i);
+    const femoVal = aiRecommendation.grinders?.femobook_a2 || aiRecommendation.grinders?.femobook;
+    if (femoVal) {
+      const match = String(femoVal).match(/(\d+)\s*clic/i) || String(femoVal).match(/(\d+)/);
       if (match) setFemobookClicks(parseInt(match[1]) || 60);
     }
 
@@ -432,28 +433,29 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     }
 
     // Extract Kingrinder K6 clicks
-    if (aiRecommendation.grinders?.kingrinder_k6) {
-      const match = String(aiRecommendation.grinders.kingrinder_k6).match(/(\d+)\s*clic/i);
+    const kingVal = aiRecommendation.grinders?.kingrinder_k6 || aiRecommendation.grinders?.kingrinder;
+    if (kingVal) {
+      const match = String(kingVal).match(/(\d+)\s*clic/i) || String(kingVal).match(/(\d+)/);
       if (match) setKingrinderClicks(parseInt(match[1]) || 90);
     }
 
     // Extract Timemore clicks
     if (aiRecommendation.grinders?.timemore) {
-      const match = String(aiRecommendation.grinders.timemore).match(/(\d+)\s*clic/i);
+      const match = String(aiRecommendation.grinders.timemore).match(/(\d+)\s*clic/i) || String(aiRecommendation.grinders.timemore).match(/(\d+)/);
       if (match) setTimemoreClicks(parseInt(match[1]) || 18);
     }
 
     // Extract Baratza step
     if (aiRecommendation.grinders?.baratza) {
-      const match = String(aiRecommendation.grinders.baratza).match(/(?:Ajuste\s*)?(\d+)/i);
+      const match = String(aiRecommendation.grinders.baratza).match(/(?:Ajuste\s*)?(\d+)/i) || String(aiRecommendation.grinders.baratza).match(/(\d+)/);
       if (match) setBaratzaStep(parseInt(match[1]) || 15);
     }
 
     // Switch active grinder view if recommended
     if (aiRecommendation.active_grinder_dial?.grinder_id) {
       const gId = aiRecommendation.active_grinder_dial.grinder_id;
-      if (gId === 'femobook_a2') setGrinderType('femobook');
-      else if (gId === 'kingrinder_k6') setGrinderType('kingrinder');
+      if (gId === 'femobook_a2' || gId === 'femobook') setGrinderType('femobook');
+      else if (gId === 'kingrinder_k6' || gId === 'kingrinder') setGrinderType('kingrinder');
       else if (GRINDERS.some(g => g.id === gId)) setGrinderType(gId);
     }
 
@@ -482,10 +484,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       },
       k_ultra: aiRecommendation.grinders?.k_ultra ? (parseFloat(String(aiRecommendation.grinders.k_ultra).match(/(\d+(?:\.\d+)?)/)?.[1]) || kUltraDial) : kUltraDial,
       ode_gen2: aiRecommendation.grinders?.ode_gen2 ? (parseFloat(String(aiRecommendation.grinders.ode_gen2).match(/(?:Ajuste\s*)?(\d+(?:\.\d+)?)/i)?.[1]) || odeDial) : odeDial,
-      femobook: aiRecommendation.grinders?.femobook_a2 ? (parseInt(String(aiRecommendation.grinders.femobook_a2).match(/(\d+)\s*clic/i)?.[1]) || femobookClicks) : femobookClicks,
+      femobook: femoVal ? (parseInt(String(femoVal).match(/(\d+)/)?.[1]) || femobookClicks) : femobookClicks,
       comandante: aiRecommendation.grinders?.comandante ? (parseInt(String(aiRecommendation.grinders.comandante).match(/(\d+)/)?.[1]) || comandanteClicks) : comandanteClicks,
-      kingrinder: aiRecommendation.grinders?.kingrinder_k6 ? (parseInt(String(aiRecommendation.grinders.kingrinder_k6).match(/(\d+)\s*clic/i)?.[1]) || kingrinderClicks) : kingrinderClicks,
-      timemore: aiRecommendation.grinders?.timemore ? (parseInt(String(aiRecommendation.grinders.timemore).match(/(\d+)\s*clic/i)?.[1]) || timemoreClicks) : timemoreClicks,
+      kingrinder: kingVal ? (parseInt(String(kingVal).match(/(\d+)/)?.[1]) || kingrinderClicks) : kingrinderClicks,
+      timemore: aiRecommendation.grinders?.timemore ? (parseInt(String(aiRecommendation.grinders.timemore).match(/(\d+)/)?.[1]) || timemoreClicks) : timemoreClicks,
       baratza: aiRecommendation.grinders?.baratza ? (parseInt(String(aiRecommendation.grinders.baratza).match(/(?:Ajuste\s*)?(\d+)/i)?.[1]) || baratzaStep) : baratzaStep
     };
     setDoseAdjustmentFeedback(null);
@@ -503,31 +505,56 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       setDoseInG(effectiveDose);
     }
     baseDoseRef.current = effectiveDose;
+
+    const famousFemo = famous.grinderSettings?.femobook?.clicks ?? famous.grinderSettings?.femobook_a2?.clicks ?? femobookClicks;
+    const famousComandante = famous.grinderSettings?.comandante?.clicks ?? comandanteClicks;
+    const famousKUltra = famous.grinderSettings?.k_ultra?.dial ?? famous.grinderSettings?.k_ultra?.clicks ?? kUltraDial;
+    const famousOde = famous.grinderSettings?.ode_gen2?.dial ?? odeDial;
+    const famousKing = famous.grinderSettings?.kingrinder?.clicks ?? famous.grinderSettings?.kingrinder_k6?.clicks ?? kingrinderClicks;
+    const famousTimemore = famous.grinderSettings?.timemore?.clicks ?? timemoreClicks;
+    const famousBaratza = famous.grinderSettings?.baratza?.step ?? famous.grinderSettings?.baratza?.clicks ?? baratzaStep;
+
     baseGrinderRef.current = {
       jmax: famous.grinderSettings?.jmax ? { ...famous.grinderSettings.jmax } : { rot: jmaxRot, num: jmaxNum, click: jmaxClick },
-      femobook: famous.grinderSettings?.femobook?.clicks ?? femobookClicks,
-      comandante: famous.grinderSettings?.comandante?.clicks ?? comandanteClicks,
-      k_ultra: kUltraDial,
-      ode_gen2: odeDial,
-      kingrinder: kingrinderClicks,
-      timemore: timemoreClicks,
-      baratza: baratzaStep
+      femobook: famousFemo,
+      comandante: famousComandante,
+      k_ultra: famousKUltra,
+      ode_gen2: famousOde,
+      kingrinder: famousKing,
+      timemore: famousTimemore,
+      baratza: famousBaratza
     };
     setDoseAdjustmentFeedback(null);
     if (famous.ratioVal) setRatioVal(famous.ratioVal);
     else if (famous.method === 'NextLevel Pulsar Mini') setRatioVal(16.6);
     if (famous.temperature) setWaterTemp(famous.temperature);
     if (famous.brewTime) setBrewTime(famous.brewTime);
+
     if (famous.grinderSettings?.jmax) {
-      setJmaxRot(famous.grinderSettings.jmax.rot);
-      setJmaxNum(famous.grinderSettings.jmax.num);
-      setJmaxClick(famous.grinderSettings.jmax.click);
+      setJmaxRot(famous.grinderSettings.jmax.rot ?? 0);
+      setJmaxNum(famous.grinderSettings.jmax.num ?? 0);
+      setJmaxClick(famous.grinderSettings.jmax.click ?? 0);
     }
-    if (famous.grinderSettings?.femobook) {
-      setFemobookClicks(famous.grinderSettings.femobook.clicks);
+    if (famous.grinderSettings?.femobook || famous.grinderSettings?.femobook_a2) {
+      setFemobookClicks(famousFemo);
     }
     if (famous.grinderSettings?.comandante) {
-      setComandanteClicks(famous.grinderSettings.comandante.clicks);
+      setComandanteClicks(famousComandante);
+    }
+    if (famous.grinderSettings?.k_ultra) {
+      setKUltraDial(famousKUltra);
+    }
+    if (famous.grinderSettings?.ode_gen2) {
+      setOdeDial(famousOde);
+    }
+    if (famous.grinderSettings?.kingrinder || famous.grinderSettings?.kingrinder_k6) {
+      setKingrinderClicks(famousKing);
+    }
+    if (famous.grinderSettings?.timemore) {
+      setTimemoreClicks(famousTimemore);
+    }
+    if (famous.grinderSettings?.baratza) {
+      setBaratzaStep(famousBaratza);
     }
 
     const calculatedPours = famous.calculatePours ? famous.calculatePours(effectiveDose) : [];
@@ -559,9 +586,14 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       jmax_num: famous.grinderSettings?.jmax?.num,
       jmax_click: famous.grinderSettings?.jmax?.click,
       grinders: {
-        jmax: famous.grinderSettings?.jmax?.text,
-        femobook_a2: famous.grinderSettings?.femobook?.text,
-        comandante: famous.grinderSettings?.comandante?.text
+        jmax: famous.grinderSettings?.jmax?.text || (famous.grinderSettings?.jmax ? `${famous.grinderSettings.jmax.rot}.${famous.grinderSettings.jmax.num}.${famous.grinderSettings.jmax.click}` : undefined),
+        k_ultra: famous.grinderSettings?.k_ultra?.text,
+        ode_gen2: famous.grinderSettings?.ode_gen2?.text,
+        comandante: famous.grinderSettings?.comandante?.text,
+        femobook_a2: famous.grinderSettings?.femobook_a2?.text || famous.grinderSettings?.femobook?.text,
+        kingrinder_k6: famous.grinderSettings?.kingrinder_k6?.text || famous.grinderSettings?.kingrinder?.text,
+        timemore: famous.grinderSettings?.timemore?.text,
+        baratza: famous.grinderSettings?.baratza?.text
       },
       pours: calculatedPours,
       steps: famous.steps,
@@ -1533,11 +1565,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
                   {/* Chips resumen multivariable */}
                   <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', fontSize: '9.5px' }}>
-                    {aiRecommendation.is_frozen && <span style={{ background: '#DBEAFE', color: '#1E40AF', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>❄️ Frozen Dosing (-18°C)</span>}
-                    {aiRecommendation.days_since_roast !== null && <span style={{ background: '#FEF3C7', color: '#92400E', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Timer size={10} /> Reposo: Día {aiRecommendation.days_since_roast}</span>}
-                    {aiRecommendation.water_profile && <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Droplet size={10} /> {aiRecommendation.water_profile}</span>}
+                    {aiRecommendation.is_frozen && <span style={{ background: 'var(--barista-accent-cryo-bg)', color: 'var(--barista-accent-cryo-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>❄️ Frozen Dosing (-18°C)</span>}
+                    {aiRecommendation.days_since_roast !== null && <span style={{ background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Timer size={10} /> Reposo: Día {aiRecommendation.days_since_roast}</span>}
+                    {aiRecommendation.water_profile && <span style={{ background: 'var(--barista-accent-cryo-bg)', color: 'var(--barista-accent-cryo-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Droplet size={10} /> {aiRecommendation.water_profile}</span>}
                     {aiRecommendation.active_grinder_dial && <span style={{ background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><SlidersHorizontal size={10} /> {aiRecommendation.active_grinder_dial.grinder_name}: {aiRecommendation.active_grinder_dial.dial}</span>}
-                    {aiRecommendation._source === 'barista_fallback' && <span style={{ background: '#FEE2E2', color: '#991B1B', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><AlertCircle size={10} /> Modo Offline</span>}
+                    {aiRecommendation._source === 'barista_fallback' && <span style={{ background: 'var(--barista-accent-danger-bg)', color: 'var(--barista-accent-danger-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><AlertCircle size={10} /> Modo Offline</span>}
                   </div>
 
                   {/* Sub-pestañas para organizar Vertidos, Molinos, Física y Pasos */}
@@ -1568,13 +1600,13 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                           return (
                             <div key={idx} style={{ padding: '8px 10px', background: 'var(--bg-card)', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '11px' }}>
                               {p.valve === 'closed' && (
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FED7D7', color: '#9B2C2C', border: '1px solid #FEB2B2', marginBottom: '4px' }}>🔒 VÁLVULA CERRADA (Bloom + Inmersión)</div>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: 'var(--barista-accent-danger-bg)', color: 'var(--barista-accent-danger-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>🔒 VÁLVULA CERRADA (Bloom + Inmersión)</div>
                               )}
                               {p.valve === 'open' && (
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#C6F6D5', color: '#22543D', border: '1px solid #9AE6B4', marginBottom: '4px' }}>🔓 VÁLVULA ABIERTA (Percolación)</div>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: 'var(--barista-accent-mint-bg)', color: 'var(--barista-accent-mint-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>🔓 VÁLVULA ABIERTA (Percolación)</div>
                               )}
                               {p.valve === 'half' && (
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: '#FEFCBF', color: '#744210', border: '1px solid #F6E05E', marginBottom: '4px' }}>⚡ VÁLVULA MEDIA (Flujo Regulado 50%)</div>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>⚡ VÁLVULA MEDIA (Flujo Regulado 50%)</div>
                               )}
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                                 <span style={{ fontWeight: '800', color: 'var(--color-crimson)', fontSize: '12px', wordBreak: 'break-word', flex: '1 1 180px' }}>
@@ -1644,8 +1676,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                             {aiRecommendation.grinders.k_ultra && <div><strong>K-Ultra:</strong> {aiRecommendation.grinders.k_ultra}</div>}
                             {aiRecommendation.grinders.ode_gen2 && <div><strong>Fellow Ode:</strong> {aiRecommendation.grinders.ode_gen2}</div>}
                             {aiRecommendation.grinders.comandante && <div><strong>Comandante:</strong> {aiRecommendation.grinders.comandante}</div>}
-                            {aiRecommendation.grinders.femobook_a2 && <div><strong>Femobook:</strong> {aiRecommendation.grinders.femobook_a2}</div>}
-                            {aiRecommendation.grinders.kingrinder_k6 && <div><strong>Kingrinder:</strong> {aiRecommendation.grinders.kingrinder_k6}</div>}
+                            {(aiRecommendation.grinders.femobook_a2 || aiRecommendation.grinders.femobook) && (
+                              <div><strong>Femobook:</strong> {aiRecommendation.grinders.femobook_a2 || aiRecommendation.grinders.femobook}</div>
+                            )}
+                            {(aiRecommendation.grinders.kingrinder_k6 || aiRecommendation.grinders.kingrinder) && (
+                              <div><strong>Kingrinder:</strong> {aiRecommendation.grinders.kingrinder_k6 || aiRecommendation.grinders.kingrinder}</div>
+                            )}
                             {aiRecommendation.grinders.timemore && <div><strong>Timemore:</strong> {aiRecommendation.grinders.timemore}</div>}
                             {aiRecommendation.grinders.baratza && <div><strong>Baratza:</strong> {aiRecommendation.grinders.baratza}</div>}
                           </div>
