@@ -20,18 +20,6 @@ const calculateMicrons = (rot, num, click) => {
   return Math.round(totalClicks * 8.8);
 };
 
-const parseGrindToMicrons = (grindStr) => {
-  if (!grindStr || !grindStr.includes('J-Max:')) return null;
-  const parts = grindStr.replace('J-Max:', '').trim().split('.');
-  if (parts.length === 3) {
-    const rot = parseInt(parts[0]) || 0;
-    const num = parseInt(parts[1]) || 0;
-    const click = parseInt(parts[2]) || 0;
-    const totalClicks = (rot * 90) + (num * 10) + click;
-    return Math.round(totalClicks * 8.8);
-  }
-  return null;
-};
 
 export default function BatchDetail({ batchId, batches = [], currentUser, onRequireAuth, prefillRecipe, onBack, onSubtractDose, onSaveRecipe, onDeleteBatch, onEditBatch, showToast }) {
   const [batch, setBatch] = useState(null);
@@ -795,6 +783,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   const handleLoadRecipeToForm = (rec) => {
     if (!rec) return;
+    const loadedMethod = rec.method || method;
     if (rec.method) setMethod(rec.method);
     if (rec.dose_in_g) {
       const parsed = parseFloat(rec.dose_in_g);
@@ -810,15 +799,104 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     }
     if (rec.brew_time) setBrewTime(rec.brew_time);
     if (rec.notes) setNotes(rec.notes);
+
+    // Parse and set ratio
+    if (rec.ratio && String(rec.ratio).includes('1:')) {
+      const ratioMatch = String(rec.ratio).match(/1:([0-9.]+)/);
+      if (ratioMatch) {
+        setRatioVal(parseFloat(ratioMatch[1]) || (loadedMethod === 'NextLevel Pulsar Mini' ? 16.6 : 15.0));
+      }
+    } else if (loadedMethod === 'NextLevel Pulsar Mini') {
+      setRatioVal(16.6);
+    }
+
+    // Parse grind settings and synchronize all 8 grinders
+    let loadedJmax = { rot: jmaxRot, num: jmaxNum, click: jmaxClick };
+    let loadedFemobook = femobookClicks;
+    let loadedKUltra = kUltraDial;
+    let loadedOde = odeDial;
+    let loadedComandante = comandanteClicks;
+    let loadedKingrinder = kingrinderClicks;
+    let loadedTimemore = timemoreClicks;
+    let loadedBaratza = baratzaStep;
+
+    if (rec.grind) {
+      const gStr = String(rec.grind);
+      if (gStr.includes('J-Max:')) {
+        setGrinderType('jmax');
+        const grindParts = gStr.replace('J-Max:', '').trim().split('.');
+        if (grindParts.length === 3) {
+          loadedJmax = {
+            rot: parseInt(grindParts[0]) || 1,
+            num: parseInt(grindParts[1]) || 5,
+            click: parseInt(grindParts[2]) || 0
+          };
+          setJmaxRot(loadedJmax.rot);
+          setJmaxNum(loadedJmax.num);
+          setJmaxClick(loadedJmax.click);
+        }
+      } else if (/Femobook/i.test(gStr)) {
+        setGrinderType('femobook');
+      } else if (/Comandante/i.test(gStr)) {
+        setGrinderType('comandante');
+      } else if (/K-Ultra/i.test(gStr)) {
+        setGrinderType('k_ultra');
+      } else if (/Ode/i.test(gStr)) {
+        setGrinderType('ode_gen2');
+      } else if (/Kingrinder/i.test(gStr)) {
+        setGrinderType('kingrinder');
+      } else if (/Timemore/i.test(gStr)) {
+        setGrinderType('timemore');
+      } else if (/Baratza/i.test(gStr)) {
+        setGrinderType('baratza');
+      }
+
+      const femoMatch = gStr.match(/Femobook(?:\s*A2)?:\s*(\d+)/i);
+      if (femoMatch) {
+        loadedFemobook = parseInt(femoMatch[1]) || 60;
+        setFemobookClicks(loadedFemobook);
+      }
+      const comMatch = gStr.match(/Comandante:\s*(\d+)/i);
+      if (comMatch) {
+        loadedComandante = parseInt(comMatch[1]) || 24;
+        setComandanteClicks(loadedComandante);
+      }
+      const kMatch = gStr.match(/1Zpresso K-Ultra:\s*(\d+(?:\.\d+)?)/i);
+      if (kMatch) {
+        loadedKUltra = parseFloat(kMatch[1]) || 9.0;
+        setKUltraDial(loadedKUltra);
+      }
+      const odeMatch = gStr.match(/Fellow Ode(?:\s*Gen\s*2)?:\s*(?:Ajuste\s*)?(\d+(?:\.\d+)?)/i);
+      if (odeMatch) {
+        loadedOde = parseFloat(odeMatch[1]) || 5.0;
+        setOdeDial(loadedOde);
+      }
+      const kinMatch = gStr.match(/Kingrinder(?:\s*K6)?:\s*(\d+)/i);
+      if (kinMatch) {
+        loadedKingrinder = parseInt(kinMatch[1]) || 90;
+        setKingrinderClicks(loadedKingrinder);
+      }
+      const timeMatch = gStr.match(/Timemore:\s*(\d+)/i);
+      if (timeMatch) {
+        loadedTimemore = parseInt(timeMatch[1]) || 18;
+        setTimemoreClicks(loadedTimemore);
+      }
+      const barMatch = gStr.match(/Baratza:\s*(?:Ajuste\s*)?(\d+)/i);
+      if (barMatch) {
+        loadedBaratza = parseInt(barMatch[1]) || 15;
+        setBaratzaStep(loadedBaratza);
+      }
+    }
+
     baseGrinderRef.current = {
-      jmax: { rot: jmaxRot, num: jmaxNum, click: jmaxClick },
-      k_ultra: kUltraDial,
-      ode_gen2: odeDial,
-      femobook: femobookClicks,
-      comandante: comandanteClicks,
-      kingrinder: kingrinderClicks,
-      timemore: timemoreClicks,
-      baratza: baratzaStep
+      jmax: loadedJmax,
+      k_ultra: loadedKUltra,
+      ode_gen2: loadedOde,
+      femobook: loadedFemobook,
+      comandante: loadedComandante,
+      kingrinder: loadedKingrinder,
+      timemore: loadedTimemore,
+      baratza: loadedBaratza
     };
     setDoseAdjustmentFeedback(null);
     setActiveTab('brew');
@@ -1066,30 +1144,30 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
 
 
-  // Dynamic calculated microns for current form state based on grinder type
+  const activeGrinderMeta = getGrinderConfig(grinderType);
+
+  // Dynamic calculated microns for current form state based on calibrated grinder curves
   const currentMicrons = (() => {
     switch (grinderType) {
       case 'k_ultra':
-        return Math.round(parseFloat(kUltraDial) * 10 * 20);
+        return activeGrinderMeta.calculateMicrons ? activeGrinderMeta.calculateMicrons(kUltraDial) : Math.round(parseFloat(kUltraDial) * 10 * 20);
       case 'ode_gen2':
-        return Math.round(350 + parseFloat(odeDial) * 75);
+        return activeGrinderMeta.calculateMicrons ? activeGrinderMeta.calculateMicrons(odeDial) : Math.round(350 + parseFloat(odeDial) * 75);
       case 'comandante':
-        return Math.round(comandanteClicks * 30);
+        return activeGrinderMeta.calculateMicrons ? activeGrinderMeta.calculateMicrons(comandanteClicks) : Math.round(comandanteClicks * 30);
       case 'femobook':
-        return Math.round(femobookClicks * 18);
+        return activeGrinderMeta.calculateMicrons ? activeGrinderMeta.calculateMicrons(femobookClicks) : Math.round(femobookClicks * 18);
       case 'kingrinder':
-        return Math.round(kingrinderClicks * 16);
+        return activeGrinderMeta.calculateMicrons ? activeGrinderMeta.calculateMicrons(kingrinderClicks) : Math.round(kingrinderClicks * 16);
       case 'timemore':
-        return Math.round(timemoreClicks * 33);
+        return activeGrinderMeta.calculateMicrons ? activeGrinderMeta.calculateMicrons(timemoreClicks) : Math.round(timemoreClicks * 33);
       case 'baratza':
-        return Math.round(400 + baratzaStep * 30);
+        return activeGrinderMeta.calculateMicrons ? activeGrinderMeta.calculateMicrons(baratzaStep) : Math.round(400 + baratzaStep * 30);
       case 'jmax':
       default:
-        return calculateMicrons(jmaxRot, jmaxNum, jmaxClick);
+        return activeGrinderMeta.calculateMicrons ? activeGrinderMeta.calculateMicrons(jmaxRot, jmaxNum, jmaxClick) : calculateMicrons(jmaxRot, jmaxNum, jmaxClick);
     }
   })();
-
-  const activeGrinderMeta = getGrinderConfig(grinderType);
 
   const updateManualGrinder = (grinderId, val) => {
     baseGrinderRef.current = {
@@ -1542,7 +1620,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 <span style={{ fontSize: '11px', fontWeight: '900', color: 'var(--color-crimson)', background: 'var(--bg-header)', padding: '2px 8px', borderRadius: '6px' }}>{doseInG}g</span>
               </div>
 
-              {aiError && <div style={{ color: '#E53E3E', fontSize: '11px', fontWeight: 'bold', marginTop: '8px' }}>⚠️ {aiError}</div>}
+              {aiError && <div style={{ color: 'var(--barista-accent-danger-text, #E53E3E)', fontSize: '11px', fontWeight: 'bold', marginTop: '8px' }}>⚠️ {aiError}</div>}
 
               {aiRecommendation ? (
                 <div style={{ marginTop: '12px', padding: '12px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -2051,7 +2129,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                         padding: '7px 12px',
                         borderRadius: '10px',
                         backgroundColor: 'var(--barista-accent-honey-bg, #FEF3C7)',
-                        border: '1.5px solid #FDE68A',
+                        border: '1.5px solid var(--border-color)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
@@ -2775,8 +2853,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             
             {shareStatus && (
               <div style={{
-                background: shareStatus.includes('❌') ? '#FEE2E2' : '#ECFDF5',
-                color: shareStatus.includes('❌') ? '#991B1B' : '#065F46',
+                background: shareStatus.includes('❌') ? 'var(--barista-accent-danger-bg)' : 'var(--barista-accent-mint-bg)',
+                color: shareStatus.includes('❌') ? 'var(--barista-accent-danger-text)' : 'var(--barista-accent-mint-text)',
                 border: '1px solid var(--border-color)',
                 borderRadius: '8px',
                 padding: '6px 12px',

@@ -90,10 +90,19 @@ function extractClickDelta(rec, prevRec) {
 
   // 3. Computed from grind string between current and previous iteration
   if (prevRec && rec.grind && prevRec.grind) {
-    const currC = String(rec.grind).match(/(\d+)\s*(?:clics?|clicks?)/i);
-    const prevC = String(prevRec.grind).match(/(\d+)\s*(?:clics?|clicks?)/i);
-    if (currC && prevC) {
-      return parseInt(currC[1], 10) - parseInt(prevC[1], 10);
+    const getPrefix = (str) => {
+      const match = String(str).toLowerCase().match(/^(j-max|femobook|k-ultra|ode|comandante|kingrinder|timemore|baratza)/);
+      return match ? match[1] : null;
+    };
+    const prefixCurr = getPrefix(rec.grind);
+    const prefixPrev = getPrefix(prevRec.grind);
+
+    if (!prefixCurr || !prefixPrev || prefixCurr === prefixPrev) {
+      const currC = String(rec.grind).match(/(\d+)\s*(?:clics?|clicks?)/i);
+      const prevC = String(prevRec.grind).match(/(\d+)\s*(?:clics?|clicks?)/i);
+      if (currC && prevC) {
+        return parseInt(currC[1], 10) - parseInt(prevC[1], 10);
+      }
     }
   }
 
@@ -365,7 +374,8 @@ export default function DialInTimeline({
           const rawGrind = rec.grind ? String(rec.grind).trim() : '';
           const grinderShortName = grinderConfig?.shortName || 'Molino';
           let grindLabel = rawGrind || 'Molienda estándar';
-          if (rawGrind && !rawGrind.toLowerCase().includes(grinderShortName.toLowerCase())) {
+          const hasGrinderPrefix = rawGrind.includes(':') || /^(j-max|femobook|k-ultra|ode|comandante|kingrinder|timemore|baratza)/i.test(rawGrind);
+          if (rawGrind && !hasGrinderPrefix) {
             grindLabel = `${grinderShortName}: ${rawGrind}`;
           }
 

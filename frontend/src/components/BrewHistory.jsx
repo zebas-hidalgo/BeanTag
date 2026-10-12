@@ -4,6 +4,7 @@ import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw
 import { stripEmojis, RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeStickerImage } from '../utils/cardGenerator';
+import { parseGrindToMicrons } from '../utils/grinders';
 
 const getMethodLucideIcon = (methodName, size = 18) => {
   const m = (methodName || '').toLowerCase();
@@ -75,19 +76,6 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
     return () => { active = false; };
   }, []);
 
-  // J-Max microns calculator helper
-  const parseGrindToMicrons = (grindStr) => {
-    if (!grindStr || !grindStr.includes('J-Max:')) return null;
-    const parts = grindStr.replace('J-Max:', '').trim().split('.');
-    if (parts.length === 3) {
-      const rot = parseInt(parts[0]) || 0;
-      const num = parseInt(parts[1]) || 0;
-      const click = parseInt(parts[2]) || 0;
-      const totalClicks = (rot * 90) + (num * 10) + click;
-      return Math.round(totalClicks * 8.8); // 8.8 microns per click
-    }
-    return null;
-  };
 
   const dataURLtoBlob = (dataurl) => {
     const arr = dataurl.split(',');
@@ -331,7 +319,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
       if (showToast) showToast('Bitácora actualizada con éxito');
     } catch (err) {
       if (showToast) {
-        showToast(err.message, 'error');
+        showToast(err.message, { type: 'error' });
       } else {
         alert(err.message);
       }
