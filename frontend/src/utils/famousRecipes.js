@@ -1,5 +1,204 @@
 // --- BEANTAG FAMOUS BARISTA RECIPES & LEGENDARY TECHNIQUES ---
 
+/**
+ * Helper to calculate calibrated settings for all 8 supported grinders based on target microns (D50).
+ *
+ * @param {number} microns - Target median particle diameter in micrometers (D50)
+ * @param {boolean} isEspresso - Flag for espresso brewing method
+ * @param {boolean} isPulsar - Flag for NextLevel Pulsar no-bypass brewer
+ * @returns {Object} Complete calibrated settings for all 8 grinders:
+ *   - jmax: { rot, num, click, text }
+ *   - femobook: { clicks, text }
+ *   - k_ultra: { dial, clicks, text }
+ *   - ode_gen2: { dial, text }
+ *   - comandante: { clicks, text }
+ *   - kingrinder: { clicks, text }
+ *   - timemore: { clicks, text }
+ *   - baratza: { step, text }
+ */
+export function get8GrinderSettingsForMicrons(microns, isEspresso = false, isPulsar = false) {
+  let safeM = Math.max(180, Math.min(1300, Number(microns) || 720));
+  if (isPulsar && safeM < 740) {
+    safeM = 760; // Safeguard against clogging no-bypass filter
+  }
+
+  // 1. 1Zpresso J-Max (8.8 µm/click, 90 clicks/rot, 10 clicks/num)
+  let jmaxClicks;
+  if (safeM <= 320) {
+    jmaxClicks = Math.round(90 + ((safeM - 180) / 140) * 45);
+  } else if (safeM <= 620) {
+    jmaxClicks = Math.round(135 + ((safeM - 320) / 300) * 50);
+  } else if (safeM <= 780) {
+    jmaxClicks = Math.round(185 + ((safeM - 620) / 160) * 37);
+  } else {
+    jmaxClicks = Math.round(222 + ((safeM - 780) / 370) * 63);
+  }
+  const clampedJmax = Math.max(70, Math.min(330, jmaxClicks));
+  const jmaxRot = Math.floor(clampedJmax / 90);
+  const jmaxRem = clampedJmax % 90;
+  const jmaxNum = Math.floor(jmaxRem / 10);
+  const jmaxClick = jmaxRem % 10;
+  const jmax = {
+    rot: jmaxRot,
+    num: jmaxNum,
+    click: jmaxClick,
+    text: `${jmaxRot}.${jmaxNum}.${jmaxClick} (~${safeM} µm)`
+  };
+
+  // 2. Femobook A2 (18 µm/click, 40 clicks/rot)
+  let femoClicks;
+  if (safeM <= 320) {
+    femoClicks = Math.round(8 + ((safeM - 180) / 140) * 6);
+  } else if (safeM <= 620) {
+    femoClicks = Math.round(14 + ((safeM - 320) / 300) * 36);
+  } else if (safeM <= 780) {
+    femoClicks = Math.round(50 + ((safeM - 620) / 160) * 18);
+  } else {
+    femoClicks = Math.round(68 + ((safeM - 780) / 370) * 28);
+  }
+  const clampedFemo = Math.max(6, Math.min(120, femoClicks));
+  const femoRot = (clampedFemo / 40).toFixed(1);
+  const femobook = {
+    clicks: clampedFemo,
+    text: `${clampedFemo} clics (~${femoRot} Rot.)`
+  };
+
+  // 3. 1Zpresso K-Ultra (20 µm/click, dial 2.0 to 13.0)
+  let kDial;
+  if (safeM <= 320) {
+    kDial = 2.5 + ((safeM - 180) / 140) * 1.7;
+  } else if (safeM <= 620) {
+    kDial = 4.2 + ((safeM - 320) / 300) * 2.0;
+  } else if (safeM <= 780) {
+    kDial = 6.2 + ((safeM - 620) / 160) * 2.0;
+  } else {
+    kDial = 8.2 + ((safeM - 780) / 370) * 3.0;
+  }
+  const clampedKDial = Math.max(2.0, Math.min(13.0, kDial));
+  const roundedKDial = Math.round(clampedKDial * 10) / 10;
+  const kUltraClicks = Math.round(roundedKDial * 10);
+  const k_ultra = {
+    dial: roundedKDial,
+    clicks: kUltraClicks,
+    text: `${roundedKDial.toFixed(1)} (${kUltraClicks} clics)`
+  };
+
+  // 4. Fellow Ode Gen 2 (64mm Flat Burrs, 1.0 to 11.0, filter only)
+  let ode_gen2;
+  if (isEspresso || safeM < 450) {
+    ode_gen2 = {
+      dial: 'No apto para espresso',
+      text: 'No apto para espresso'
+    };
+  } else {
+    let odeVal;
+    if (safeM <= 620) {
+      odeVal = 1.1 + ((safeM - 450) / 170) * 1.5;
+    } else if (safeM <= 780) {
+      odeVal = 2.6 + ((safeM - 620) / 160) * 2.0;
+    } else {
+      odeVal = 4.6 + ((safeM - 780) / 370) * 4.0;
+    }
+    const clampedOde = Math.max(1.0, Math.min(11.0, odeVal));
+    const intPart = Math.floor(clampedOde);
+    const frac = clampedOde - intPart;
+    const sub = frac < 0.33 ? 0 : (frac < 0.66 ? 1 : 2);
+    const dialStr = `${intPart}.${sub}`;
+    ode_gen2 = {
+      dial: dialStr,
+      text: `Ajuste ${dialStr} (Muelas Planas 64mm)`
+    };
+  }
+
+  // 5. Comandante C40 MK3/MK4 (30 µm/click)
+  let comClicks;
+  if (safeM <= 320) {
+    comClicks = Math.round(8 + ((safeM - 180) / 140) * 5);
+  } else if (safeM <= 620) {
+    comClicks = Math.round(13 + ((safeM - 320) / 300) * 4);
+  } else if (safeM <= 780) {
+    comClicks = Math.round(17 + ((safeM - 620) / 160) * 8);
+  } else {
+    comClicks = Math.round(25 + ((safeM - 780) / 370) * 8);
+  }
+  const clampedCom = Math.max(6, Math.min(45, comClicks));
+  const comandante = {
+    clicks: clampedCom,
+    text: `${clampedCom} clics`
+  };
+
+  // 6. Kingrinder K6 (16 µm/click, 60 clicks/rot)
+  let kingClicks;
+  if (safeM <= 320) {
+    kingClicks = Math.round(18 + ((safeM - 180) / 140) * 20);
+  } else if (safeM <= 620) {
+    kingClicks = Math.round(38 + ((safeM - 320) / 300) * 36);
+  } else if (safeM <= 780) {
+    kingClicks = Math.round(74 + ((safeM - 620) / 160) * 28);
+  } else {
+    kingClicks = Math.round(102 + ((safeM - 780) / 370) * 40);
+  }
+  const clampedKing = Math.max(12, Math.min(180, kingClicks));
+  const kingRot = Math.floor(clampedKing / 60);
+  const kingRem = clampedKing % 60;
+  const kingrinder = {
+    clicks: clampedKing,
+    text: `${clampedKing} clics (${kingRot} Rot. ${kingRem} Clics)`
+  };
+
+  // 7. Timemore C2/C3 (S2C Burrs)
+  let timeClicks;
+  if (safeM <= 320) {
+    timeClicks = Math.round(7 + ((safeM - 180) / 140) * 2);
+  } else if (safeM <= 620) {
+    timeClicks = Math.round(9 + ((safeM - 320) / 300) * 5);
+  } else if (safeM <= 780) {
+    timeClicks = Math.round(14 + ((safeM - 620) / 160) * 5);
+  } else {
+    timeClicks = Math.round(19 + ((safeM - 780) / 370) * 7);
+  }
+  const clampedTime = Math.max(6, Math.min(34, timeClicks));
+  const timemore = {
+    clicks: clampedTime,
+    text: `${clampedTime} clics`
+  };
+
+  // 8. Baratza Encore / Encore ESP
+  let baratzaStep;
+  let baratzaText;
+  if (isEspresso || safeM <= 320) {
+    baratzaStep = Math.max(6, Math.min(16, Math.round(8 + ((safeM - 180) / 140) * 6)));
+    baratzaText = `ESP Ajuste ${baratzaStep} (Pasos micro 8-14)`;
+  } else {
+    let classicStep;
+    if (safeM <= 620) {
+      classicStep = Math.round(10 + ((safeM - 320) / 300) * 4);
+    } else if (safeM <= 780) {
+      classicStep = Math.round(14 + ((safeM - 620) / 160) * 4);
+    } else {
+      classicStep = Math.round(18 + ((safeM - 780) / 370) * 10);
+    }
+    baratzaStep = Math.max(8, Math.min(40, classicStep));
+    const espFilterStep = Math.min(40, baratzaStep + 10);
+    baratzaText = `Ajuste ${baratzaStep} (ESP: ${espFilterStep})`;
+  }
+  const baratza = {
+    step: baratzaStep,
+    text: baratzaText
+  };
+
+  return {
+    jmax,
+    femobook,
+    k_ultra,
+    ode_gen2,
+    comandante,
+    kingrinder,
+    timemore,
+    baratza
+  };
+}
+
 export const FAMOUS_RECIPES = [
   {
     id: 'tetsu-4-6',
@@ -16,6 +215,7 @@ export const FAMOUS_RECIPES = [
     grind: 'Gruesa (Tetsu 4:6)',
     grindMicrons: 950,
     grinderSettings: {
+      ...get8GrinderSettingsForMicrons(950),
       jmax: { rot: 2, num: 7, click: 0, text: '2.7.0 (~950 µm)' },
       femobook: { clicks: 81, text: '81 clics (~2.0 Rot.)' },
       comandante: { clicks: 29, text: '29 clics' }
@@ -54,6 +254,7 @@ export const FAMOUS_RECIPES = [
     grind: 'Medio-Fina (Hoffmann)',
     grindMicrons: 700,
     grinderSettings: {
+      ...get8GrinderSettingsForMicrons(700),
       jmax: { rot: 2, num: 2, click: 0, text: '2.2.0 (~700 µm)' },
       femobook: { clicks: 59, text: '59 clics (~1.5 Rot.)' },
       comandante: { clicks: 22, text: '22 clics' }
@@ -92,6 +293,7 @@ export const FAMOUS_RECIPES = [
     grind: 'Media (Osmotic Sweetness)',
     grindMicrons: 740,
     grinderSettings: {
+      ...get8GrinderSettingsForMicrons(740),
       jmax: { rot: 2, num: 3, click: 0, text: '2.3.0 (~740 µm)' },
       femobook: { clicks: 64, text: '64 clics (~1.6 Rot.)' },
       comandante: { clicks: 23, text: '23 clics' }
@@ -140,6 +342,7 @@ export const FAMOUS_RECIPES = [
     grind: 'Media (Lance Agitation)',
     grindMicrons: 720,
     grinderSettings: {
+      ...get8GrinderSettingsForMicrons(720),
       jmax: { rot: 2, num: 2, click: 5, text: '2.2.5 (~720 µm)' },
       femobook: { clicks: 61, text: '61 clics (~1.5 Rot.)' },
       comandante: { clicks: 22, text: '22 clics' }
@@ -177,6 +380,7 @@ export const FAMOUS_RECIPES = [
     grind: 'Espresso Grueso (Turbo Shot)',
     grindMicrons: 360,
     grinderSettings: {
+      ...get8GrinderSettingsForMicrons(360, true),
       jmax: { rot: 1, num: 4, click: 5, text: '1.4.5 (~360 µm)' },
       femobook: { clicks: 19, text: '19 clics (~360 µm)' },
       comandante: { clicks: 12, text: '12 clics' }
@@ -211,6 +415,7 @@ export const FAMOUS_RECIPES = [
     grind: 'Gruesa (AeroPress Inverted)',
     grindMicrons: 900,
     grinderSettings: {
+      ...get8GrinderSettingsForMicrons(900),
       jmax: { rot: 2, num: 6, click: 0, text: '2.6.0 (~900 µm)' },
       femobook: { clicks: 77, text: '77 clics (~1.9 Rot.)' },
       comandante: { clicks: 28, text: '28 clics' }
@@ -245,6 +450,7 @@ export const FAMOUS_RECIPES = [
     grind: 'Medio-Fina (AeroPress Go)',
     grindMicrons: 560,
     grinderSettings: {
+      ...get8GrinderSettingsForMicrons(560),
       jmax: { rot: 1, num: 8, click: 5, text: '1.8.5 (~560 µm)' },
       femobook: { clicks: 43, text: '43 clics (~1.1 Rot.)' },
       comandante: { clicks: 16, text: '16 clics' }
@@ -282,6 +488,7 @@ export const FAMOUS_RECIPES = [
     grind: 'Media No-Bypass (Rao)',
     grindMicrons: 800,
     grinderSettings: {
+      ...get8GrinderSettingsForMicrons(800, false, true),
       jmax: { rot: 2, num: 4, click: 5, text: '2.4.5 (~800 µm)' },
       femobook: { clicks: 70, text: '70 clics (~1.8 Rot.)' },
       comandante: { clicks: 25, text: '25 clics' }
@@ -346,6 +553,7 @@ export const FAMOUS_RECIPES = [
     grind: 'Media-Fina No-Bypass (Gagné)',
     grindMicrons: 780,
     grinderSettings: {
+      ...get8GrinderSettingsForMicrons(780, false, true),
       jmax: { rot: 2, num: 4, click: 0, text: '2.4.0 (~780 µm)' },
       femobook: { clicks: 68, text: '68 clics (~1.7 Rot.)' },
       comandante: { clicks: 24, text: '24 clics' }
@@ -409,6 +617,7 @@ export const FAMOUS_RECIPES = [
     grind: 'Media-Gruesa (Concentrado)',
     grindMicrons: 840,
     grinderSettings: {
+      ...get8GrinderSettingsForMicrons(840, false, true),
       jmax: { rot: 2, num: 5, click: 5, text: '2.5.5 (~840 µm)' },
       femobook: { clicks: 72, text: '72 clics (~1.8 Rot.)' },
       comandante: { clicks: 26, text: '26 clics' }
