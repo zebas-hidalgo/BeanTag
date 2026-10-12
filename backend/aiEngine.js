@@ -311,15 +311,17 @@ function normalizeRecipe(rawRec, targetMethod, dose, requestedGrinder = 'femoboo
   if (!rawRec) return null;
 
   const method = rawRec.method || targetMethod || 'V60 (Filtrado)';
-  const mLower = method.toLowerCase();
+  const mLower = String(method || '').toLowerCase();
   const isEspresso = mLower.includes('espresso');
   const isPulsar = mLower.includes('pulsar');
   const isGo = mLower.includes('go');
 
   const parsedDose = parseFloat(dose);
-  const doseNum = (Number.isFinite(parsedDose) && parsedDose > 0)
-    ? parsedDose
-    : (parseFloat(rawRec.dose_in_g) || (isEspresso ? 18.0 : (isGo ? 14.0 : 15.0)));
+  const rawDose = parseFloat(rawRec.dose_in_g);
+  const fallbackDose = (Number.isFinite(rawDose) && rawDose > 0)
+    ? rawDose
+    : (isEspresso ? 18.0 : (isGo ? 14.0 : 15.0));
+  const doseNum = (Number.isFinite(parsedDose) && parsedDose > 0) ? parsedDose : fallbackDose;
 
   // 1. Water and Ratio normalization
   let waterTotalG = parseInt(rawRec.water_total_g, 10);
@@ -339,7 +341,7 @@ function normalizeRecipe(rawRec, targetMethod, dose, requestedGrinder = 'femoboo
   }
 
   // 2. Pour Math balance
-  let pours = Array.isArray(rawRec.pours) ? [...rawRec.pours] : [];
+  let pours = Array.isArray(rawRec.pours) ? rawRec.pours.filter(p => p && typeof p === 'object') : [];
   if (pours.length === 0) {
     if (isEspresso) {
       const bloom = Math.round(doseNum * 0.5);
@@ -462,18 +464,20 @@ function normalizeRecipe(rawRec, targetMethod, dose, requestedGrinder = 'femoboo
     temp = isEspresso ? 92 : (isGo ? 90 : 93);
   }
 
-  const physicsAnalysis = rawRec.physics_analysis || {
-    roast_and_density: 'Desarrollo equilibrado de caramelización y solubilidad estándar.',
-    degas_and_rest: 'Ventana de degustación equilibrada.',
-    burr_and_fines: activeGrinderKey === 'ode_gen2'
-      ? 'Muelas planas 64mm: curva unimodal con finos mínimos. Claridad aromática sobresaliente y acidez brillante.'
-      : 'Muelas cónicas: distribución bimodal con pico de finos. Aporta cuerpo sedoso, dulzor denso y textura envolvente.',
-    extraction_strategy: isEspresso
-      ? 'Pre-infusión y rampa de presión controlada para extracción homogénea.'
-      : (isPulsar
-        ? 'Inmersión inicial con válvula cerrada y percolación pura no-bypass.'
-        : 'Vertidos calculados para dulzor y balance clásico.')
-  };
+  const physicsAnalysis = (rawRec.physics_analysis && typeof rawRec.physics_analysis === 'object')
+    ? rawRec.physics_analysis
+    : {
+        roast_and_density: 'Desarrollo equilibrado de caramelización y solubilidad estándar.',
+        degas_and_rest: 'Ventana de degustación equilibrada.',
+        burr_and_fines: activeGrinderKey === 'ode_gen2'
+          ? 'Muelas planas 64mm: curva unimodal con finos mínimos. Claridad aromática sobresaliente y acidez brillante.'
+          : 'Muelas cónicas: distribución bimodal con pico de finos. Aporta cuerpo sedoso, dulzor denso y textura envolvente.',
+        extraction_strategy: isEspresso
+          ? 'Pre-infusión y rampa de presión controlada para extracción homogénea.'
+          : (isPulsar
+            ? 'Inmersión inicial con válvula cerrada y percolación pura no-bypass.'
+            : 'Vertidos calculados para dulzor y balance clásico.')
+      };
 
   return {
     ...rawRec,

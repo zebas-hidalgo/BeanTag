@@ -789,12 +789,13 @@ app.post('/api/recommend-recipe', async (req, res) => {
 
   try {
     const recommendation = await callGeminiWithRetry(prompt, apiKey, model, enableThinking);
-    if (recommendation) {
-      recommendation.is_frozen = isFrozen;
-      recommendation.days_since_roast = daysSinceRoast;
-      recommendation._source = 'gemini_ai';
+    const recipeToNormalize = recommendation || computeOfflineRecipe(recipeParams);
+    if (recipeToNormalize) {
+      recipeToNormalize.is_frozen = isFrozen;
+      recipeToNormalize.days_since_roast = daysSinceRoast;
+      recipeToNormalize._source = recommendation ? 'gemini_ai' : 'barista_fallback';
     }
-    const normalized = normalizeRecipe(recommendation, targetMethod, dose, grinderType);
+    const normalized = normalizeRecipe(recipeToNormalize, targetMethod, dose, grinderType);
     return res.json(normalized);
   } catch (err) {
     console.warn(`[AI Recommend Fallback] Error with Gemini (${model}): ${err.message}. Serving deterministic barista recipe.`);
