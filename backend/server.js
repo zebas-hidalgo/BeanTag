@@ -43,7 +43,8 @@ const {
   computeOfflineRecipe,
   computeOfflineTuning,
   generateAiRecipePrompt,
-  callGeminiWithRetry
+  callGeminiWithRetry,
+  normalizeRecipe
 } = require('./aiEngine');
 
 const app = express();
@@ -751,7 +752,7 @@ app.post('/api/recommend-recipe', async (req, res) => {
   const batch_name = body.batch_name || batchData.name || 'Café de Especialidad';
   const targetMethod = body.method || 'V60 (Filtrado)';
   const dose = parseFloat(body.dose_in_g) || 20.0;
-  const activeGrinder = (body.grinder || batchData.grinder || 'jmax').toLowerCase();
+  const grinderType = (body.grinder || batchData.grinder || 'femobook').toLowerCase();
 
   const daysSinceRoast = calculateDaysSinceRoast(roast_date);
   const isFrozen = isFrozenBatch({ freeze_date });
@@ -770,7 +771,7 @@ app.post('/api/recommend-recipe', async (req, res) => {
     sca_score,
     method: targetMethod,
     dose_in_g: dose,
-    grinder: activeGrinder
+    grinder: grinderType
   };
 
   // If no API key is provided, gracefully serve the deterministic offline barista calculation
@@ -780,7 +781,8 @@ app.post('/api/recommend-recipe', async (req, res) => {
     offlineRec.days_since_roast = daysSinceRoast;
     offlineRec._source = 'barista_fallback';
     offlineRec.notes = `${offlineRec.notes} (Modo Barista Offline - Configura tu API Key en Ajustes para activar Gemini)`;
-    return res.json(offlineRec);
+    const normalized = normalizeRecipe(offlineRec, targetMethod, dose, grinderType);
+    return res.json(normalized);
   }
 
   const prompt = generateAiRecipePrompt(recipeParams);
@@ -788,18 +790,12 @@ app.post('/api/recommend-recipe', async (req, res) => {
   try {
     const recommendation = await callGeminiWithRetry(prompt, apiKey, model, enableThinking);
     if (recommendation) {
-      if (typeof recommendation.temperature === 'string') {
-        recommendation.temperature = parseInt(recommendation.temperature.replace(/[^\d]/g, ''), 10) || 93;
-      }
-      if (!recommendation.water_total_g) {
-        const ratioNum = parseFloat(String(recommendation.ratio || '').replace('1:', '')) || 16.0;
-        recommendation.water_total_g = Math.round(dose * ratioNum);
-      }
       recommendation.is_frozen = isFrozen;
       recommendation.days_since_roast = daysSinceRoast;
       recommendation._source = 'gemini_ai';
     }
-    return res.json(recommendation);
+    const normalized = normalizeRecipe(recommendation, targetMethod, dose, grinderType);
+    return res.json(normalized);
   } catch (err) {
     console.warn(`[AI Recommend Fallback] Error with Gemini (${model}): ${err.message}. Serving deterministic barista recipe.`);
     const fallbackRec = computeOfflineRecipe(recipeParams);
@@ -809,7 +805,8 @@ app.post('/api/recommend-recipe', async (req, res) => {
     fallbackRec._gemini_error = err.message;
     fallbackRec._error = err.message;
     fallbackRec.notes = `${fallbackRec.notes} (Receta calculada localmente: servidores de Google no disponibles o saturados)`;
-    return res.json(fallbackRec);
+    const normalized = normalizeRecipe(fallbackRec, targetMethod, dose, grinderType);
+    return res.json(fallbackRec ? normalized : fallbackRec);
   }
 });
 

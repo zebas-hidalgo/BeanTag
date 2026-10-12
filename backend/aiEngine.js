@@ -303,6 +303,196 @@ function micronsToBaratza(microns, isEspresso = false) {
 }
 
 /**
+ * BeanTag v4 Unified Recipe Normalization & Physical Consistency Engine
+ * Ensures mathematical pour balance, physical particle size limits,
+ * 8-grinder calibration, and equipment safety across AI and fallback recipes.
+ */
+function normalizeRecipe(rawRec, targetMethod, dose, requestedGrinder = 'femobook') {
+  if (!rawRec) return null;
+
+  const method = rawRec.method || targetMethod || 'V60 (Filtrado)';
+  const mLower = method.toLowerCase();
+  const isEspresso = mLower.includes('espresso');
+  const isPulsar = mLower.includes('pulsar');
+  const isGo = mLower.includes('go');
+
+  const parsedDose = parseFloat(dose);
+  const doseNum = (Number.isFinite(parsedDose) && parsedDose > 0)
+    ? parsedDose
+    : (parseFloat(rawRec.dose_in_g) || (isEspresso ? 18.0 : (isGo ? 14.0 : 15.0)));
+
+  // 1. Water and Ratio normalization
+  let waterTotalG = parseInt(rawRec.water_total_g, 10);
+  if (!Number.isFinite(waterTotalG) || waterTotalG <= 0) {
+    const ratioNum = parseFloat(String(rawRec.ratio || '').replace('1:', '')) || (isEspresso ? 2.2 : (isPulsar ? 16.2 : (isGo ? 14.3 : 16.0)));
+    waterTotalG = Math.round(doseNum * ratioNum);
+  }
+
+  // AeroPress Go compact chamber limit (max 215g)
+  if (isGo && waterTotalG > 215) {
+    waterTotalG = 210;
+  }
+
+  let ratioStr = rawRec.ratio;
+  if (!ratioStr || (isGo && waterTotalG === 210)) {
+    ratioStr = `1:${(waterTotalG / doseNum).toFixed(1)}`;
+  }
+
+  // 2. Pour Math balance
+  let pours = Array.isArray(rawRec.pours) ? [...rawRec.pours] : [];
+  if (pours.length === 0) {
+    if (isEspresso) {
+      const bloom = Math.round(doseNum * 0.5);
+      pours = [
+        { step: 1, label: 'Pre-infusión Espresso', water_g: bloom, time: '0s - 6s', description: 'Pre-infusión suave a 2-3 bar para saturar homogéneamente la pastilla.' },
+        { step: 2, label: 'Extracción Principal', water_g: Math.max(0, waterTotalG - bloom), time: '6s - 30s', description: 'Rampa de presión constante hasta alcanzar el rendimiento objetivo.' }
+      ];
+    } else if (isPulsar) {
+      const bloom = Math.round(doseNum * 3);
+      const rem = Math.max(0, waterTotalG - bloom);
+      const pulse1 = Math.round(rem * 0.5);
+      pours = [
+        { step: 1, title: 'Bloom e Inmersión (🔒 Válvula CERRADA)', label: 'Bloom e Inmersión (🔒 Válvula CERRADA)', valve: 'closed', water_g: bloom, time: '0:00 - 0:45', description: 'Verter agua a través de la tapa de dispersión con válvula cerrada.' },
+        { step: 2, title: '1º Vertido Percolación (⚡ Válvula 45-50% de flujo)', label: '1º Vertido Percolación (⚡ Válvula 45-50% de flujo)', valve: 'half', water_g: pulse1, time: '0:45 - 1:45', description: 'Abrir válvula al 45-50% de flujo (~2-2.5 ml/s) manteniendo columna de agua.' },
+        { step: 3, title: '2º Vertido y Caída Final (🔓 Válvula 100% ABIERTA)', label: '2º Vertido y Caída Final (🔓 Válvula 100% ABIERTA)', valve: 'open', water_g: Math.max(0, rem - pulse1), time: '1:45 - 3:30', description: 'Verter el resto y abrir válvula al 100% para una caída final limpia.' }
+      ];
+    } else {
+      const bloom = Math.min(65, Math.round(doseNum * 3));
+      const rem = Math.max(0, waterTotalG - bloom);
+      const pulse1 = Math.round(rem * 0.55);
+      pours = [
+        { step: 1, label: 'Bloom / Pre-infusión', water_g: bloom, time: '0:00 - 0:45', description: 'Verter en espiral suave asegurando humectación completa.' },
+        { step: 2, label: '1º Vertido Principal', water_g: pulse1, time: '0:45 - 1:35', description: 'Vertido continuo y concéntrico sin tocar las paredes de papel.' },
+        { step: 3, label: '2º Vertido Final', water_g: Math.max(0, rem - pulse1), time: '1:35 - 2:45', description: 'Vertido de asentamiento. Ligero swirl al final para aplanar la cama.' }
+      ];
+    }
+  }
+
+  let runningWater = 0;
+  pours = pours.map((p, idx) => {
+    let stepW = Math.round(parseFloat(p.water_g || p.water) || 0);
+    if (idx === pours.length - 1) {
+      stepW = Math.max(0, waterTotalG - runningWater);
+    } else if (runningWater + stepW > waterTotalG) {
+      stepW = Math.max(0, waterTotalG - runningWater);
+    }
+    runningWater += stepW;
+
+    let valve = p.valve;
+    if (isPulsar) {
+      valve = idx === 0 ? 'closed' : (idx === 1 ? 'half' : 'open');
+    }
+
+    return {
+      ...p,
+      step: p.step || idx + 1,
+      water_g: stepW,
+      total_water_g: runningWater,
+      ...(isPulsar ? { valve } : (valve !== undefined ? { valve } : {}))
+    };
+  });
+
+  // 3. Extract and enforce physical microns
+  let microns = parseInt(rawRec.grind_microns, 10);
+  if (!Number.isFinite(microns) || microns <= 0) {
+    microns = isEspresso ? 260 : (isPulsar ? 780 : (isGo ? 580 : 720));
+  }
+  if (isPulsar && microns < 740) {
+    microns = 760; // Prevent filter choking
+  }
+
+  // 4. Calibrate all 8 grinders
+  const jmaxObj = micronsToJMax(microns);
+  const finalFemobook = micronsToFemobook(microns);
+  const finalKUltra = micronsToKUltra(microns);
+  const odeVal = micronsToOdeGen2(microns, isPulsar);
+  const odeDisplay = (isEspresso || odeVal === 'No apto para espresso')
+    ? 'No apto para espresso'
+    : (odeVal.startsWith('Ajuste') ? odeVal : `Ajuste ${odeVal} (Muelas Planas 64mm)`);
+  const finalComandante = micronsToComandante(microns);
+  const finalKingrinder = micronsToKingrinder(microns);
+  const finalTimemore = micronsToTimemore(microns);
+  const finalBaratza = micronsToBaratza(microns, isEspresso);
+
+  const grinders = {
+    femobook_a2: finalFemobook,
+    jmax: `${jmaxObj.display} (${jmaxObj.rot} Rot. ${jmaxObj.num} Núm. ${jmaxObj.click} Clics)`,
+    k_ultra: finalKUltra,
+    ode_gen2: odeDisplay,
+    comandante: finalComandante,
+    kingrinder_k6: finalKingrinder,
+    timemore: finalTimemore,
+    baratza: finalBaratza
+  };
+
+  const reqG = String(requestedGrinder || rawRec.active_grinder_dial?.grinder_id || 'femobook').toLowerCase();
+  const activeGrinderKey = reqG.includes('femo') ? 'femobook_a2'
+    : (reqG.includes('k_ultra') || reqG.includes('k-ultra') || reqG.includes('kmax') ? 'k_ultra'
+    : (reqG.includes('ode') ? 'ode_gen2'
+    : (reqG.includes('comandante') || reqG.includes('c40') ? 'comandante'
+    : (reqG.includes('king') || reqG.includes('k6') ? 'kingrinder_k6'
+    : (reqG.includes('time') || reqG.includes('c2') || reqG.includes('c3') ? 'timemore'
+    : (reqG.includes('baratza') || reqG.includes('encore') || reqG.includes('esp') ? 'baratza' : 'jmax'))))));
+
+  const grinderMeta = {
+    jmax: { name: '1Zpresso J-Max', burr: 'Cónica 48mm Titanio (Bimodal)' },
+    k_ultra: { name: '1Zpresso K-Ultra', burr: 'Cónica 48mm Heptagonal (Bimodal Balanceado)' },
+    ode_gen2: { name: 'Fellow Ode Gen 2', burr: 'Plana 64mm Gen 2 (Unimodal Alta Claridad)' },
+    comandante: { name: 'Comandante C40 MK4', burr: 'Cónica 39mm Nitro Blade' },
+    femobook_a2: { name: 'Femobook A2', burr: 'Cónica 40mm' },
+    kingrinder_k6: { name: 'Kingrinder K6', burr: 'Cónica 48mm Heptagonal' },
+    timemore: { name: 'Timemore C2/C3', burr: 'Cónica 38mm' },
+    baratza: { name: 'Baratza Encore / ESP', burr: 'Cónica 40mm M2' }
+  };
+
+  const activeGrinderDial = {
+    grinder_id: activeGrinderKey,
+    grinder_name: grinderMeta[activeGrinderKey]?.name || 'Femobook A2',
+    dial: grinders[activeGrinderKey] || grinders.femobook_a2,
+    dial_text: grinders[activeGrinderKey] || grinders.femobook_a2,
+    burr_type: grinderMeta[activeGrinderKey]?.burr || 'Cónica de Especialidad',
+    microns: `${microns} µm`
+  };
+
+  let temp = rawRec.temperature;
+  if (typeof temp === 'string') {
+    temp = parseInt(temp.replace(/[^\d]/g, ''), 10);
+  }
+  if (!Number.isFinite(temp) || temp <= 0) {
+    temp = isEspresso ? 92 : (isGo ? 90 : 93);
+  }
+
+  const physicsAnalysis = rawRec.physics_analysis || {
+    roast_and_density: 'Desarrollo equilibrado de caramelización y solubilidad estándar.',
+    degas_and_rest: 'Ventana de degustación equilibrada.',
+    burr_and_fines: activeGrinderKey === 'ode_gen2'
+      ? 'Muelas planas 64mm: curva unimodal con finos mínimos. Claridad aromática sobresaliente y acidez brillante.'
+      : 'Muelas cónicas: distribución bimodal con pico de finos. Aporta cuerpo sedoso, dulzor denso y textura envolvente.',
+    extraction_strategy: isEspresso
+      ? 'Pre-infusión y rampa de presión controlada para extracción homogénea.'
+      : (isPulsar
+        ? 'Inmersión inicial con válvula cerrada y percolación pura no-bypass.'
+        : 'Vertidos calculados para dulzor y balance clásico.')
+  };
+
+  return {
+    ...rawRec,
+    method,
+    ratio: ratioStr,
+    water_total_g: waterTotalG,
+    temperature: temp,
+    grind_microns: `${microns} µm`,
+    pours,
+    grinders,
+    active_grinder_dial: activeGrinderDial,
+    physics_analysis: physicsAnalysis,
+    jmax_rot: jmaxObj.rot,
+    jmax_num: jmaxObj.num,
+    jmax_click: jmaxObj.click
+  };
+}
+
+/**
  * Deterministic Barista Extraction Physics Engine
  * Computes an optimal recipe based on coffee bean terroir, process, roast level, and brew method.
  */
@@ -762,7 +952,7 @@ function computeOfflineRecipe(batch) {
     frozen_dosing: isFrozen
   };
 
-  return {
+  const rawRec = {
     method,
     ratio: ratioStr,
     water_total_g: totalWaterG,
@@ -784,6 +974,8 @@ function computeOfflineRecipe(batch) {
     notes: `Receta calibrada por motor de extracción BeanTag: ${reasonText}`,
     _source: 'barista_fallback'
   };
+
+  return normalizeRecipe(rawRec, method, dose, activeGrinderRaw);
 }
 
 /**
@@ -1254,5 +1446,6 @@ module.exports = {
   micronsToBaratza,
   computeOfflineRecipe,
   computeOfflineTuning,
-  callGeminiWithRetry
+  callGeminiWithRetry,
+  normalizeRecipe
 };
