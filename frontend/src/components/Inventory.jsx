@@ -44,8 +44,9 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
     const name = batch.name || '';
     const producer = batch.producer || '';
     const origin = batch.origin || '';
+    const roaster = batch.roaster || '';
     const q = (searchQuery || '').toLowerCase();
-    return name.toLowerCase().includes(q) || producer.toLowerCase().includes(q) || origin.toLowerCase().includes(q);
+    return name.toLowerCase().includes(q) || producer.toLowerCase().includes(q) || origin.toLowerCase().includes(q) || roaster.toLowerCase().includes(q);
   });
 
   const handleOpenMenuShare = async (template = menuShareTemplate) => {
@@ -359,17 +360,39 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
               {/* Top Row: Name & Quick Action */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <h3 style={{ 
-                    margin: '0 0 3px 0', 
-                    fontFamily: 'var(--font-heading)', 
-                    fontSize: '16.5px', 
-                    fontWeight: '600', 
-                    lineHeight: 1.25,
-                    color: 'var(--color-text)',
-                    wordBreak: 'break-word'
-                  }}>
-                    {batch.name}
-                  </h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '3px' }}>
+                    <h3 style={{ 
+                      margin: 0, 
+                      fontFamily: 'var(--font-heading)', 
+                      fontSize: '16.5px', 
+                      fontWeight: '700', 
+                      lineHeight: 1.25,
+                      color: 'var(--color-text)',
+                      wordBreak: 'break-word'
+                    }}>
+                      {batch.name}
+                    </h3>
+                    {batch.roaster && (
+                      <span
+                        style={{
+                          fontSize: '10.5px',
+                          fontWeight: '800',
+                          padding: '2px 8px',
+                          borderRadius: '6px',
+                          backgroundColor: 'var(--barista-accent-honey-bg, #FEF3C7)',
+                          color: 'var(--barista-accent-honey-text, #92400E)',
+                          border: '1px solid #FDE68A',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        <Flame size={10} color="#D97706" />
+                        {batch.roaster}
+                      </span>
+                    )}
+                  </div>
                   <p style={{ 
                     margin: 0, 
                     fontSize: '12px', 
