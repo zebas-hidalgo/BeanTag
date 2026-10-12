@@ -22,7 +22,9 @@ import {
   Timer,
   FastForward,
   Droplet,
-  Trophy
+  Trophy,
+  Mic,
+  MicOff
 } from 'lucide-react';
 import {
   playCountdownBeep,
@@ -30,7 +32,10 @@ import {
   playSuccessChime,
   requestScreenWakeLock,
   releaseScreenWakeLock,
-  getAudioContext
+  getAudioContext,
+  speakBaristaGuidance,
+  cancelSpeech,
+  primeSpeechSynthesis
 } from '../utils/baristaAudio.js';
 import { computeSensoryCorrection } from '../utils/sensoryTuner.js';
 import { getGrinderConfig } from '../utils/grinders.js';
@@ -234,6 +239,29 @@ export default function BrewGuideModal({
   // Navigation & View Mode
   const [viewMode, setViewMode] = useState('timer'); // 'timer' | 'diagnostic'
   const [isMuted, setIsMuted] = useState(false);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(() => {
+    try {
+      return typeof localStorage !== 'undefined' ? localStorage.getItem('beantag-voice-enabled') !== 'false' : true;
+    } catch (_) {
+      return true;
+    }
+  });
+
+  const handleToggleVoice = useCallback(() => {
+    setIsVoiceEnabled(prev => {
+      const nextVal = !prev;
+      try {
+        localStorage.setItem('beantag-voice-enabled', String(nextVal));
+      } catch (_) {}
+      if (!nextVal) {
+        cancelSpeech();
+      } else {
+        primeSpeechSynthesis();
+        speakBaristaGuidance('Voz del barista activada.');
+      }
+      return nextVal;
+    });
+  }, []);
 
   // Timer State
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -283,6 +311,43 @@ export default function BrewGuideModal({
     const pourDuration = Math.max(10, Math.min(currentStage.duration, Math.round(currentStage.duration * 0.55)));
     return (currentStage.water_g / pourDuration).toFixed(1);
   }, [currentStage]);
+
+  // Dynamic Real-time Voice Coach instruction generator
+  const getStageSpeechText = useCallback((stageIndex, stage) => {
+    if (!stage) return '';
+    const m = (recipe?.method || '').toLowerCase();
+    const isPulsar = m.includes('pulsar');
+    const isAero = m.includes('aero');
+    const isEspresso = m.includes('espresso');
+
+    if (stageIndex === 0) {
+      if (isPulsar) {
+        return `Iniciando extracción. Válvula de control cerrada. Vierte ${stage.water_g} gramos en el dispersor para el bloom.`;
+      }
+      if (isAero) {
+        return `Iniciando preparación. Vierte ${stage.water_g} gramos para pre-infusión y satura homogéneamente.`;
+      }
+      if (isEspresso) {
+        return `Iniciando pre-infusión suave a baja presión.`;
+      }
+      return `Iniciando extracción. Vierte ${stage.water_g} gramos en espiral suave para el bloom.`;
+    }
+
+    if (isPulsar) {
+      if (stage.valve === 'half') {
+        return `Etapa ${stage.step}: abre la válvula al cincuenta por ciento. Vierte ${stage.water_g} gramos hasta alcanzar ${stage.total_water_g} gramos.`;
+      }
+      if (stage.valve === 'open') {
+        return `Etapa ${stage.step}: abre la válvula por completo. Caída final y drenaje libre.`;
+      }
+    }
+
+    if (stage.water_g <= 0) {
+      return `Etapa ${stage.step}: ${stage.label || 'Caída final'}. Deja drenar libremente la columna de agua hasta formar cama plana.`;
+    }
+
+    return `Etapa ${stage.step}: ${stage.label || 'Vertido'}. Vierte ${stage.water_g} gramos hasta llegar a ${stage.total_water_g} gramos.`;
+  }, [recipe]);
 
   // Grinder resolution for sensory tuner
   const activeGrinderId = useMemo(() => {
@@ -422,7 +487,12 @@ export default function BrewGuideModal({
       if (currentElapsed >= totalBrewDuration) {
         setElapsedSeconds(totalBrewDuration);
         setIsActive(false);
-        if (!isMuted) playSuccessChime();
+        if (!isMuted) {
+          playSuccessChime();
+          if (isVoiceEnabled) {
+            speakBaristaGuidance('Extracción finalizada. Buen provecho con tu café.');
+          }
+        }
         setViewMode('diagnostic');
         clearInterval(interval);
         return;
@@ -432,7 +502,7 @@ export default function BrewGuideModal({
     }, 250);
 
     return () => clearInterval(interval);
-  }, [isActive, isOpen, totalBrewDuration, isMuted]);
+  }, [isActive, isOpen, totalBrewDuration, isMuted, isVoiceEnabled]);
 
   // 4. Audio: 3-2-1 Countdown Beeps
   useEffect(() => {
@@ -450,7 +520,7 @@ export default function BrewGuideModal({
     }
   }, [stageRemainingSec, isActive, isMuted]);
 
-  // 5. Audio: Stage Transition Chime
+  // 5. Audio & Voice: Stage Transition
   useEffect(() => {
     if (!isActive) {
       prevStageIndexRef.current = currentStageIndex;
@@ -460,48 +530,74 @@ export default function BrewGuideModal({
     if (currentStageIndex > prevStageIndexRef.current) {
       if (!isMuted) {
         playPhaseChime();
+        if (isVoiceEnabled && stages[currentStageIndex]) {
+          speakBaristaGuidance(getStageSpeechText(currentStageIndex, stages[currentStageIndex]));
+        }
       }
       lastBeepSecRef.current = null;
     }
     prevStageIndexRef.current = currentStageIndex;
-  }, [currentStageIndex, isActive, isMuted]);
+  }, [currentStageIndex, isActive, isMuted, isVoiceEnabled, stages, getStageSpeechText]);
 
   // Handler: Start / Resume / Pause
   const handleTogglePlay = useCallback(() => {
     getAudioContext(); // Prime Web Audio context on user gesture
+    primeSpeechSynthesis(); // Prime Web Speech API on user gesture
     if (isActive) {
       setIsActive(false);
+      cancelSpeech();
     } else {
       setIsActive(true);
+      if (elapsedSeconds < 1 && !isMuted && isVoiceEnabled && stages[0]) {
+        speakBaristaGuidance(getStageSpeechText(0, stages[0]));
+      }
     }
-  }, [isActive]);
+  }, [isActive, elapsedSeconds, isMuted, isVoiceEnabled, stages, getStageSpeechText]);
 
   // Handler: Skip forward to next stage
   const handleNextStage = useCallback(() => {
     if (currentStageIndex < stages.length - 1) {
-      const nextStage = stages[currentStageIndex + 1];
+      const nextIdx = currentStageIndex + 1;
+      const nextStage = stages[nextIdx];
       setElapsedSeconds(nextStage.startSec);
       baseElapsedRef.current = nextStage.startSec;
       startTimestampRef.current = Date.now();
       lastBeepSecRef.current = null;
-      if (!isMuted) playPhaseChime();
+      if (!isMuted) {
+        playPhaseChime();
+        if (isVoiceEnabled) {
+          speakBaristaGuidance(getStageSpeechText(nextIdx, nextStage));
+        }
+      }
     } else {
       setIsActive(false);
-      if (!isMuted) playSuccessChime();
+      if (!isMuted) {
+        playSuccessChime();
+        if (isVoiceEnabled) {
+          speakBaristaGuidance('Extracción finalizada. Buen provecho con tu café.');
+        }
+      }
       setViewMode('diagnostic');
     }
-  }, [currentStageIndex, stages, isMuted]);
+  }, [currentStageIndex, stages, isMuted, isVoiceEnabled, getStageSpeechText]);
 
   // Handler: Terminate extraction immediately
   const handleFinishExtraction = useCallback(() => {
     setIsActive(false);
-    if (!isMuted) playSuccessChime();
+    cancelSpeech();
+    if (!isMuted) {
+      playSuccessChime();
+      if (isVoiceEnabled) {
+        speakBaristaGuidance('Extracción completada. Evaluando resultados en bitácora.');
+      }
+    }
     setViewMode('diagnostic');
-  }, [isMuted]);
+  }, [isMuted, isVoiceEnabled]);
 
   // Handler: Reset Timer
   const handleResetTimer = useCallback(() => {
     setIsActive(false);
+    cancelSpeech();
     setElapsedSeconds(0);
     baseElapsedRef.current = 0;
     startTimestampRef.current = null;
@@ -511,6 +607,7 @@ export default function BrewGuideModal({
 
   // Handler: Safe Close
   const handleCloseModal = useCallback(() => {
+    cancelSpeech();
     if (isActive) {
       if (typeof window !== 'undefined' && window.confirm('¿Deseas salir del asistente de extracción? El tiempo en curso se perderá.')) {
         setIsActive(false);
@@ -656,6 +753,32 @@ export default function BrewGuideModal({
 
         {/* Right Header Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Voice Coach Toggle */}
+          <button
+            type="button"
+            onClick={handleToggleVoice}
+            aria-label={isVoiceEnabled ? 'Desactivar voz del barista' : 'Activar voz del barista'}
+            title={isVoiceEnabled ? 'Guía de voz en tiempo real: Activada' : 'Guía de voz en tiempo real: Silenciada'}
+            style={{
+              background: isVoiceEnabled ? 'var(--barista-accent-mint-bg, #D1FAE5)' : 'var(--barista-bg-subtle, rgba(118, 118, 128, 0.12))',
+              border: isVoiceEnabled ? '1px solid var(--barista-accent-mint-text, #059669)' : '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
+              color: isVoiceEnabled ? 'var(--barista-accent-mint-text, #065F46)' : 'var(--color-text-muted, #8E8E93)',
+              borderRadius: '8px',
+              padding: '8px 10px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '12px',
+              fontWeight: 700,
+              minHeight: '36px',
+              transition: 'all 150ms ease'
+            }}
+          >
+            {isVoiceEnabled ? <Mic size={16} /> : <MicOff size={16} />}
+            <span>{isVoiceEnabled ? 'Voz' : 'Mudo'}</span>
+          </button>
+
           {/* Mute Toggle */}
           <button
             type="button"
@@ -775,6 +898,52 @@ export default function BrewGuideModal({
               >
                 <Clock size={14} />
                 <span>Meta Total: {formatTime(totalBrewDuration)}</span>
+              </div>
+            </div>
+
+            {/* Live Voice Coach Guidance Banner */}
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                backgroundColor: isVoiceEnabled ? 'var(--barista-accent-mint-bg, rgba(16, 185, 129, 0.12))' : 'var(--barista-bg-subtle, rgba(118, 118, 128, 0.08))',
+                border: isVoiceEnabled ? '1.5px solid var(--barista-accent-mint-text, #10B981)' : '1px dashed var(--border-color, rgba(60, 60, 67, 0.18))',
+                borderRadius: '14px',
+                padding: '12px 16px',
+                marginBottom: '16px',
+                boxSizing: 'border-box',
+                transition: 'all 200ms ease',
+                boxShadow: isVoiceEnabled ? '0 2px 8px rgba(16, 185, 129, 0.12)' : 'none'
+              }}
+            >
+              <div style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '10px',
+                backgroundColor: isVoiceEnabled ? 'var(--barista-accent-mint-text, #059669)' : 'var(--barista-bg-subtle, rgba(118, 118, 128, 0.2))',
+                color: '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                {isVoiceEnabled ? <Mic size={18} /> : <MicOff size={18} />}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontSize: '10px',
+                  textTransform: 'uppercase',
+                  fontWeight: 800,
+                  letterSpacing: '0.06em',
+                  color: isVoiceEnabled ? 'var(--barista-accent-mint-text, #065F46)' : 'var(--color-text-muted)'
+                }}>
+                  {isVoiceEnabled ? '🗣️ Asistente de Voz del Barista' : 'Voz Silenciada (Pulsa el botón superior para activar)'}
+                </div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text)', lineHeight: 1.4, marginTop: '2px' }}>
+                  {getStageSpeechText(currentStageIndex, currentStage)}
+                </div>
               </div>
             </div>
 

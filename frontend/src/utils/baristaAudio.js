@@ -181,6 +181,84 @@ export async function releaseScreenWakeLock(sentinel) {
   }
 }
 
+/**
+ * Real-Time Barista Voice Coach
+ * Uses Web Speech Synthesis API to speak instructions clearly in Spanish.
+ */
+let cachedVoices = [];
+
+if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+  try {
+    const updateVoices = () => {
+      try {
+        cachedVoices = window.speechSynthesis.getVoices() || [];
+      } catch (_) {}
+    };
+    updateVoices();
+    window.speechSynthesis.onvoiceschanged = updateVoices;
+  } catch (_) {}
+}
+
+/**
+ * Speaks barista guidance instructions in real time.
+ * @param {string} text Message to speak
+ * @param {object} [options] Voice options (rate, pitch, volume)
+ */
+export function speakBaristaGuidance(text, options = {}) {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  if (!text || typeof text !== 'string') return;
+
+  try {
+    const synth = window.speechSynthesis;
+    synth.cancel(); // Stop any pending speech to maintain tight synchronization
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = options.rate || 1.04; // Natural brisk barista pace
+    utterance.pitch = options.pitch || 1.0;
+    utterance.volume = options.volume !== undefined ? options.volume : 1.0;
+    utterance.lang = 'es-ES';
+
+    const voices = cachedVoices.length ? cachedVoices : (synth.getVoices ? synth.getVoices() : []);
+    if (voices.length > 0) {
+      // Find best natural Spanish voice
+      const esVoice = voices.find(v => 
+        (v.lang.startsWith('es') || v.lang.includes('ES') || v.lang.includes('MX') || v.lang.includes('US')) &&
+        (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Paulina') || v.name.includes('Jorge') || v.name.includes('Mónica') || v.name.includes('Siri'))
+      ) || voices.find(v => v.lang.startsWith('es')) || null;
+
+      if (esVoice) {
+        utterance.voice = esVoice;
+      }
+    }
+
+    synth.speak(utterance);
+  } catch (err) {
+    console.warn('speakBaristaGuidance error:', err);
+  }
+}
+
+/**
+ * Cancels any active or scheduled speech synthesis immediately.
+ */
+export function cancelSpeech() {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+  } catch (_) {}
+}
+
+/**
+ * Primes speech synthesis on user gesture to bypass mobile browser restrictions.
+ */
+export function primeSpeechSynthesis() {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  try {
+    const synth = window.speechSynthesis;
+    if (synth.paused) synth.resume();
+    cachedVoices = synth.getVoices() || [];
+  } catch (_) {}
+}
+
 export default {
   getAudioContext,
   playBeep,
@@ -189,4 +267,7 @@ export default {
   playSuccessChime,
   requestScreenWakeLock,
   releaseScreenWakeLock,
+  speakBaristaGuidance,
+  cancelSpeech,
+  primeSpeechSynthesis,
 };
