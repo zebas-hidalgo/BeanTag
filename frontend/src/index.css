@@ -78,12 +78,14 @@
   --barista-instr-bg: #FFFBEB;
   --barista-instr-border: #FDE68A;
   --barista-instr-text: #92400E;
-  --barista-accent-honey-bg: #FEF3C7;
-  --barista-accent-honey-text: #92400E;
   --barista-accent-mint-bg: #D1FAE5;
   --barista-accent-mint-text: #065F46;
+  --barista-accent-honey-bg: #FEF3C7;
+  --barista-accent-honey-text: #92400E;
   --barista-accent-danger-bg: #FEE2E2;
   --barista-accent-danger-text: #991B1B;
+  --barista-accent-cryo-bg: #E0F2FE;
+  --barista-accent-cryo-text: #0369A1;
 }
 
 /* 🌑 True OLED Pure Dark Mode (#000000 Pitch Black / Neutral Charcoal - No Muddy Blue) */
@@ -122,6 +124,14 @@
     --barista-instr-bg: rgba(217, 119, 6, 0.1);
     --barista-instr-border: rgba(217, 119, 6, 0.25);
     --barista-instr-text: #F59E0B;
+    --barista-accent-mint-bg: rgba(16, 185, 129, 0.18) !important;
+    --barista-accent-mint-text: #34D399 !important;
+    --barista-accent-honey-bg: rgba(245, 158, 11, 0.18) !important;
+    --barista-accent-honey-text: #FBBF24 !important;
+    --barista-accent-danger-bg: rgba(239, 68, 68, 0.18) !important;
+    --barista-accent-danger-text: #F87171 !important;
+    --barista-accent-cryo-bg: rgba(56, 189, 248, 0.18) !important;
+    --barista-accent-cryo-text: #38BDF8 !important;
   }
 }
 
@@ -159,6 +169,14 @@
   --barista-instr-bg: rgba(217, 119, 6, 0.1) !important;
   --barista-instr-border: rgba(217, 119, 6, 0.25) !important;
   --barista-instr-text: #F59E0B !important;
+  --barista-accent-mint-bg: rgba(16, 185, 129, 0.18) !important;
+  --barista-accent-mint-text: #34D399 !important;
+  --barista-accent-honey-bg: rgba(245, 158, 11, 0.18) !important;
+  --barista-accent-honey-text: #FBBF24 !important;
+  --barista-accent-danger-bg: rgba(239, 68, 68, 0.18) !important;
+  --barista-accent-danger-text: #F87171 !important;
+  --barista-accent-cryo-bg: rgba(56, 189, 248, 0.18) !important;
+  --barista-accent-cryo-text: #38BDF8 !important;
 }
 
 /* Genjutsu & Cupertino Motion Principles */
@@ -193,9 +211,19 @@
   --bg-card: #FFFFFF;
   --bg-header: rgba(245, 244, 240, 0.85);
   --color-crimson: #BC5449;
-  --border-color: rgba(60, 60, 67, 0.12);
+  --border-color: rgba(60, 60, 67, 0.14);
   --color-text: #1C1917;
-  --color-text-muted: #78716C;
+  --color-text-muted: #57534E;
+  --color-surface: var(--bg-card);
+  --color-border: var(--border-color);
+  --barista-accent-mint-bg: #E6F4EA;
+  --barista-accent-mint-text: #064E3B;
+  --barista-accent-honey-bg: #FEF3C7;
+  --barista-accent-honey-text: #78350F;
+  --barista-accent-danger-bg: #FEE2E2;
+  --barista-accent-danger-text: #7F1D1D;
+  --barista-accent-cryo-bg: #E0F2FE;
+  --barista-accent-cryo-text: #0C4A6E;
 }
 
 [data-theme="matcha"] {
@@ -203,9 +231,19 @@
   --bg-card: #FFFFFF;
   --bg-header: rgba(242, 245, 243, 0.85);
   --color-crimson: #059669;
-  --border-color: rgba(5, 150, 105, 0.15);
+  --border-color: rgba(5, 150, 105, 0.18);
   --color-text: #064E3B;
-  --color-text-muted: #047857;
+  --color-text-muted: #065F46;
+  --color-surface: var(--bg-card);
+  --color-border: var(--border-color);
+  --barista-accent-mint-bg: #DCFCE7;
+  --barista-accent-mint-text: #064E3B;
+  --barista-accent-honey-bg: #FEF3C7;
+  --barista-accent-honey-text: #78350F;
+  --barista-accent-danger-bg: #FEE2E2;
+  --barista-accent-danger-text: #7F1D1D;
+  --barista-accent-cryo-bg: #E0F2FE;
+  --barista-accent-cryo-text: #0C4A6E;
 }
 
 [data-theme="cyber"] {
@@ -213,9 +251,19 @@
   --bg-card: #FFFFFF;
   --bg-header: rgba(240, 244, 248, 0.85);
   --color-crimson: #2563EB;
-  --border-color: rgba(37, 99, 235, 0.15);
+  --border-color: rgba(37, 99, 235, 0.18);
   --color-text: #1E3A8A;
   --color-text-muted: #1E40AF;
+  --color-surface: var(--bg-card);
+  --color-border: var(--border-color);
+  --barista-accent-mint-bg: #D1FAE5;
+  --barista-accent-mint-text: #064E3B;
+  --barista-accent-honey-bg: #FEF3C7;
+  --barista-accent-honey-text: #78350F;
+  --barista-accent-danger-bg: #FEE2E2;
+  --barista-accent-danger-text: #7F1D1D;
+  --barista-accent-cryo-bg: #DBEAFE;
+  --barista-accent-cryo-text: #1E3A8A;
 }
 
 [data-theme="sakura"] {
@@ -223,9 +271,19 @@
   --bg-card: #FFFFFF;
   --bg-header: rgba(249, 243, 246, 0.85);
   --color-crimson: #DB2777;
-  --border-color: rgba(219, 39, 119, 0.15);
+  --border-color: rgba(219, 39, 119, 0.18);
   --color-text: #831843;
-  --color-text-muted: #9D174D;
+  --color-text-muted: #831843;
+  --color-surface: var(--bg-card);
+  --color-border: var(--border-color);
+  --barista-accent-mint-bg: #D1FAE5;
+  --barista-accent-mint-text: #064E3B;
+  --barista-accent-honey-bg: #FEF3C7;
+  --barista-accent-honey-text: #78350F;
+  --barista-accent-danger-bg: #FCE7F3;
+  --barista-accent-danger-text: #831843;
+  --barista-accent-cryo-bg: #E0F2FE;
+  --barista-accent-cryo-text: #0C4A6E;
 }
 
 [data-theme="caramel"] {
@@ -233,9 +291,19 @@
   --bg-card: #FFFFFF;
   --bg-header: rgba(247, 244, 236, 0.85);
   --color-crimson: #D97706;
-  --border-color: rgba(217, 119, 6, 0.15);
+  --border-color: rgba(217, 119, 6, 0.18);
   --color-text: #78350F;
-  --color-text-muted: #92400E;
+  --color-text-muted: #78350F;
+  --color-surface: var(--bg-card);
+  --color-border: var(--border-color);
+  --barista-accent-mint-bg: #D1FAE5;
+  --barista-accent-mint-text: #064E3B;
+  --barista-accent-honey-bg: #FEF3C7;
+  --barista-accent-honey-text: #78350F;
+  --barista-accent-danger-bg: #FEE2E2;
+  --barista-accent-danger-text: #7F1D1D;
+  --barista-accent-cryo-bg: #E0F2FE;
+  --barista-accent-cryo-text: #0C4A6E;
 }
 
 [data-theme="frost"] {
@@ -243,9 +311,19 @@
   --bg-card: #FFFFFF;
   --bg-header: rgba(237, 244, 249, 0.85);
   --color-crimson: #0284C7;
-  --border-color: rgba(2, 132, 199, 0.15);
+  --border-color: rgba(2, 132, 199, 0.18);
   --color-text: #0C4A6E;
-  --color-text-muted: #0369A1;
+  --color-text-muted: #0C4A6E;
+  --color-surface: var(--bg-card);
+  --color-border: var(--border-color);
+  --barista-accent-mint-bg: #D1FAE5;
+  --barista-accent-mint-text: #064E3B;
+  --barista-accent-honey-bg: #FEF3C7;
+  --barista-accent-honey-text: #78350F;
+  --barista-accent-danger-bg: #FEE2E2;
+  --barista-accent-danger-text: #7F1D1D;
+  --barista-accent-cryo-bg: #E0F2FE;
+  --barista-accent-cryo-text: #0C4A6E;
 }
 
 /* 🛡️ Global Box-Sizing & Viewport Anchoring (Eliminates Lateral Wobble & Ghost Space) */
@@ -2033,27 +2111,27 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .roast-freshness-badge.freshness-degassing {
-  background-color: #E0F2FE;
-  color: #0369A1;
-  border-color: #0284C7;
+  background-color: var(--barista-accent-cryo-bg, #E0F2FE);
+  color: var(--barista-accent-cryo-text, #0369A1);
+  border-color: var(--barista-accent-cryo, #0284C7);
 }
 
 .roast-freshness-badge.freshness-peak {
-  background-color: #DCFCE7;
-  color: #15803D;
-  border-color: #16A34A;
+  background-color: var(--barista-accent-mint-bg, #DCFCE7);
+  color: var(--barista-accent-mint-text, #15803D);
+  border-color: var(--barista-accent-mint, #16A34A);
 }
 
 .roast-freshness-badge.freshness-frozen {
-  background-color: #E0F7FA;
-  color: #00838F;
-  border-color: #00ACC1;
+  background-color: var(--barista-accent-cryo-bg, #E0F7FA);
+  color: var(--barista-accent-cryo-text, #00838F);
+  border-color: var(--barista-accent-cryo, #00ACC1);
 }
 
 .roast-freshness-badge.freshness-madure {
-  background-color: #FEF3C7;
-  color: #B45309;
-  border-color: #D97706;
+  background-color: var(--barista-accent-honey-bg, #FEF3C7);
+  color: var(--barista-accent-honey-text, #B45309);
+  border-color: var(--barista-accent-honey, #D97706);
 }
 
 /* 4. Rotary J-Max Grinder Dial Widget */
