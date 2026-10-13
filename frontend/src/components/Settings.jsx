@@ -163,6 +163,11 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         })
       });
 
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${res.status}`);
+      }
+
       const data = await res.json();
       if (data.error) {
         if (showToast) showToast(`Error del sommelier: ${data.error}`, { type: 'error', duration: 4000 });
@@ -411,7 +416,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         {/* Sommelier Recommendation Card */}
         {sommelierResult && (
           <div className="candy-card animate-entrance" style={{ 
-            background: '#FFFFFF', 
+            background: 'var(--bg-card, #FFFFFF)', 
             border: '1px solid var(--color-crimson)', 
             padding: '14px', 
             marginTop: '12px',
