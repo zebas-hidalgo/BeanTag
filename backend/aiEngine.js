@@ -1265,6 +1265,7 @@ function computeOfflineSommelier(batches = [], timeOfDay = 'mañana') {
     reason,
     suggested_method: suggestedMethod,
     flavor_highlight: flavorHighlight,
+    flavor_focus: flavorHighlight,
     _source: 'barista_fallback'
   };
 }

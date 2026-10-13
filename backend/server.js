@@ -1304,6 +1304,18 @@ app.post('/api/ai/sommelier', async (req, res) => {
   // If no API key is provided, serve deterministic offline sommelier directly
   if (!apiKey) {
     const fallbackResult = computeOfflineSommelier(batches, timeOfDay);
+    if (!fallbackResult) {
+      return res.json({
+        recommended_batch_id: null,
+        headline: 'Sin dosis disponibles',
+        reason: 'Todos los lotes en tu inventario tienen 0 dosis restantes.',
+        badge: 'Sin dosis',
+        suggested_method: 'N/A',
+        flavor_highlight: 'Repón tus dosis para recibir sugerencias',
+        flavor_focus: 'Repón tus dosis para recibir sugerencias',
+        _source: 'barista_fallback'
+      });
+    }
     return res.json(fallbackResult);
   }
 
@@ -1344,6 +1356,20 @@ Selecciona el mejor lote para preparar ahora mismo y genera un JSON con esta est
   } catch (err) {
     console.warn(`[AI Sommelier Fallback] Error with Gemini (${model}): ${err.message}. Serving deterministic sommelier fallback.`);
     const fallbackResult = computeOfflineSommelier(batches, timeOfDay);
+    if (!fallbackResult) {
+      return res.json({
+        recommended_batch_id: null,
+        headline: 'Sin dosis disponibles',
+        reason: 'Todos los lotes en tu inventario tienen 0 dosis restantes.',
+        badge: 'Sin dosis',
+        suggested_method: 'N/A',
+        flavor_highlight: 'Repón tus dosis para recibir sugerencias',
+        flavor_focus: 'Repón tus dosis para recibir sugerencias',
+        _source: 'barista_fallback',
+        _error: err.message
+      });
+    }
+    fallbackResult._error = err.message;
     return res.json(fallbackResult);
   }
 });
