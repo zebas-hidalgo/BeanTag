@@ -1106,6 +1106,170 @@ function computeOfflineTuning(data) {
 }
 
 /**
+ * Deterministic Offline Sommelier Engine
+ * Recommends optimal coffee batch from user inventory based on time of day,
+ * roast rest kinetics, bean process, stock availability, and terroir profile.
+ */
+function computeOfflineSommelier(batches = [], timeOfDay = 'mañana') {
+  if (!batches || !Array.isArray(batches) || batches.length === 0) {
+    return null;
+  }
+
+  // Strictly filter batches with positive stock (remaining_doses > 0)
+  const availableBatches = batches.filter(b => {
+    if (!b) return false;
+    const doses = parseFloat(b.remaining_doses);
+    return Number.isFinite(doses) && doses > 0;
+  });
+
+  if (availableBatches.length === 0) {
+    return null;
+  }
+
+  const tod = String(timeOfDay || 'mañana').toLowerCase().trim();
+  const isMorning = tod.includes('mañana') || tod.includes('morning') || tod.includes('dia') || tod.includes('despertar');
+  const isNight = tod.includes('noche') || tod.includes('evening') || tod.includes('night') || tod.includes('cena');
+  const isAfternoon = !isMorning && !isNight;
+
+  const scored = availableBatches.map(b => {
+    const daysSinceRoast = calculateDaysSinceRoast(b.roast_date);
+    const isFrozen = isFrozenBatch(b);
+    const name = String(b.name || '').toLowerCase();
+    const roasterNotes = String(b.roaster_notes || b.notes || '').toLowerCase();
+    const process = String(b.process || '').toLowerCase();
+    const roast = String(b.roast_level || '').toLowerCase();
+    const variety = String(b.variety || '').toLowerCase();
+
+    let score = 0;
+
+    // Time-of-day preferences
+    if (isMorning) {
+      // Mañana: prefiere lavados, balance, tueste medio
+      if (process.includes('lavad') || process.includes('wash')) score += 10;
+      if (roast.includes('medio') || roast.includes('medium')) score += 8;
+      if (roasterNotes.includes('balance') || roasterNotes.includes('caramel') || roasterNotes.includes('chocolate') || roasterNotes.includes('dulce') || roasterNotes.includes('nuez')) score += 5;
+      if (process.includes('anaerob')) score -= 3;
+      if (roast.includes('oscuro')) score -= 2;
+    } else if (isAfternoon) {
+      // Tarde: prefiere alta acidez, tueste claro, florales, anaeróbicos frutales
+      if (roast.includes('claro') || roast.includes('light')) score += 8;
+      if (roasterNotes.includes('acidez') || roasterNotes.includes('floral') || roasterNotes.includes('jazm') || roasterNotes.includes('cítric') || roasterNotes.includes('citric') || variety.includes('geisha') || variety.includes('gesha')) score += 8;
+      if (process.includes('anaerob') || process.includes('macer') || process.includes('natural') || process.includes('honey') || roasterNotes.includes('frut')) score += 10;
+    } else if (isNight) {
+      // Noche: cafés suaves o tuestes ligeros/descafeinados
+      if (name.includes('decaf') || name.includes('descafein') || variety.includes('decaf') || roasterNotes.includes('descafein') || process.includes('descafein')) {
+        score += 25;
+      }
+      if (roasterNotes.includes('suave') || roasterNotes.includes('delicado') || roasterNotes.includes('miel') || roasterNotes.includes('té') || roasterNotes.includes('te') || roast.includes('claro') || roast.includes('ligero')) {
+        score += 8;
+      }
+      if (roast.includes('oscuro') || roast.includes('dark')) score -= 10;
+    }
+
+    // Freshness & rest peak window bonus
+    if (daysSinceRoast !== null) {
+      if (daysSinceRoast >= 10 && daysSinceRoast <= 30) {
+        score += 4; // Peak flavor window
+      } else if (daysSinceRoast >= 7 && daysSinceRoast < 10) {
+        score += 2;
+      } else if (daysSinceRoast < 7) {
+        score -= 1; // Still degassing
+      } else if (daysSinceRoast > 45) {
+        score -= 2;
+      }
+    }
+
+    // Cryo-storage cellar bonus
+    if (isFrozen) {
+      score += 2;
+    }
+
+    // SCA score bonus
+    if (b.sca_score) {
+      const sca = parseFloat(b.sca_score);
+      if (Number.isFinite(sca) && sca >= 85) {
+        score += (sca - 85);
+      }
+    }
+
+    return { batch: b, score, daysSinceRoast, isFrozen };
+  });
+
+  // Sort descending by score, tie-break deterministically by remaining_doses and id
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    const dosesA = parseFloat(a.batch.remaining_doses) || 0;
+    const dosesB = parseFloat(b.batch.remaining_doses) || 0;
+    if (dosesB !== dosesA) return dosesB - dosesA;
+    return String(a.batch.id).localeCompare(String(b.batch.id));
+  });
+
+  const winner = scored[0];
+  const b = winner.batch;
+  const days = winner.daysSinceRoast;
+
+  // Badge formulation
+  let badge = 'Selección Barista';
+  if (days !== null && days >= 7 && days <= 35) {
+    badge = `En Pico de Sabor / Día ${days}`;
+  } else if (winner.isFrozen) {
+    badge = 'Cava Criogénica -18°C';
+  } else if (isMorning) {
+    badge = 'Despertar Balanceado';
+  } else if (isAfternoon) {
+    badge = 'Explosión Aromática';
+  } else if (isNight) {
+    badge = 'Taza Serena Nocturna';
+  }
+
+  // Headline formulation
+  let headline = 'Taza recomendada para tu momento';
+  if (isMorning) {
+    headline = 'Cuerpo balanceado y dulzor para iniciar el día';
+  } else if (isAfternoon) {
+    headline = 'Perfil vibrante con acidez brillante y notas exóticas';
+  } else if (isNight) {
+    headline = 'Extracción suave y reconfortante para la noche';
+  }
+
+  // Reason formulation
+  let reason = '';
+  if (isMorning) {
+    reason = `${b.name} ofrece un proceso ${b.process || 'lavado'} equilibrado con tueste ${b.roast_level || 'medio'}, ideal para un inicio de jornada limpio, reconfortante y de dulzor persistente.`;
+  } else if (isAfternoon) {
+    reason = `${b.name} despliega acidez vivaz y perfil aromático ${b.process || 'frutal/floral'}, perfecto para revitalizar la tarde con alta definición de matices.`;
+  } else if (isNight) {
+    reason = `${b.name} brinda una extracción sedosa, balanceada y ligera, ideal para disfrutar una taza de alta calidad sin alterar tu descanso nocturno.`;
+  }
+
+  // Suggested method
+  let suggestedMethod = b.method || 'V60 (Filtrado)';
+  if (!b.method) {
+    if (isMorning) {
+      suggestedMethod = 'V60 (Filtrado)';
+    } else if (isAfternoon) {
+      const proc = String(b.process || '').toLowerCase();
+      suggestedMethod = proc.includes('anaerob') ? 'NextLevel Pulsar Mini' : 'V60 (Filtrado)';
+    } else if (isNight) {
+      suggestedMethod = 'AeroPress';
+    }
+  }
+
+  const flavorHighlight = b.roaster_notes || (String(b.process || '').toLowerCase().includes('lavad') ? 'Caramelo, chocolate con leche y acidez dulce' : 'Frutas rojas maduras y flores blancas');
+
+  return {
+    recommended_batch_id: b.id,
+    recommended_batch_name: b.name,
+    badge,
+    headline,
+    reason,
+    suggested_method: suggestedMethod,
+    flavor_highlight: flavorHighlight,
+    _source: 'barista_fallback'
+  };
+}
+
+/**
  * Master Barista System Prompt & Recalibrated Extraction Directives
  * Injects unified SCA D50 extraction physics, 8-grinder manufacturer dials,
  * and 3-phase valve protocol for NextLevel Pulsar Mini.
@@ -1359,12 +1523,20 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
 
     // Up to 2 attempts per model (1 initial + 1 retry on 503/429)
     for (let attempt = 1; attempt <= 2; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, 4000);
+
       try {
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: payload
+          body: payload,
+          signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         if (response.ok) {
           const data = await response.json();
@@ -1413,6 +1585,12 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
         lastError = new Error(errMsg);
         break; // break retry loop to try next model in cascade
       } catch (networkErr) {
+        clearTimeout(timeoutId);
+        if (networkErr.name === 'AbortError' || controller.signal.aborted) {
+          console.warn(`[Gemini Timeout] Request for ${currentModel} timed out after 4000ms. Aborting and continuing cascade...`);
+          lastError = new Error(`Timeout de 4000ms excedido para ${currentModel}`);
+          break; // break retry loop to try next model in cascade
+        }
         if (networkErr.status === 400 || networkErr.status === 401 || networkErr.status === 403) {
           throw networkErr;
         }
@@ -1450,6 +1628,7 @@ module.exports = {
   micronsToBaratza,
   computeOfflineRecipe,
   computeOfflineTuning,
+  computeOfflineSommelier,
   callGeminiWithRetry,
   normalizeRecipe
 };

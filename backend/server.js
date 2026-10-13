@@ -42,6 +42,7 @@ const {
   isFrozenBatch,
   computeOfflineRecipe,
   computeOfflineTuning,
+  computeOfflineSommelier,
   generateAiRecipePrompt,
   callGeminiWithRetry,
   normalizeRecipe
@@ -1294,13 +1295,16 @@ Devuelve OBLIGATORIAMENTE un JSON estructurado con estas claves:
 // 4. AI Inventory Sommelier Endpoint (Recommends Peak Coffee from Freezer Tubes)
 app.post('/api/ai/sommelier', async (req, res) => {
   const { apiKey, model, enableThinking } = getGeminiConfig(req);
-  if (!apiKey) {
-    return res.status(400).json({ error: 'Falta la clave API de Gemini en las cabeceras' });
-  }
+  const { batches, timeOfDay = 'mañana' } = req.body || {};
 
-  const { batches, timeOfDay = 'mañana' } = req.body;
   if (!batches || !Array.isArray(batches) || batches.length === 0) {
     return res.status(400).json({ error: 'No hay lotes disponibles en el inventario para evaluar' });
+  }
+
+  // If no API key is provided, serve deterministic offline sommelier directly
+  if (!apiKey) {
+    const fallbackResult = computeOfflineSommelier(batches, timeOfDay);
+    return res.json(fallbackResult);
   }
 
   const prompt = `Eres el Sommelier de Café de Especialidad personal de BeanTag.
@@ -1336,10 +1340,11 @@ Selecciona el mejor lote para preparar ahora mismo y genera un JSON con esta est
 
   try {
     const sommelierResult = await callGeminiWithRetry(prompt, apiKey, model, enableThinking);
-    res.json(sommelierResult);
+    return res.json(sommelierResult);
   } catch (err) {
-    console.warn(`[AI Sommelier Failed] ${err.message}`);
-    res.status(err.status || 500).json({ error: 'Error en el sommelier IA: ' + err.message });
+    console.warn(`[AI Sommelier Fallback] Error with Gemini (${model}): ${err.message}. Serving deterministic sommelier fallback.`);
+    const fallbackResult = computeOfflineSommelier(batches, timeOfDay);
+    return res.json(fallbackResult);
   }
 });
 
