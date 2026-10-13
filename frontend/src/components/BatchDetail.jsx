@@ -282,8 +282,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [aiError, setAiError] = useState('');
 
   const handleAiRecommend = () => {
-    const apiKey = localStorage.getItem('gemini-api-key') || '';
-    const model = localStorage.getItem('gemini-model') || 'gemini-3.8-flash';
+    const aiProvider = localStorage.getItem('beantag-ai-provider') || 'groq';
+    const groqKey = localStorage.getItem('groq-key') || '';
+    const groqModel = localStorage.getItem('groq-model') || 'llama-3.3-70b-versatile';
+    const geminiKey = localStorage.getItem('gemini-api-key') || '';
+    const geminiModel = localStorage.getItem('gemini-model') || 'gemini-3.8-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
     setAiLoading(true);
@@ -291,13 +294,14 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     setAiRecommendation(null);
 
     const headers = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'x-ai-provider': aiProvider,
+      'x-groq-key': groqKey,
+      'x-gemini-key': geminiKey,
+      'x-ai-model': aiProvider === 'groq' ? groqModel : geminiModel,
+      'x-gemini-model': geminiModel,
+      'x-gemini-thinking': isThinking ? 'true' : 'false'
     };
-    if (apiKey) {
-      headers['x-gemini-key'] = apiKey;
-      headers['x-gemini-model'] = model;
-      headers['x-gemini-thinking'] = isThinking ? 'true' : 'false';
-    }
 
     fetch(apiUrl('api/recommend-recipe'), {
       method: 'POST',
@@ -332,8 +336,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         if (showToast) {
           showToast('⚡ Receta calculada con Motor Barista Físico (sin depender de internet)', { type: 'success', duration: 4500 });
         }
+      } else if (data._source === 'groq') {
+        if (showToast) showToast('¡Recomendación multivariable generada por Groq AI (Llama 3.3)! ⚡', { type: 'success', duration: 3000 });
       } else {
-        if (showToast) showToast('¡Recomendación multivariable generada por Gemini AI!', { type: 'success', duration: 2500 });
+        if (showToast) showToast('¡Recomendación multivariable generada por Gemini AI! 🧠', { type: 'success', duration: 2500 });
       }
     })
     .catch(err => {

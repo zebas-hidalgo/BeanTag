@@ -274,8 +274,11 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
   const [pendingScanFile, setPendingScanFile] = useState(null);
 
   const handleTriggerScan = () => {
-    const apiKey = localStorage.getItem('gemini-api-key');
-    if (!apiKey) {
+    const aiProvider = localStorage.getItem('beantag-ai-provider') || 'groq';
+    const groqKey = localStorage.getItem('groq-key') || '';
+    const geminiKey = localStorage.getItem('gemini-api-key') || '';
+    const activeKey = aiProvider === 'groq' ? groqKey : geminiKey;
+    if (!activeKey) {
       setShowApiKeyModal(true);
       return;
     }
@@ -285,18 +288,21 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
   };
 
   const processBagScan = async (file, currentApiKey) => {
-    const apiKey = currentApiKey || localStorage.getItem('gemini-api-key');
-    if (!apiKey) {
+    const aiProvider = localStorage.getItem('beantag-ai-provider') || 'groq';
+    const groqKey = (aiProvider === 'groq' && currentApiKey) ? currentApiKey : (localStorage.getItem('groq-key') || '');
+    const geminiKey = (aiProvider === 'gemini' && currentApiKey) ? currentApiKey : (localStorage.getItem('gemini-api-key') || '');
+    const activeKey = aiProvider === 'groq' ? groqKey : geminiKey;
+    if (!activeKey) {
       setPendingScanFile(file);
       setShowApiKeyModal(true);
       return;
     }
 
-    const model = localStorage.getItem('gemini-model') || 'gemini-2.0-flash';
+    const geminiModel = localStorage.getItem('gemini-model') || 'gemini-3.8-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
     setIsScanning(true);
-    if (showToast) showToast('Optimizando imagen y analizando bolsa con Gemini Vision...', { type: 'info', duration: 3000 });
+    if (showToast) showToast(`Optimizando imagen y analizando bolsa con ${aiProvider === 'groq' ? 'Groq Vision (Llama 3.2)' : 'Gemini Vision'}...`, { type: 'info', duration: 3000 });
 
     try {
       // 1. High-speed client-side canvas compression (~250KB JPEG, keeping text razor sharp)
@@ -307,8 +313,11 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-gemini-key': apiKey,
-          'x-gemini-model': model,
+          'x-ai-provider': aiProvider,
+          'x-groq-key': groqKey,
+          'x-gemini-key': geminiKey,
+          'x-ai-model': aiProvider === 'groq' ? 'llama-3.2-11b-vision-preview' : geminiModel,
+          'x-gemini-model': geminiModel,
           'x-gemini-thinking': isThinking ? 'true' : 'false'
         },
         body: JSON.stringify({
@@ -324,7 +333,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
         return;
       }
 
-      // Autopopulate fields from Gemini Vision
+      // Autopopulate fields from Vision AI
       if (data.name) setName(data.name);
       if (data.producer) setProducer(data.producer);
       if (data.origin) setOrigin(data.origin);
@@ -354,14 +363,17 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const apiKey = localStorage.getItem('gemini-api-key');
-    if (!apiKey) {
+    const aiProvider = localStorage.getItem('beantag-ai-provider') || 'groq';
+    const groqKey = localStorage.getItem('groq-key') || '';
+    const geminiKey = localStorage.getItem('gemini-api-key') || '';
+    const activeKey = aiProvider === 'groq' ? groqKey : geminiKey;
+    if (!activeKey) {
       setPendingScanFile(file);
       setShowApiKeyModal(true);
       return;
     }
 
-    await processBagScan(file, apiKey);
+    await processBagScan(file, activeKey);
   };
 
   const copyUrl = () => {
@@ -460,7 +472,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                 Identidad del Café
               </h4>
               <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
-                Gemini Vision OCR
+                {(localStorage.getItem('beantag-ai-provider') || 'groq') === 'groq' ? 'Groq Vision OCR' : 'Gemini Vision OCR'}
               </span>
             </div>
             <div className="form-group">
@@ -781,113 +793,138 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
         </div>
       )}
 
-      {/* Modal para configurar la API Key de Gemini en sitio */}
-      {showApiKeyModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.72)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          padding: '16px'
-        }}>
-          <div className="candy-card static" style={{
-            maxWidth: '440px',
-            width: '100%',
-            padding: '24px',
-            backgroundColor: 'var(--bg-card)',
-            border: '2px solid var(--border-color)',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.35)',
-            position: 'relative'
+      {/* Modal para configurar la API Key de Groq o Gemini en sitio */}
+      {showApiKeyModal && (() => {
+        const aiProvider = localStorage.getItem('beantag-ai-provider') || 'groq';
+        return (
+          <div style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.72)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '16px'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-              <div style={{
-                width: '36px', height: '36px', borderRadius: '10px',
-                background: 'var(--bg-header)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                border: '1.5px solid var(--border-color)'
-              }}>
-                <Key size={20} color="var(--color-crimson)" />
+            <div className="candy-card static" style={{
+              maxWidth: '440px',
+              width: '100%',
+              padding: '24px',
+              backgroundColor: 'var(--bg-card)',
+              border: '2px solid var(--border-color)',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.35)',
+              position: 'relative'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <div style={{
+                  width: '36px', height: '36px', borderRadius: '10px',
+                  background: 'var(--bg-header)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: '1.5px solid var(--border-color)'
+                }}>
+                  <Key size={20} color="var(--color-crimson)" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '15px', fontFamily: 'var(--font-heading)', textTransform: 'uppercase' }}>
+                    {aiProvider === 'groq' ? 'Configurar API Key de Groq' : 'Configurar API Key de Gemini'}
+                  </h3>
+                  <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                    {aiProvider === 'groq' ? 'Groq Cloud • Visión OCR (Llama 3.2)' : 'Google AI Studio • Visión OCR Multimodal'}
+                  </span>
+                </div>
               </div>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '15px', fontFamily: 'var(--font-heading)', textTransform: 'uppercase' }}>
-                  Clave API de Gemini
-                </h3>
-                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                  Google AI Studio • Visión OCR Multimodal
-                </span>
+
+              <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', lineHeight: 1.45, margin: '0 0 14px 0' }}>
+                Para que la IA reconozca automáticamente la bolsa de café, varietal, proceso y notas SCA a partir de una foto, introduce tu clave API gratuita.
+              </p>
+
+              <div style={{ marginBottom: '14px' }}>
+                <label className="barista-label" style={{ marginBottom: '6px' }}>
+                  {aiProvider === 'groq' ? 'Clave API de Groq (gsk_...)' : 'Clave API de Gemini (AIzaSy...)'}
+                </label>
+                <input 
+                  type="password"
+                  className="candy-input"
+                  autoFocus
+                  value={tempApiKey}
+                  onChange={(e) => setTempApiKey(e.target.value)}
+                  placeholder={aiProvider === 'groq' ? 'gsk_...' : 'AIzaSy...'}
+                  style={{ width: '100%', boxSizing: 'border-box', fontFamily: 'var(--font-mono)', fontSize: '13px' }}
+                />
+                {aiProvider === 'groq' ? (
+                  <div style={{ marginTop: '6px', fontSize: '10px', color: 'var(--color-text-muted)' }}>
+                    💡 Puedes obtener tu clave gratis en{' '}
+                    <a 
+                      href="https://console.groq.com/keys" 
+                      target="_blank" 
+                      rel="noreferrer"
+                      style={{ color: 'var(--color-crimson)', fontWeight: 'bold', textDecoration: 'underline' }}
+                    >
+                      console.groq.com
+                    </a>
+                  </div>
+                ) : (
+                  <div style={{ marginTop: '6px', fontSize: '10px', color: 'var(--color-text-muted)' }}>
+                    💡 Puedes obtener tu clave gratis en{' '}
+                    <a 
+                      href="https://aistudio.google.com/app/apikey" 
+                      target="_blank" 
+                      rel="noreferrer"
+                      style={{ color: 'var(--color-crimson)', fontWeight: 'bold', textDecoration: 'underline' }}
+                    >
+                      aistudio.google.com
+                    </a>
+                  </div>
+                )}
               </div>
-            </div>
 
-            <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', lineHeight: 1.45, margin: '0 0 14px 0' }}>
-              Para que la IA reconozca automáticamente la bolsa de café, varietal, proceso y notas SCA a partir de una foto, introduce tu clave API gratuita.
-            </p>
-
-            <div style={{ marginBottom: '14px' }}>
-              <label className="barista-label" style={{ marginBottom: '6px' }}>Clave API (AIzaSy...)</label>
-              <input 
-                type="password"
-                className="candy-input"
-                autoFocus
-                value={tempApiKey}
-                onChange={(e) => setTempApiKey(e.target.value)}
-                placeholder="AIzaSy..."
-                style={{ width: '100%', boxSizing: 'border-box', fontFamily: 'var(--font-mono)', fontSize: '13px' }}
-              />
-              <div style={{ marginTop: '6px', fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                💡 Puedes obtener tu clave gratis en{' '}
-                <a 
-                  href="https://aistudio.google.com/app/apikey" 
-                  target="_blank" 
-                  rel="noreferrer"
-                  style={{ color: 'var(--color-crimson)', fontWeight: 'bold', textDecoration: 'underline' }}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <button
+                  type="button"
+                  className="btn-candy"
+                  onClick={() => {
+                    setShowApiKeyModal(false);
+                    setPendingScanFile(null);
+                    setTempApiKey('');
+                  }}
+                  style={{ padding: '8px 14px', fontSize: '12px' }}
                 >
-                  aistudio.google.com
-                </a>
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="btn-candy primary"
+                  onClick={() => {
+                    const key = tempApiKey.trim();
+                    if (!key) {
+                      if (showToast) showToast('Por favor introduce tu clave API.', { type: 'error', duration: 2500 });
+                      return;
+                    }
+                    if (aiProvider === 'groq') {
+                      localStorage.setItem('groq-key', key);
+                    } else {
+                      localStorage.setItem('gemini-api-key', key);
+                    }
+                    setShowApiKeyModal(false);
+                    setTempApiKey('');
+                    if (showToast) showToast('Clave API guardada con éxito.', { type: 'success', duration: 2000 });
+                    
+                    if (pendingScanFile) {
+                      processBagScan(pendingScanFile, key);
+                    } else if (fileInputRef.current) {
+                      fileInputRef.current.click();
+                    }
+                  }}
+                  style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 'bold' }}
+                >
+                  Guardar y Escanear
+                </button>
               </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-              <button
-                type="button"
-                className="btn-candy"
-                onClick={() => {
-                  setShowApiKeyModal(false);
-                  setPendingScanFile(null);
-                }}
-                style={{ padding: '8px 14px', fontSize: '12px' }}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                className="btn-candy primary"
-                onClick={() => {
-                  const key = tempApiKey.trim();
-                  if (!key) {
-                    if (showToast) showToast('Por favor introduce tu clave API.', { type: 'error', duration: 2500 });
-                    return;
-                  }
-                  localStorage.setItem('gemini-api-key', key);
-                  setShowApiKeyModal(false);
-                  if (showToast) showToast('Clave API guardada con éxito.', { type: 'success', duration: 2000 });
-                  
-                  if (pendingScanFile) {
-                    processBagScan(pendingScanFile, key);
-                  } else if (fileInputRef.current) {
-                    fileInputRef.current.click();
-                  }
-                }}
-                style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 'bold' }}
-              >
-                Guardar y Escanear
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
