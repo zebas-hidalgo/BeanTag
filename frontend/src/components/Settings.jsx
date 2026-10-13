@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircle2, AlertTriangle, Loader2, Sparkles, Compass, Share2, ClipboardList, X } from 'lucide-react';
+import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircle2, AlertTriangle, Loader2, Sparkles, Compass, Share2, ClipboardList, X, Eye, EyeOff } from 'lucide-react';
 import NfcToolsModal from './NfcToolsModal';
 import { apiUrl } from '../utils/api';
 import { GRINDERS } from '../utils/grinders';
@@ -10,9 +10,18 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   const [showNfcModal, setShowNfcModal] = useState(false);
   const [pendingImportData, setPendingImportData] = useState(null);
   const [importMode, setImportMode] = useState('merge');
+  // AI Provider & Keys State
+  const [aiProvider, setAiProvider] = useState(() => localStorage.getItem('beantag-ai-provider') || 'groq');
+  const [groqKey, setGroqKey] = useState(() => localStorage.getItem('groq-key') || '');
+  const [groqModel, setGroqModel] = useState(() => localStorage.getItem('groq-model') || 'llama-3.3-70b-versatile');
+  const [showGroqKey, setShowGroqKey] = useState(false);
+  const [testGroqLoading, setTestGroqLoading] = useState(false);
+  const [testGroqResult, setTestGroqResult] = useState(null);
+
   const [apiKey, setApiKey] = useState(() => {
     return localStorage.getItem('gemini-api-key') || '';
   });
+  const geminiKey = apiKey;
   const [selectedModel, setSelectedModel] = useState(() => {
     const stored = localStorage.getItem('gemini-model');
     if (!stored || stored === 'gemini-2.0-flash' || stored === 'gemini-1.5-flash' || stored === 'gemini-1.5-pro' || stored === 'gemini-2.5-pro') {
@@ -127,15 +136,11 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   };
 
   const handleAskSommelier = async () => {
-    const storedApiKey = localStorage.getItem('gemini-api-key') || apiKey || '';
     const targetBatches = availableBatches.length > 0 ? availableBatches : safeBatches;
     if (targetBatches.length === 0) {
       if (showToast) showToast('No hay lotes en el inventario para evaluar.', { type: 'info', duration: 3000 });
       return;
     }
-
-    const model = selectedModel || 'gemini-3.8-flash';
-    const isThinking = isThinkingEnabled;
 
     setSommelierLoading(true);
     setSommelierResult(null);
@@ -146,12 +151,14 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
 
     try {
       const headers = {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-ai-provider': aiProvider,
+        'x-groq-key': groqKey,
+        'x-gemini-key': geminiKey,
+        'x-ai-model': aiProvider === 'groq' ? groqModel : selectedModel
       };
-      if (storedApiKey) {
-        headers['x-gemini-key'] = storedApiKey;
-        headers['x-gemini-model'] = model;
-        headers['x-gemini-thinking'] = isThinking ? 'true' : 'false';
+      if (geminiKey) {
+        headers['x-gemini-thinking'] = isThinkingEnabled ? 'true' : 'false';
       }
 
       const res = await fetch(apiUrl('api/ai/sommelier'), {
@@ -215,13 +222,70 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
     }
   };
 
+  const handleProviderChange = (newProvider) => {
+    setAiProvider(newProvider);
+    localStorage.setItem('beantag-ai-provider', newProvider);
+    if (showToast) {
+      showToast(`Proveedor de IA: ${newProvider === 'groq' ? 'Groq (Llama 3.3)' : 'Google Gemini'}`, { type: 'info', duration: 2000 });
+    }
+  };
+
+  const handleGroqKeyChange = (val) => {
+    setGroqKey(val);
+    localStorage.setItem('groq-key', val);
+  };
+
+  const handleGroqModelChange = (newModel) => {
+    setGroqModel(newModel);
+    localStorage.setItem('groq-model', newModel);
+    if (showToast) {
+      showToast(`Modelo Groq cambiado a ${newModel}.`, { type: 'info', duration: 2000 });
+    }
+  };
+
   const handleSaveKey = () => {
+    localStorage.setItem('beantag-ai-provider', aiProvider);
+    localStorage.setItem('groq-key', groqKey);
+    localStorage.setItem('groq-model', groqModel);
     localStorage.setItem('gemini-api-key', apiKey);
     localStorage.setItem('gemini-model', selectedModel);
     localStorage.setItem('gemini-thinking', isThinkingEnabled ? 'true' : 'false');
     localStorage.setItem('default-grinder', defaultGrinder);
     if (showToast) {
       showToast('Configuración guardada correctamente.', { type: 'success', duration: 2500 });
+    }
+  };
+
+  const handleTestGroq = async () => {
+    setTestGroqLoading(true);
+    setTestGroqResult(null);
+    try {
+      const res = await fetch(apiUrl('api/test-groq'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-ai-provider': 'groq',
+          'x-groq-key': groqKey.trim() || undefined,
+          'x-ai-model': groqModel || undefined
+        },
+        body: JSON.stringify({
+          groqKey: groqKey.trim() || undefined,
+          model: groqModel || undefined
+        })
+      });
+      const data = await res.json();
+      setTestGroqResult(data);
+      if (data.success) {
+        if (showToast) showToast(`✅ Conexión con Groq exitosa (${data.model})`, { type: 'success', duration: 3000 });
+      } else {
+        if (showToast) showToast(`❌ Error: ${data.message || data.error}`, { type: 'error', duration: 4000 });
+      }
+    } catch (err) {
+      const fail = { success: false, error: 'network_error', message: `Fallo de conexión con el servidor: ${err.message}` };
+      setTestGroqResult(fail);
+      if (showToast) showToast('Error de conexión con el servidor.', { type: 'error', duration: 3500 });
+    } finally {
+      setTestGroqLoading(false);
     }
   };
 
@@ -426,7 +490,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '800', color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
                 <Compass size={14} />
-                <span>Recomendación Sommelier {sommelierResult._source === 'barista_fallback' ? '(Local)' : '(Gemini)'}</span>
+                <span>Recomendación Sommelier {sommelierResult._source === 'barista_fallback' ? '(Local)' : (sommelierResult._source === 'groq' ? '(Groq)' : '(Gemini)')}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 {sommelierResult._source === 'barista_fallback' && (
@@ -639,15 +703,15 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         </div>
       </div>
 
-      {/* Inteligencia Artificial (Gemini Core) */}
+      {/* Configuración de Inteligencia Artificial */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
             <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0, color: 'var(--color-text)', letterSpacing: '0.5px' }}>
-              Inteligencia Artificial (Gemini Core)
+              Configuración de Inteligencia Artificial
             </h4>
             <span style={{ fontSize: '10px', background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '3px 8px', borderRadius: '6px', fontWeight: '900', border: '1px solid var(--border-color)' }}>
-              {selectedModel.toUpperCase()}
+              {aiProvider === 'groq' ? (groqModel === 'llama-3.3-70b-versatile' ? 'GROQ • LLAMA 3.3 70B' : 'GROQ • LLAMA 3.1 8B') : `GEMINI • ${selectedModel.toUpperCase()}`}
             </span>
           </div>
           <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 14px 0', lineHeight: 1.4 }}>
@@ -655,142 +719,322 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {/* API Key Input + Action Buttons */}
-          <div>
-            <label className="barista-label" style={{ marginBottom: '6px' }}>Clave API de Google AI Studio</label>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch', flexWrap: 'wrap' }}>
-              <input 
-                type="password" 
-                className="candy-input" 
-                value={apiKey} 
-                onChange={(e) => setApiKey(e.target.value)} 
-                placeholder="Introduce tu clave API (AIzaSy...)"
-                style={{ flex: 1, boxSizing: 'border-box', fontFamily: 'var(--font-mono)', minWidth: '180px', minHeight: '44px', fontSize: '13px' }}
-              />
-              <button 
-                onClick={handleSaveKey} 
-                className="btn-candy primary"
-                style={{ margin: 0, padding: '10px 18px', fontSize: '13px', whiteSpace: 'nowrap', minHeight: '44px', fontWeight: 'bold' }}
-              >
-                Guardar
-              </button>
-              <button 
-                onClick={handleTestGemini} 
-                disabled={testingGemini}
-                className="btn-candy"
-                style={{ 
-                  margin: 0, 
-                  padding: '10px 16px', 
-                  fontSize: '13px', 
-                  whiteSpace: 'nowrap', 
-                  minHeight: '44px', 
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                {testingGemini ? <Loader2 size={16} className="spin" /> : <Activity size={16} color="var(--color-crimson)" />}
-                <span>{testingGemini ? 'Probando...' : 'Probar Conexión'}</span>
-              </button>
-            </div>
-          </div>
+        {/* Upper segmented pills control */}
+        <div style={{ display: 'flex', gap: '6px', background: 'var(--bg-canvas, #F1F5F9)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border-color)', marginBottom: '16px' }}>
+          <button
+            type="button"
+            onClick={() => handleProviderChange('groq')}
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              fontSize: '12px',
+              fontWeight: '700',
+              border: 'none',
+              borderRadius: '8px',
+              background: aiProvider === 'groq' ? 'var(--bg-card, #FFFFFF)' : 'transparent',
+              color: aiProvider === 'groq' ? 'var(--color-crimson)' : 'var(--color-text-muted)',
+              boxShadow: aiProvider === 'groq' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <span>⚡ Groq (Llama 3.3)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleProviderChange('gemini')}
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              fontSize: '12px',
+              fontWeight: '700',
+              border: 'none',
+              borderRadius: '8px',
+              background: aiProvider === 'gemini' ? 'var(--bg-card, #FFFFFF)' : 'transparent',
+              color: aiProvider === 'gemini' ? 'var(--color-crimson)' : 'var(--color-text-muted)',
+              boxShadow: aiProvider === 'gemini' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <span>🧠 Google Gemini</span>
+          </button>
+        </div>
 
-          {/* Test Status Feedback Pill */}
-          {geminiTestResult && (
-            <div 
-              style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '8px',
-                backgroundColor: geminiTestResult.success ? 'var(--barista-accent-mint-subtle, #ECFDF5)' : 'var(--barista-accent-danger-subtle, #FEF2F2)',
-                border: geminiTestResult.success ? '1.5px solid #10B981' : '1.5px solid #EF4444',
-                color: geminiTestResult.success ? '#065F46' : '#991B1B'
-              }}
-            >
-              {geminiTestResult.success ? (
-                <CheckCircle2 size={18} style={{ flexShrink: 0, marginTop: '1px', color: '#10B981' }} />
-              ) : (
-                <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '1px', color: '#EF4444' }} />
-              )}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
-                <span style={{ fontWeight: '800' }}>
-                  {geminiTestResult.success ? 'Conexión Exitosa con Gemini' : 'Error de Conexión'}
-                </span>
-                <span style={{ fontSize: '11px', lineHeight: 1.35 }}>
-                  {geminiTestResult.message || geminiTestResult.error}
-                </span>
-                {geminiTestResult.latency_ms && (
-                  <span style={{ fontSize: '10px', fontWeight: 'bold', opacity: 0.85, marginTop: '2px' }}>
-                    ⏱️ Latencia: {geminiTestResult.latency_ms}ms • Modelo: {geminiTestResult.model}
-                  </span>
-                )}
+        {aiProvider === 'groq' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {/* Groq API Key Input + Action Buttons */}
+            <div>
+              <label className="barista-label" style={{ marginBottom: '6px' }}>Clave API de Groq Cloud</label>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch', flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: '180px', display: 'flex', alignItems: 'center' }}>
+                  <input 
+                    type={showGroqKey ? 'text' : 'password'} 
+                    className="candy-input" 
+                    value={groqKey} 
+                    onChange={(e) => handleGroqKeyChange(e.target.value)} 
+                    placeholder="Introduce tu clave API (gsk_...)"
+                    style={{ width: '100%', boxSizing: 'border-box', fontFamily: 'var(--font-mono)', minHeight: '44px', fontSize: '13px', paddingRight: '40px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowGroqKey(!showGroqKey)}
+                    style={{
+                      position: 'absolute',
+                      right: '8px',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '6px',
+                      color: 'var(--color-text-muted)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    title={showGroqKey ? 'Ocultar clave' : 'Mostrar clave'}
+                  >
+                    {showGroqKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                <button 
+                  onClick={handleSaveKey} 
+                  className="btn-candy primary"
+                  style={{ margin: 0, padding: '10px 18px', fontSize: '13px', whiteSpace: 'nowrap', minHeight: '44px', fontWeight: 'bold' }}
+                >
+                  Guardar
+                </button>
+                <button 
+                  onClick={handleTestGroq} 
+                  disabled={testGroqLoading}
+                  className="btn-candy"
+                  style={{ 
+                    margin: 0, 
+                    padding: '10px 16px', 
+                    fontSize: '13px', 
+                    whiteSpace: 'nowrap', 
+                    minHeight: '44px', 
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  {testGroqLoading ? <Loader2 size={16} className="spin" /> : <Activity size={16} color="var(--color-crimson)" />}
+                  <span>{testGroqLoading ? 'Probando...' : 'Probar Conexión con Groq'}</span>
+                </button>
               </div>
             </div>
-          )}
 
-          {/* Model Selector & Thinking Config */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+            {/* Test Status Feedback Pill for Groq */}
+            {testGroqResult && (
+              <div 
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '8px',
+                  backgroundColor: testGroqResult.success ? 'var(--barista-accent-mint-subtle, #ECFDF5)' : 'var(--barista-accent-danger-subtle, #FEF2F2)',
+                  border: testGroqResult.success ? '1.5px solid #10B981' : '1.5px solid #EF4444',
+                  color: testGroqResult.success ? '#065F46' : '#991B1B'
+                }}
+              >
+                {testGroqResult.success ? (
+                  <CheckCircle2 size={18} style={{ flexShrink: 0, marginTop: '1px', color: '#10B981' }} />
+                ) : (
+                  <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '1px', color: '#EF4444' }} />
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
+                  <span style={{ fontWeight: '800' }}>
+                    {testGroqResult.success ? 'Conexión Exitosa con Groq ⚡' : 'Error de Conexión'}
+                  </span>
+                  <span style={{ fontSize: '11px', lineHeight: 1.35 }}>
+                    {testGroqResult.message || testGroqResult.error}
+                  </span>
+                  {testGroqResult.model && (
+                    <span style={{ fontSize: '10px', fontWeight: 'bold', opacity: 0.85, marginTop: '2px' }}>
+                      ⚡ Modelo: {testGroqResult.model}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Model Selector Dropdown for Groq */}
             <div>
               <label className="barista-label" style={{ marginBottom: '6px' }}>
-                Modelo de Inteligencia Artificial
+                Modelo de Inteligencia Artificial (Groq)
               </label>
               <select 
                 className="candy-input" 
-                value={selectedModel} 
-                onChange={(e) => handleModelChange(e.target.value)}
+                value={groqModel} 
+                onChange={(e) => handleGroqModelChange(e.target.value)}
                 style={{ fontSize: '12px', padding: '10px 12px', minHeight: '44px', width: '100%' }}
               >
-                <option value="gemini-3.8-flash">Gemini 3.8 Flash (Recomendado - Multimodal de Alta Precisión)</option>
-                <option value="gemini-3.8-flash-lite">Gemini 3.8 Flash Lite (Ultra Rápido & Ligero)</option>
-                <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview (Máximo Razonamiento)</option>
-                <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite (Eficiente)</option>
+                <option value="llama-3.3-70b-versatile">Meta Llama 3.3 70B Versatile • Razonamiento Barista</option>
+                <option value="llama-3.1-8b-instant">Meta Llama 3.1 8B Instant • Ultrarrápido ~200ms</option>
               </select>
             </div>
 
+            <a 
+              href="https://console.groq.com/keys" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              style={{ fontSize: '11px', color: 'var(--color-crimson)', textDecoration: 'underline', fontWeight: 'bold' }}
+            >
+              Consigue tu clave gratuita sin tarjeta en console.groq.com →
+            </a>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {/* API Key Input + Action Buttons */}
             <div>
-              <label className="barista-label" style={{ marginBottom: '6px' }}>
-                Modo Pensamiento (Thinking)
-              </label>
-              <button
-                type="button"
-                onClick={handleToggleThinking}
+              <label className="barista-label" style={{ marginBottom: '6px' }}>Clave API de Google AI Studio</label>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch', flexWrap: 'wrap' }}>
+                <input 
+                  type="password" 
+                  className="candy-input" 
+                  value={apiKey} 
+                  onChange={(e) => {
+                    setApiKey(e.target.value);
+                    localStorage.setItem('gemini-api-key', e.target.value);
+                  }} 
+                  placeholder="Introduce tu clave API (AIzaSy...)"
+                  style={{ flex: 1, boxSizing: 'border-box', fontFamily: 'var(--font-mono)', minWidth: '180px', minHeight: '44px', fontSize: '13px' }}
+                />
+                <button 
+                  onClick={handleSaveKey} 
+                  className="btn-candy primary"
+                  style={{ margin: 0, padding: '10px 18px', fontSize: '13px', whiteSpace: 'nowrap', minHeight: '44px', fontWeight: 'bold' }}
+                >
+                  Guardar
+                </button>
+                <button 
+                  onClick={handleTestGemini} 
+                  disabled={testingGemini}
+                  className="btn-candy"
+                  style={{ 
+                    margin: 0, 
+                    padding: '10px 16px', 
+                    fontSize: '13px', 
+                    whiteSpace: 'nowrap', 
+                    minHeight: '44px', 
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  {testingGemini ? <Loader2 size={16} className="spin" /> : <Activity size={16} color="var(--color-crimson)" />}
+                  <span>{testingGemini ? 'Probando...' : 'Probar Conexión con Gemini'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Test Status Feedback Pill */}
+            {geminiTestResult && (
+              <div 
                 style={{
-                  width: '100%',
-                  minHeight: '44px',
-                  padding: '10px 12px',
+                  padding: '10px 14px',
                   borderRadius: '8px',
-                  border: isThinkingEnabled ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
-                  backgroundColor: isThinkingEnabled ? 'var(--bg-header)' : 'var(--bg-card)',
-                  color: 'var(--color-text)',
                   fontSize: '12px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  textAlign: 'center',
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px'
+                  alignItems: 'flex-start',
+                  gap: '8px',
+                  backgroundColor: geminiTestResult.success ? 'var(--barista-accent-mint-subtle, #ECFDF5)' : 'var(--barista-accent-danger-subtle, #FEF2F2)',
+                  border: geminiTestResult.success ? '1.5px solid #10B981' : '1.5px solid #EF4444',
+                  color: geminiTestResult.success ? '#065F46' : '#991B1B'
                 }}
               >
-                {isThinkingEnabled ? '🧠 Razonamiento: ACTIVO' : '⚡ Modo Rápido (Off)'}
-              </button>
-            </div>
-          </div>
+                {geminiTestResult.success ? (
+                  <CheckCircle2 size={18} style={{ flexShrink: 0, marginTop: '1px', color: '#10B981' }} />
+                ) : (
+                  <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '1px', color: '#EF4444' }} />
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
+                  <span style={{ fontWeight: '800' }}>
+                    {geminiTestResult.success ? 'Conexión Exitosa con Gemini' : 'Error de Conexión'}
+                  </span>
+                  <span style={{ fontSize: '11px', lineHeight: 1.35 }}>
+                    {geminiTestResult.message || geminiTestResult.error}
+                  </span>
+                  {geminiTestResult.latency_ms && (
+                    <span style={{ fontSize: '10px', fontWeight: 'bold', opacity: 0.85, marginTop: '2px' }}>
+                      ⏱️ Latencia: {geminiTestResult.latency_ms}ms • Modelo: {geminiTestResult.model}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
 
-          <a 
-            href="https://aistudio.google.com/app/apikey" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            style={{ fontSize: '11px', color: 'var(--color-crimson)', textDecoration: 'underline', fontWeight: 'bold' }}
-          >
-            Obtener clave API gratuita en Google AI Studio →
-          </a>
-        </div>
+            {/* Model Selector & Thinking Config */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+              <div>
+                <label className="barista-label" style={{ marginBottom: '6px' }}>
+                  Modelo de Inteligencia Artificial (Gemini)
+                </label>
+                <select 
+                  className="candy-input" 
+                  value={selectedModel} 
+                  onChange={(e) => handleModelChange(e.target.value)}
+                  style={{ fontSize: '12px', padding: '10px 12px', minHeight: '44px', width: '100%' }}
+                >
+                  <option value="gemini-3.8-flash">Gemini 3.8 Flash (Recomendado - Multimodal de Alta Precisión)</option>
+                  <option value="gemini-3.8-flash-lite">Gemini 3.8 Flash Lite (Ultra Rápido & Ligero)</option>
+                  <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview (Máximo Razonamiento)</option>
+                  <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite (Eficiente)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="barista-label" style={{ marginBottom: '6px' }}>
+                  Modo Pensamiento (Thinking)
+                </label>
+                <button
+                  type="button"
+                  onClick={handleToggleThinking}
+                  style={{
+                    width: '100%',
+                    minHeight: '44px',
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    border: isThinkingEnabled ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
+                    backgroundColor: isThinkingEnabled ? 'var(--bg-header)' : 'var(--bg-card)',
+                    color: 'var(--color-text)',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  {isThinkingEnabled ? '🧠 Razonamiento: ACTIVO' : '⚡ Modo Rápido (Off)'}
+                </button>
+              </div>
+            </div>
+
+            <a 
+              href="https://aistudio.google.com/app/apikey" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              style={{ fontSize: '11px', color: 'var(--color-crimson)', textDecoration: 'underline', fontWeight: 'bold' }}
+            >
+              Obtener clave API gratuita en Google AI Studio →
+            </a>
+          </div>
+        )}
       </div>
 
       {/* Preferencia de Molino Predeterminado */}
