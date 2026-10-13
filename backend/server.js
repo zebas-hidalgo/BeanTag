@@ -1005,8 +1005,8 @@ function getAiConfig(req) {
   let rawModel = req.headers['x-ai-model'] || (provider === 'groq' ? req.headers['x-groq-model'] : req.headers['x-gemini-model']) || req.body?.model;
   let model;
   if (provider === 'groq') {
-    if (!rawModel || String(rawModel).toLowerCase().includes('gemini')) {
-      model = 'llama-3.3-70b-versatile';
+    if (!rawModel || String(rawModel).toLowerCase().includes('gemini') || String(rawModel).toLowerCase().includes('llama')) {
+      model = 'openai/gpt-oss-120b';
     } else {
       model = rawModel;
     }
@@ -1083,7 +1083,7 @@ app.post('/api/test-groq', async (req, res) => {
     return res.status(400).json({ success: false, error: 'No se ingresó ninguna clave API de Groq.' });
   }
 
-  const targetModel = model || 'llama-3.3-70b-versatile';
+  const targetModel = (model && !String(model).toLowerCase().includes('llama')) ? model : 'openai/gpt-oss-120b';
   try {
     const probePrompt = 'Responde exclusivamente con el JSON: {"status":"ok","echo":"groq_barista_ok"}';
     const result = await callGroqWithRetry(probePrompt, groqKey.trim(), targetModel);
@@ -1091,7 +1091,7 @@ app.post('/api/test-groq', async (req, res) => {
       success: true,
       provider: 'groq',
       model: result._model || model || targetModel,
-      message: '¡Conexión exitosa con Groq (Llama 3.3)! ⚡'
+      message: '¡Conexión exitosa con Groq! ⚡'
     });
   } catch (err) {
     console.warn(`[Groq Probe Failed] ${err.message}`);
@@ -1360,7 +1360,7 @@ Devuelve OBLIGATORIAMENTE un JSON estructurado con estas claves:
       bagData = await callGroqWithRetry(
         prompt,
         groqKey,
-        'llama-3.2-11b-vision-preview',
+        'qwen/qwen3.8-27b',
         true,
         25000,
         `data:${validMime};base64,${cleanBase64}`

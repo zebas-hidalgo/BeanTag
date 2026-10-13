@@ -145,7 +145,7 @@ async function run() {
       );
 
       const body = JSON.parse(capturedOptions.body);
-      assert.strictEqual(body.model, 'llama-3.3-70b-versatile', 'Default text model must be llama-3.3-70b-versatile');
+      assert.strictEqual(body.model, 'openai/gpt-oss-120b', 'Default text model must be openai/gpt-oss-120b');
       assert.deepStrictEqual(body.response_format, { type: 'json_object' }, 'response_format must be json_object');
       assert.deepStrictEqual(
         body.messages,
@@ -157,13 +157,13 @@ async function run() {
 
       assert.strictEqual(result.recipe, 'V60 Pour Over');
       assert.strictEqual(result._source, 'groq');
-      assert.strictEqual(result._model, 'llama-3.3-70b-versatile');
+      assert.strictEqual(result._model, 'openai/gpt-oss-120b');
     } finally {
       global.fetch = originalFetch;
       global.setTimeout = originalSetTimeout;
     }
 
-    console.log('✅ Test 3 PASSED: Text request correctly formatted with llama-3.3-70b-versatile, json_object, and 12s timeout.\n');
+    console.log('✅ Test 3 PASSED: Text request correctly formatted with openai/gpt-oss-120b, json_object, and 12s timeout.\n');
     passed++;
   } catch (err) {
     console.error('❌ Test 3 FAILED:', err.message, '\n');
@@ -225,7 +225,7 @@ async function run() {
       );
 
       const body = JSON.parse(capturedOptions.body);
-      assert.strictEqual(body.model, 'llama-3.2-11b-vision-preview', 'Default vision model must be llama-3.2-11b-vision-preview');
+      assert.strictEqual(body.model, 'qwen/qwen3.8-27b', 'Default vision model must be qwen/qwen3.8-27b');
       assert.strictEqual(capturedTimeoutDelay, 25000, 'AbortController timeout for vision must be 25000ms');
 
       assert.strictEqual(body.messages.length, 1);
@@ -237,13 +237,13 @@ async function run() {
 
       assert.strictEqual(result.name, 'Geisha Panama Boquete');
       assert.strictEqual(result._source, 'groq');
-      assert.strictEqual(result._model, 'llama-3.2-11b-vision-preview');
+      assert.strictEqual(result._model, 'qwen/qwen3.8-27b');
     } finally {
       global.fetch = originalFetch;
       global.setTimeout = originalSetTimeout;
     }
 
-    console.log('✅ Test 4 PASSED: Vision request correctly formatted with llama-3.2-11b-vision-preview and 25s timeout.\n');
+    console.log('✅ Test 4 PASSED: Vision request correctly formatted with qwen/qwen3.8-27b and 25s timeout.\n');
     passed++;
   } catch (err) {
     console.error('❌ Test 4 FAILED:', err.message, '\n');
@@ -282,7 +282,7 @@ async function run() {
       assert.strictEqual(resA.status, 'perfect');
       assert.strictEqual(resA.extraction, 'optimal');
       assert.strictEqual(resA._source, 'groq');
-      assert.strictEqual(resA._model, 'llama-3.3-70b-versatile');
+      assert.strictEqual(resA._model, 'openai/gpt-oss-120b');
     } finally {
       global.fetch = originalFetch;
     }

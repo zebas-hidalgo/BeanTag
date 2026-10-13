@@ -302,7 +302,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
     setIsScanning(true);
-    if (showToast) showToast(`Optimizando imagen y analizando bolsa con ${aiProvider === 'groq' ? 'Groq Vision (Llama 3.2)' : 'Gemini Vision'}...`, { type: 'info', duration: 3000 });
+    if (showToast) showToast(`Optimizando imagen y analizando bolsa con ${aiProvider === 'groq' ? 'Groq Vision (Qwen 3.8)' : 'Gemini Vision'}...`, { type: 'info', duration: 3000 });
 
     try {
       // 1. High-speed client-side canvas compression (~250KB JPEG, keeping text razor sharp)
@@ -316,7 +316,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
           'x-ai-provider': aiProvider,
           'x-groq-key': groqKey,
           'x-gemini-key': geminiKey,
-          'x-ai-model': aiProvider === 'groq' ? 'llama-3.2-11b-vision-preview' : geminiModel,
+          'x-ai-model': aiProvider === 'groq' ? 'qwen/qwen3.8-27b' : geminiModel,
           'x-gemini-model': geminiModel,
           'x-gemini-thinking': isThinking ? 'true' : 'false'
         },

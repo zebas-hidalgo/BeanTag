@@ -11,9 +11,15 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   const [pendingImportData, setPendingImportData] = useState(null);
   const [importMode, setImportMode] = useState('merge');
   // AI Provider & Keys State
-  const [aiProvider, setAiProvider] = useState(() => localStorage.getItem('beantag-ai-provider') || 'groq');
   const [groqKey, setGroqKey] = useState(() => localStorage.getItem('groq-key') || '');
-  const [groqModel, setGroqModel] = useState(() => localStorage.getItem('groq-model') || 'llama-3.3-70b-versatile');
+  const [groqModel, setGroqModel] = useState(() => {
+    const stored = localStorage.getItem('groq-model');
+    if (!stored || stored.includes('llama')) {
+      localStorage.setItem('groq-model', 'openai/gpt-oss-120b');
+      return 'openai/gpt-oss-120b';
+    }
+    return stored;
+  });
   const [showGroqKey, setShowGroqKey] = useState(false);
   const [testGroqLoading, setTestGroqLoading] = useState(false);
   const [testGroqResult, setTestGroqResult] = useState(null);
@@ -742,7 +748,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               transition: 'all 0.15s ease'
             }}
           >
-            <span>⚡ Groq (Llama 3.3)</span>
+            <span>⚡ Groq (LPU Ultra-Rápido)</span>
           </button>
           <button
             type="button"
@@ -880,8 +886,9 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 onChange={(e) => handleGroqModelChange(e.target.value)}
                 style={{ fontSize: '12px', padding: '10px 12px', minHeight: '44px', width: '100%' }}
               >
-                <option value="llama-3.3-70b-versatile">Meta Llama 3.3 70B Versatile • Razonamiento Barista</option>
-                <option value="llama-3.1-8b-instant">Meta Llama 3.1 8B Instant • Ultrarrápido ~200ms</option>
+                <option value="openai/gpt-oss-120b">GPT OSS 120B • Razonamiento Avanzado & Barista (Recomendado)</option>
+                <option value="openai/gpt-oss-20b">GPT OSS 20B • Ultrarrápido (~140ms)</option>
+                <option value="qwen/qwen3.8-27b">Qwen 3.8 27B • Multimodal Visión & Texto (~45ms)</option>
               </select>
             </div>
 

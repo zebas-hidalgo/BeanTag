@@ -284,7 +284,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const handleAiRecommend = () => {
     const aiProvider = localStorage.getItem('beantag-ai-provider') || 'groq';
     const groqKey = localStorage.getItem('groq-key') || '';
-    const groqModel = localStorage.getItem('groq-model') || 'llama-3.3-70b-versatile';
+    const rawGroqModel = localStorage.getItem('groq-model');
+    const groqModel = (!rawGroqModel || rawGroqModel.includes('llama')) ? 'openai/gpt-oss-120b' : rawGroqModel;
     const geminiKey = localStorage.getItem('gemini-api-key') || '';
     const geminiModel = localStorage.getItem('gemini-model') || 'gemini-3.8-flash';
     const isThinking = localStorage.getItem('gemini-thinking') === 'true';
@@ -337,7 +338,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           showToast('⚡ Receta calculada con Motor Barista Físico (sin depender de internet)', { type: 'success', duration: 4500 });
         }
       } else if (data._source === 'groq') {
-        if (showToast) showToast('¡Recomendación multivariable generada por Groq AI (Llama 3.3)! ⚡', { type: 'success', duration: 3000 });
+        if (showToast) showToast('¡Recomendación multivariable generada por Groq AI! ⚡', { type: 'success', duration: 3000 });
       } else {
         if (showToast) showToast('¡Recomendación multivariable generada por Gemini AI! 🧠', { type: 'success', duration: 2500 });
       }

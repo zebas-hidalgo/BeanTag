@@ -1663,7 +1663,21 @@ async function callGroqWithRetry(
     }
   }
 
-  const selectedModel = effectiveModel || (effectiveIsVision ? 'llama-3.2-11b-vision-preview' : 'llama-3.3-70b-versatile');
+  function normalizeGroqModel(m, isVis = false) {
+    if (isVis) {
+      if (!m || typeof m !== 'string' || m.toLowerCase().includes('llama') || m.toLowerCase().includes('11b')) {
+        return 'qwen/qwen3.8-27b';
+      }
+      return m;
+    }
+    if (!m || typeof m !== 'string' || m.toLowerCase().includes('llama')) {
+      return 'openai/gpt-oss-120b';
+    }
+    return m;
+  }
+
+  const rawModel = effectiveModel || (effectiveIsVision ? 'qwen/qwen3.8-27b' : 'openai/gpt-oss-120b');
+  const selectedModel = normalizeGroqModel(rawModel, effectiveIsVision);
   const effectiveTimeout = typeof effectiveTimeoutMs === 'number'
     ? effectiveTimeoutMs
     : (effectiveIsVision ? 25000 : 12000);
@@ -1701,6 +1715,8 @@ async function callGroqWithRetry(
 
   if (!effectiveIsVision) {
     payloadObj.response_format = { type: 'json_object' };
+  } else if (selectedModel === 'qwen/qwen3.8-27b') {
+    payloadObj.max_tokens = 700;
   }
 
   const cleanKey = apiKey.trim();
