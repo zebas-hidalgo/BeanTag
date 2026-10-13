@@ -3,6 +3,18 @@ import { Plus, Coffee, MoreVertical, Trash2, Edit3, Layers, Check, X, RefreshCw,
 import { apiUrl } from '../utils/api';
 import SlotAssignModal from './SlotAssignModal';
 
+// Helpers for Swiss Tube aesthetic
+const getRoastDotColor = (roast) => {
+  const r = String(roast || '').toLowerCase();
+  if (r.includes('oscuro') || r.includes('dark') || r.includes('frances') || r.includes('italiano')) {
+    return '#475569';
+  }
+  if (r.includes('medio') || r.includes('medium')) {
+    return '#B45309';
+  }
+  return '#D97706';
+};
+
 // Helpers for artisanal Bean Cellar aesthetic
 const getRoastStyle = (roast) => {
   const r = String(roast || '').toLowerCase();
@@ -867,18 +879,15 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                     // Match with batch in batches list for full info if needed
                     const matchedBatch = isFilled ? (batches || []).find(b => b.id === slot.batch_id) : null;
                     const batchName = (slot && slot.batch_name) || (matchedBatch && matchedBatch.name) || 'Café Especialidad';
-                    const roaster = (slot && slot.roaster) || (matchedBatch && matchedBatch.roaster) || '';
-                    const origin = (slot && slot.origin) || (matchedBatch && matchedBatch.origin) || '';
-                    const rawDose = (slot && slot.dose_weight) || (matchedBatch && matchedBatch.dose_weight) || '20.0';
+                    const origin = (slot && slot.origin) || (matchedBatch && matchedBatch.origin) || 'Origen';
+                    const process = (slot && (slot.process || slot.proceso)) || (matchedBatch && (matchedBatch.process || matchedBatch.proceso)) || 'Lavado';
+                    const subtitle = `${origin} • ${process}`;
+                    const rawDose = (slot && slot.dose_weight) || (matchedBatch && matchedBatch.dose_weight) || '18.5';
                     const doseWeight = typeof rawDose === 'number'
                       ? `${rawDose}g`
                       : (String(rawDose).endsWith('g') ? rawDose : `${rawDose}g`);
 
                     const roastLevel = (slot && (slot.roast_level || slot.roast)) || (matchedBatch && (matchedBatch.roast_level || matchedBatch.roast)) || '';
-                    const roastStyle = getRoastStyle(roastLevel);
-
-                    const process = (slot && (slot.process || slot.proceso)) || (matchedBatch && (matchedBatch.process || matchedBatch.proceso)) || '';
-                    const processBadge = getProcessBadge(process);
 
                     const freezeDate = (slot && (slot.freeze_date || slot.frozen_date)) || (matchedBatch && (matchedBatch.freeze_date || matchedBatch.frozen_date)) || null;
                     const rackNameLower = (activeRack.name || '').toLowerCase();
@@ -910,7 +919,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                         tabIndex={0}
                         aria-label={`Tubo ${position}: ${isFilled ? batchName : 'Vacío'}`}
                         style={{
-                          minHeight: '185px',
+                          minHeight: '135px',
                           backgroundColor: isFilled
                             ? 'var(--barista-bg-surface, #FFFFFF)'
                             : 'var(--barista-bg-subtle, rgba(241, 245, 249, 0.5))',
@@ -923,286 +932,158 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                                 ? '0 4px 12px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255,255,255,0.8)'
                                 : '0 4px 12px rgba(217, 119, 6, 0.15), inset 0 1px 0 rgba(255,255,255,0.8)')
                             : 'none',
-                          padding: '10px 8px',
+                          padding: '12px 8px',
                           display: 'flex',
                           flexDirection: 'column',
-                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
                           cursor: 'pointer',
                           transition: 'all 0.15s ease',
                           position: 'relative',
                           boxSizing: 'border-box'
                         }}
                       >
-                        {/* Tube Top Aperture & Position Tag */}
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            width: '100%',
-                            marginBottom: '4px'
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: '10px',
-                              fontFamily: 'var(--font-mono)',
-                              fontWeight: '900',
-                              width: '20px',
-                              height: '20px',
-                              borderRadius: '50%',
-                              backgroundColor: isFilled
-                                ? (isFrozen ? '#0284C7' : 'var(--barista-accent-honey, #D97706)')
-                                : 'var(--barista-bg-elevated, #E2E8F0)',
-                              color: isFilled ? '#FFFFFF' : 'var(--barista-text-secondary, #64748B)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}
-                          >
-                            {position}
-                          </span>
-
-                          {isFilled ? (
-                            isFrozen ? (
-                              <span
-                                title="Lote congelado / Cava"
-                                style={{
-                                  fontSize: '11px',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  padding: '1px 4px',
-                                  borderRadius: '4px',
-                                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                                  border: '1px solid #38BDF8',
-                                  lineHeight: 1
-                                }}
-                              >
-                                ❄️
-                              </span>
-                            ) : (
-                              <span style={{ width: '20px' }} />
-                            )
-                          ) : (
-                            <span
+                        {isFilled ? (
+                          <>
+                            {/* Swiss Tube Cylinder */}
+                            <div
                               style={{
-                                fontSize: '9px',
-                                fontFamily: 'var(--font-mono)',
-                                color: 'var(--barista-text-muted, #94A3B8)',
-                                fontWeight: '600'
+                                position: 'relative',
+                                width: '32px',
+                                height: '56px',
+                                border: '1.5px solid var(--color-text, #1E293B)',
+                                borderRadius: '0 0 14px 14px',
+                                background: 'rgba(0, 0, 0, 0.02)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'flex-end',
+                                alignItems: 'center',
+                                paddingBottom: '4px',
+                                boxSizing: 'border-box'
                               }}
                             >
-                              VACÍO
-                            </span>
-                          )}
-                        </div>
+                              {/* Snowflake badge in top-left */}
+                              {isFrozen && (
+                                <span
+                                  title="Lote congelado / Cava"
+                                  style={{
+                                    position: 'absolute',
+                                    top: '3px',
+                                    left: '3px',
+                                    fontSize: '9px',
+                                    lineHeight: 1
+                                  }}
+                                >
+                                  ❄️
+                                </span>
+                              )}
 
-                        {/* Slot Center: Tube Content or Plus icon */}
-                        {isFilled ? (
-                          <div
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              width: '100%'
-                            }}
-                          >
-                            {/* Artisanal Skeuomorphic Bean Cellar Tube */}
+                              {/* Roast indicator dot in top-right */}
+                              <span
+                                title={`Tueste: ${roastLevel || 'Claro'}`}
+                                style={{
+                                  position: 'absolute',
+                                  top: '4px',
+                                  right: '4px',
+                                  width: '6px',
+                                  height: '6px',
+                                  borderRadius: '50%',
+                                  backgroundColor: getRoastDotColor(roastLevel)
+                                }}
+                              />
+
+                              {/* Dose weight centered at base */}
+                              <span
+                                style={{
+                                  fontSize: '11px',
+                                  fontWeight: '800',
+                                  fontFamily: 'var(--font-mono)',
+                                  color: 'var(--color-text, #0F172A)',
+                                  lineHeight: 1,
+                                  textAlign: 'center',
+                                  whiteSpace: 'nowrap'
+                                }}
+                              >
+                                {doseWeight}
+                              </span>
+                            </div>
+
+                            {/* Clean coffee metadata below cylinder */}
                             <div
                               style={{
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
-                                marginBottom: '6px'
+                                gap: '2px',
+                                width: '100%',
+                                overflow: 'hidden'
                               }}
                             >
-                              {/* Wooden / walnut cap at the top */}
                               <div
                                 style={{
-                                  width: '32px',
-                                  height: '8px',
-                                  background: '#8B5A2B',
-                                  borderRadius: '3px',
-                                  boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                                  marginBottom: '2px'
+                                  fontSize: '12px',
+                                  fontWeight: '800',
+                                  lineHeight: 1.2,
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  color: 'var(--color-text, #0F172A)',
+                                  textAlign: 'center',
+                                  width: '100%'
                                 }}
-                              />
-
-                              {/* Glass cylindrical tube body with curved base */}
-                              <div
-                                style={{
-                                  width: '36px',
-                                  height: '50px',
-                                  borderRadius: '0 0 16px 16px',
-                                  border: isFrozen
-                                    ? '1.5px solid #38BDF8'
-                                    : `1.5px solid ${roastStyle.borderColor}`,
-                                  borderTop: 'none',
-                                  background: roastStyle.gradient,
-                                  display: 'flex',
-                                  alignItems: 'flex-end',
-                                  justifyContent: 'center',
-                                  paddingBottom: '4px',
-                                  boxSizing: 'border-box',
-                                  boxShadow: isFrozen
-                                    ? '0 0 8px rgba(56, 189, 248, 0.35)'
-                                    : '0 2px 4px rgba(0,0,0,0.08)'
-                                }}
+                                title={batchName}
                               >
-                                {/* Dose weight pill badge in the base of the glass tube */}
-                                <span
-                                  style={{
-                                    fontSize: '8.5px',
-                                    fontWeight: '800',
-                                    color: '#FFFFFF',
-                                    background: 'rgba(0,0,0,0.35)',
-                                    padding: '1px 4px',
-                                    borderRadius: '4px',
-                                    lineHeight: 1
-                                  }}
-                                >
-                                  {doseWeight}
-                                </span>
+                                {batchName}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: '10px',
+                                  fontWeight: '600',
+                                  color: 'var(--color-text-muted)',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  textAlign: 'center',
+                                  width: '100%'
+                                }}
+                                title={subtitle}
+                              >
+                                {subtitle}
                               </div>
                             </div>
-
-                            {/* Clean coffee name (truncated if long) */}
-                            <div
-                              style={{
-                                fontSize: '12px',
-                                fontWeight: '800',
-                                fontFamily: 'var(--font-heading)',
-                                color: 'var(--color-text, #0F172A)',
-                                lineHeight: 1.25,
-                                textAlign: 'center',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical',
-                                wordBreak: 'break-word',
-                                width: '100%',
-                                minHeight: '28px'
-                              }}
-                              title={batchName}
-                            >
-                              {batchName}
-                            </div>
-
-                            {/* Process Badge and Roast Badge below the tube */}
-                            <div
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexWrap: 'wrap',
-                                gap: '4px',
-                                marginTop: '4px'
-                              }}
-                            >
-                              {processBadge && (
-                                <span
-                                  style={{
-                                    fontSize: '9px',
-                                    fontWeight: '800',
-                                    padding: '1.5px 5px',
-                                    borderRadius: '4px',
-                                    backgroundColor: processBadge.bg,
-                                    color: processBadge.color,
-                                    whiteSpace: 'nowrap',
-                                    maxWidth: '100%',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    lineHeight: 1.2
-                                  }}
-                                >
-                                  {processBadge.text}
-                                </span>
-                              )}
-                              {roastLevel && (
-                                <span
-                                  style={{
-                                    fontSize: '9px',
-                                    fontWeight: '800',
-                                    padding: '1.5px 5px',
-                                    borderRadius: '4px',
-                                    backgroundColor: roastStyle.badgeBg,
-                                    color: roastStyle.badgeColor,
-                                    whiteSpace: 'nowrap',
-                                    lineHeight: 1.2
-                                  }}
-                                >
-                                  {roastStyle.label}
-                                </span>
-                              )}
-                            </div>
-                          </div>
+                          </>
                         ) : (
-                          /* Empty Slot */
-                          <div
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              margin: 'auto 0',
-                              padding: '8px 0',
-                              width: '100%'
-                            }}
-                          >
-                            {/* Dotted/dashed outline of a tube */}
+                          <>
+                            {/* Cylinder outline */}
                             <div
                               style={{
                                 width: '32px',
-                                height: '46px',
-                                border: '2px dashed var(--barista-border-hairline, var(--border-color))',
-                                borderRadius: '0 0 16px 16px',
-                                borderTop: 'none',
+                                height: '56px',
+                                border: '1.5px dashed var(--border-color)',
+                                borderRadius: '0 0 14px 14px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                marginBottom: '6px'
+                                boxSizing: 'border-box'
                               }}
                             >
-                              <Plus size={16} color="var(--barista-text-muted, #94A3B8)" />
+                              <Plus size={16} color="var(--color-text-muted)" />
                             </div>
 
-                            {/* Label below: Asignar #{position} with muted text */}
+                            {/* Label below */}
                             <span
                               style={{
-                                fontSize: '11px',
+                                fontSize: '10px',
                                 fontWeight: '700',
-                                color: 'var(--barista-text-muted, #94A3B8)',
-                                textAlign: 'center'
+                                color: 'var(--color-text-muted)',
+                                textAlign: 'center',
+                                whiteSpace: 'nowrap'
                               }}
                             >
-                              Asignar #{position}
+                              #0{position} Libre
                             </span>
-                          </div>
-                        )}
-
-                        {/* Tube Bottom Tag: Roaster or Origin */}
-                        {isFilled ? (
-                          <div
-                            style={{
-                              fontSize: '10px',
-                              fontWeight: '600',
-                              color: 'var(--barista-text-secondary, #64748B)',
-                              textAlign: 'center',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              borderTop: '1px solid var(--barista-border-hairline, rgba(0,0,0,0.06))',
-                              paddingTop: '4px',
-                              marginTop: 'auto',
-                              width: '100%'
-                            }}
-                            title={roaster || origin || 'Monodosis'}
-                          >
-                            {roaster || origin || 'Monodosis'}
-                          </div>
-                        ) : (
-                          <div style={{ height: '18px', marginTop: 'auto' }} />
+                          </>
                         )}
                       </div>
                     );
