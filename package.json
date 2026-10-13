@@ -7,7 +7,7 @@
     "build-frontend": "npm run build --prefix frontend",
     "start": "node backend/server.js",
     "dev": "concurrently \"npm run dev --prefix frontend\" \"node backend/server.js\"",
-    "test:cards": "node scripts/verify_cards_render.mjs"
+    "test:cards": "npm run build-frontend && node scripts/verify_cards_render.mjs"
   },
   "dependencies": {
     "concurrently": "^8.2.0"

@@ -76,8 +76,8 @@ export const CARD_THEMES = {
     border: '#E4E4E7',
     borderSubtle: 'rgba(0,0,0,0.12)',
     accent: '#18181B',
-    fontHeading: 'Outfit, Space Grotesk, sans-serif',
-    fontMono: 'JetBrains Mono, monospace'
+    fontHeading: '"Outfit", "Space Grotesk", sans-serif',
+    fontMono: '"JetBrains Mono", monospace'
   }
 };
 

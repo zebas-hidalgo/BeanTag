@@ -366,12 +366,31 @@ export const STYLE_SCA_ICONS = {
     fermented: '❖',
     acidity: '✧',
     default: '✿'
+  },
+  // 5. STUDIO: Swiss minimalist typographical symbols & geometric micro-indicators
+  studio: {
+    floral: '◇',
+    herbal: '◈',
+    berries: '◉',
+    citrus: '◎',
+    fruit: '⊛',
+    sweet: '◇',
+    nuts: '▪',
+    chocolate: '▫',
+    spices: '✦',
+    cereals: '✧',
+    roasted: '▲',
+    tobacco: '■',
+    vegetal: '◆',
+    fermented: '❖',
+    acidity: '⚡',
+    default: '◈'
   }
 };
 
 /**
  * Maps flavor note descriptors to corresponding SCA Flavor Wheel icons,
- * optionally styled for 'blueprint' | 'neobrutalist' | 'diner' | 'kissaten'
+ * optionally styled for 'blueprint' | 'neobrutalist' | 'diner' | 'kissaten' | 'studio'
  */
 export function getScaWheelIcon(tagLabel, style = null) {
   const cat = getScaCategory(tagLabel);
@@ -379,7 +398,8 @@ export function getScaWheelIcon(tagLabel, style = null) {
   if (style) {
     const s = String(style).toLowerCase();
     let norm = 'blueprint';
-    if (s.includes('blue') || s.includes('cyan') || s.includes('tech')) norm = 'blueprint';
+    if (s.includes('studio') || s.includes('mono') || s.includes('swiss') || s.includes('grid')) norm = 'studio';
+    else if (s.includes('blue') || s.includes('cyan') || s.includes('tech')) norm = 'blueprint';
     else if (s.includes('neo') || s.includes('brutal') || s.includes('pop')) norm = 'neobrutalist';
     else if (s.includes('diner') || s.includes('retro') || s.includes('1950') || s.includes('aurora')) norm = 'diner';
     else if (s.includes('kissa') || s.includes('japan') || s.includes('tokyo') || s.includes('hang')) norm = 'kissaten';
