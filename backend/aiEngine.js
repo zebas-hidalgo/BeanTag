@@ -5,18 +5,15 @@
  */
 
 const VALID_GEMINI_MODELS = [
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-1.5-pro',
-  'gemini-2.5-pro',
   'gemini-3.8-flash',
   'gemini-3.8-flash-lite',
+  'gemini-3.1-pro-preview',
   'gemini-3.6-flash',
   'gemini-3.5-flash-lite'
 ];
 
-const DEFAULT_GEMINI_MODEL = 'gemini-2.0-flash';
-const FALLBACK_GEMINI_MODEL = 'gemini-1.5-flash';
+const DEFAULT_GEMINI_MODEL = 'gemini-3.8-flash';
+const FALLBACK_GEMINI_MODEL = 'gemini-3.8-flash-lite';
 
 /**
  * Sanitizes model name: maps deprecated/invalid model names to supported Google AI Studio models.
@@ -29,17 +26,14 @@ function sanitizeModel(requestedModel) {
   if (VALID_GEMINI_MODELS.includes(clean)) {
     return clean;
   }
-  if (clean.includes('2.0') || clean.includes('2-0')) return 'gemini-2.0-flash';
-  if (clean.includes('1.5') && clean.includes('pro')) return 'gemini-1.5-pro';
-  if (clean.includes('1.5')) return 'gemini-1.5-flash';
-  if (clean.includes('2.5') && clean.includes('pro')) return 'gemini-2.5-pro';
-  if (clean.includes('3.8')) {
-    if (clean.includes('lite')) return 'gemini-3.8-flash-lite';
-    return 'gemini-3.8-flash';
-  }
+  if (clean.includes('3.1') && clean.includes('pro')) return 'gemini-3.1-pro-preview';
+  if (clean.includes('2.5') || clean.includes('pro')) return 'gemini-3.1-pro-preview';
+  if (clean.includes('3.8') && clean.includes('lite')) return 'gemini-3.8-flash-lite';
+  if (clean.includes('3.8')) return 'gemini-3.8-flash';
+  if (clean.includes('3.5')) return 'gemini-3.5-flash-lite';
   if (clean.includes('3.6')) return 'gemini-3.6-flash';
-  if (clean.includes('lite')) return 'gemini-1.5-flash';
-  if (clean.includes('pro')) return 'gemini-1.5-pro';
+  if (clean.includes('lite')) return 'gemini-3.8-flash-lite';
+  if (clean.includes('flash') || clean.includes('2.0') || clean.includes('1.5')) return 'gemini-3.8-flash';
   return DEFAULT_GEMINI_MODEL;
 }
 
@@ -1323,10 +1317,9 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
   // Cascading priority across active Google AI models
   const cascadeOrder = [
     modelToTry,
-    'gemini-2.0-flash',
-    'gemini-1.5-flash',
-    'gemini-1.5-pro',
-    'gemini-2.5-pro',
+    'gemini-3.8-flash',
+    'gemini-3.8-flash-lite',
+    'gemini-3.1-pro-preview',
     DEFAULT_GEMINI_MODEL,
     FALLBACK_GEMINI_MODEL
   ];

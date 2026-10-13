@@ -21,8 +21,11 @@ export default function SlotAssignModal({
   const currentSlot = rack.slots ? rack.slots.find(s => s.position === position) : null;
   const isCurrentlyOccupied = Boolean(currentSlot && currentSlot.batch_id);
 
-  // Filter batches by search term and sort available first
-  const filteredBatches = (batches || []).filter(batch => {
+  // Filter batches: only coffees with stock available (remaining_doses > 0)
+  const availableBatches = (batches || []).filter(batch => batch && (batch.remaining_doses || 0) > 0);
+
+  // Filter batches by search term
+  const filteredBatches = availableBatches.filter(batch => {
     if (!searchTerm.trim()) return true;
     const term = searchTerm.toLowerCase();
     return (

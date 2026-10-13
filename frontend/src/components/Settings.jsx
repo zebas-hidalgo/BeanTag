@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
+import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircle2, AlertTriangle, Loader2, Sparkles, Compass, Share2, ClipboardList, X } from 'lucide-react';
 import NfcToolsModal from './NfcToolsModal';
 import { apiUrl } from '../utils/api';
 import { GRINDERS } from '../utils/grinders';
+import { generateCoffeeMenuCardImage, generateCoffeeMenuText } from '../utils/cardGenerator';
+import { copyToClipboard } from '../utils/clipboard';
 
 export default function Settings({ theme, setTheme, batches = [], showToast }) {
   const [showNfcModal, setShowNfcModal] = useState(false);
@@ -13,9 +15,9 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   });
   const [selectedModel, setSelectedModel] = useState(() => {
     const stored = localStorage.getItem('gemini-model');
-    if (!stored || stored.includes('3.8') || stored.includes('3.7') || stored.includes('3.6') || stored.includes('3.5')) {
-      localStorage.setItem('gemini-model', 'gemini-2.0-flash');
-      return 'gemini-2.0-flash';
+    if (!stored || stored === 'gemini-2.0-flash' || stored === 'gemini-1.5-flash' || stored === 'gemini-1.5-pro' || stored === 'gemini-2.5-pro') {
+      localStorage.setItem('gemini-model', 'gemini-3.8-flash');
+      return 'gemini-3.8-flash';
     }
     return stored;
   });
@@ -27,6 +29,152 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   const [defaultGrinder, setDefaultGrinder] = useState(() => {
     return localStorage.getItem('default-grinder') || 'jmax';
   });
+
+  // Sommelier IA & Menu Share State
+  const [sommelierLoading, setSommelierLoading] = useState(false);
+  const [sommelierResult, setSommelierResult] = useState(null);
+  const [showMenuShareModal, setShowMenuShareModal] = useState(false);
+  const [menuShareImage, setMenuShareImage] = useState(null);
+  const [menuShareTemplate, setMenuShareTemplate] = useState(() => {
+    try {
+      const pref = localStorage.getItem('beantag-share-style');
+      if (pref === 'neobrutalist') return 'neobrutalist';
+      if (pref === 'diner' || pref === 'aurora') return 'diner';
+      if (pref === 'kissaten' || pref === 'hangtag') return 'kissaten';
+      return 'blueprint';
+    } catch (e) {
+      return 'blueprint';
+    }
+  });
+  const [menuShareStatus, setMenuShareStatus] = useState('');
+
+  const safeBatches = Array.isArray(batches) ? batches : [];
+  const availableBatches = safeBatches.filter(b => b && (b.remaining_doses || 0) > 0);
+
+  const handleOpenMenuShare = async (template = menuShareTemplate) => {
+    const targetList = availableBatches.length > 0 ? availableBatches : safeBatches;
+    if (targetList.length === 0) {
+      if (showToast) showToast('No hay cafés en el inventario para generar la carta.', { type: 'info' });
+      return;
+    }
+    try {
+      const imgData = await generateCoffeeMenuCardImage(targetList, template);
+      setMenuShareImage(imgData);
+      setMenuShareTemplate(template);
+      setShowMenuShareModal(true);
+      setMenuShareStatus('');
+    } catch (err) {
+      console.error("Menu card generation error:", err);
+      if (showToast) showToast('Error al generar la carta: ' + err.message, { type: 'error' });
+    }
+  };
+
+  const handleCopyMenuText = async () => {
+    const targetList = availableBatches.length > 0 ? availableBatches : safeBatches;
+    const text = generateCoffeeMenuText(targetList);
+    const success = await copyToClipboard(text);
+    if (success) {
+      setMenuShareStatus('📋 ¡Carta de cafés copiada al portapapeles!');
+      if (showToast) showToast('📋 Carta de cafés copiada en formato texto.', { type: 'success' });
+    } else {
+      setMenuShareStatus('⚠️ No se pudo copiar automáticamente.');
+    }
+  };
+
+  const handleNativeMenuShare = async () => {
+    if (!menuShareImage) return;
+    const targetList = availableBatches.length > 0 ? availableBatches : safeBatches;
+    const text = generateCoffeeMenuText(targetList);
+
+    try {
+      const blob = await (await fetch(menuShareImage)).blob();
+      const file = new File([blob], `Carta_Cafes_BeanTag_${Date.now()}.png`, { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Carta de Cafés de Especialidad • BeanTag',
+          text: `☕ Menú de Cafés congelados en cava (${targetList.length} variedades disponibles)`,
+          files: [file]
+        });
+        setMenuShareStatus('✅ Compartido con éxito');
+        return;
+      }
+
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Carta de Cafés • BeanTag',
+          text: text,
+          url: window.location.href
+        });
+        setMenuShareStatus('✅ Carta compartida');
+        return;
+      }
+
+      const a = document.createElement('a');
+      a.href = menuShareImage;
+      a.download = `Carta_Cafes_BeanTag_${Date.now()}.png`;
+      a.click();
+      setMenuShareStatus('📥 Imagen de la carta descargada');
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        const a = document.createElement('a');
+        a.href = menuShareImage;
+        a.download = `Carta_Cafes_BeanTag_${Date.now()}.png`;
+        a.click();
+        setMenuShareStatus('📥 Imagen descargada');
+      }
+    }
+  };
+
+  const handleAskSommelier = async () => {
+    const storedApiKey = localStorage.getItem('gemini-api-key') || apiKey;
+    if (!storedApiKey) {
+      if (showToast) showToast('Configura tu clave API de Gemini abajo para consultar al Sommelier.', { type: 'error', duration: 4000 });
+      return;
+    }
+    if (availableBatches.length === 0) {
+      if (showToast) showToast('No hay lotes con dosis en el inventario para evaluar.', { type: 'info', duration: 3000 });
+      return;
+    }
+
+    const model = selectedModel || 'gemini-3.8-flash';
+    const isThinking = isThinkingEnabled;
+
+    setSommelierLoading(true);
+    setSommelierResult(null);
+
+    const now = new Date();
+    const hour = now.getHours();
+    const timeOfDay = hour < 12 ? 'mañana (buscando acidez brillante y claridad)' : (hour < 18 ? 'tarde (buscando dulzor y balance)' : 'noche (buscando cuerpo suave y relajante)');
+
+    try {
+      const res = await fetch(apiUrl('api/ai/sommelier'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-gemini-key': storedApiKey,
+          'x-gemini-model': model,
+          'x-gemini-thinking': isThinking ? 'true' : 'false'
+        },
+        body: JSON.stringify({
+          batches: availableBatches,
+          timeOfDay
+        })
+      });
+
+      const data = await res.json();
+      if (data.error) {
+        if (showToast) showToast(`Error del sommelier: ${data.error}`, { type: 'error', duration: 4000 });
+        return;
+      }
+      setSommelierResult(data);
+      if (showToast) showToast('¡Recomendación del Sommelier lista! ☕✨', { type: 'success', duration: 2500 });
+    } catch (err) {
+      if (showToast) showToast('Error al conectar con el Sommelier IA.', { type: 'error', duration: 3000 });
+    } finally {
+      setSommelierLoading(false);
+    }
+  };
 
   const [cardStyle, setCardStyle] = useState(() => {
     try {
@@ -191,6 +339,107 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 14px 0', fontSize: '16px' }}>
         Ajustes y Configuración
       </h2>
+
+      {/* ✨ Herramientas de Barista (Sommelier IA & Carta de Cafés) */}
+      <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
+        <div>
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Sparkles size={15} />
+            <span>Herramientas de Barista</span>
+          </h4>
+          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 14px 0' }}>
+            Asistente inteligente y opciones para compartir tu carta de cafés
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', marginBottom: sommelierResult ? '14px' : 0 }}>
+          <button
+            type="button"
+            className="btn-candy"
+            onClick={handleAskSommelier}
+            disabled={sommelierLoading}
+            style={{
+              margin: 0,
+              padding: '10px',
+              fontSize: '12px',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              background: '#FFFFFF',
+              border: '1px solid var(--border-color)',
+              color: 'var(--color-crimson)',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+            }}
+          >
+            {sommelierLoading ? <Loader2 size={15} className="spin" /> : <Sparkles size={15} />}
+            <span>{sommelierLoading ? 'Pensando...' : '✨ Sommelier IA'}</span>
+          </button>
+
+          <button
+            type="button"
+            className="btn-candy"
+            onClick={() => handleOpenMenuShare(menuShareTemplate)}
+            style={{
+              margin: 0,
+              padding: '10px',
+              fontSize: '12px',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              background: '#FFFFFF',
+              border: '1px solid var(--border-color)',
+              color: 'var(--color-text)',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+            }}
+          >
+            <Share2 size={15} color="var(--color-crimson)" strokeWidth={2.2} />
+            <span>Compartir Carta ({availableBatches.length})</span>
+          </button>
+        </div>
+
+        {/* Sommelier Recommendation Card */}
+        {sommelierResult && (
+          <div className="candy-card animate-entrance" style={{ 
+            background: '#FFFFFF', 
+            border: '1px solid var(--color-crimson)', 
+            padding: '14px', 
+            marginTop: '12px',
+            borderRadius: '14px',
+            boxShadow: '0 4px 16px rgba(188, 84, 73, 0.08)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '800', color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
+                <Compass size={14} />
+                <span>Recomendación Sommelier (Gemini)</span>
+              </div>
+              {sommelierResult.badge && (
+                <span style={{ fontSize: '10px', background: 'rgba(188, 84, 73, 0.08)', border: '1px solid rgba(188, 84, 73, 0.2)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                  {sommelierResult.badge}
+                </span>
+              )}
+            </div>
+
+            <h4 style={{ margin: '4px 0 6px 0', fontSize: '15px', fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
+              ☕ {sommelierResult.recommended_batch_name}
+            </h4>
+
+            <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 10px 0', lineHeight: 1.4 }}>
+              {sommelierResult.reason}
+            </p>
+
+            {sommelierResult.flavor_focus && (
+              <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span>🎯 Perfil:</span>
+                <span style={{ color: 'var(--color-crimson)' }}>{sommelierResult.flavor_focus}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Estilo Visual del Inventario */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
@@ -450,10 +699,10 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 onChange={(e) => handleModelChange(e.target.value)}
                 style={{ fontSize: '12px', padding: '10px 12px', minHeight: '44px', width: '100%' }}
               >
-                <option value="gemini-2.0-flash">Gemini 2.0 Flash (Recomendado - Multimodal de Alta Precisión)</option>
-                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Ultra Rápido & Eficiente)</option>
-                <option value="gemini-1.5-pro">Gemini 1.5 Pro (Máximo Razonamiento)</option>
-                <option value="gemini-2.5-pro">Gemini 2.5 Pro (Razonamiento Avanzado & OCR)</option>
+                <option value="gemini-3.8-flash">Gemini 3.8 Flash (Recomendado - Multimodal de Alta Precisión)</option>
+                <option value="gemini-3.8-flash-lite">Gemini 3.8 Flash Lite (Ultra Rápido & Ligero)</option>
+                <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview (Máximo Razonamiento)</option>
+                <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite (Eficiente)</option>
               </select>
             </div>
 
@@ -657,6 +906,174 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 onClick={confirmImportWithMode}
               >
                 Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE COMPARTIR CARTA DE CAFÉS (FREEZER MENU) */}
+      {showMenuShareModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Compartir carta de cafés"
+          onKeyDown={(e) => { if (e.key === 'Escape') setShowMenuShareModal(false); }}
+          tabIndex={-1}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            zIndex: 11000, 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'flex-start',
+            padding: '16px', 
+            boxSizing: 'border-box',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch'
+          }}
+          onClick={() => { setShowMenuShareModal(false); setMenuShareStatus(''); }}
+        >
+          <div className="candy-card static animate-entrance" style={{
+            maxWidth: '480px', width: '100%',
+            maxHeight: 'calc(100dvh - 32px)',
+            margin: 'auto',
+            padding: '16px', boxSizing: 'border-box',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+            display: 'flex', flexDirection: 'column', gap: '10px',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch'
+          }} onClick={(e) => e.stopPropagation()}>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: 0, fontWeight: '800', color: 'var(--color-text)' }}>
+                    Carta de Cafés • Menú en Cava
+                  </h3>
+                  <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                    {availableBatches.length > 0 ? availableBatches.length : safeBatches.length} lotes disponibles
+                  </span>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => setShowMenuShareModal(false)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--color-text-muted)' }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Template Selector */}
+              <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', padding: '0 4px' }}>ESTILO:</span>
+                {[
+                  { id: 'blueprint', label: 'Blueprint' },
+                  { id: 'neobrutalist', label: '⚡ Brutalismo' },
+                  { id: 'diner', label: 'Retro 50s' },
+                  { id: 'kissaten', label: 'Kissaten' }
+                ].map(t => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => {
+                      try { localStorage.setItem('beantag-share-style', t.id); } catch (e) {}
+                      handleOpenMenuShare(t.id);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '4px 6px',
+                      fontSize: '10px',
+                      fontWeight: 'bold',
+                      border: 'none',
+                      borderRadius: '6px',
+                      background: menuShareTemplate === t.id ? 'var(--bg-card)' : 'transparent',
+                      color: menuShareTemplate === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
+                      boxShadow: menuShareTemplate === t.id ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Live Image Preview */}
+            <div style={{
+              textAlign: 'center',
+              backgroundColor: 'var(--bg-canvas, #F1F5F9)',
+              borderRadius: '12px',
+              padding: '8px',
+              overflow: 'hidden',
+              flex: '0 1 auto',
+              minHeight: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              {menuShareImage && (
+                <img 
+                  src={menuShareImage} 
+                  alt="Carta de cafés de especialidad" 
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: 'calc(45dvh - 50px)',
+                    height: 'auto',
+                    objectFit: 'contain',
+                    borderRadius: '6px', 
+                    display: 'block',
+                    margin: '0 auto',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.14)'
+                  }} 
+                />
+              )}
+            </div>
+
+            {menuShareStatus && (
+              <div style={{
+                textAlign: 'center',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                color: 'var(--color-crimson)',
+                background: 'rgba(188, 84, 73, 0.08)',
+                padding: '6px',
+                borderRadius: '6px'
+              }}>
+                {menuShareStatus}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '8px', flexShrink: 0, marginTop: '4px' }}>
+              <button
+                type="button"
+                className="btn-candy"
+                onClick={handleCopyMenuText}
+                style={{
+                  flex: 1, margin: 0, padding: '10px 8px', fontSize: '11.5px', fontWeight: 'bold',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--color-text)'
+                }}
+              >
+                <span>📋 Copiar Texto</span>
+              </button>
+
+              <button
+                type="button"
+                className="btn-candy"
+                onClick={handleNativeMenuShare}
+                style={{
+                  flex: 1.3, margin: 0, padding: '10px 8px', fontSize: '11.5px', fontWeight: '800',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  background: 'var(--color-crimson)', color: '#FFFFFF', border: 'none'
+                }}
+              >
+                <Share2 size={14} />
+                <span>Compartir Imagen</span>
               </button>
             </div>
           </div>
