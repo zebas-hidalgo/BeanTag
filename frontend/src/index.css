@@ -234,6 +234,19 @@
   100% { transform: scale(1); }
 }
 
+.barista-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2.5px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  border-top-color: var(--color-crimson, #BC5449);
+  border-radius: 50%;
+  animation: baristaSpin 0.75s linear infinite;
+}
+
+@keyframes baristaSpin {
+  to { transform: rotate(360deg); }
+}
+
 /* 🎨 Cupertino Adaptive Themes */
 [data-theme="espresso"] {
   --bg-canvas: #F5F4F0;
