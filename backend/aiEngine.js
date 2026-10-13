@@ -1471,7 +1471,7 @@ Instrucción estricta: Analiza la solubilidad según el proceso (${process}), la
 /**
  * Executes a Gemini prompt or multimodal request with retry on 503/429 and automatic cascading fallback across active models.
  */
-async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enableThinking = false) {
+async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enableThinking = false, customTimeoutMs = null) {
   if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
     throw new Error('No se ha configurado una clave API de Gemini válida.');
   }
@@ -1505,6 +1505,10 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
     contents = [{ parts: [{ text: String(contentsOrPrompt || '') }] }];
   }
 
+  const isMultimodal = contents.some(c => Array.isArray(c?.parts) && c.parts.some(p => p.inlineData || p.fileData));
+  const defaultTimeout = isMultimodal ? 25000 : 12000;
+  const timeoutMs = customTimeoutMs || (process.env.GEMINI_TIMEOUT_MS ? parseInt(process.env.GEMINI_TIMEOUT_MS, 10) : defaultTimeout);
+
   let lastError = null;
 
   for (const currentModel of models) {
@@ -1526,7 +1530,7 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
         controller.abort();
-      }, 4000);
+      }, timeoutMs);
 
       try {
         const response = await fetch(url, {
@@ -1569,6 +1573,17 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
           throw err;
         }
 
+        // Si response.status === 429 y el mensaje contiene "quota" o "limit: 0", abortar la cascada inmediatamente en vez de reintentar inútilmente
+        const lowerMsg = errMsg.toLowerCase();
+        const isQuotaExhausted = response.status === 429 && (lowerMsg.includes('quota') || lowerMsg.includes('limit: 0'));
+        if (isQuotaExhausted) {
+          console.warn(`[Gemini Quota] Quota exhausted (${errMsg}). Aborting model cascade immediately.`);
+          const quotaErr = new Error(`Cuota de Google AI agotada (429): ${errMsg}`);
+          quotaErr.status = 429;
+          quotaErr.isQuota = true;
+          throw quotaErr;
+        }
+
         // 404 (Model removed/not found): immediately proceed to next model in cascade
         if (response.status === 404) {
           lastError = new Error(errMsg);
@@ -1587,11 +1602,11 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
       } catch (networkErr) {
         clearTimeout(timeoutId);
         if (networkErr.name === 'AbortError' || controller.signal.aborted) {
-          console.warn(`[Gemini Timeout] Request for ${currentModel} timed out after 4000ms. Aborting and continuing cascade...`);
-          lastError = new Error(`Timeout de 4000ms excedido para ${currentModel}`);
+          console.warn(`[Gemini Timeout] Request for ${currentModel} timed out after ${timeoutMs}ms. Aborting and continuing cascade...`);
+          lastError = new Error(`Timeout de ${timeoutMs}ms excedido para ${currentModel}`);
           break; // break retry loop to try next model in cascade
         }
-        if (networkErr.status === 400 || networkErr.status === 401 || networkErr.status === 403) {
+        if (networkErr.status === 400 || networkErr.status === 401 || networkErr.status === 403 || networkErr.status === 429) {
           throw networkErr;
         }
         lastError = networkErr;
@@ -1605,6 +1620,179 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
   }
 
   throw lastError || new Error('No fue posible contactar los servicios de Google AI');
+}
+
+/**
+ * Executes a Groq chat completion request with retry on 503/429 and realistic timeouts (12s text, 25s vision).
+ */
+async function callGroqWithRetry(
+  promptOrMessages,
+  apiKey,
+  model = null,
+  isVision = false,
+  timeoutMs = null,
+  imageBase64OrUrl = null
+) {
+  if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
+    throw new Error('No se ha configurado una clave API de Groq válida.');
+  }
+
+  let effectiveModel = model;
+  let effectiveIsVision = isVision;
+  let effectiveTimeoutMs = timeoutMs;
+  let effectiveImage = imageBase64OrUrl;
+
+  if (typeof model === 'object' && model !== null) {
+    effectiveModel = model.model || null;
+    effectiveIsVision = model.isVision ?? isVision;
+    effectiveTimeoutMs = model.timeoutMs ?? timeoutMs;
+    effectiveImage = model.imageBase64OrUrl || model.image_url || model.image || imageBase64OrUrl;
+  }
+
+  let promptText = '';
+  if (typeof promptOrMessages === 'string') {
+    promptText = promptOrMessages;
+  } else if (typeof promptOrMessages === 'object' && promptOrMessages !== null && !Array.isArray(promptOrMessages)) {
+    promptText = promptOrMessages.prompt || JSON.stringify(promptOrMessages);
+    if (promptOrMessages.imageBase64OrUrl || promptOrMessages.image_url || promptOrMessages.image) {
+      effectiveImage = effectiveImage || promptOrMessages.imageBase64OrUrl || promptOrMessages.image_url || promptOrMessages.image;
+      effectiveIsVision = true;
+    }
+    if (promptOrMessages.isVision !== undefined) {
+      effectiveIsVision = promptOrMessages.isVision;
+    }
+  }
+
+  const selectedModel = effectiveModel || (effectiveIsVision ? 'llama-3.2-11b-vision-preview' : 'llama-3.3-70b-versatile');
+  const effectiveTimeout = typeof effectiveTimeoutMs === 'number'
+    ? effectiveTimeoutMs
+    : (effectiveIsVision ? 25000 : 12000);
+
+  let messages;
+  if (Array.isArray(promptOrMessages)) {
+    messages = promptOrMessages;
+  } else if (effectiveIsVision) {
+    let formattedImageUrl = effectiveImage || '';
+    if (formattedImageUrl && !formattedImageUrl.startsWith('data:') && !formattedImageUrl.startsWith('http')) {
+      formattedImageUrl = `data:image/jpeg;base64,${formattedImageUrl}`;
+    }
+    messages = [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: promptText },
+          { type: 'image_url', image_url: { url: formattedImageUrl } }
+        ]
+      }
+    ];
+  } else {
+    messages = [
+      {
+        role: 'user',
+        content: promptText
+      }
+    ];
+  }
+
+  const payloadObj = {
+    model: selectedModel,
+    messages
+  };
+
+  if (!effectiveIsVision) {
+    payloadObj.response_format = { type: 'json_object' };
+  }
+
+  const cleanKey = apiKey.trim();
+  const headers = {
+    'Authorization': `Bearer ${cleanKey}`,
+    'Content-Type': 'application/json'
+  };
+
+  let lastError = null;
+  const maxAttempts = 2;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, effectiveTimeout);
+
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payloadObj),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const data = await response.json();
+        const rawContent = data.choices?.[0]?.message?.content || '{}';
+        let text = rawContent.replace(/```json/gi, '').replace(/```/gi, '').trim();
+        const firstBrace = text.indexOf('{');
+        const lastBrace = text.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          text = text.slice(firstBrace, lastBrace + 1);
+        }
+        const parsed = JSON.parse(text);
+        parsed._source = 'groq';
+        parsed._model = selectedModel;
+        return parsed;
+      }
+
+      const errData = await response.json().catch(() => ({}));
+      const errMsg = errData.error?.message || `HTTP ${response.status} (${selectedModel})`;
+      console.warn(`[Groq Attempt] Model ${selectedModel} (attempt ${attempt}) returned ${response.status}: ${errMsg}`);
+
+      const isKeyInvalid = response.status === 401 || response.status === 403 ||
+        (response.status === 400 && (errMsg.toLowerCase().includes('api key') || errMsg.toLowerCase().includes('api_key')));
+
+      if (isKeyInvalid) {
+        const err = new Error(`Error de autenticación con Groq (${response.status}): ${errMsg}`);
+        err.status = response.status;
+        throw err;
+      }
+
+      const lowerMsg = errMsg.toLowerCase();
+      const isQuotaExhausted = response.status === 429 && (lowerMsg.includes('quota') || lowerMsg.includes('limit: 0'));
+      if (isQuotaExhausted) {
+        console.warn(`[Groq Quota] Quota exhausted (${errMsg}). Aborting immediately.`);
+        const quotaErr = new Error(`Cuota de Groq agotada (429): ${errMsg}`);
+        quotaErr.status = 429;
+        throw quotaErr;
+      }
+
+      if ((response.status === 503 || response.status === 429) && attempt === 1) {
+        console.warn(`[Groq Retry] Rate limit or service busy on ${selectedModel}. Retrying in 800ms...`);
+        await new Promise(r => setTimeout(r, 800));
+        continue;
+      }
+
+      lastError = new Error(errMsg);
+      break;
+    } catch (networkErr) {
+      clearTimeout(timeoutId);
+      if (networkErr.name === 'AbortError' || controller.signal.aborted) {
+        console.warn(`[Groq Timeout] Request for ${selectedModel} timed out after ${effectiveTimeout}ms.`);
+        lastError = new Error(`Timeout de ${effectiveTimeout}ms excedido para Groq (${selectedModel})`);
+        break;
+      }
+      if (networkErr.status === 400 || networkErr.status === 401 || networkErr.status === 403 || networkErr.status === 429) {
+        throw networkErr;
+      }
+      lastError = networkErr;
+      if (attempt === 1) {
+        await new Promise(r => setTimeout(r, 800));
+        continue;
+      }
+      break;
+    }
+  }
+
+  throw lastError || new Error(`No fue posible contactar el servicio de Groq (${selectedModel})`);
 }
 
 module.exports = {
@@ -1630,5 +1818,6 @@ module.exports = {
   computeOfflineTuning,
   computeOfflineSommelier,
   callGeminiWithRetry,
+  callGroqWithRetry,
   normalizeRecipe
 };
