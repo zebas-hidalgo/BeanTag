@@ -5,7 +5,7 @@ import SlotAssignModal from './SlotAssignModal';
 
 // Helpers for artisanal Bean Cellar aesthetic
 const getRoastStyle = (roast) => {
-  const r = (roast || '').toLowerCase();
+  const r = String(roast || '').toLowerCase();
   if (r.includes('claro') || r.includes('light') || r.includes('rubio')) {
     return {
       gradient: 'linear-gradient(180deg, rgba(217,119,6,0.15) 0%, #D97706 100%)',
@@ -1110,6 +1110,9 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                                     backgroundColor: processBadge.bg,
                                     color: processBadge.color,
                                     whiteSpace: 'nowrap',
+                                    maxWidth: '100%',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
                                     lineHeight: 1.2
                                   }}
                                 >
