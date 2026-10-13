@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Nfc, LogOut } from 'lucide-react';
 import Inventory from './components/Inventory';
-import BatchDetail from './components/BatchDetail';
-import BatchCreator from './components/BatchCreator';
-import BrewHistory from './components/BrewHistory';
-import Settings from './components/Settings';
-import NfcToolsModal from './components/NfcToolsModal';
-import AuthModal from './components/AuthModal';
 import BottomNav from './components/BottomNav';
 import { apiUrl } from './utils/api';
+
+const BatchDetail = lazy(() => import('./components/BatchDetail'));
+const BatchCreator = lazy(() => import('./components/BatchCreator'));
+const BrewHistory = lazy(() => import('./components/BrewHistory'));
+const Settings = lazy(() => import('./components/Settings'));
+const NfcToolsModal = lazy(() => import('./components/NfcToolsModal'));
+const AuthModal = lazy(() => import('./components/AuthModal'));
 
 const getInitialRoute = () => {
   const path = window.location.pathname;
@@ -492,61 +493,63 @@ export default function App() {
           />
         )}
 
-        {currentView === 'detail' && selectedBatchId && (
-          <BatchDetail 
-            key={selectedBatchId}
-            batchId={selectedBatchId} 
-            batches={batches}
-            currentUser={currentUser}
-            onRequireAuth={() => setShowAuthModal(true)}
-            prefillRecipe={prefillRecipe}
-            onBack={handleBack}
-            onSubtractDose={handleSubtractDose}
-            onSaveRecipe={handleSaveRecipe}
-            onDeleteBatch={handleDeleteBatch}
-            onEditBatch={(batch) => { setBatchToEdit(batch); setCurrentView('creator'); }}
-            showToast={showToast}
-          />
-        )}
+        <Suspense fallback={<div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="barista-spinner" /></div>}>
+          {currentView === 'detail' && selectedBatchId && (
+            <BatchDetail 
+              key={selectedBatchId}
+              batchId={selectedBatchId} 
+              batches={batches}
+              currentUser={currentUser}
+              onRequireAuth={() => setShowAuthModal(true)}
+              prefillRecipe={prefillRecipe}
+              onBack={handleBack}
+              onSubtractDose={handleSubtractDose}
+              onSaveRecipe={handleSaveRecipe}
+              onDeleteBatch={handleDeleteBatch}
+              onEditBatch={(batch) => { setBatchToEdit(batch); setCurrentView('creator'); }}
+              showToast={showToast}
+            />
+          )}
 
-        {currentView === 'creator' && (
-          <BatchCreator 
-            batchToEdit={batchToEdit}
-            onBatchCreated={() => {
-              fetchBatches();
-              if (batchToEdit) {
-                setCurrentView('detail');
-                setSelectedBatchId(batchToEdit.id);
-                setBatchToEdit(null);
-              } else {
-                setCurrentView('inventory');
-              }
-            }} 
-            onBack={handleBack}
-            onCancel={handleBack}
-            showToast={showToast}
-          />
-        )}
+          {currentView === 'creator' && (
+            <BatchCreator 
+              batchToEdit={batchToEdit}
+              onBatchCreated={() => {
+                fetchBatches();
+                if (batchToEdit) {
+                  setCurrentView('detail');
+                  setSelectedBatchId(batchToEdit.id);
+                  setBatchToEdit(null);
+                } else {
+                  setCurrentView('inventory');
+                }
+              }} 
+              onBack={handleBack}
+              onCancel={handleBack}
+              showToast={showToast}
+            />
+          )}
 
-        {currentView === 'brews' && (
-          <BrewHistory 
-            batches={batches}
-            onSelectBatch={handleSelectBatch}
-            onNavigateToInventory={() => setCurrentView('inventory')}
-            showToast={showToast}
-          />
-        )}
+          {currentView === 'brews' && (
+            <BrewHistory 
+              batches={batches}
+              onSelectBatch={handleSelectBatch}
+              onNavigateToInventory={() => setCurrentView('inventory')}
+              showToast={showToast}
+            />
+          )}
 
-        {currentView === 'settings' && (
-          <Settings 
-            theme={theme}
-            setTheme={setTheme}
-            currentUser={currentUser}
-            batches={batches}
-            onLogout={handleLogout}
-            showToast={showToast}
-          />
-        )}
+          {currentView === 'settings' && (
+            <Settings 
+              theme={theme}
+              setTheme={setTheme}
+              currentUser={currentUser}
+              batches={batches}
+              onLogout={handleLogout}
+              showToast={showToast}
+            />
+          )}
+        </Suspense>
       </main>
 
       {toast.visible && (
@@ -610,18 +613,20 @@ export default function App() {
         </div>
       )}
 
-      {showNfcTools && (
-        <NfcToolsModal batches={batches} onClose={() => setShowNfcTools(false)} showToast={showToast} />
-      )}
+      <Suspense fallback={null}>
+        {showNfcTools && (
+          <NfcToolsModal batches={batches} onClose={() => setShowNfcTools(false)} showToast={showToast} />
+        )}
 
-      {showAuthModal && (
-        <AuthModal 
-          isOpen={showAuthModal} 
-          onClose={() => setShowAuthModal(false)} 
-          onSuccess={handleAuthSuccess} 
-          showToast={showToast} 
-        />
-      )}
+        {showAuthModal && (
+          <AuthModal 
+            isOpen={showAuthModal} 
+            onClose={() => setShowAuthModal(false)} 
+            onSuccess={handleAuthSuccess} 
+            showToast={showToast} 
+          />
+        )}
+      </Suspense>
 
       {/* Genjutsu Floating Bottom Navigation Bar */}
       <BottomNav currentView={currentView} setCurrentView={setCurrentView} />

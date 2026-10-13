@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { Plus, Zap, Snowflake, CheckCircle2, Mountain, X, MoreHorizontal, MapPin, Flag, ClipboardList, Coffee, Flame, Search as SearchIcon, Package } from 'lucide-react';
 import { RenderScaChips } from '../utils/scaIcons';
-import TubeRacksView from './TubeRacksView';
+
+const TubeRacksView = lazy(() => import('./TubeRacksView'));
 
 export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onSubtractDose, onRefreshBatches, showToast }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -112,12 +113,14 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
       </div>
 
       {inventorySubView === 'racks' ? (
-        <TubeRacksView
-          batches={safeBatches}
-          onSelectBatch={onSelectBatch}
-          onRefreshBatches={onRefreshBatches}
-          showToast={showToast}
-        />
+        <Suspense fallback={<div style={{ minHeight: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="barista-spinner" /></div>}>
+          <TubeRacksView
+            batches={safeBatches}
+            onSelectBatch={onSelectBatch}
+            onRefreshBatches={onRefreshBatches}
+            showToast={showToast}
+          />
+        </Suspense>
       ) : (
         <>
           {/* 1. Search Bar */}

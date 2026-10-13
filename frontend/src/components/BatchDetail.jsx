@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
 import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers, SlidersHorizontal, Cylinder, Compass, Target, Trophy, Sliders, Lightbulb, Check } from 'lucide-react';
@@ -8,9 +8,10 @@ import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMen
 import { FAMOUS_RECIPES } from '../utils/famousRecipes';
 import ScaRadarChart from './ScaRadarChart';
 import DialInAssistant from './DialInAssistant';
-import BrewGuideModal from './BrewGuideModal';
 import DialInTimeline from './DialInTimeline';
 import { GRINDERS, getGrinderConfig, scaleGrinderSettingForDose, calculateDoseDeltaMicrons } from '../utils/grinders';
+
+const BrewGuideModal = lazy(() => import('./BrewGuideModal'));
 
 const calculateMicrons = (rot, num, click) => {
   const r = parseInt(rot) || 0;
@@ -2899,13 +2900,17 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       )}
 
       {/* Interactive Barista Brew Guide Modal */}
-      <BrewGuideModal
-        isOpen={isBrewGuideOpen}
-        onClose={() => setIsBrewGuideOpen(false)}
-        recipe={activeBrewRecipe}
-        batch={batch}
-        onSaveTunedRecipe={handleSaveTunedRecipe}
-      />
+      {isBrewGuideOpen && (
+        <Suspense fallback={null}>
+          <BrewGuideModal
+            isOpen={isBrewGuideOpen}
+            onClose={() => setIsBrewGuideOpen(false)}
+            recipe={activeBrewRecipe}
+            batch={batch}
+            onSaveTunedRecipe={handleSaveTunedRecipe}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
