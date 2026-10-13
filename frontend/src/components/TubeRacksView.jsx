@@ -7,6 +7,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
   const [racks, setRacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedRackId, setSelectedRackId] = useState(null);
 
   // Modals state
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -34,7 +35,14 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
       const res = await fetch(apiUrl('api/racks'), { headers: getAuthHeaders() });
       if (!res.ok) throw new Error('Error al cargar portatubos (' + res.status + ')');
       const data = await res.json();
-      setRacks(Array.isArray(data) ? data : []);
+      const loadedRacks = Array.isArray(data) ? data : [];
+      setRacks(loadedRacks);
+      setSelectedRackId(prev => {
+        if (!prev || !loadedRacks.some(r => r.id === prev)) {
+          return loadedRacks[0]?.id || null;
+        }
+        return prev;
+      });
     } catch (err) {
       console.error('fetchRacks error:', err);
       setError(err.message);
@@ -46,6 +54,17 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
   useEffect(() => {
     fetchRacks();
   }, [fetchRacks]);
+
+  // Synchronize selectedRackId if null or no longer in racks
+  useEffect(() => {
+    if (racks.length > 0) {
+      if (!selectedRackId || !racks.some(r => r.id === selectedRackId)) {
+        setSelectedRackId(racks[0].id);
+      }
+    } else if (selectedRackId !== null) {
+      setSelectedRackId(null);
+    }
+  }, [racks, selectedRackId]);
 
   // Handle creating a new rack
   const handleCreateRack = async (e) => {
@@ -60,6 +79,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
       if (!res.ok) throw new Error('No se pudo crear el portatubos');
       const data = await res.json();
       setRacks(prev => [...prev, data.rack]);
+      setSelectedRackId(data.rack.id);
       setNewRackName('');
       setShowCreateModal(false);
       if (showToast) showToast(`Portatubos "${data.rack.name}" creado con éxito ✨`, { type: 'success' });
@@ -96,7 +116,16 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
         headers: getAuthHeaders()
       });
       if (!res.ok) throw new Error('Error al eliminar');
-      setRacks(prev => prev.filter(r => r.id !== rackId));
+      setRacks(prev => {
+        const remaining = prev.filter(r => r.id !== rackId);
+        setSelectedRackId(curr => {
+          if (curr === rackId) {
+            return remaining[0]?.id || null;
+          }
+          return curr;
+        });
+        return remaining;
+      });
       setOpenRackMenuId(null);
       if (showToast) showToast('Portatubos eliminado', { type: 'info' });
     } catch (err) {
@@ -229,6 +258,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
   // Total stats
   const totalSlots = racks.length * 6;
   const occupiedSlots = racks.reduce((acc, r) => acc + (r.slots ? r.slots.filter(s => s.batch_id).length : 0), 0);
+  const activeRack = racks.find(r => r.id === selectedRackId) || racks[0] || null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '90px' }}>
@@ -272,7 +302,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                 border: '1px solid var(--barista-instr-border, #FDE68A)'
               }}
             >
-              {occupiedSlots} / {totalSlots} tubos ocupados
+              {occupiedSlots} / {totalSlots} tubos ocupados en total
             </span>
           </div>
           <p
@@ -429,163 +459,249 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
         </div>
       )}
 
-      {/* Racks List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        {racks.map((rack) => {
-          const occupiedInRack = rack.slots ? rack.slots.filter(s => s.batch_id).length : 0;
-          const isMenuOpen = openRackMenuId === rack.id;
+      {/* Horizontal Pill-Tab Navigation Bar */}
+      {racks.length > 0 && (
+        <div
+          className="hide-scrollbar"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            overflowX: 'auto',
+            padding: '2px 2px 6px 2px',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
+          }}
+          role="tablist"
+          aria-label="Portatubos disponibles"
+        >
+          {racks.map((rack) => {
+            const isSelected = rack.id === activeRack?.id;
+            const occupiedInThisRack = rack.slots ? rack.slots.filter(s => s.batch_id).length : 0;
 
-          return (
-            <div
-              key={rack.id}
-              style={{
-                backgroundColor: 'var(--barista-bg-surface, var(--bg-card, #FFFFFF))',
-                borderRadius: 'var(--barista-radius-lg, 20px)',
-                border: '2px solid var(--barista-border-hairline, var(--border-color))',
-                boxShadow: 'var(--barista-shadow-elevated, 0 8px 24px rgba(0,0,0,0.06))',
-                overflow: 'hidden'
-              }}
-            >
-              {/* Rack Header */}
-              <div
+            return (
+              <button
+                key={rack.id}
+                type="button"
+                role="tab"
+                aria-selected={isSelected}
+                onClick={() => {
+                  setSelectedRackId(rack.id);
+                  setOpenRackMenuId(null);
+                }}
                 style={{
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '14px 18px',
-                  backgroundColor: 'var(--barista-bg-elevated, var(--bg-header))',
-                  borderBottom: '2px solid var(--barista-border-hairline, var(--border-color))',
-                  position: 'relative'
+                  gap: '8px',
+                  padding: '8px 16px',
+                  borderRadius: 'var(--barista-radius-pill, 9999px)',
+                  border: isSelected
+                    ? '1.5px solid var(--color-crimson, #E53E3E)'
+                    : '1px solid var(--barista-border-hairline, var(--border-color))',
+                  backgroundColor: isSelected
+                    ? 'var(--color-crimson, #E53E3E)'
+                    : 'var(--barista-bg-elevated, #F8FAFC)',
+                  color: isSelected ? '#FFFFFF' : 'var(--barista-text-secondary, #64748B)',
+                  fontWeight: isSelected ? '800' : '600',
+                  fontSize: '13px',
+                  fontFamily: 'var(--font-heading)',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  transition: 'all 0.15s ease',
+                  boxShadow: isSelected
+                    ? '0 2px 10px rgba(229, 62, 62, 0.35)'
+                    : 'none'
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span
+                <span>☕ {rack.name}</span>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    fontWeight: '800',
+                    padding: '2px 7px',
+                    borderRadius: '9999px',
+                    backgroundColor: isSelected
+                      ? 'rgba(255, 255, 255, 0.25)'
+                      : 'var(--barista-bg-surface, #FFFFFF)',
+                    color: isSelected ? '#FFFFFF' : 'var(--barista-text-secondary, #64748B)',
+                    border: isSelected
+                      ? '1px solid rgba(255, 255, 255, 0.4)'
+                      : '1px solid var(--barista-border-hairline, var(--border-color))'
+                  }}
+                >
+                  {occupiedInThisRack}/6
+                </span>
+              </button>
+            );
+          })}
+
+          {/* + Nuevo Rack Pill Button */}
+          <button
+            type="button"
+            onClick={() => setShowCreateModal(true)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 14px',
+              borderRadius: 'var(--barista-radius-pill, 9999px)',
+              border: '1px dashed var(--barista-border-hairline, var(--border-color))',
+              backgroundColor: 'transparent',
+              color: 'var(--barista-text-secondary, #64748B)',
+              fontWeight: '700',
+              fontSize: '13px',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Plus size={15} />
+            <span>+ Nuevo Rack</span>
+          </button>
+        </div>
+      )}
+
+      {/* Prominently Displayed Active Rack */}
+      {activeRack && (() => {
+        const occupiedInRack = activeRack.slots ? activeRack.slots.filter(s => s.batch_id).length : 0;
+        const isMenuOpen = openRackMenuId === activeRack.id;
+
+        return (
+          <div
+            style={{
+              backgroundColor: 'var(--barista-bg-surface, var(--bg-card, #FFFFFF))',
+              borderRadius: 'var(--barista-radius-lg, 20px)',
+              border: '2px solid var(--barista-border-hairline, var(--border-color))',
+              boxShadow: 'var(--barista-shadow-elevated, 0 8px 24px rgba(0,0,0,0.06))',
+              overflow: 'hidden'
+            }}
+          >
+            {/* Rack Header */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '14px 18px',
+                backgroundColor: 'var(--barista-bg-elevated, var(--bg-header))',
+                borderBottom: '2px solid var(--barista-border-hairline, var(--border-color))',
+                position: 'relative'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span
+                  style={{
+                    width: '12px',
+                    height: '12px',
+                    borderRadius: '50%',
+                    backgroundColor:
+                      occupiedInRack === 6
+                        ? 'var(--barista-accent-mint, #10B981)'
+                        : occupiedInRack > 0
+                        ? 'var(--barista-accent-honey, #D97706)'
+                        : 'var(--barista-text-muted, #94A3B8)'
+                  }}
+                />
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: '16px',
+                    fontWeight: '800',
+                    fontFamily: 'var(--font-heading)',
+                    color: 'var(--color-text, #0F172A)'
+                  }}
+                >
+                  {activeRack.name}
+                </h3>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    fontWeight: '700',
+                    padding: '2px 7px',
+                    borderRadius: '9999px',
+                    backgroundColor: 'var(--barista-bg-surface, #FFFFFF)',
+                    border: '1px solid var(--barista-border-hairline, var(--border-color))',
+                    color: 'var(--barista-text-secondary, #64748B)'
+                  }}
+                >
+                  {occupiedInRack} / 6 tubos
+                </span>
+              </div>
+
+              <div style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={() => setOpenRackMenuId(isMenuOpen ? null : activeRack.id)}
+                  aria-label="Opciones del portatubos"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    padding: '6px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    color: 'var(--barista-text-secondary, #64748B)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <MoreVertical size={18} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isMenuOpen && (
+                  <div
                     style={{
-                      width: '12px',
-                      height: '12px',
-                      borderRadius: '50%',
-                      backgroundColor: occupiedInRack === 6 ? 'var(--barista-accent-mint, #10B981)' : occupiedInRack > 0 ? 'var(--barista-accent-honey, #D97706)' : 'var(--barista-text-muted, #94A3B8)'
-                    }}
-                  />
-                  <h3
-                    style={{
-                      margin: 0,
-                      fontSize: '16px',
-                      fontWeight: '800',
-                      fontFamily: 'var(--font-heading)',
-                      color: 'var(--color-text, #0F172A)'
-                    }}
-                  >
-                    {rack.name}
-                  </h3>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      fontFamily: 'var(--font-mono)',
-                      fontWeight: '700',
-                      padding: '2px 7px',
-                      borderRadius: '9999px',
+                      position: 'absolute',
+                      top: '100%',
+                      right: 0,
+                      zIndex: 50,
+                      marginTop: '4px',
+                      width: '200px',
                       backgroundColor: 'var(--barista-bg-surface, #FFFFFF)',
+                      borderRadius: '12px',
                       border: '1px solid var(--barista-border-hairline, var(--border-color))',
-                      color: 'var(--barista-text-secondary, #64748B)'
-                    }}
-                  >
-                    {occupiedInRack} / 6 tubos
-                  </span>
-                </div>
-
-                <div style={{ position: 'relative' }}>
-                  <button
-                    type="button"
-                    onClick={() => setOpenRackMenuId(isMenuOpen ? null : rack.id)}
-                    aria-label="Opciones del portatubos"
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
+                      boxShadow: 'var(--barista-shadow-elevated, 0 10px 25px rgba(0,0,0,0.15))',
                       padding: '6px',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      color: 'var(--barista-text-secondary, #64748B)',
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
+                      flexDirection: 'column',
+                      gap: '2px'
                     }}
                   >
-                    <MoreVertical size={18} />
-                  </button>
-
-                  {/* Dropdown Menu */}
-                  {isMenuOpen && (
-                    <div
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingRack({ id: activeRack.id, name: activeRack.name });
+                        setOpenRackMenuId(null);
+                      }}
                       style={{
-                        position: 'absolute',
-                        top: '100%',
-                        right: 0,
-                        zIndex: 50,
-                        marginTop: '4px',
-                        width: '200px',
-                        backgroundColor: 'var(--barista-bg-surface, #FFFFFF)',
-                        borderRadius: '12px',
-                        border: '1px solid var(--barista-border-hairline, var(--border-color))',
-                        boxShadow: 'var(--barista-shadow-elevated, 0 10px 25px rgba(0,0,0,0.15))',
-                        padding: '6px',
                         display: 'flex',
-                        flexDirection: 'column',
-                        gap: '2px'
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 10px',
+                        background: 'none',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        color: 'var(--barista-text-primary, #0F172A)',
+                        cursor: 'pointer',
+                        textAlign: 'left'
                       }}
                     >
+                      <Edit3 size={15} />
+                      <span>Renombrar</span>
+                    </button>
+
+                    {occupiedInRack > 0 && (
                       <button
                         type="button"
-                        onClick={() => {
-                          setEditingRack({ id: rack.id, name: rack.name });
-                          setOpenRackMenuId(null);
-                        }}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          padding: '8px 10px',
-                          background: 'none',
-                          border: 'none',
-                          borderRadius: '6px',
-                          fontSize: '13px',
-                          fontWeight: '600',
-                          color: 'var(--barista-text-primary, #0F172A)',
-                          cursor: 'pointer',
-                          textAlign: 'left'
-                        }}
-                      >
-                        <Edit3 size={15} />
-                        <span>Renombrar</span>
-                      </button>
-
-                      {occupiedInRack > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => handleEmptyRack(rack.id)}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '8px 10px',
-                            background: 'none',
-                            border: 'none',
-                            borderRadius: '6px',
-                            fontSize: '13px',
-                            fontWeight: '600',
-                            color: 'var(--barista-accent-danger, #EF4444)',
-                            cursor: 'pointer',
-                            textAlign: 'left'
-                          }}
-                        >
-                          <Layers size={15} />
-                          <span>Vaciar todo el rack</span>
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteRack(rack.id)}
+                        onClick={() => handleEmptyRack(activeRack.id)}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -601,244 +717,266 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                           textAlign: 'left'
                         }}
                       >
-                        <Trash2 size={15} />
-                        <span>Eliminar portatubos</span>
+                        <Layers size={15} />
+                        <span>Vaciar todo el rack</span>
                       </button>
-                    </div>
-                  )}
-                </div>
-              </div>
+                    )}
 
-              {/* Physical Neo-Brutalist Rack Base Body (2x3 Grid) */}
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteRack(activeRack.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 10px',
+                        background: 'none',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        color: 'var(--barista-accent-danger, #EF4444)',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <Trash2 size={15} />
+                      <span>Eliminar portatubos</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Physical Neo-Brutalist Rack Base Body (2x3 Grid) */}
+            <div
+              style={{
+                padding: '18px',
+                backgroundColor: 'var(--barista-bg-surface, var(--bg-card, #FFFFFF))',
+                backgroundImage: 'radial-gradient(var(--barista-border-hairline, rgba(0,0,0,0.06)) 1px, transparent 1px)',
+                backgroundSize: '16px 16px'
+              }}
+            >
+              {/* Visual Stand Frame */}
               <div
                 style={{
-                  padding: '18px',
-                  backgroundColor: 'var(--barista-bg-surface, var(--bg-card, #FFFFFF))',
-                  backgroundImage: 'radial-gradient(var(--barista-border-hairline, rgba(0,0,0,0.06)) 1px, transparent 1px)',
-                  backgroundSize: '16px 16px'
+                  backgroundColor: 'var(--barista-bg-elevated, #F8FAFC)',
+                  border: '2px solid var(--barista-border-hairline, var(--border-color))',
+                  borderRadius: 'var(--barista-radius-lg, 16px)',
+                  padding: '14px',
+                  boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.04)'
                 }}
               >
-                {/* Visual Stand Frame */}
                 <div
                   style={{
-                    backgroundColor: 'var(--barista-bg-elevated, #F8FAFC)',
-                    border: '2px solid var(--barista-border-hairline, var(--border-color))',
-                    borderRadius: 'var(--barista-radius-lg, 16px)',
-                    padding: '14px',
-                    boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.04)'
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '12px'
                   }}
                 >
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(3, 1fr)',
-                      gap: '12px'
-                    }}
-                  >
-                    {[1, 2, 3, 4, 5, 6].map((position) => {
-                      const slot = rack.slots ? rack.slots.find(s => s.position === position) : null;
-                      const isFilled = Boolean(slot && slot.batch_id);
+                  {[1, 2, 3, 4, 5, 6].map((position) => {
+                    const slot = activeRack.slots ? activeRack.slots.find(s => s.position === position) : null;
+                    const isFilled = Boolean(slot && slot.batch_id);
 
-                      // Match with batch in batches list for full info if needed
-                      const matchedBatch = isFilled ? (batches || []).find(b => b.id === slot.batch_id) : null;
-                      const batchName = (slot && slot.batch_name) || (matchedBatch && matchedBatch.name) || 'Café Especialidad';
-                      const roaster = (slot && slot.roaster) || (matchedBatch && matchedBatch.roaster) || '';
-                      const origin = (slot && slot.origin) || (matchedBatch && matchedBatch.origin) || '';
-                      const doseWeight = (slot && slot.dose_weight) || (matchedBatch && matchedBatch.dose_weight) || '20.0g';
+                    // Match with batch in batches list for full info if needed
+                    const matchedBatch = isFilled ? (batches || []).find(b => b.id === slot.batch_id) : null;
+                    const batchName = (slot && slot.batch_name) || (matchedBatch && matchedBatch.name) || 'Café Especialidad';
+                    const roaster = (slot && slot.roaster) || (matchedBatch && matchedBatch.roaster) || '';
+                    const origin = (slot && slot.origin) || (matchedBatch && matchedBatch.origin) || '';
+                    const doseWeight = (slot && slot.dose_weight) || (matchedBatch && matchedBatch.dose_weight) || '20.0g';
 
-                      return (
+                    return (
+                      <div
+                        key={position}
+                        onClick={() => {
+                          if (isFilled) {
+                            setActionTarget({ rack: activeRack, slot, batch: matchedBatch || slot });
+                          } else {
+                            setAssignTarget({ rack: activeRack, position });
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Tubo ${position}: ${isFilled ? batchName : 'Vacío'}`}
+                        style={{
+                          minHeight: '125px',
+                          backgroundColor: isFilled
+                            ? 'var(--barista-bg-surface, #FFFFFF)'
+                            : 'var(--barista-bg-subtle, rgba(241, 245, 249, 0.5))',
+                          borderRadius: '14px',
+                          border: isFilled
+                            ? '2px solid var(--barista-accent-honey, #D97706)'
+                            : '2px dashed var(--barista-border-hairline, var(--border-color))',
+                          boxShadow: isFilled
+                            ? '0 4px 12px rgba(217, 119, 6, 0.15), inset 0 1px 0 rgba(255,255,255,0.8)'
+                            : 'none',
+                          padding: '10px 8px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          position: 'relative',
+                          boxSizing: 'border-box'
+                        }}
+                      >
+                        {/* Tube Top Aperture & Position Tag */}
                         <div
-                          key={position}
-                          onClick={() => {
-                            if (isFilled) {
-                              setActionTarget({ rack, slot, batch: matchedBatch || slot });
-                            } else {
-                              setAssignTarget({ rack, position });
-                            }
-                          }}
-                          role="button"
-                          tabIndex={0}
-                          aria-label={`Tubo ${position}: ${isFilled ? batchName : 'Vacío'}`}
                           style={{
-                            minHeight: '125px',
-                            backgroundColor: isFilled
-                              ? 'var(--barista-bg-surface, #FFFFFF)'
-                              : 'var(--barista-bg-subtle, rgba(241, 245, 249, 0.5))',
-                            borderRadius: '14px',
-                            border: isFilled
-                              ? '2px solid var(--barista-accent-honey, #D97706)'
-                              : '2px dashed var(--barista-border-hairline, var(--border-color))',
-                            boxShadow: isFilled
-                              ? '0 4px 12px rgba(217, 119, 6, 0.15), inset 0 1px 0 rgba(255,255,255,0.8)'
-                              : 'none',
-                            padding: '10px 8px',
                             display: 'flex',
-                            flexDirection: 'column',
+                            alignItems: 'center',
                             justifyContent: 'space-between',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s ease',
-                            position: 'relative',
-                            boxSizing: 'border-box'
+                            width: '100%'
                           }}
                         >
-                          {/* Tube Top Aperture & Position Tag */}
-                          <div
+                          <span
                             style={{
+                              fontSize: '10px',
+                              fontFamily: 'var(--font-mono)',
+                              fontWeight: '900',
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              backgroundColor: isFilled
+                                ? 'var(--barista-accent-honey, #D97706)'
+                                : 'var(--barista-bg-elevated, #E2E8F0)',
+                              color: isFilled ? '#FFFFFF' : 'var(--barista-text-secondary, #64748B)',
                               display: 'flex',
                               alignItems: 'center',
-                              justifyContent: 'space-between',
-                              width: '100%'
+                              justifyContent: 'center'
                             }}
                           >
+                            {position}
+                          </span>
+
+                          {isFilled ? (
                             <span
                               style={{
                                 fontSize: '10px',
                                 fontFamily: 'var(--font-mono)',
-                                fontWeight: '900',
-                                width: '20px',
-                                height: '20px',
-                                borderRadius: '50%',
-                                backgroundColor: isFilled
-                                  ? 'var(--barista-accent-honey, #D97706)'
-                                  : 'var(--barista-bg-elevated, #E2E8F0)',
-                                color: isFilled ? '#FFFFFF' : 'var(--barista-text-secondary, #64748B)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
+                                fontWeight: '800',
+                                color: 'var(--barista-accent-cryo, #0284C7)',
+                                backgroundColor: 'var(--barista-accent-cryo-bg, #E0F2FE)',
+                                padding: '1px 5px',
+                                borderRadius: '4px'
                               }}
                             >
-                              {position}
+                              {doseWeight}
                             </span>
-
-                            {isFilled ? (
-                              <span
-                                style={{
-                                  fontSize: '10px',
-                                  fontFamily: 'var(--font-mono)',
-                                  fontWeight: '800',
-                                  color: 'var(--barista-accent-cryo, #0284C7)',
-                                  backgroundColor: 'var(--barista-accent-cryo-bg, #E0F2FE)',
-                                  padding: '1px 5px',
-                                  borderRadius: '4px'
-                                }}
-                              >
-                                {doseWeight}
-                              </span>
-                            ) : (
-                              <span
-                                style={{
-                                  fontSize: '9px',
-                                  fontFamily: 'var(--font-mono)',
-                                  color: 'var(--barista-text-muted, #94A3B8)',
-                                  fontWeight: '600'
-                                }}
-                              >
-                                VACÍO
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Slot Center: Tube Content or Plus icon */}
-                          {isFilled ? (
-                            <div style={{ textAlign: 'center', padding: '4px 0' }}>
-                              {/* Cylindrical Tube Rim Graphic */}
-                              <div
-                                style={{
-                                  width: '32px',
-                                  height: '10px',
-                                  borderRadius: '50%',
-                                  border: '2px solid var(--barista-accent-honey, #D97706)',
-                                  backgroundColor: 'var(--barista-instr-bg, #FEF3C7)',
-                                  margin: '0 auto 6px',
-                                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.15)'
-                                }}
-                              />
-                              <div
-                                style={{
-                                  fontSize: '12px',
-                                  fontWeight: '800',
-                                  fontFamily: 'var(--font-heading)',
-                                  color: 'var(--color-text, #0F172A)',
-                                  lineHeight: 1.2,
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 2,
-                                  WebkitBoxOrient: 'vertical'
-                                }}
-                              >
-                                {batchName}
-                              </div>
-                            </div>
                           ) : (
-                            <div
+                            <span
                               style={{
-                                textAlign: 'center',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '4px',
-                                padding: '8px 0'
+                                fontSize: '9px',
+                                fontFamily: 'var(--font-mono)',
+                                color: 'var(--barista-text-muted, #94A3B8)',
+                                fontWeight: '600'
                               }}
                             >
-                              <div
-                                style={{
-                                  width: '28px',
-                                  height: '28px',
-                                  borderRadius: '50%',
-                                  backgroundColor: 'var(--barista-bg-surface, #FFFFFF)',
-                                  border: '1px dashed var(--barista-border-hairline, var(--border-color))',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  color: 'var(--barista-text-muted, #94A3B8)'
-                                }}
-                              >
-                                <Plus size={16} />
-                              </div>
-                              <span
-                                style={{
-                                  fontSize: '11px',
-                                  fontWeight: '700',
-                                  color: 'var(--barista-text-muted, #94A3B8)'
-                                }}
-                              >
-                                Asignar
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Tube Bottom Tag: Roaster or Origin */}
-                          {isFilled ? (
-                            <div
-                              style={{
-                                fontSize: '10px',
-                                fontWeight: '600',
-                                color: 'var(--barista-text-secondary, #64748B)',
-                                textAlign: 'center',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                borderTop: '1px solid var(--barista-border-hairline, rgba(0,0,0,0.06))',
-                                paddingTop: '4px',
-                                marginTop: '2px'
-                              }}
-                            >
-                              {roaster || origin || 'Monodosis'}
-                            </div>
-                          ) : (
-                            <div style={{ height: '14px' }} />
+                              VACÍO
+                            </span>
                           )}
                         </div>
-                      );
-                    })}
-                  </div>
+
+                        {/* Slot Center: Tube Content or Plus icon */}
+                        {isFilled ? (
+                          <div style={{ textAlign: 'center', padding: '4px 0' }}>
+                            {/* Cylindrical Tube Rim Graphic */}
+                            <div
+                              style={{
+                                width: '32px',
+                                height: '10px',
+                                borderRadius: '50%',
+                                border: '2px solid var(--barista-accent-honey, #D97706)',
+                                backgroundColor: 'var(--barista-instr-bg, #FEF3C7)',
+                                margin: '0 auto 6px',
+                                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.15)'
+                              }}
+                            />
+                            <div
+                              style={{
+                                fontSize: '12px',
+                                fontWeight: '800',
+                                fontFamily: 'var(--font-heading)',
+                                color: 'var(--color-text, #0F172A)',
+                                lineHeight: 1.2,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical'
+                              }}
+                            >
+                              {batchName}
+                            </div>
+                          </div>
+                        ) : (
+                          <div
+                            style={{
+                              textAlign: 'center',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '8px 0'
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: '28px',
+                                height: '28px',
+                                borderRadius: '50%',
+                                backgroundColor: 'var(--barista-bg-surface, #FFFFFF)',
+                                border: '1px dashed var(--barista-border-hairline, var(--border-color))',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'var(--barista-text-muted, #94A3B8)'
+                              }}
+                            >
+                              <Plus size={16} />
+                            </div>
+                            <span
+                              style={{
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                color: 'var(--barista-text-muted, #94A3B8)'
+                              }}
+                            >
+                              Asignar
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Tube Bottom Tag: Roaster or Origin */}
+                        {isFilled ? (
+                          <div
+                            style={{
+                              fontSize: '10px',
+                              fontWeight: '600',
+                              color: 'var(--barista-text-secondary, #64748B)',
+                              textAlign: 'center',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              borderTop: '1px solid var(--barista-border-hairline, rgba(0,0,0,0.06))',
+                              paddingTop: '4px',
+                              marginTop: '2px'
+                            }}
+                          >
+                            {roaster || origin || 'Monodosis'}
+                          </div>
+                        ) : (
+                          <div style={{ height: '14px' }} />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })()}
 
       {/* Modal: New Rack */}
       {showCreateModal && (
