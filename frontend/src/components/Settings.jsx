@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircle2, AlertTriangle, Loader2, Sparkles, Compass, Share2, ClipboardList, X, Eye, EyeOff } from 'lucide-react';
 import NfcToolsModal from './NfcToolsModal';
 import { apiUrl } from '../utils/api';
@@ -10,6 +10,30 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   const [showNfcModal, setShowNfcModal] = useState(false);
   const [pendingImportData, setPendingImportData] = useState(null);
   const [importMode, setImportMode] = useState('merge');
+  // App Theme State
+  const [appTheme, setAppTheme] = useState(() => localStorage.getItem('beantag-theme') || 'classic');
+
+  useEffect(() => {
+    if (theme && theme !== appTheme) {
+      setAppTheme(theme);
+    }
+  }, [theme]);
+
+  const handleThemeChange = (theme) => {
+    setAppTheme(theme);
+    localStorage.setItem('beantag-theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+    if (typeof setTheme === 'function') {
+      setTheme(theme);
+    }
+    try {
+      window.dispatchEvent(new Event('beantag-theme-changed'));
+    } catch (e) {}
+    if (showToast) {
+      showToast(theme === 'studio' ? '📐 Tema cambiado a Studio Minimal' : '☕ Tema cambiado a BeanTag Clásico', { type: 'success', duration: 2000 });
+    }
+  };
+
   // AI Provider & Keys State
   const [aiProvider, setAiProvider] = useState(() => localStorage.getItem('beantag-ai-provider') || 'groq');
   const [groqKey, setGroqKey] = useState(() => localStorage.getItem('groq-key') || '');
@@ -558,6 +582,66 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         )}
       </div>
 
+      {/* Tema de la Aplicación */}
+      <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
+        <div>
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+            🎨 Tema de la Aplicación
+          </h4>
+          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
+            Elige la estética global del sistema: tonos cálidos artesanales o un diseño nórdico minimalista
+          </p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px', background: 'var(--segmented-bg)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+          <button
+            type="button"
+            onClick={() => handleThemeChange('classic')}
+            style={{
+              margin: 0,
+              padding: '10px 14px',
+              fontSize: '12px',
+              fontWeight: (appTheme === 'classic' || appTheme === 'default') ? '800' : '600',
+              border: (appTheme === 'classic' || appTheme === 'default') ? '1.5px solid var(--border-color)' : '1px solid transparent',
+              borderRadius: '9px',
+              background: (appTheme === 'classic' || appTheme === 'default') ? 'var(--segmented-active, #FFFFFF)' : 'transparent',
+              color: (appTheme === 'classic' || appTheme === 'default') ? 'var(--color-text)' : 'var(--color-text-muted)',
+              boxShadow: (appTheme === 'classic' || appTheme === 'default') ? 'var(--card-shadow, 0 1px 3px rgba(0,0,0,0.08))' : 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'all 0.18s ease'
+            }}
+          >
+            <span>☕ BeanTag Clásico (Terracotta)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleThemeChange('studio')}
+            style={{
+              margin: 0,
+              padding: '10px 14px',
+              fontSize: '12px',
+              fontWeight: appTheme === 'studio' ? '800' : '600',
+              border: appTheme === 'studio' ? '1.5px solid var(--border-color)' : '1px solid transparent',
+              borderRadius: '9px',
+              background: appTheme === 'studio' ? 'var(--segmented-active, #FFFFFF)' : 'transparent',
+              color: appTheme === 'studio' ? 'var(--color-text)' : 'var(--color-text-muted)',
+              boxShadow: appTheme === 'studio' ? 'var(--card-shadow, 0 1px 3px rgba(0,0,0,0.08))' : 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'all 0.18s ease'
+            }}
+          >
+            <span>📐 Studio Minimal (Monocromo)</span>
+          </button>
+        </div>
+      </div>
+
       {/* Estilo Visual del Inventario */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
         <div>
@@ -658,15 +742,17 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             { id: 'caramel', name: '🍯 Amber Caramel', desc: 'Ámbar & Avellana', colors: ['#FFFFFF', '#FFFBEB', '#D97706', '#B45309'] },
             { id: 'frost', name: '🧊 Nordic Frost', desc: 'Hielo Ártico & Púrpura', colors: ['#FFFFFF', '#F0F9FF', '#0284C7', '#6366F1'] }
           ].map((t) => {
-            const isActive = (theme || 'matcha') === t.id;
+            const isActive = (appTheme || theme || 'matcha') === t.id;
             return (
               <button 
                 key={t.id}
                 type="button"
                 onClick={() => {
-                  setTheme(t.id);
+                  setAppTheme(t.id);
+                  if (typeof setTheme === 'function') setTheme(t.id);
                   localStorage.setItem('beantag-theme', t.id);
                   document.documentElement.setAttribute('data-theme', t.id);
+                  try { window.dispatchEvent(new Event('beantag-theme-changed')); } catch (e) {}
                   if (showToast) showToast(`Tema ${t.name} aplicado.`, { type: 'success', duration: 2000 });
                 }} 
                 style={{ 

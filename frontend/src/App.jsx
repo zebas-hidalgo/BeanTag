@@ -57,15 +57,27 @@ export default function App() {
   });
   const [token, setToken] = useState(() => localStorage.getItem('beantag-token') || '');
 
-  const [theme, setTheme] = useState(() => localStorage.getItem('beantag-theme') || 'default');
+  const [theme, setTheme] = useState(() => localStorage.getItem('beantag-theme') || 'classic');
 
   useEffect(() => {
-    if (theme === 'default') {
-      document.documentElement.removeAttribute('data-theme');
-    } else {
+    const savedTheme = localStorage.getItem('beantag-theme') || 'classic';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    const handleThemeChange = () => {
+      const updatedTheme = localStorage.getItem('beantag-theme') || 'classic';
+      setTheme(updatedTheme);
+      document.documentElement.setAttribute('data-theme', updatedTheme);
+    };
+
+    window.addEventListener('beantag-theme-changed', handleThemeChange);
+    return () => window.removeEventListener('beantag-theme-changed', handleThemeChange);
+  }, []);
+
+  useEffect(() => {
+    if (theme) {
       document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('beantag-theme', theme);
     }
-    localStorage.setItem('beantag-theme', theme);
   }, [theme]);
 
   // Toast Notification System State
