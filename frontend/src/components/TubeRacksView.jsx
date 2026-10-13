@@ -15,61 +15,6 @@ const getRoastDotColor = (roast) => {
   return '#D97706';
 };
 
-// Helpers for artisanal Bean Cellar aesthetic
-const getRoastStyle = (roast) => {
-  const r = String(roast || '').toLowerCase();
-  if (r.includes('claro') || r.includes('light') || r.includes('rubio')) {
-    return {
-      gradient: 'linear-gradient(180deg, rgba(217,119,6,0.15) 0%, #D97706 100%)',
-      borderColor: 'rgba(217,119,6,0.4)',
-      badgeBg: '#FEF3C7',
-      badgeColor: '#D97706',
-      label: 'Claro'
-    };
-  }
-  if (r.includes('medio') || r.includes('medium')) {
-    return {
-      gradient: 'linear-gradient(180deg, rgba(180,83,9,0.15) 0%, #9A3412 100%)',
-      borderColor: 'rgba(180,83,9,0.4)',
-      badgeBg: '#FED7AA',
-      badgeColor: '#C2410C',
-      label: 'Medio'
-    };
-  }
-  if (r.includes('oscuro') || r.includes('dark') || r.includes('frances') || r.includes('italiano')) {
-    return {
-      gradient: 'linear-gradient(180deg, rgba(67,40,24,0.15) 0%, #432818 100%)',
-      borderColor: 'rgba(67,40,24,0.4)',
-      badgeBg: '#E2E8F0',
-      badgeColor: '#334155',
-      label: 'Oscuro'
-    };
-  }
-  // Default fill gradient
-  return {
-    gradient: 'linear-gradient(180deg, rgba(217,119,6,0.15) 0%, #D97706 100%)',
-    borderColor: 'rgba(217,119,6,0.4)',
-    badgeBg: '#FEF3C7',
-    badgeColor: '#D97706',
-    label: roast || 'Claro'
-  };
-};
-
-const getProcessBadge = (proc) => {
-  if (!proc || !String(proc).trim()) return null;
-  const p = String(proc).toLowerCase();
-  if (p.includes('lavad') || p.includes('washed') || p.includes('wet')) {
-    return { bg: '#E0F2FE', color: '#0284C7', text: proc };
-  }
-  if (p.includes('natural') || p.includes('honey') || p.includes('miel') || p.includes('melado')) {
-    return { bg: '#FFEDD5', color: '#EA580C', text: proc };
-  }
-  if (p.includes('anaer') || p.includes('macer') || p.includes('co-ferm') || p.includes('coferm') || p.includes('ferment')) {
-    return { bg: '#F3E8FF', color: '#7E22CE', text: proc };
-  }
-  return { bg: '#F1F5F9', color: '#475569', text: proc };
-};
-
 export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches, showToast }) {
   const [racks, setRacks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -879,9 +824,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                     // Match with batch in batches list for full info if needed
                     const matchedBatch = isFilled ? (batches || []).find(b => b.id === slot.batch_id) : null;
                     const batchName = (slot && slot.batch_name) || (matchedBatch && matchedBatch.name) || 'Café Especialidad';
-                    const origin = (slot && slot.origin) || (matchedBatch && matchedBatch.origin) || 'Origen';
-                    const process = (slot && (slot.process || slot.proceso)) || (matchedBatch && (matchedBatch.process || matchedBatch.proceso)) || 'Lavado';
-                    const subtitle = `${origin} • ${process}`;
+                    const origin = (slot && slot.origin) || (matchedBatch && matchedBatch.origin) || '';
+                    const process = (slot && (slot.process || slot.proceso)) || (matchedBatch && (matchedBatch.process || matchedBatch.proceso)) || '';
+                    const parts = [origin, process].filter(Boolean);
+                    const subtitle = parts.length > 0 ? parts.join(' • ') : 'Monodosis';
                     const rawDose = (slot && slot.dose_weight) || (matchedBatch && matchedBatch.dose_weight) || '18.5';
                     const doseWeight = typeof rawDose === 'number'
                       ? `${rawDose}g`
@@ -917,7 +863,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                         }}
                         role="button"
                         tabIndex={0}
-                        aria-label={`Tubo ${position}: ${isFilled ? batchName : 'Vacío'}`}
+                        aria-label={`Tubo ${position}: ${isFilled ? `${batchName}, ${doseWeight}${isFrozen ? ', congelado' : ''}` : 'Vacío'}`}
                         style={{
                           minHeight: '135px',
                           backgroundColor: isFilled
@@ -937,7 +883,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                           flexDirection: 'column',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: '8px',
+                          gap: '6px',
                           cursor: 'pointer',
                           transition: 'all 0.15s ease',
                           position: 'relative',
@@ -946,11 +892,26 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                       >
                         {isFilled ? (
                           <>
+                            {/* Slot position number indicator */}
+                            <span
+                              style={{
+                                fontSize: '9.5px',
+                                fontWeight: '800',
+                                fontFamily: 'var(--font-mono)',
+                                color: 'var(--color-text-muted)',
+                                opacity: 0.85,
+                                letterSpacing: '0.3px',
+                                marginBottom: '-2px'
+                              }}
+                            >
+                              #{String(position).padStart(2, '0')}
+                            </span>
+
                             {/* Swiss Tube Cylinder */}
                             <div
                               style={{
                                 position: 'relative',
-                                width: '32px',
+                                width: '36px',
                                 height: '56px',
                                 border: '1.5px solid var(--color-text, #1E293B)',
                                 borderRadius: '0 0 14px 14px',
@@ -996,7 +957,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                               {/* Dose weight centered at base */}
                               <span
                                 style={{
-                                  fontSize: '11px',
+                                  fontSize: '10px',
                                   fontWeight: '800',
                                   fontFamily: 'var(--font-mono)',
                                   color: 'var(--color-text, #0F172A)',
