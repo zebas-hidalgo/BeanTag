@@ -996,10 +996,28 @@ app.get('/manifest.json', (req, res) => {
 // --- UNIFIED MULTI-PROVIDER AI DISPATCHER (GROQ & GEMINI) ---
 
 function getAiConfig(req) {
-  const provider = req.headers['x-ai-provider'] || (req.headers['x-groq-key'] ? 'groq' : 'gemini');
-  const groqKey = req.headers['x-groq-key'] || req.body?.groqKey || '';
-  const geminiKey = req.headers['x-gemini-key'] || req.body?.apiKey || '';
-  const model = req.headers['x-ai-model'] || (provider === 'gemini' ? req.headers['x-gemini-model'] : undefined) || req.body?.model;
+  const rawProvider = req.headers['x-ai-provider'] || req.body?.provider || ((req.headers['x-groq-key'] || req.body?.groqKey) ? 'groq' : 'gemini');
+  const provider = String(rawProvider || 'gemini').toLowerCase().trim();
+  const groqKey = req.headers['x-groq-key'] || req.body?.groqKey || process.env.GROQ_API_KEY || '';
+  const geminiKey = req.headers['x-gemini-key'] || req.body?.apiKey || process.env.GEMINI_API_KEY || '';
+
+  // Prevent model bleed between providers
+  let rawModel = req.headers['x-ai-model'] || (provider === 'groq' ? req.headers['x-groq-model'] : req.headers['x-gemini-model']) || req.body?.model;
+  let model;
+  if (provider === 'groq') {
+    if (!rawModel || String(rawModel).toLowerCase().includes('gemini')) {
+      model = 'llama-3.3-70b-versatile';
+    } else {
+      model = rawModel;
+    }
+  } else {
+    if (!rawModel || String(rawModel).toLowerCase().includes('llama')) {
+      model = 'gemini-3.8-flash';
+    } else {
+      model = sanitizeModel(rawModel);
+    }
+  }
+
   const enableThinking = req.headers['x-gemini-thinking'] === 'true';
 
   return {
@@ -1013,7 +1031,7 @@ function getAiConfig(req) {
 
 function getGeminiConfig(req) {
   const config = getAiConfig(req);
-  const apiKey = config.geminiKey || process.env.GEMINI_API_KEY || '';
+  const apiKey = config.geminiKey;
   const model = sanitizeModel(config.model);
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
@@ -1032,7 +1050,7 @@ function getGeminiConfig(req) {
 
 // 0a. Gemini AI Connection Diagnostic Probe Endpoint
 app.post('/api/test-gemini', async (req, res) => {
-  const apiKey = req.headers['x-gemini-key'] || req.body?.apiKey;
+  const apiKey = req.headers['x-gemini-key'] || req.body?.apiKey || process.env.GEMINI_API_KEY;
   const requestedModel = req.headers['x-gemini-model'] || req.body?.model;
 
   if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
@@ -1077,7 +1095,7 @@ app.post('/api/test-groq', async (req, res) => {
     });
   } catch (err) {
     console.warn(`[Groq Probe Failed] ${err.message}`);
-    return res.status(400).json({
+    return res.status(err.status || 400).json({
       success: false,
       error: err.message
     });
