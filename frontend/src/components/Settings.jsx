@@ -127,13 +127,10 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   };
 
   const handleAskSommelier = async () => {
-    const storedApiKey = localStorage.getItem('gemini-api-key') || apiKey;
-    if (!storedApiKey) {
-      if (showToast) showToast('Configura tu clave API de Gemini abajo para consultar al Sommelier.', { type: 'error', duration: 4000 });
-      return;
-    }
-    if (availableBatches.length === 0) {
-      if (showToast) showToast('No hay lotes con dosis en el inventario para evaluar.', { type: 'info', duration: 3000 });
+    const storedApiKey = localStorage.getItem('gemini-api-key') || apiKey || '';
+    const targetBatches = availableBatches.length > 0 ? availableBatches : safeBatches;
+    if (targetBatches.length === 0) {
+      if (showToast) showToast('No hay lotes en el inventario para evaluar.', { type: 'info', duration: 3000 });
       return;
     }
 
@@ -148,16 +145,20 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
     const timeOfDay = hour < 12 ? 'mañana (buscando acidez brillante y claridad)' : (hour < 18 ? 'tarde (buscando dulzor y balance)' : 'noche (buscando cuerpo suave y relajante)');
 
     try {
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      if (storedApiKey) {
+        headers['x-gemini-key'] = storedApiKey;
+        headers['x-gemini-model'] = model;
+        headers['x-gemini-thinking'] = isThinking ? 'true' : 'false';
+      }
+
       const res = await fetch(apiUrl('api/ai/sommelier'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-gemini-key': storedApiKey,
-          'x-gemini-model': model,
-          'x-gemini-thinking': isThinking ? 'true' : 'false'
-        },
+        headers,
         body: JSON.stringify({
-          batches: availableBatches,
+          batches: targetBatches,
           timeOfDay
         })
       });
@@ -168,7 +169,13 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         return;
       }
       setSommelierResult(data);
-      if (showToast) showToast('¡Recomendación del Sommelier lista! ☕✨', { type: 'success', duration: 2500 });
+      if (data.recommended_batch_id === null) {
+        if (showToast) showToast('Sin dosis disponibles en inventario. Repón stock para sugerencias.', { type: 'info', duration: 3500 });
+      } else if (data._source === 'barista_fallback') {
+        if (showToast) showToast('⚡ Sommelier Local listo (Modo Cero Desconexión)', { type: 'success', duration: 3000 });
+      } else {
+        if (showToast) showToast('¡Recomendación del Sommelier lista! ☕✨', { type: 'success', duration: 2500 });
+      }
     } catch (err) {
       if (showToast) showToast('Error al conectar con el Sommelier IA.', { type: 'error', duration: 3000 });
     } finally {
@@ -411,31 +418,65 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             borderRadius: '14px',
             boxShadow: '0 4px 16px rgba(188, 84, 73, 0.08)'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '800', color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
                 <Compass size={14} />
-                <span>Recomendación Sommelier (Gemini)</span>
+                <span>Recomendación Sommelier {sommelierResult._source === 'barista_fallback' ? '(Local)' : '(Gemini)'}</span>
               </div>
-              {sommelierResult.badge && (
-                <span style={{ fontSize: '10px', background: 'rgba(188, 84, 73, 0.08)', border: '1px solid rgba(188, 84, 73, 0.2)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
-                  {sommelierResult.badge}
-                </span>
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                {sommelierResult._source === 'barista_fallback' && (
+                  <span style={{ 
+                    fontSize: '10px', 
+                    background: 'var(--barista-instr-bg, #FEF3C7)', 
+                    border: '1px solid var(--barista-instr-border, #FDE68A)', 
+                    color: 'var(--barista-accent-honey, #D97706)', 
+                    padding: '3px 8px', 
+                    borderRadius: '12px', 
+                    fontWeight: '800',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    ⚡ Sommelier Local (Modo Cero Desconexión)
+                  </span>
+                )}
+                {sommelierResult.badge && (
+                  <span style={{ fontSize: '10px', background: 'rgba(188, 84, 73, 0.08)', border: '1px solid rgba(188, 84, 73, 0.2)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                    {sommelierResult.badge}
+                  </span>
+                )}
+              </div>
             </div>
 
-            <h4 style={{ margin: '4px 0 6px 0', fontSize: '15px', fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
-              ☕ {sommelierResult.recommended_batch_name}
-            </h4>
-
-            <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 10px 0', lineHeight: 1.4 }}>
-              {sommelierResult.reason}
-            </p>
-
-            {sommelierResult.flavor_focus && (
-              <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span>🎯 Perfil:</span>
-                <span style={{ color: 'var(--color-crimson)' }}>{sommelierResult.flavor_focus}</span>
+            {sommelierResult.recommended_batch_id === null ? (
+              <div style={{ marginTop: '8px', padding: '10px', background: 'var(--bg-canvas, #F9FAFB)', borderRadius: '8px', border: '1px dashed var(--border-color, #E5E7EB)' }}>
+                <h4 style={{ margin: '0 0 6px 0', fontSize: '13px', fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
+                  📦 Sin dosis disponibles en inventario
+                </h4>
+                <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 8px 0', lineHeight: 1.4 }}>
+                  {sommelierResult.reason || 'Todos los lotes en tu cava tienen 0 dosis restantes. Repón tu stock o registra nuevas dosis para recibir recomendaciones del sommelier.'}
+                </p>
+                <div style={{ fontSize: '11px', color: 'var(--color-crimson)', fontWeight: '600' }}>
+                  💡 Sugerencia: Repón dosis de café en tus lotes para activar la selección experta de cata.
+                </div>
               </div>
+            ) : (
+              <>
+                <h4 style={{ margin: '4px 0 6px 0', fontSize: '15px', fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
+                  ☕ {sommelierResult.recommended_batch_name}
+                </h4>
+
+                <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 10px 0', lineHeight: 1.4 }}>
+                  {sommelierResult.reason}
+                </p>
+
+                {sommelierResult.flavor_focus && (
+                  <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>🎯 Perfil:</span>
+                    <span style={{ color: 'var(--color-crimson)' }}>{sommelierResult.flavor_focus}</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

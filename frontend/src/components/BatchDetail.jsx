@@ -329,14 +329,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     .then(data => {
       setAiRecommendation(data);
       if (data._source === 'barista_fallback') {
-        const errorDetail = data._gemini_error || data._error;
         if (showToast) {
-          showToast(
-            apiKey 
-              ? (errorDetail ? `Modo Contingencia (${errorDetail.slice(0, 50)})` : 'Receta calculada con motor Barista Offline (Servidores Google AI con alta demanda)') 
-              : 'Receta calculada con motor Barista Offline (Añade tu API Key en Ajustes para activar Gemini)',
-            { type: apiKey ? 'warning' : 'info', duration: 4500 }
-          );
+          showToast('⚡ Receta calculada con Motor Barista Físico (sin depender de internet)', { type: 'success', duration: 4500 });
         }
       } else {
         if (showToast) showToast('¡Recomendación multivariable generada por Gemini AI!', { type: 'success', duration: 2500 });
@@ -1647,7 +1641,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     {aiRecommendation.days_since_roast !== null && <span style={{ background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Timer size={10} /> Reposo: Día {aiRecommendation.days_since_roast}</span>}
                     {aiRecommendation.water_profile && <span style={{ background: 'var(--barista-accent-cryo-bg)', color: 'var(--barista-accent-cryo-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Droplet size={10} /> {aiRecommendation.water_profile}</span>}
                     {aiRecommendation.active_grinder_dial && <span style={{ background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><SlidersHorizontal size={10} /> {aiRecommendation.active_grinder_dial.grinder_name}: {aiRecommendation.active_grinder_dial.dial}</span>}
-                    {aiRecommendation._source === 'barista_fallback' && <span style={{ background: 'var(--barista-accent-danger-bg)', color: 'var(--barista-accent-danger-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><AlertCircle size={10} /> Modo Offline</span>}
+                    {aiRecommendation._source === 'barista_fallback' && (
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--barista-instr-bg, #FEF3C7)', border: '1px solid var(--barista-instr-border, #FDE68A)', color: 'var(--barista-accent-honey, #D97706)', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '800' }}>
+                        <Zap size={13} />
+                        <span>Motor Barista Físico (Micrones & Clics Calculados)</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Sub-pestañas para organizar Vertidos, Molinos, Física y Pasos */}
