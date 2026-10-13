@@ -550,6 +550,315 @@ app.delete('/api/batches/:id', async (req, res) => {
   }
 });
 
+// --- TUBE RACKS (PORTATUBOS 2X3) ENDPOINTS ---
+
+// Helper: Ensure a rack has its 6 slots
+async function ensureRackSlots(db, rackId) {
+  const existingSlots = await db.all('SELECT position FROM tube_rack_slots WHERE rack_id = ?', rackId);
+  const existingPositions = new Set(existingSlots.map(s => s.position));
+  for (let pos = 1; pos <= 6; pos++) {
+    if (!existingPositions.has(pos)) {
+      await db.run(
+        'INSERT OR IGNORE INTO tube_rack_slots (rack_id, position, batch_id) VALUES (?, ?, NULL)',
+        [rackId, pos]
+      );
+    }
+  }
+}
+
+// Get all tube racks with their 6 slots and joined batch info
+app.get('/api/racks', async (req, res) => {
+  try {
+    const db = await getDb();
+    let racks;
+    if (req.user && req.user.id) {
+      racks = await db.all(
+        'SELECT * FROM tube_racks WHERE user_id = ? OR user_id IS NULL ORDER BY order_index ASC, created_at ASC',
+        [req.user.id]
+      );
+    } else {
+      racks = await db.all('SELECT * FROM tube_racks ORDER BY order_index ASC, created_at ASC');
+    }
+
+    const racksWithSlots = await Promise.all(racks.map(async (rack) => {
+      await ensureRackSlots(db, rack.id);
+      const slots = await db.all(`
+        SELECT 
+          s.id, s.rack_id, s.position, s.batch_id, s.updated_at,
+          b.name as batch_name, b.roaster, b.origin, b.process, b.variety,
+          b.dose_weight, b.remaining_doses, b.total_doses, b.roast_date, b.freeze_date
+        FROM tube_rack_slots s
+        LEFT JOIN batches b ON s.batch_id = b.id
+        WHERE s.rack_id = ?
+        ORDER BY s.position ASC
+      `, [rack.id]);
+      return { ...rack, slots };
+    }));
+
+    res.json(racksWithSlots);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create new tube rack
+app.post('/api/racks', async (req, res) => {
+  const { name } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'El nombre del portatubos es obligatorio.' });
+  }
+  try {
+    const db = await getDb();
+    const id = 'rack_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    const userId = req.user ? req.user.id : null;
+    
+    // Determine next order_index
+    const maxOrder = await db.get(
+      userId 
+        ? 'SELECT MAX(order_index) as max_ord FROM tube_racks WHERE user_id = ?' 
+        : 'SELECT MAX(order_index) as max_ord FROM tube_racks',
+      userId ? [userId] : []
+    );
+    const nextOrder = (maxOrder && maxOrder.max_ord !== null ? maxOrder.max_ord : -1) + 1;
+
+    await db.run(
+      'INSERT INTO tube_racks (id, user_id, name, order_index) VALUES (?, ?, ?, ?)',
+      [id, userId, name.trim(), nextOrder]
+    );
+
+    // Initialize the 6 slots (positions 1 to 6)
+    for (let pos = 1; pos <= 6; pos++) {
+      await db.run(
+        'INSERT INTO tube_rack_slots (rack_id, position, batch_id) VALUES (?, ?, NULL)',
+        [id, pos]
+      );
+    }
+
+    const createdRack = await db.get('SELECT * FROM tube_racks WHERE id = ?', id);
+    const slots = await db.all('SELECT * FROM tube_rack_slots WHERE rack_id = ? ORDER BY position ASC', id);
+
+    res.status(201).json({ success: true, rack: { ...createdRack, slots } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Rename or reorder tube rack
+app.put('/api/racks/:id', async (req, res) => {
+  const { name, order_index } = req.body;
+  try {
+    const db = await getDb();
+    const rack = await db.get('SELECT * FROM tube_racks WHERE id = ?', req.params.id);
+    if (!rack) {
+      return res.status(404).json({ error: 'Portatubos no encontrado.' });
+    }
+    if (rack.user_id !== null && (!req.user || req.user.id !== rack.user_id)) {
+      return res.status(403).json({ error: 'Solo el propietario puede modificar este portatubos.' });
+    }
+
+    const updatedName = name !== undefined ? name.trim() : rack.name;
+    const updatedOrder = order_index !== undefined ? parseInt(order_index) : rack.order_index;
+
+    await db.run(
+      'UPDATE tube_racks SET name = ?, order_index = ? WHERE id = ?',
+      [updatedName, updatedOrder, req.params.id]
+    );
+
+    res.json({ success: true, id: req.params.id, name: updatedName, order_index: updatedOrder });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete tube rack
+app.delete('/api/racks/:id', async (req, res) => {
+  try {
+    const db = await getDb();
+    const rack = await db.get('SELECT * FROM tube_racks WHERE id = ?', req.params.id);
+    if (!rack) {
+      return res.status(404).json({ error: 'Portatubos no encontrado.' });
+    }
+    if (rack.user_id !== null && (!req.user || req.user.id !== rack.user_id)) {
+      return res.status(403).json({ error: 'Solo el propietario puede eliminar este portatubos.' });
+    }
+
+    await db.run('DELETE FROM tube_rack_slots WHERE rack_id = ?', req.params.id);
+    await db.run('DELETE FROM tube_racks WHERE id = ?', req.params.id);
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Assign or unassign batch to a specific slot (position 1..6)
+app.put('/api/racks/:id/slots/:position', async (req, res) => {
+  const position = parseInt(req.params.position);
+  if (isNaN(position) || position < 1 || position > 6) {
+    return res.status(400).json({ error: 'Posición inválida (debe ser entre 1 y 6).' });
+  }
+  const { batch_id } = req.body; // batch_id or null
+  try {
+    const db = await getDb();
+    const rack = await db.get('SELECT * FROM tube_racks WHERE id = ?', req.params.id);
+    if (!rack) {
+      return res.status(404).json({ error: 'Portatubos no encontrado.' });
+    }
+    if (rack.user_id !== null && (!req.user || req.user.id !== rack.user_id)) {
+      return res.status(403).json({ error: 'No tienes permiso para editar este portatubos.' });
+    }
+
+    if (batch_id) {
+      const batch = await db.get('SELECT id FROM batches WHERE id = ?', batch_id);
+      if (!batch) {
+        return res.status(404).json({ error: 'El lote seleccionado no existe.' });
+      }
+    }
+
+    await ensureRackSlots(db, rack.id);
+    await db.run(
+      'UPDATE tube_rack_slots SET batch_id = ?, updated_at = CURRENT_TIMESTAMP WHERE rack_id = ? AND position = ?',
+      [batch_id || null, req.params.id, position]
+    );
+
+    const updatedSlot = await db.get(`
+      SELECT 
+        s.id, s.rack_id, s.position, s.batch_id, s.updated_at,
+        b.name as batch_name, b.roaster, b.origin, b.process, b.variety,
+        b.dose_weight, b.remaining_doses, b.total_doses, b.roast_date, b.freeze_date
+      FROM tube_rack_slots s
+      LEFT JOIN batches b ON s.batch_id = b.id
+      WHERE s.rack_id = ? AND s.position = ?
+    `, [req.params.id, position]);
+
+    res.json({ success: true, slot: updatedSlot });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Bulk fill rack slots with a batch
+app.post('/api/racks/:id/fill', async (req, res) => {
+  const { batch_id, only_empty } = req.body;
+  if (!batch_id) {
+    return res.status(400).json({ error: 'Debe especificar el lote para llenar el rack.' });
+  }
+  try {
+    const db = await getDb();
+    const rack = await db.get('SELECT * FROM tube_racks WHERE id = ?', req.params.id);
+    if (!rack) {
+      return res.status(404).json({ error: 'Portatubos no encontrado.' });
+    }
+    if (rack.user_id !== null && (!req.user || req.user.id !== rack.user_id)) {
+      return res.status(403).json({ error: 'No tienes permiso para editar este portatubos.' });
+    }
+
+    const batch = await db.get('SELECT id FROM batches WHERE id = ?', batch_id);
+    if (!batch) {
+      return res.status(404).json({ error: 'El lote seleccionado no existe.' });
+    }
+
+    await ensureRackSlots(db, rack.id);
+
+    if (only_empty === false) {
+      await db.run(
+        'UPDATE tube_rack_slots SET batch_id = ?, updated_at = CURRENT_TIMESTAMP WHERE rack_id = ?',
+        [batch_id, req.params.id]
+      );
+    } else {
+      await db.run(
+        'UPDATE tube_rack_slots SET batch_id = ?, updated_at = CURRENT_TIMESTAMP WHERE rack_id = ? AND batch_id IS NULL',
+        [batch_id, req.params.id]
+      );
+    }
+
+    const slots = await db.all(`
+      SELECT 
+        s.id, s.rack_id, s.position, s.batch_id, s.updated_at,
+        b.name as batch_name, b.roaster, b.origin, b.process, b.variety,
+        b.dose_weight, b.remaining_doses, b.total_doses, b.roast_date, b.freeze_date
+      FROM tube_rack_slots s
+      LEFT JOIN batches b ON s.batch_id = b.id
+      WHERE s.rack_id = ?
+      ORDER BY s.position ASC
+    `, [req.params.id]);
+
+    res.json({ success: true, slots });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Empty all slots in a rack
+app.post('/api/racks/:id/empty', async (req, res) => {
+  try {
+    const db = await getDb();
+    const rack = await db.get('SELECT * FROM tube_racks WHERE id = ?', req.params.id);
+    if (!rack) {
+      return res.status(404).json({ error: 'Portatubos no encontrado.' });
+    }
+    if (rack.user_id !== null && (!req.user || req.user.id !== rack.user_id)) {
+      return res.status(403).json({ error: 'No tienes permiso para editar este portatubos.' });
+    }
+
+    await db.run('UPDATE tube_rack_slots SET batch_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE rack_id = ?', req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Consume a tube: atomically empty slot and decrement batch doses/weight
+app.post('/api/racks/:id/slots/:position/consume', async (req, res) => {
+  const position = parseInt(req.params.position);
+  if (isNaN(position) || position < 1 || position > 6) {
+    return res.status(400).json({ error: 'Posición inválida (debe ser entre 1 y 6).' });
+  }
+  try {
+    const db = await getDb();
+    const rack = await db.get('SELECT * FROM tube_racks WHERE id = ?', req.params.id);
+    if (!rack) {
+      return res.status(404).json({ error: 'Portatubos no encontrado.' });
+    }
+    if (rack.user_id !== null && (!req.user || req.user.id !== rack.user_id)) {
+      return res.status(403).json({ error: 'No tienes permiso para modificar este portatubos.' });
+    }
+
+    const slot = await db.get('SELECT * FROM tube_rack_slots WHERE rack_id = ? AND position = ?', [req.params.id, position]);
+    if (!slot || !slot.batch_id) {
+      return res.status(400).json({ error: 'La ranura seleccionada está vacía.' });
+    }
+
+    const batch = await db.get('SELECT * FROM batches WHERE id = ?', slot.batch_id);
+    if (!batch) {
+      // Clear dangling slot
+      await db.run('UPDATE tube_rack_slots SET batch_id = NULL WHERE id = ?', slot.id);
+      return res.status(404).json({ error: 'El lote asignado a esta ranura no existe.' });
+    }
+
+    // Decrement dose & weight
+    const newDoses = Math.max(0, (batch.remaining_doses || 0) - 1);
+    const doseWeight = parseFloat(batch.dose_weight) || 20.0;
+    const currentWeight = batch.remaining_weight_g !== null && batch.remaining_weight_g !== undefined 
+      ? batch.remaining_weight_g 
+      : (batch.total_weight_g || (doseWeight * batch.total_doses));
+    const newWeight = Math.max(0, Math.round((currentWeight - doseWeight) * 10) / 10);
+
+    await db.run('UPDATE batches SET remaining_doses = ?, remaining_weight_g = ? WHERE id = ?', [newDoses, newWeight, batch.id]);
+    await db.run('UPDATE tube_rack_slots SET batch_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?', slot.id);
+
+    const updatedBatch = await db.get('SELECT * FROM batches WHERE id = ?', batch.id);
+
+    res.json({
+      success: true,
+      position,
+      consumed_batch: updatedBatch
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // JSON Backup: Export all database tables
 app.get('/api/backup/export', async (req, res) => {
   try {

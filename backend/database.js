@@ -119,6 +119,36 @@ async function initDb() {
 
   await db.exec('CREATE INDEX IF NOT EXISTS idx_recipes_batch_id ON recipes(batch_id);');
   
+  // Create tube_racks table
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS tube_racks (
+      id TEXT PRIMARY KEY,
+      user_id INTEGER,
+      name TEXT NOT NULL,
+      order_index INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Create tube_rack_slots table (6 slots per rack, 2x3 grid)
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS tube_rack_slots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      rack_id TEXT NOT NULL,
+      position INTEGER NOT NULL CHECK(position BETWEEN 1 AND 6),
+      batch_id TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (rack_id) REFERENCES tube_racks(id) ON DELETE CASCADE,
+      FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE SET NULL,
+      UNIQUE(rack_id, position)
+    )
+  `);
+
+  await db.exec('CREATE INDEX IF NOT EXISTS idx_tube_slots_rack ON tube_rack_slots(rack_id);');
+  await db.exec('CREATE INDEX IF NOT EXISTS idx_tube_slots_batch ON tube_rack_slots(batch_id);');
+  await db.exec('CREATE INDEX IF NOT EXISTS idx_tube_racks_user ON tube_racks(user_id);');
+
   return db;
 }
 

@@ -1,12 +1,30 @@
 import React, { useState } from 'react';
-import { Plus, Zap, Snowflake, CheckCircle2, Mountain, Sparkles, Loader2, Compass, Share2, ClipboardCopy, X, MoreHorizontal, MapPin, Flag, ClipboardList, Coffee, Flame, Search as SearchIcon } from 'lucide-react';
+import { Plus, Zap, Snowflake, CheckCircle2, Mountain, Sparkles, Loader2, Compass, Share2, ClipboardCopy, X, MoreHorizontal, MapPin, Flag, ClipboardList, Coffee, Flame, Search as SearchIcon, Package } from 'lucide-react';
 import { RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 import { generateCoffeeMenuCardImage, generateCoffeeMenuText } from '../utils/cardGenerator';
 import { copyToClipboard } from '../utils/clipboard';
+import TubeRacksView from './TubeRacksView';
 
 export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onSubtractDose, onRefreshBatches, showToast }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [inventorySubView, setInventorySubView] = useState(() => {
+    try {
+      const hash = window.location.hash;
+      if (hash === '#racks' || hash === '#portatubos') return 'racks';
+      return localStorage.getItem('beantag-inventory-subview') || 'batches';
+    } catch (e) {
+      return 'batches';
+    }
+  });
+
+  const handleSubViewChange = (view) => {
+    setInventorySubView(view);
+    try {
+      localStorage.setItem('beantag-inventory-subview', view);
+    } catch (e) {}
+  };
+
   const [showFinished, setShowFinished] = useState(false);
   const [sommelierLoading, setSommelierLoading] = useState(false);
   const [sommelierResult, setSommelierResult] = useState(null);
@@ -178,8 +196,79 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
   return (
     <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       
-      {/* 1. Search Bar */}
-      <div style={{ marginBottom: '12px' }}>
+      {/* Selector Segmentado: Lotes vs Portatubos */}
+      <div style={{
+        display: 'flex',
+        backgroundColor: 'var(--segmented-bg, rgba(118, 118, 128, 0.12))',
+        padding: '4px',
+        borderRadius: 'var(--barista-radius-pill, 9999px)',
+        marginBottom: '16px',
+        border: '1px solid var(--barista-border-hairline, var(--border-color))'
+      }}>
+        <button
+          type="button"
+          onClick={() => handleSubViewChange('batches')}
+          style={{
+            flex: 1,
+            padding: '8px 14px',
+            borderRadius: 'var(--barista-radius-pill, 9999px)',
+            border: 'none',
+            backgroundColor: inventorySubView === 'batches' ? 'var(--segmented-active, #FFFFFF)' : 'transparent',
+            color: inventorySubView === 'batches' ? 'var(--color-text, #0F172A)' : 'var(--barista-text-secondary, #64748B)',
+            fontWeight: '800',
+            fontSize: '13px',
+            fontFamily: 'var(--font-heading)',
+            cursor: 'pointer',
+            boxShadow: inventorySubView === 'batches' ? '0 2px 6px rgba(0,0,0,0.08)' : 'none',
+            transition: 'all 0.15s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px'
+          }}
+        >
+          <Package size={15} />
+          <span>Lotes ({availableBatches.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleSubViewChange('racks')}
+          style={{
+            flex: 1,
+            padding: '8px 14px',
+            borderRadius: 'var(--barista-radius-pill, 9999px)',
+            border: 'none',
+            backgroundColor: inventorySubView === 'racks' ? 'var(--segmented-active, #FFFFFF)' : 'transparent',
+            color: inventorySubView === 'racks' ? 'var(--barista-accent-honey, #D97706)' : 'var(--barista-text-secondary, #64748B)',
+            fontWeight: '800',
+            fontSize: '13px',
+            fontFamily: 'var(--font-heading)',
+            cursor: 'pointer',
+            boxShadow: inventorySubView === 'racks' ? '0 2px 6px rgba(0,0,0,0.08)' : 'none',
+            transition: 'all 0.15s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px'
+          }}
+        >
+          <Coffee size={15} color={inventorySubView === 'racks' ? 'var(--barista-accent-honey, #D97706)' : undefined} />
+          <span>Portatubos (2×3)</span>
+        </button>
+      </div>
+
+      {inventorySubView === 'racks' ? (
+        <TubeRacksView
+          batches={safeBatches}
+          onSelectBatch={onSelectBatch}
+          onRefreshBatches={onRefreshBatches}
+          showToast={showToast}
+        />
+      ) : (
+        <>
+          {/* 1. Search Bar */}
+          <div style={{ marginBottom: '12px' }}>
         <input 
           className="candy-input" 
           placeholder="Buscar café, origen, productor o variedad..." 
@@ -527,6 +616,8 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
             </div>
           );
         })
+      )}
+        </>
       )}
 
       {/* MODAL DE COMPARTIR CARTA DE CAFÉS (FREEZER MENU) */}
