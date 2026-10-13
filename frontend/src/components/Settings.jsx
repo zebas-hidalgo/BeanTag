@@ -11,6 +11,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   const [pendingImportData, setPendingImportData] = useState(null);
   const [importMode, setImportMode] = useState('merge');
   // AI Provider & Keys State
+  const [aiProvider, setAiProvider] = useState(() => localStorage.getItem('beantag-ai-provider') || 'groq');
   const [groqKey, setGroqKey] = useState(() => localStorage.getItem('groq-key') || '');
   const [groqModel, setGroqModel] = useState(() => {
     const stored = localStorage.getItem('groq-model');
@@ -232,7 +233,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
     setAiProvider(newProvider);
     localStorage.setItem('beantag-ai-provider', newProvider);
     if (showToast) {
-      showToast(`Proveedor de IA: ${newProvider === 'groq' ? 'Groq (Llama 3.3)' : 'Google Gemini'}`, { type: 'info', duration: 2000 });
+      showToast(`Proveedor de IA: ${newProvider === 'groq' ? 'Groq (LPU Ultra-Rápido)' : 'Google Gemini'}`, { type: 'info', duration: 2000 });
     }
   };
 
@@ -717,7 +718,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               Configuración de Inteligencia Artificial
             </h4>
             <span style={{ fontSize: '10px', background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '3px 8px', borderRadius: '6px', fontWeight: '900', border: '1px solid var(--border-color)' }}>
-              {aiProvider === 'groq' ? (groqModel === 'llama-3.3-70b-versatile' ? 'GROQ • LLAMA 3.3 70B' : 'GROQ • LLAMA 3.1 8B') : `GEMINI • ${selectedModel.toUpperCase()}`}
+              {aiProvider === 'groq' ? `GROQ • ${groqModel.replace('openai/', '').toUpperCase()}` : `GEMINI • ${selectedModel.toUpperCase()}`}
             </span>
           </div>
           <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 14px 0', lineHeight: 1.4 }}>
