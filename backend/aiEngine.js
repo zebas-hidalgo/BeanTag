@@ -1738,8 +1738,10 @@ async function callGroqWithRetry(
           text = text.slice(firstBrace, lastBrace + 1);
         }
         const parsed = JSON.parse(text);
-        parsed._source = 'groq';
-        parsed._model = selectedModel;
+        if (parsed && typeof parsed === 'object') {
+          parsed._source = 'groq';
+          parsed._model = selectedModel;
+        }
         return parsed;
       }
 

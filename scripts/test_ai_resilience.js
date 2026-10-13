@@ -187,7 +187,7 @@ async function run() {
     };
 
     try {
-      await callGeminiWithRetry('prompt test', 'test_dummy_key_123', 'gemini-3.8-flash');
+      await callGeminiWithRetry('prompt test', 'test_dummy_key_123', 'gemini-3.8-flash', false, 4000);
     } catch (e) {
       // Expected to throw after cascade completes
     } finally {
