@@ -13,7 +13,7 @@ const VALID_GEMINI_MODELS = [
 ];
 
 const DEFAULT_GEMINI_MODEL = 'gemini-3.8-flash';
-const FALLBACK_GEMINI_MODEL = 'gemini-3.8-flash-lite';
+const FALLBACK_GEMINI_MODEL = 'gemini-3.1-pro-preview';
 
 /**
  * Sanitizes model name: maps deprecated/invalid model names to supported Google AI Studio models.
@@ -1483,7 +1483,6 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
   const cascadeOrder = [
     modelToTry,
     'gemini-3.8-flash',
-    'gemini-3.8-flash-lite',
     'gemini-3.1-pro-preview',
     DEFAULT_GEMINI_MODEL,
     FALLBACK_GEMINI_MODEL
