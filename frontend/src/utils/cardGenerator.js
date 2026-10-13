@@ -6,18 +6,84 @@
 // guaranteed async fonts, and strict WCAG AAA contrast.
 
 /**
- * Normalizes template names to the 4 official styles:
- * 'blueprint' | 'neobrutalist' | 'diner' | 'kissaten'
+ * Normalizes template names to the official styles:
+ * 'blueprint' | 'neobrutalist' | 'diner' | 'kissaten' | 'studio'
  * (Preserves 'aurora' -> 'diner' and 'hangtag' -> 'kissaten' for backwards compatibility)
  */
 export function normalizeCardStyle(tpl) {
   if (!tpl) return 'blueprint';
   const lower = String(tpl).toLowerCase();
+  if (lower.includes('studio') || lower.includes('mono') || lower.includes('swiss') || lower.includes('helvetica') || lower.includes('grid')) return 'studio';
   if (lower.includes('blue') || lower.includes('cyan') || lower.includes('tech') || lower.includes('patent')) return 'blueprint';
   if (lower.includes('neo') || lower.includes('brutal') || lower.includes('pop') || lower.includes('bold')) return 'neobrutalist';
   if (lower.includes('diner') || lower.includes('retro') || lower.includes('1950') || lower.includes('50') || lower.includes('aurora') || lower.includes('glass') || lower.includes('holo') || lower.includes('dark')) return 'diner';
   if (lower.includes('kissa') || lower.includes('washi') || lower.includes('tokyo') || lower.includes('japan') || lower.includes('sumi') || lower.includes('hang') || lower.includes('nord') || lower.includes('vintage') || lower.includes('paper') || lower.includes('minimal')) return 'kissaten';
   return 'blueprint';
+}
+
+export const CARD_STYLES = ['blueprint', 'neobrutalist', 'diner', 'kissaten', 'studio'];
+
+export const CARD_THEMES = {
+  blueprint: {
+    bg: '#06162D',
+    cardBg: '#0B192C',
+    text: '#FFFFFF',
+    textMuted: '#93C5FD',
+    border: '#38BDF8',
+    borderSubtle: 'rgba(56, 189, 248, 0.25)',
+    accent: '#38BDF8',
+    fontHeading: '"Space Grotesk", sans-serif',
+    fontMono: '"JetBrains Mono", monospace'
+  },
+  neobrutalist: {
+    bg: '#FFE600',
+    cardBg: '#FFFDF8',
+    text: '#000000',
+    textMuted: '#52525B',
+    border: '#000000',
+    borderSubtle: 'rgba(0, 0, 0, 0.2)',
+    accent: '#000000',
+    fontHeading: '"Space Grotesk", sans-serif',
+    fontMono: '"Space Grotesk", sans-serif'
+  },
+  diner: {
+    bg: '#FFF8F0',
+    cardBg: '#FFFDF5',
+    text: '#1C1917',
+    textMuted: '#0E7490',
+    border: '#C92A2A',
+    borderSubtle: 'rgba(14, 116, 144, 0.25)',
+    accent: '#C92A2A',
+    fontHeading: '"Space Grotesk", sans-serif',
+    fontMono: '"Space Grotesk", sans-serif'
+  },
+  kissaten: {
+    bg: '#EFECE6',
+    cardBg: '#F7F5F0',
+    text: '#18181B',
+    textMuted: '#71717A',
+    border: '#E4E4E7',
+    borderSubtle: 'rgba(24, 24, 27, 0.15)',
+    accent: '#DC2626',
+    fontHeading: '"Playfair Display", Georgia, serif',
+    fontMono: '"JetBrains Mono", monospace'
+  },
+  studio: {
+    bg: '#FBFBFB',
+    cardBg: '#FFFFFF',
+    text: '#09090B',
+    textMuted: '#71717A',
+    border: '#E4E4E7',
+    borderSubtle: 'rgba(0,0,0,0.12)',
+    accent: '#18181B',
+    fontHeading: 'Outfit, Space Grotesk, sans-serif',
+    fontMono: 'JetBrains Mono, monospace'
+  }
+};
+
+export function getCardTheme(style) {
+  const norm = normalizeCardStyle(style);
+  return CARD_THEMES[norm] || CARD_THEMES.studio;
 }
 
 export { getScaWheelIcon, cleanNotesString, getScaCategory, STYLE_SCA_ICONS } from './scaIcons';
@@ -99,7 +165,7 @@ export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
     ctx.closePath();
     ctx.strokeStyle = s === 'blueprint'
       ? 'rgba(56, 189, 248, 0.3)'
-      : (s === 'neobrutalist' ? 'rgba(0,0,0,0.2)' : (s === 'diner' ? 'rgba(14, 116, 144, 0.25)' : 'rgba(24, 24, 27, 0.2)'));
+      : (s === 'neobrutalist' ? 'rgba(0,0,0,0.2)' : (s === 'diner' ? 'rgba(14, 116, 144, 0.25)' : (s === 'studio' ? 'rgba(0,0,0,0.12)' : 'rgba(24, 24, 27, 0.2)')));
     ctx.lineWidth = 1;
     ctx.stroke();
   });
@@ -136,6 +202,9 @@ export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
   } else if (s === 'diner') {
     ctx.fillStyle = 'rgba(14, 116, 144, 0.25)';
     ctx.strokeStyle = '#0E7490';
+  } else if (s === 'studio') {
+    ctx.fillStyle = 'rgba(24, 24, 27, 0.08)';
+    ctx.strokeStyle = '#18181B';
   } else {
     ctx.fillStyle = 'rgba(220, 38, 38, 0.15)';
     ctx.strokeStyle = '#DC2626';
@@ -153,7 +222,7 @@ export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
     ctx.arc(cx + r * Math.cos(angle), cy + r * Math.sin(angle), 2.5, 0, 2 * Math.PI);
     ctx.fillStyle = s === 'diner'
       ? '#C92A2A'
-      : (s === 'kissaten' ? '#DC2626' : (s === 'blueprint' ? '#38BDF8' : '#000000'));
+      : (s === 'kissaten' ? '#DC2626' : (s === 'blueprint' ? '#38BDF8' : (s === 'studio' ? '#18181B' : '#000000')));
     ctx.fill();
   }
 
@@ -161,7 +230,7 @@ export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
   ctx.font = '700 6.5px "JetBrains Mono", monospace';
   ctx.fillStyle = s === 'blueprint'
     ? '#93C5FD'
-    : (s === 'kissaten' ? '#52525B' : (s === 'diner' ? '#0E7490' : '#18181B'));
+    : (s === 'kissaten' ? '#52525B' : (s === 'diner' ? '#0E7490' : (s === 'studio' ? '#71717A' : '#18181B')));
   for (let i = 0; i < numAxes; i++) {
     const angle = -Math.PI / 2 + (i * 2 * Math.PI) / numAxes;
     const cosA = Math.cos(angle);
@@ -238,7 +307,9 @@ export async function ensureFontsLoaded() {
       document.fonts.load('900 28px "JetBrains Mono"'),
       document.fonts.load('italic 14px "Playfair Display"'),
       document.fonts.load('700 24px "Playfair Display"'),
-      document.fonts.load('bold 30px "Playfair Display"')
+      document.fonts.load('bold 30px "Playfair Display"'),
+      document.fonts.load('700 16px "Outfit"').catch(() => {}),
+      document.fonts.load('800 24px "Outfit"').catch(() => {})
     ]);
     await document.fonts.ready;
   } catch (e) {
@@ -292,7 +363,7 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
   ctx.font = '800 8.5px "JetBrains Mono", monospace';
   ctx.fillStyle = s === 'blueprint'
     ? '#38BDF8'
-    : (s === 'diner' ? '#C92A2A' : (s === 'kissaten' ? '#DC2626' : '#000000'));
+    : (s === 'diner' ? '#C92A2A' : (s === 'kissaten' ? '#DC2626' : (s === 'studio' ? '#09090B' : '#000000')));
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
   const methodLabel = `${(method || 'POUR OVER').toUpperCase()}${temperature ? ' • ' + String(temperature).replace('°C', '') + '°C' : ''}`;
@@ -303,7 +374,7 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
   const microns = parseGrindToMicrons(grind);
   const cleanGrind = grind && String(grind).length > 16 ? String(grind).slice(0, 14) + '…' : grind;
   ctx.font = '700 7.5px "JetBrains Mono", monospace';
-  ctx.fillStyle = s === 'blueprint' ? '#93C5FD' : (s === 'neobrutalist' ? '#000000' : '#64748B');
+  ctx.fillStyle = s === 'blueprint' ? '#93C5FD' : (s === 'neobrutalist' ? '#000000' : (s === 'studio' ? '#71717A' : '#64748B'));
   ctx.textAlign = 'right';
   const ratioClean = ratio ? `1:${String(ratio).replace('1:', '')}` : '1:16.6';
   const scaleInfo = `BALANZA: ${dose_out_g || 250}g (${ratioClean}) • ${microns ? microns + 'µm' : cleanGrind}`;
@@ -409,16 +480,19 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
     } else if (s === 'kissaten') {
       const kissColors = ['#DC2626', '#27272A', '#52525B', '#71717A', '#A1A1AA'];
       segColor = kissColors[idx % kissColors.length];
+    } else if (s === 'studio') {
+      const studioColors = ['#18181B', '#3F3F46', '#71717A', '#A1A1AA', '#E4E4E7'];
+      segColor = studioColors[idx % studioColors.length];
     }
 
     ctx.fillStyle = segColor;
-    ctx.strokeStyle = s === 'neobrutalist' ? '#000000' : (s === 'blueprint' ? '#38BDF8' : 'transparent');
-    ctx.lineWidth = s === 'neobrutalist' ? 1.8 : (s === 'blueprint' ? 0.8 : 0);
-    drawRoundedRect(ctx, curX, barY, segW, barH, 2.5, true, s === 'neobrutalist' || s === 'blueprint');
+    ctx.strokeStyle = s === 'neobrutalist' ? '#000000' : (s === 'blueprint' ? '#38BDF8' : (s === 'studio' ? 'rgba(0,0,0,0.12)' : 'transparent'));
+    ctx.lineWidth = s === 'neobrutalist' ? 1.8 : (s === 'blueprint' ? 0.8 : (s === 'studio' ? 0.8 : 0));
+    drawRoundedRect(ctx, curX, barY, segW, barH, 2.5, true, s === 'neobrutalist' || s === 'blueprint' || s === 'studio');
 
     // Time label above bar
     ctx.font = '700 7px "JetBrains Mono", monospace';
-    ctx.fillStyle = s === 'blueprint' ? '#93C5FD' : (s === 'neobrutalist' ? '#000000' : '#64748B');
+    ctx.fillStyle = s === 'blueprint' ? '#93C5FD' : (s === 'neobrutalist' ? '#000000' : (s === 'studio' ? '#71717A' : '#64748B'));
     ctx.textAlign = 'center';
     if (st.time) {
       ctx.fillText(st.time, curX + segW / 2, barY - 3);
@@ -426,7 +500,7 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
 
     // Line 1 below bar: Stage label + delta weight
     ctx.font = '800 7px "JetBrains Mono", monospace';
-    ctx.fillStyle = s === 'blueprint' ? '#FFFFFF' : (s === 'neobrutalist' ? '#000000' : '#18181B');
+    ctx.fillStyle = s === 'blueprint' ? '#FFFFFF' : (s === 'neobrutalist' ? '#000000' : (s === 'studio' ? '#09090B' : '#18181B'));
     let stageText = (segW >= 58 && st.weight) ? `${st.label} (${st.weight})` : st.label;
     if (ctx.measureText(stageText).width > segW - 2) {
       stageText = st.label;
@@ -443,7 +517,7 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
     // Line 2 below bar: Target scale reading (➜ 150g)
     if (st.targetScale && segW >= 36) {
       ctx.font = '700 6.5px "JetBrains Mono", monospace';
-      ctx.fillStyle = s === 'blueprint' ? '#7DD3FC' : (s === 'neobrutalist' ? '#52525B' : (s === 'kissaten' ? '#71717A' : '#0E7490'));
+      ctx.fillStyle = s === 'blueprint' ? '#7DD3FC' : (s === 'neobrutalist' ? '#52525B' : (s === 'kissaten' ? '#71717A' : (s === 'studio' ? '#71717A' : '#0E7490')));
       let scaleText = st.targetScale;
       if (ctx.measureText(scaleText).width > segW - 2) {
         scaleText = scaleText.replace('➜', '');
@@ -537,7 +611,8 @@ export function drawTicketNotchesAndPerforation(ctx, x, width, notchY, style, bg
     blueprint: '#0B192C',
     neobrutalist: '#F1F5F9',
     diner: '#FDFBF7',
-    kissaten: '#EFECE6'
+    kissaten: '#EFECE6',
+    studio: '#FBFBFB'
   };
   const fillBg = bgColor || defaultBgs[s] || '#FFFDF8';
   const radius = 12;
@@ -706,6 +781,51 @@ export function drawTicketNotchesAndPerforation(ctx, x, width, notchY, style, bg
     ctx.fillRect(x + width / 2 - textW / 2 - 4, notchY - 5, textW + 8, 10);
     ctx.fillStyle = '#71717A';
     ctx.fillText(incisionText, x + width / 2, notchY);
+  } else if (s === 'studio') {
+    // 1. Cutout arcs
+    ctx.fillStyle = fillBg;
+    ctx.beginPath();
+    ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x + width, notchY, radius, Math.PI / 2, (3 * Math.PI) / 2);
+    ctx.fill();
+
+    // 2. Hairline border #E4E4E7
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#E4E4E7';
+    ctx.beginPath();
+    ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(x + width, notchY, radius, Math.PI / 2, (3 * Math.PI) / 2);
+    ctx.stroke();
+
+    // 3. Clean dashed perforation line [3, 3] in #E4E4E7
+    ctx.setLineDash([3, 3]);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#E4E4E7';
+    ctx.beginPath();
+    ctx.moveTo(x + radius + 2, notchY);
+    ctx.lineTo(x + width - radius - 2, notchY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 4. Swiss style micro label: CUT // CORTE
+    const cutText = 'CUT // CORTE';
+    ctx.font = '700 7px "JetBrains Mono", monospace';
+    const tw = ctx.measureText(cutText).width;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(x + width / 2 - tw / 2 - 4, notchY - 5, tw + 8, 10);
+    ctx.strokeStyle = '#E4E4E7';
+    ctx.lineWidth = 0.8;
+    ctx.strokeRect(x + width / 2 - tw / 2 - 4, notchY - 5, tw + 8, 10);
+    ctx.fillStyle = '#71717A';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(cutText, x + width / 2, notchY);
   } else {
     // Retro 50s Diner
     // 1. Cutout arcs
@@ -2588,6 +2708,396 @@ export async function generateRecipeCardImage(recipe, template = 'blueprint', in
     }
   }
 
+  // =========================================================================
+  // 5. STYLE: STUDIO MONO (SWISS MINIMALIST ASYMMETRIC GRID)
+  // =========================================================================
+  else if (style === 'studio') {
+    // Canvas Base Background
+    ctx.fillStyle = '#FBFBFB';
+    ctx.fillRect(0, 0, baseW, baseH);
+
+    // Inner Card Boundary
+    const bx = paddingX - 8;
+    const by = paddingY - 8;
+    const bw = availW + 16;
+    const bh = baseH - (paddingY * 2) + 16;
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(bx, by, bw, bh);
+    ctx.strokeStyle = '#E4E4E7';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bx, by, bw, bh);
+
+    // Swiss Asymmetric Grid Subtle Guide
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.04)';
+    ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    ctx.moveTo(bx + 4, paddingY + 30);
+    ctx.lineTo(bx + bw - 4, paddingY + 30);
+    ctx.stroke();
+
+    // 1. Swiss Micro-Header
+    ctx.fillStyle = '#71717A';
+    ctx.font = '700 8px "JetBrains Mono", monospace';
+    ctx.fillText('STUDIO MONO // REF: CH-8001 // BEANTAG ARCHIVE', paddingX, paddingY + 16);
+
+    ctx.textAlign = 'right';
+    ctx.fillText('EDITION 2026', paddingX + availW, paddingY + 16);
+    ctx.textAlign = 'left';
+
+    // 2. High-Contrast Typography Title
+    ctx.fillStyle = '#09090B';
+    const titleMaxW = scaScore !== null ? availW - 84 : availW;
+    drawFittedText(coffeeName.toUpperCase(), paddingX, paddingY + 44, titleMaxW, 26, '"Outfit", "Space Grotesk", sans-serif', '800');
+
+    // SCA Tabular Score Badge in Header if available
+    if (scaScore !== null) {
+      const scaW = 74;
+      const scaH = 26;
+      const scaX = paddingX + availW - scaW;
+      const scaY = paddingY + 26;
+      ctx.fillStyle = '#18181B';
+      ctx.fillRect(scaX, scaY, scaW, scaH);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '800 11px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`SCA ${scaScore}`, scaX + scaW / 2, scaY + 17);
+      ctx.textAlign = 'left';
+    }
+
+    // 3. Terroir Subtitle
+    ctx.fillStyle = '#71717A';
+    ctx.font = '600 9.5px "JetBrains Mono", monospace';
+    const terroirSub = [origin, (producer || roaster), altitude].filter(Boolean).join(' • ');
+    drawTruncatedText(terroirSub.toUpperCase() || 'ESPECIALIDAD // ARCHIVE COLLECTION', paddingX, paddingY + 64, availW);
+
+    // 4. Perforation & Notches
+    drawTicketNotchesAndPerforation(ctx, pad, cardW, paddingY + 84, style, '#FBFBFB');
+
+    // -----------------------------------------------------------------------
+    // MODE A: SOLO GRANO (TERROIR & CUPPING SHOWCASE)
+    // -----------------------------------------------------------------------
+    if (!incRecipe) {
+      // Specification Header Strip
+      const stripY = paddingY + 104;
+      const stripH = 32;
+
+      ctx.fillStyle = '#F4F4F5';
+      ctx.strokeStyle = '#E4E4E7';
+      ctx.lineWidth = 1;
+      ctx.fillRect(paddingX, stripY, availW, stripH);
+      ctx.strokeRect(paddingX, stripY, availW, stripH);
+
+      ctx.fillStyle = '#09090B';
+      ctx.font = '800 9px "Outfit", "Space Grotesk", sans-serif';
+      ctx.fillText('ESPECIFICACIONES DE ORIGEN // BEAN PROFILE', paddingX + 12, stripY + 20);
+
+      if (dosesStr) {
+        ctx.fillStyle = '#71717A';
+        ctx.font = '700 8.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(dosesStr, paddingX + availW - 12, stripY + 20);
+        ctx.textAlign = 'left';
+      }
+
+      // Terroir Grid (4 Asymmetric Tiles, 2x2)
+      const matY = stripY + stripH + 10;
+      const matGap = 8;
+      const colW = (availW - matGap) / 2;
+      const colH = 86;
+
+      const terroirItems = [
+        { lbl: 'ORIGEN & PRODUCTOR', val: origin || 'Single Origin', sub: producer || roaster || 'Origen Artesanal' },
+        { lbl: 'ALTITUD DE CULTIVO', val: altitude || '1600-2000m', sub: 'Metros s.n.m.' },
+        { lbl: 'VARIEDAD BOTÁNICA', val: variety || 'Coffea Arabica', sub: 'Variedad Genética' },
+        { lbl: 'PROCESO & BENEFICIO', val: process || 'Lavado', sub: roastDate ? `Tostado: ${roastDate}` : (roastLevel || 'Tueste Medio') }
+      ];
+
+      terroirItems.forEach((t, i) => {
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const mx = paddingX + col * (colW + matGap);
+        const my = matY + row * (colH + matGap);
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.strokeStyle = '#E4E4E7';
+        ctx.lineWidth = 1;
+        ctx.fillRect(mx, my, colW, colH);
+        ctx.strokeRect(mx, my, colW, colH);
+
+        // Accent indicator
+        ctx.fillStyle = '#18181B';
+        ctx.fillRect(mx, my, 3, colH);
+
+        ctx.fillStyle = '#71717A';
+        ctx.font = '700 8px "JetBrains Mono", monospace';
+        ctx.fillText(t.lbl, mx + 12, my + 20);
+
+        ctx.fillStyle = '#09090B';
+        ctx.font = '800 13px "Outfit", "Space Grotesk", sans-serif';
+        drawTruncatedText(t.val, mx + 12, my + 48, colW - 24);
+
+        ctx.fillStyle = '#71717A';
+        ctx.font = '500 8.5px "JetBrains Mono", monospace';
+        drawTruncatedText(t.sub, mx + 12, my + 70, colW - 24);
+      });
+
+      // Sensory Notes Section
+      const notesBoxY = matY + (colH * 2) + matGap + 10;
+      const notesH = 150;
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.strokeStyle = '#E4E4E7';
+      ctx.lineWidth = 1;
+      ctx.fillRect(paddingX, notesBoxY, availW, notesH);
+      ctx.strokeRect(paddingX, notesBoxY, availW, notesH);
+
+      ctx.fillStyle = '#09090B';
+      ctx.font = '800 9px "Outfit", "Space Grotesk", sans-serif';
+      ctx.fillText('NOTAS SENSORIALES // PERFIL EN TAZA', paddingX + 14, notesBoxY + 20);
+
+      const hasRadar = sensoryData !== null;
+      const contentW = hasRadar ? availW - 146 : availW - 28;
+
+      if (flavorTags.length > 0) {
+        let pillX = paddingX + 14;
+        let pillY = notesBoxY + 46;
+        const pillH = 24;
+
+        flavorTags.slice(0, 6).forEach(tag => {
+          ctx.font = '700 9.5px "JetBrains Mono", monospace';
+          const scaIcon = getScaWheelIcon(tag, 'studio');
+          const tagLabel = `${scaIcon} ${tag.toUpperCase()}`;
+          const textW = ctx.measureText(tagLabel).width;
+          const pillW = textW + 18;
+          if (pillX + pillW > paddingX + contentW && pillX > paddingX + 14) {
+            pillX = paddingX + 14;
+            pillY += 32;
+          }
+          if (pillX + pillW <= paddingX + contentW && pillY + pillH <= notesBoxY + notesH - 10) {
+            ctx.fillStyle = '#F4F4F5';
+            ctx.strokeStyle = '#E4E4E7';
+            ctx.lineWidth = 1;
+            drawRoundedRect(ctx, pillX, pillY, pillW, pillH, 2, true, true);
+            ctx.fillStyle = '#09090B';
+            ctx.fillText(tagLabel, pillX + 9, pillY + 16);
+            pillX += pillW + 8;
+          }
+        });
+      } else {
+        ctx.fillStyle = '#71717A';
+        ctx.font = '500 9px "JetBrains Mono", monospace';
+        if (notesStr) {
+          drawTruncatedText(`« ${notesStr} »`, paddingX + 14, notesBoxY + 46, contentW);
+        } else {
+          ctx.fillText('Sin notas adicionales especificadas', paddingX + 14, notesBoxY + 46);
+        }
+      }
+
+      if (hasRadar) {
+        drawSensoryRadarChart(ctx, paddingX + availW - 70, notesBoxY + 76, 42, sensoryData, style);
+      }
+
+      // Traceability Cellar Bar
+      const cellarY = notesBoxY + notesH + 10;
+      const cellarH = 34;
+      ctx.fillStyle = '#F4F4F5';
+      ctx.strokeStyle = '#E4E4E7';
+      ctx.lineWidth = 1;
+      ctx.fillRect(paddingX, cellarY, availW, cellarH);
+      ctx.strokeRect(paddingX, cellarY, availW, cellarH);
+
+      ctx.fillStyle = '#09090B';
+      ctx.font = '700 9px "JetBrains Mono", monospace';
+      const cellarText = remainingDoses !== null
+        ? `CAVA BEANTAG: ${dosesStr} • GESTIÓN DE BODEGA`
+        : 'BEANTAG STUDIO ARCHIVE // SPECIALTY COFFEE TRACEABILITY';
+      ctx.fillText(cellarText, paddingX + 12, cellarY + 21);
+
+      // Footer
+      const footY = baseH - paddingY - 26;
+      ctx.fillStyle = '#71717A';
+      ctx.font = '700 8.5px "JetBrains Mono", monospace';
+      ctx.fillText('BEANTAG STUDIO // SWISS TYPOGRAPHY // CH-8001', paddingX, footY + 14);
+    }
+    // -----------------------------------------------------------------------
+    // MODE B: CON RECETA (BARISTA EXTRACTION PROTOCOL)
+    // -----------------------------------------------------------------------
+    else {
+      // Protocol Header Strip
+      const stripY = paddingY + 104;
+      const stripH = 34;
+
+      ctx.fillStyle = '#F4F4F5';
+      ctx.strokeStyle = '#E4E4E7';
+      ctx.lineWidth = 1;
+      ctx.fillRect(paddingX, stripY, availW, stripH);
+      ctx.strokeRect(paddingX, stripY, availW, stripH);
+
+      ctx.fillStyle = '#09090B';
+      ctx.font = '800 9px "Outfit", "Space Grotesk", sans-serif';
+      ctx.fillText('PROTOCOLO DE EXTRACCIÓN // BREW RECIPE', paddingX + 12, stripY + 21);
+
+      if (scaScore !== null) {
+        ctx.fillStyle = '#09090B';
+        ctx.font = '800 9.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`★ SCA ${scaScore}`, paddingX + availW - 12, stripY + 21);
+        ctx.textAlign = 'left';
+      } else if (parsedRating !== null) {
+        ctx.fillStyle = '#09090B';
+        ctx.font = '800 9.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`★ ${parsedRating.toFixed(1)} / 5.0`, paddingX + availW - 12, stripY + 21);
+        ctx.textAlign = 'left';
+      }
+
+      // 4 Precision Bento Tiles (2x2) with Tabular Mono Figures
+      const bentoY = stripY + stripH + 10;
+      const bentoGap = 8;
+      const colW = (availW - bentoGap) / 2;
+      const colH = 92;
+
+      const metrics = [
+        { lbl: 'MÉTODO DE EXTRACCIÓN', val: methodStr.toUpperCase(), sub: 'Dispositivo / Filtro' },
+        { lbl: 'DOSIS & RATIO', val: (coffeeG && waterG) ? `${coffeeG}g ➔ ${waterG}g` : `1:${cleanRatio}`, sub: `1:${cleanRatio} (${coffeeG ? coffeeG + 'g IN' : ''})` },
+        { lbl: grinderName ? `MOLINO: ${grinderName.toUpperCase()}` : 'CALIBRACIÓN MOLIENDA', val: grindDisplayVal.toUpperCase(), sub: microns ? `~ ${microns} µm` : 'Micrones tabulares' },
+        { lbl: 'TIEMPO & TEMPERATURA', val: timeStr ? `${timeStr} MIN` : '2:30 MIN', sub: tempStr ? `${tempStr} • AGUA` : '93°C • AGUA' }
+      ];
+
+      metrics.forEach((m, idx) => {
+        const col = idx % 2;
+        const row = Math.floor(idx / 2);
+        const mx = paddingX + col * (colW + bentoGap);
+        const my = bentoY + row * (colH + bentoGap);
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.strokeStyle = '#E4E4E7';
+        ctx.lineWidth = 1;
+        ctx.fillRect(mx, my, colW, colH);
+        ctx.strokeRect(mx, my, colW, colH);
+
+        // Accent indicator
+        ctx.fillStyle = '#18181B';
+        ctx.fillRect(mx, my, 3, colH);
+
+        ctx.fillStyle = '#71717A';
+        ctx.font = '700 8px "JetBrains Mono", monospace';
+        ctx.fillText(m.lbl, mx + 12, my + 20);
+
+        ctx.fillStyle = '#09090B';
+        ctx.font = '800 15px "JetBrains Mono", monospace';
+        drawTruncatedText(m.val, mx + 12, my + 48, colW - 24);
+
+        ctx.fillStyle = '#71717A';
+        ctx.font = '600 8.5px "JetBrains Mono", monospace';
+        drawTruncatedText(m.sub, mx + 12, my + 70, colW - 24);
+      });
+
+      // Master Extraction Timeline
+      const timelineY = bentoY + (colH * 2) + bentoGap + 12;
+      drawExtractionTimeline(ctx, paddingX, timelineY, availW, 46, rec, style);
+
+      // Sensory Notes Pills Section
+      const notesBoxY = timelineY + 48 + 12;
+      const notesH = 80;
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.strokeStyle = '#E4E4E7';
+      ctx.lineWidth = 1;
+      ctx.fillRect(paddingX, notesBoxY, availW, notesH);
+      ctx.strokeRect(paddingX, notesBoxY, availW, notesH);
+
+      ctx.fillStyle = '#09090B';
+      ctx.font = '800 8.5px "Outfit", "Space Grotesk", sans-serif';
+      ctx.fillText('NOTAS SENSORIALES // PERFIL EN TAZA', paddingX + 12, notesBoxY + 18);
+
+      const hasRadar = sensoryData !== null;
+      const contentW = hasRadar ? availW - 122 : availW - 12;
+      const sensoryPillY = notesBoxY + 30;
+      let pillX = paddingX + 12;
+      const pillH = 24;
+
+      if (flavorTags.length > 0) {
+        flavorTags.slice(0, 5).forEach(tag => {
+          ctx.font = '700 9px "JetBrains Mono", monospace';
+          const scaIcon = getScaWheelIcon(tag, 'studio');
+          const tagLabel = `${scaIcon} ${tag.toUpperCase()}`;
+          const textW = ctx.measureText(tagLabel).width;
+          const pillW = textW + 18;
+          if (pillX + pillW <= paddingX + contentW) {
+            ctx.fillStyle = '#F4F4F5';
+            ctx.strokeStyle = '#E4E4E7';
+            ctx.lineWidth = 1;
+            drawRoundedRect(ctx, pillX, sensoryPillY, pillW, pillH, 2, true, true);
+            ctx.fillStyle = '#09090B';
+            ctx.fillText(tagLabel, pillX + 9, sensoryPillY + 16);
+            pillX += pillW + 8;
+          }
+        });
+      } else {
+        ctx.fillStyle = '#71717A';
+        ctx.font = '500 9px "JetBrains Mono", monospace';
+        if (notesStr) {
+          drawTruncatedText(`« ${notesStr} »`, pillX, sensoryPillY + 16, hasRadar ? contentW - 12 : availW - 24);
+        } else {
+          ctx.fillText('Sin notas sensoriales adicionales especificadas', pillX, sensoryPillY + 16);
+        }
+      }
+
+      if (hasRadar) {
+        drawSensoryRadarChart(ctx, paddingX + availW - 65, notesBoxY + 40, 23, sensoryData, style);
+      }
+
+      // Cellar Bar
+      const cellarY = notesBoxY + notesH + 10;
+      const cellarH = 34;
+      ctx.fillStyle = '#F4F4F5';
+      ctx.strokeStyle = '#E4E4E7';
+      ctx.lineWidth = 1;
+      ctx.fillRect(paddingX, cellarY, availW, cellarH);
+      ctx.strokeRect(paddingX, cellarY, availW, cellarH);
+
+      ctx.fillStyle = '#09090B';
+      ctx.font = '700 9px "JetBrains Mono", monospace';
+      const cellarText = remainingDoses !== null
+        ? `CAVA BEANTAG: ${dosesStr} • STOCK CONTROLADO`
+        : 'BEANTAG STUDIO // EXTRACTION SPECIFICATION';
+      ctx.fillText(cellarText, paddingX + 12, cellarY + 21);
+
+      // Barista Advice
+      const adviceY = cellarY + cellarH + 10;
+      const adviceH = 34;
+      const recipeNotes = stripEmojis(rec.notes || rec.description || rec.barista_notes || '');
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.strokeStyle = '#E4E4E7';
+      ctx.lineWidth = 1;
+      ctx.fillRect(paddingX, adviceY, availW, adviceH);
+      ctx.strokeRect(paddingX, adviceY, availW, adviceH);
+
+      ctx.fillStyle = '#71717A';
+      ctx.font = '700 8px "JetBrains Mono", monospace';
+      ctx.fillText('NOTAS DE PREPARACIÓN // BARISTA LOG:', paddingX + 12, adviceY + 14);
+
+      if (recipeNotes) {
+        ctx.fillStyle = '#09090B';
+        ctx.font = '600 8.5px "JetBrains Mono", monospace';
+        drawWrappedText(recipeNotes, paddingX + 12, adviceY + 25, availW - 24, 12, 1);
+      } else {
+        ctx.fillStyle = '#09090B';
+        ctx.font = '700 8.5px "JetBrains Mono", monospace';
+        ctx.fillText('EXTRACCIÓN CONTROLADA // ESTÁNDAR SUIZO CALIBRADO', paddingX + 12, adviceY + 25);
+      }
+
+      // Swiss Footer
+      const footY = baseH - paddingY - 26;
+      ctx.fillStyle = '#71717A';
+      ctx.font = '700 8.5px "JetBrains Mono", monospace';
+      ctx.fillText('BEANTAG STUDIO // SWISS TYPOGRAPHY // CH-8001', paddingX, footY + 14);
+    }
+  }
+
   return canvas.toDataURL('image/png', 1.0);
 }
 
@@ -3258,6 +3768,151 @@ export async function generateCoffeeMenuCardImage(batches, template = 'blueprint
     ctx.fillText(`純喫茶 自家焙煎 • BEANTAG ARCHIVE // TOKYO 1960`, paddingX, footY + 14);
   }
 
+  // 5. STUDIO MONO MENU (SWISS TYPOGRAPHY & TABULAR LEDGER)
+  else if (style === 'studio') {
+    ctx.fillStyle = '#FBFBFB';
+    ctx.fillRect(0, 0, baseW, baseH);
+
+    ctx.strokeStyle = '#E4E4E7';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(paddingX - 8, paddingY - 8, availW + 16, baseH - (paddingY * 2) + 16);
+
+    ctx.fillStyle = '#71717A';
+    ctx.font = '700 8.5px "JetBrains Mono", monospace';
+    ctx.fillText('BEANTAG STUDIO // COFFEE CELLAR INVENTORY', paddingX, paddingY + 18);
+
+    ctx.textAlign = 'right';
+    ctx.fillText('CH-8001 // ZÜRICH', baseW - paddingX, paddingY + 18);
+    ctx.textAlign = 'left';
+
+    ctx.fillStyle = '#09090B';
+    ctx.font = '800 20px "Outfit", "Space Grotesk", sans-serif';
+    ctx.fillText('CATÁLOGO DE LOTES EN CAVA', paddingX, paddingY + 44);
+
+    ctx.fillStyle = '#71717A';
+    ctx.font = '700 9px "JetBrains Mono", monospace';
+    ctx.fillText(`TOTAL: ${displayList.length} LOTES REGISTRADOS // DOSIS CONGELADAS AL VACÍO`, paddingX, paddingY + 64);
+
+    ctx.strokeStyle = '#E4E4E7';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(paddingX, paddingY + 76);
+    ctx.lineTo(baseW - paddingX, paddingY + 76);
+    ctx.stroke();
+
+    let curY = paddingY + 92;
+    displayList.forEach((b, idx) => {
+      const cardH = itemH - 10;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.strokeStyle = '#E4E4E7';
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, paddingX, curY, availW, cardH, 4, true, true);
+
+      // Index box
+      const idxStr = String(idx + 1).padStart(2, '0');
+      ctx.fillStyle = '#F4F4F5';
+      ctx.strokeStyle = '#E4E4E7';
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, paddingX + 10, curY + 12, 28, 28, 2, true, true);
+      ctx.fillStyle = '#09090B';
+      ctx.font = '800 11px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(idxStr, paddingX + 24, curY + 29);
+      ctx.textAlign = 'left';
+
+      // Title & Stock Badge
+      const rawName = stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café');
+      const name = rawName.length > 30 ? rawName.slice(0, 30) + '…' : rawName;
+
+      ctx.fillStyle = '#09090B';
+      ctx.font = '800 13px "Outfit", "Space Grotesk", sans-serif';
+      ctx.fillText(name.toUpperCase(), paddingX + 46, curY + 22);
+
+      const doseCount = b.remaining_doses !== undefined && b.remaining_doses !== null ? b.remaining_doses : 0;
+      const doseBadgeText = doseCount > 0
+        ? `${doseCount} TUBOS`
+        : (b.remaining_weight_g || b.weight_current_g
+            ? `~${Math.round(b.remaining_weight_g || b.weight_current_g)}g`
+            : `${doseCount} TUBOS`);
+
+      const badgeW = 76;
+      const badgeH = 22;
+      const badgeX = baseW - paddingX - badgeW - 8;
+      const badgeY = curY + 8;
+
+      ctx.fillStyle = '#F4F4F5';
+      ctx.strokeStyle = '#E4E4E7';
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, 2, true, true);
+
+      ctx.fillStyle = '#18181B';
+      ctx.font = '700 9px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(doseBadgeText, badgeX + badgeW / 2, badgeY + 14.5);
+      ctx.textAlign = 'left';
+
+      // Line 2: Roaster, Origin & Altitude
+      const roasterStr = stripEmojis(b.roaster || '');
+      const originStr = stripEmojis(b.origin || '');
+      const altStr = b.altitude ? `${stripEmojis(String(b.altitude))}${String(b.altitude).toLowerCase().includes('m') ? '' : 'm'}` : '';
+      const line2Tokens = [roasterStr, originStr, altStr].filter(Boolean);
+      const line2Text = line2Tokens.join(' • ');
+
+      ctx.fillStyle = '#71717A';
+      ctx.font = '700 9.5px "JetBrains Mono", monospace';
+      ctx.fillText(line2Text.toUpperCase() || 'ORIGEN ÚNICO', paddingX + 46, curY + 38);
+
+      // Line 3: Variety, Process & SCA
+      const varietyStr = stripEmojis(b.variety || '');
+      const processStr = stripEmojis(b.process || '');
+      const rawSca = b.sca_score;
+      const validSca = rawSca && !isNaN(parseFloat(rawSca)) && parseFloat(rawSca) > 0 ? parseFloat(rawSca) : null;
+      const scaStr = validSca ? `SCA ${validSca}` : '';
+      const line3Tokens = [varietyStr, processStr, scaStr].filter(Boolean);
+      const line3Text = line3Tokens.join(' • ');
+
+      if (line3Text) {
+        ctx.fillStyle = '#18181B';
+        ctx.font = '700 9px "JetBrains Mono", monospace';
+        ctx.fillText(line3Text.toUpperCase(), paddingX + 46, curY + 52);
+      }
+
+      // Line 4: Flavor Notes Pills
+      const rawNotes = cleanNotesString(b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '');
+      const parsedTags = extractFlavorTags(rawNotes).slice(0, 4);
+
+      if (parsedTags.length > 0) {
+        let pillX = paddingX + 46;
+        const pillY = curY + 64;
+        const pillH = 18;
+
+        ctx.font = '700 8.5px "JetBrains Mono", monospace';
+        parsedTags.forEach(tag => {
+          const scaIcon = getScaWheelIcon(tag, 'studio');
+          const tagLabel = `${scaIcon} ${tag.toUpperCase()}`;
+          const tw = ctx.measureText(tagLabel).width;
+          const pw = tw + 12;
+          if (pillX + pw <= baseW - paddingX - 8) {
+            ctx.fillStyle = '#F4F4F5';
+            ctx.strokeStyle = '#E4E4E7';
+            ctx.lineWidth = 1;
+            drawRoundedRect(ctx, pillX, pillY, pw, pillH, 2, true, true);
+            ctx.fillStyle = '#09090B';
+            ctx.fillText(tagLabel, pillX + 6, pillY + 12.5);
+            pillX += pw + 6;
+          }
+        });
+      }
+
+      curY += itemH;
+    });
+
+    const footY = baseH - paddingY - 24;
+    ctx.fillStyle = '#71717A';
+    ctx.font = '700 8.5px "JetBrains Mono", monospace';
+    ctx.fillText(`BEANTAG STUDIO ARCHIVE // ${displayList.length} LOTES // FECHA: ${new Date().toLocaleDateString('es-ES')}`, paddingX, footY + 12);
+  }
+
   return canvas.toDataURL('image/png', 1.0);
 }
 
@@ -3315,9 +3970,9 @@ function drawStickerPeelAccent(ctx, x, y, style) {
   ctx.closePath();
   ctx.fillStyle = style === 'blueprint'
     ? 'rgba(56, 189, 248, 0.45)'
-    : (style === 'neobrutalist' ? '#FFE600' : (style === 'diner' ? '#FEE2E2' : 'rgba(212, 212, 216, 0.7)'));
+    : (style === 'neobrutalist' ? '#FFE600' : (style === 'diner' ? '#FEE2E2' : (style === 'studio' ? 'rgba(9, 9, 11, 0.12)' : 'rgba(212, 212, 216, 0.7)')));
   ctx.fill();
-  ctx.strokeStyle = style === 'neobrutalist' ? '#000000' : (style === 'blueprint' ? '#38BDF8' : '#D4D4D8');
+  ctx.strokeStyle = style === 'neobrutalist' ? '#000000' : (style === 'blueprint' ? '#38BDF8' : (style === 'studio' ? '#E4E4E7' : '#D4D4D8'));
   ctx.lineWidth = 1;
   ctx.stroke();
   ctx.restore();
@@ -3339,6 +3994,7 @@ function drawTerroirBadges(ctx, startX, startY, maxW, style, terroirChips) {
     if (style === 'neobrutalist') fontStr = '900 9.5px "Space Grotesk", sans-serif';
     else if (style === 'diner') fontStr = '800 9.5px "Space Grotesk", sans-serif';
     else if (style === 'kissaten') fontStr = 'bold 9px "Playfair Display", Georgia, serif';
+    else if (style === 'studio') fontStr = '700 8.5px "JetBrains Mono", monospace';
 
     ctx.font = fontStr;
     const textLabel = `${chip.glyph}  ${chip.label}`;
@@ -3377,6 +4033,12 @@ function drawTerroirBadges(ctx, startX, startY, maxW, style, terroirChips) {
       ctx.lineWidth = 1.2;
       drawRoundedRect(ctx, curX, curY, chipW, chipH, 4, true, true);
       ctx.fillStyle = textCol;
+    } else if (style === 'studio') {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.strokeStyle = '#E4E4E7';
+      ctx.lineWidth = 1;
+      drawRoundedRect(ctx, curX, curY, chipW, chipH, 2, true, true);
+      ctx.fillStyle = chip.type === 'origin' ? '#09090B' : '#71717A';
     } else {
       // blueprint
       const bg = chip.type === 'process' ? 'rgba(56, 189, 248, 0.22)' : 'rgba(56, 189, 248, 0.14)';
@@ -3412,6 +4074,11 @@ function drawDieCutShell(ctx, x, y, w, h, radius, style, transparent, baseW, bas
     if (style === 'neobrutalist') {
       ctx.fillStyle = '#000000';
       drawRoundedRect(ctx, x + 5, y + 5, w + 7, h + 7, 12, true, false);
+    } else if (style === 'studio') {
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.12)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 3;
+      ctx.shadowOffsetX = 0;
     } else {
       ctx.shadowColor = 'rgba(0, 0, 0, 0.38)';
       ctx.shadowBlur = 14;
@@ -3442,6 +4109,10 @@ function drawDieCutShell(ctx, x, y, w, h, radius, style, transparent, baseW, bas
       bodyFill = '#F7F5F0';
       bodyStroke = '#18181B';
       strokeW = 1.5;
+    } else if (style === 'studio') {
+      bodyFill = '#FFFFFF';
+      bodyStroke = '#E4E4E7';
+      strokeW = 1;
     }
     ctx.fillStyle = bodyFill;
     ctx.strokeStyle = bodyStroke;
@@ -3467,6 +4138,10 @@ function drawDieCutShell(ctx, x, y, w, h, radius, style, transparent, baseW, bas
       bgFill = '#F7F5F0';
       borderStroke = '#18181B';
       strokeW = 1.5;
+    } else if (style === 'studio') {
+      bgFill = '#FBFBFB';
+      borderStroke = '#E4E4E7';
+      strokeW = 1;
     }
     ctx.fillStyle = bgFill;
     ctx.fillRect(0, 0, baseW, baseH);
@@ -3555,7 +4230,7 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
     const altText = altitude ? ` • ${altitude}` : '';
     terroirChips.push({
       type: 'origin',
-      glyph: style === 'diner' ? '★' : (style === 'kissaten' ? '◈' : '⚑'),
+      glyph: style === 'diner' ? '★' : (style === 'kissaten' ? '◈' : (style === 'studio' ? '◉' : '⚑')),
       label: `${origin.toUpperCase()}${altText}`
     });
   }
@@ -3567,6 +4242,7 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
     else if (pUp.includes('HONEY')) pGlyph = '🍯';
     else if (pUp.includes('MACER') || pUp.includes('CARB')) pGlyph = '🍇';
     else if (style === 'kissaten') pGlyph = '✿';
+    else if (style === 'studio') pGlyph = '⚡';
     terroirChips.push({
       type: 'process',
       glyph: pGlyph,
@@ -3576,7 +4252,7 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
   if (variety) {
     terroirChips.push({
       type: 'variety',
-      glyph: style === 'blueprint' ? '✦' : (style === 'kissaten' ? '❀' : '🌱'),
+      glyph: style === 'blueprint' ? '✦' : (style === 'kissaten' ? '❀' : (style === 'studio' ? '◇' : '🌱')),
       label: variety.toUpperCase()
     });
   }
@@ -4081,7 +4757,7 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
         ctx.textBaseline = 'alphabetic';
       }
     }
-  } else {
+  } else if (style === 'kissaten' || style === 'hangtag') {
     // KISSATEN
     drawDieCutShell(ctx, cardX, cardY, cardW, cardH, 16, 'kissaten', transparent, baseW, baseH);
 
@@ -4241,8 +4917,167 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
         ctx.textBaseline = 'alphabetic';
       }
     }
+  } else if (style === 'studio') {
+    drawDieCutShell(ctx, cardX, cardY, cardW, cardH, 12, 'studio', transparent, baseW, baseH);
+
+    // Swiss subtle frame
+    ctx.strokeStyle = '#E4E4E7';
+    ctx.lineWidth = 1;
+    drawRoundedRect(ctx, cardX + 6, cardY + 6, cardW - 12, cardH - 12, 8, false, true);
+
+    // Brand tag
+    ctx.fillStyle = '#71717A';
+    ctx.font = '700 8.5px "JetBrains Mono", monospace';
+    const brandLabel = roaster ? `STUDIO // ${roaster.toUpperCase()}` : (isVertical ? 'STUDIO // BEANTAG ARCHIVE' : 'STUDIO // SPECIALTY COFFEE');
+    ctx.fillText(brandLabel, cardX + 24, cardY + 34);
+
+    if (isVertical) {
+      // VERTICAL LAYOUT
+      ctx.fillStyle = '#09090B';
+      drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 76, cardW - 48, 36, '"Outfit", "Space Grotesk", sans-serif', '800');
+
+      // Terroir Badges (Propuesta B)
+      const bottomY = drawTerroirBadges(ctx, cardX + 24, cardY + 98, cardW - 48, 'studio', terroirChips);
+      const dividerY = bottomY + 12;
+
+      ctx.strokeStyle = '#E4E4E7';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cardX + 24, dividerY);
+      ctx.lineTo(cardX + cardW - 24, dividerY);
+      ctx.stroke();
+
+      if (sensoryData) {
+        // Propuesta D: Mini SCA Sensory Radar Chart
+        ctx.fillStyle = '#71717A';
+        ctx.font = '700 8px "JetBrains Mono", monospace';
+        ctx.fillText('// EVALUACIÓN SENSORIAL SCA (5 EJES):', cardX + 24, dividerY + 18);
+
+        const radarCY = dividerY + 76;
+        const radarR = 38;
+        drawSensoryRadarChart(ctx, cardX + cardW / 2, radarCY, radarR, sensoryData, 'studio');
+
+        const flavorHeaderY = radarCY + radarR + 24;
+        ctx.fillStyle = '#71717A';
+        ctx.font = '700 8px "JetBrains Mono", monospace';
+        ctx.fillText('// DESCRIPTORES SENSORIALES:', cardX + 24, flavorHeaderY);
+
+        const pillYStart = flavorHeaderY + 10;
+        const pillH = 34;
+        const displayed = flavorTags.length > 0 ? flavorTags.slice(0, 3) : [];
+        if (displayed.length > 0) {
+          displayed.forEach((tag, idx) => {
+            const py = pillYStart + idx * (pillH + 7);
+            if (py + pillH > cardY + cardH - 14) return;
+            const glyph = getAestheticGlyph(tag, 'studio');
+            const pillText = `${glyph}   ${tag.toUpperCase()}`;
+            ctx.fillStyle = '#F4F4F5';
+            ctx.strokeStyle = '#E4E4E7';
+            ctx.lineWidth = 1;
+            drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 4, true, true);
+            ctx.fillStyle = '#09090B';
+            ctx.font = '700 12px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pillText, cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+          });
+        }
+      } else {
+        // Full flavor pills cascade
+        ctx.fillStyle = '#71717A';
+        ctx.font = '700 8.5px "JetBrains Mono", monospace';
+        ctx.fillText('// DESCRIPTORES SENSORIALES:', cardX + 24, dividerY + 18);
+
+        const pillYStart = dividerY + 30;
+        const pillH = 44;
+        const displayed = flavorTags.length > 0 ? flavorTags.slice(0, 4) : [];
+        if (displayed.length > 0) {
+          displayed.forEach((tag, idx) => {
+            const py = pillYStart + idx * (pillH + 10);
+            if (py + pillH > cardY + cardH - 18) return;
+            const glyph = getAestheticGlyph(tag, 'studio');
+            const pillText = `${glyph}   ${tag.toUpperCase()}`;
+            ctx.fillStyle = '#F4F4F5';
+            ctx.strokeStyle = '#E4E4E7';
+            ctx.lineWidth = 1;
+            drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 4, true, true);
+            ctx.fillStyle = '#09090B';
+            ctx.font = '700 14px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pillText, cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+          });
+        } else {
+          const py = pillYStart;
+          ctx.fillStyle = '#F4F4F5';
+          ctx.strokeStyle = '#E4E4E7';
+          ctx.lineWidth = 1;
+          drawRoundedRect(ctx, cardX + 24, py, cardW - 48, pillH, 4, true, true);
+          ctx.fillStyle = '#09090B';
+          ctx.font = '700 13px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('◈   ORIGEN SELECCIONADO', cardX + 24 + (cardW - 48) / 2, py + pillH / 2);
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'alphabetic';
+        }
+      }
+    } else {
+      // HORIZONTAL LAYOUT
+      ctx.fillStyle = '#09090B';
+      drawFittedText(coffeeName.toUpperCase(), cardX + 24, cardY + 76, cardW - 75, 40, '"Outfit", "Space Grotesk", sans-serif', '800');
+
+      // Terroir Badges (Propuesta B)
+      drawTerroirBadges(ctx, cardX + 24, cardY + 98, cardW - 48, 'studio', terroirChips);
+
+      const pillY = cardY + 148;
+      const pillH = 44;
+      if (flavorTags.length > 0) {
+        let curX = cardX + 24;
+        const displayed = flavorTags.slice(0, 3);
+        ctx.font = '700 14px "JetBrains Mono", monospace';
+        for (const tag of displayed) {
+          const glyph = getAestheticGlyph(tag, 'studio');
+          const tagText = `${glyph}  ${tag.toUpperCase()}`;
+          const pillW = ctx.measureText(tagText).width + 30;
+          if (curX + pillW > cardX + cardW - 16) break;
+          ctx.fillStyle = '#F4F4F5';
+          ctx.strokeStyle = '#E4E4E7';
+          ctx.lineWidth = 1;
+          drawRoundedRect(ctx, curX, pillY, pillW, pillH, 4, true, true);
+          ctx.fillStyle = '#09090B';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(tagText, curX + pillW / 2, pillY + pillH / 2);
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'alphabetic';
+          curX += pillW + 12;
+        }
+      } else {
+        const fallbackNote = '◈  ORIGEN SELECCIONADO • TOSTADO ARTESANAL';
+        ctx.font = '700 13px "JetBrains Mono", monospace';
+        const pillW = Math.min(ctx.measureText(fallbackNote).width + 30, cardW - 48);
+        ctx.fillStyle = '#F4F4F5';
+        ctx.strokeStyle = '#E4E4E7';
+        ctx.lineWidth = 1;
+        drawRoundedRect(ctx, cardX + 24, pillY, pillW, pillH, 4, true, true);
+        ctx.fillStyle = '#09090B';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(fallbackNote, cardX + 24 + pillW / 2, pillY + pillH / 2);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+      }
+    }
   }
 
   return canvas.toDataURL('image/png');
 }
 
+export const generateBeanCardImage = (recipe, template = 'studio') => generateRecipeCardImage(recipe, template, false);
+export const generateMenuCardImage = generateCoffeeMenuCardImage;
+export const generateStickerImage = generateCoffeeStickerImage;

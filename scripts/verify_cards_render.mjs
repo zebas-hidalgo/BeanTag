@@ -1,8 +1,10 @@
 // --- BEANTAG AUTOMATED CARD RENDERING VERIFICATION SCRIPT ---
 // Headless DOM verification of production bundle card generation:
-// Tests 4 styles x 2 modes (Con Receta, Solo Grano) = 8 variants
-// Tests 4 styles cellar menu cards = 4 variants
-// Total: 12 configurations verified against Canvas 2D operations.
+// Tests 5 styles x 2 modes (Con Receta, Solo Grano) = 10 variants
+// Tests 5 styles cellar menu cards = 5 variants
+// Tests 5 styles x 4 story sticker variants = 20 variants
+// Tests 5 styles sticker radar = 5 variants
+// Total: 40 configurations verified against Canvas 2D operations.
 
 import fs from 'fs';
 import path from 'path';
@@ -300,7 +302,7 @@ const sampleBatches = [
   { batch_name: 'Chiroso Finca Los Alpes', origin: 'Colombia', process: 'Lavado Frío', remaining_doses: 6, roaster: 'Los Alpes' }
 ];
 
-const STYLES = ['blueprint', 'neobrutalist', 'diner', 'kissaten'];
+const STYLES = ['blueprint', 'neobrutalist', 'diner', 'kissaten', 'studio'];
 
 async function verify() {
   const bundleUrl = pathToFileURL(latestBundle.fullPath).href;
