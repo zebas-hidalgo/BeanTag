@@ -45,6 +45,7 @@ const {
   computeOfflineSommelier,
   generateAiRecipePrompt,
   callGeminiWithRetry,
+  callGroqWithRetry,
   normalizeRecipe
 } = require('./aiEngine');
 
@@ -992,31 +993,44 @@ app.get('/manifest.json', (req, res) => {
   });
 });
 
-// --- GEMINI AI CORE ENGINE (WITH RESILIENT FALLBACK) ---
+// --- UNIFIED MULTI-PROVIDER AI DISPATCHER (GROQ & GEMINI) ---
+
+function getAiConfig(req) {
+  const provider = req.headers['x-ai-provider'] || (req.headers['x-groq-key'] ? 'groq' : 'gemini');
+  const groqKey = req.headers['x-groq-key'] || req.body?.groqKey || '';
+  const geminiKey = req.headers['x-gemini-key'] || req.body?.apiKey || '';
+  const model = req.headers['x-ai-model'] || (provider === 'gemini' ? req.headers['x-gemini-model'] : undefined) || req.body?.model;
+  const enableThinking = req.headers['x-gemini-thinking'] === 'true';
+
+  return {
+    provider,
+    groqKey,
+    geminiKey,
+    model,
+    enableThinking
+  };
+}
 
 function getGeminiConfig(req) {
-  const apiKey = req.headers['x-gemini-key'] || process.env.GEMINI_API_KEY;
-  const requestedModel = req.headers['x-gemini-model'];
-  const enableThinking = req.headers['x-gemini-thinking'] === 'true' || req.headers['x-gemini-thinking'] === true;
-
-  // Sanitize model to valid Google AI Studio IDs (e.g. gemini-2.0-flash, gemini-1.5-flash)
-  const model = sanitizeModel(requestedModel);
+  const config = getAiConfig(req);
+  const apiKey = config.geminiKey || process.env.GEMINI_API_KEY || '';
+  const model = sanitizeModel(config.model);
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const generationConfig = {
     responseMimeType: 'application/json'
   };
 
-  if (enableThinking && model.includes('thinking')) {
+  if (config.enableThinking && model.includes('thinking')) {
     generationConfig.thinkingConfig = {
       thinkingBudget: 2048
     };
   }
 
-  return { apiKey, model, url, generationConfig, enableThinking };
+  return { apiKey, model, url, generationConfig, enableThinking: config.enableThinking };
 }
 
-// 0. AI Connection Diagnostic Probe Endpoint
+// 0a. Gemini AI Connection Diagnostic Probe Endpoint
 app.post('/api/test-gemini', async (req, res) => {
   const apiKey = req.headers['x-gemini-key'] || req.body?.apiKey;
   const requestedModel = req.headers['x-gemini-model'] || req.body?.model;
@@ -1043,9 +1057,36 @@ app.post('/api/test-gemini', async (req, res) => {
   }
 });
 
-// 1. AI Recommendation Endpoint (Gemini Flash + Offline Barista Engine Fallback)
+// 0b. Groq AI Connection Diagnostic Probe Endpoint
+app.post('/api/test-groq', async (req, res) => {
+  const { groqKey, model } = getAiConfig(req);
+
+  if (!groqKey || typeof groqKey !== 'string' || groqKey.trim() === '') {
+    return res.status(400).json({ success: false, error: 'No se ingresó ninguna clave API de Groq.' });
+  }
+
+  const targetModel = model || 'llama-3.3-70b-versatile';
+  try {
+    const probePrompt = 'Responde exclusivamente con el JSON: {"status":"ok","echo":"groq_barista_ok"}';
+    const result = await callGroqWithRetry(probePrompt, groqKey.trim(), targetModel);
+    return res.json({
+      success: true,
+      provider: 'groq',
+      model: result._model || model || targetModel,
+      message: '¡Conexión exitosa con Groq (Llama 3.3)! ⚡'
+    });
+  } catch (err) {
+    console.warn(`[Groq Probe Failed] ${err.message}`);
+    return res.status(400).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
+
+// 1. AI Recommendation Endpoint (Unified Groq / Gemini + Offline Barista Engine Fallback)
 app.post('/api/recommend-recipe', async (req, res) => {
-  const { apiKey, model, enableThinking } = getGeminiConfig(req);
+  const { provider, groqKey, geminiKey, model, enableThinking } = getAiConfig(req);
   const body = req.body || {};
   const batchData = body.batch || {};
 
@@ -1084,13 +1125,14 @@ app.post('/api/recommend-recipe', async (req, res) => {
     grinder: grinderType
   };
 
+  const hasKey = (provider === 'groq' && groqKey) || (provider === 'gemini' && geminiKey);
   // If no API key is provided, gracefully serve the deterministic offline barista calculation
-  if (!apiKey) {
+  if (!hasKey) {
     const offlineRec = computeOfflineRecipe(recipeParams);
     offlineRec.is_frozen = isFrozen;
     offlineRec.days_since_roast = daysSinceRoast;
     offlineRec._source = 'barista_fallback';
-    offlineRec.notes = `${offlineRec.notes} (Modo Barista Offline - Configura tu API Key en Ajustes para activar Gemini)`;
+    offlineRec.notes = `${offlineRec.notes} (Modo Barista Offline - Configura tu API Key en Ajustes para activar IA)`;
     const normalized = normalizeRecipe(offlineRec, targetMethod, dose, grinderType);
     return res.json(normalized);
   }
@@ -1098,24 +1140,33 @@ app.post('/api/recommend-recipe', async (req, res) => {
   const prompt = generateAiRecipePrompt(recipeParams);
 
   try {
-    const recommendation = await callGeminiWithRetry(prompt, apiKey, model, enableThinking);
+    let recommendation = null;
+    if (provider === 'groq' && groqKey) {
+      recommendation = await callGroqWithRetry(prompt, groqKey, model);
+    } else if (provider === 'gemini' && geminiKey) {
+      recommendation = await callGeminiWithRetry(prompt, geminiKey, model, enableThinking);
+    }
     const recipeToNormalize = recommendation || computeOfflineRecipe(recipeParams);
     if (recipeToNormalize) {
       recipeToNormalize.is_frozen = isFrozen;
       recipeToNormalize.days_since_roast = daysSinceRoast;
-      recipeToNormalize._source = recommendation ? 'gemini_ai' : 'barista_fallback';
+      recipeToNormalize._source = recommendation ? (recommendation._source || (provider === 'groq' ? 'groq' : 'gemini_ai')) : 'barista_fallback';
     }
     const normalized = normalizeRecipe(recipeToNormalize, targetMethod, dose, grinderType);
     return res.json(normalized);
   } catch (err) {
-    console.warn(`[AI Recommend Fallback] Error with Gemini (${model}): ${err.message}. Serving deterministic barista recipe.`);
+    console.warn(`[AI Recommend Fallback] Error with ${provider} (${model}): ${err.message}. Serving deterministic barista recipe.`);
     const fallbackRec = computeOfflineRecipe(recipeParams);
     fallbackRec.is_frozen = isFrozen;
     fallbackRec.days_since_roast = daysSinceRoast;
     fallbackRec._source = 'barista_fallback';
-    fallbackRec._gemini_error = err.message;
     fallbackRec._error = err.message;
-    fallbackRec.notes = `${fallbackRec.notes} (Receta calculada localmente: servidores de Google no disponibles o saturados)`;
+    if (provider === 'groq') {
+      fallbackRec._groq_error = err.message;
+    } else {
+      fallbackRec._gemini_error = err.message;
+    }
+    fallbackRec.notes = `${fallbackRec.notes} (Receta calculada localmente: servidores de ${provider === 'groq' ? 'Groq' : 'Google'} no disponibles o saturados)`;
     const normalized = normalizeRecipe(fallbackRec, targetMethod, dose, grinderType);
     return res.json(fallbackRec ? normalized : fallbackRec);
   }
@@ -1123,7 +1174,7 @@ app.post('/api/recommend-recipe', async (req, res) => {
 
 // 2. AI Recipe Re-calibration Endpoint (Smart Tuning based on Sensory Feedback)
 app.post('/api/ai/tune-recipe', async (req, res) => {
-  const { apiKey, model, enableThinking } = getGeminiConfig(req);
+  const { provider, groqKey, geminiKey, model, enableThinking } = getAiConfig(req);
   const {
     method,
     dose_in_g,
@@ -1142,8 +1193,9 @@ app.post('/api/ai/tune-recipe', async (req, res) => {
   const dose = parseFloat(dose_in_g) || 20.0;
   const activeGrinder = (grinder || 'jmax').toLowerCase();
 
+  const hasKey = (provider === 'groq' && groqKey) || (provider === 'gemini' && geminiKey);
   // If no API key is provided, serve offline barista tuning calculation directly
-  if (!apiKey) {
+  if (!hasKey) {
     const offlineTune = computeOfflineTuning({ ...req.body, grinder: activeGrinder });
     offlineTune.notes = `${offlineTune.notes} (Modo Barista Offline - Configura tu API Key en Ajustes)`;
     return res.json(offlineTune);
@@ -1209,23 +1261,38 @@ Genera un JSON con esta estructura exacta (calcula valores específicos para cor
 }`;
 
   try {
-    const tunedRecommendation = await callGeminiWithRetry(prompt, apiKey, model, enableThinking);
-    res.json(tunedRecommendation);
+    let tunedRecommendation = null;
+    if (provider === 'groq' && groqKey) {
+      tunedRecommendation = await callGroqWithRetry(prompt, groqKey, model);
+    } else if (provider === 'gemini' && geminiKey) {
+      tunedRecommendation = await callGeminiWithRetry(prompt, geminiKey, model, enableThinking);
+    }
+    if (tunedRecommendation) {
+      return res.json(tunedRecommendation);
+    }
+    const fallbackTune = computeOfflineTuning({ ...req.body, grinder: activeGrinder });
+    return res.json(fallbackTune);
   } catch (err) {
-    console.warn(`[AI Tune Fallback] Error with Gemini (${model}): ${err.message}. Serving deterministic barista tuning.`);
+    console.warn(`[AI Tune Fallback] Error with ${provider} (${model}): ${err.message}. Serving deterministic barista tuning.`);
     const fallbackTune = computeOfflineTuning({ ...req.body, grinder: activeGrinder });
     fallbackTune._error = err.message;
-    fallbackTune.notes = `${fallbackTune.notes} (Recalibración calculada localmente: servidores de Google no disponibles o saturados)`;
-    res.json(fallbackTune);
+    if (provider === 'groq') {
+      fallbackTune._groq_error = err.message;
+    } else {
+      fallbackTune._gemini_error = err.message;
+    }
+    fallbackTune.notes = `${fallbackTune.notes} (Recalibración calculada localmente: servidores de ${provider === 'groq' ? 'Groq' : 'Google'} no disponibles o saturados)`;
+    return res.json(fallbackTune);
   }
 });
 
 
-// 3. AI Multimodal Coffee Bag / Receipt Scanner (Gemini Multimodal Vision OCR)
+// 3. AI Multimodal Coffee Bag / Receipt Scanner (Gemini Multimodal Vision OCR / Groq Vision OCR)
 app.post('/api/ai/scan-bag', async (req, res) => {
-  const { apiKey, model, enableThinking } = getGeminiConfig(req);
-  if (!apiKey) {
-    return res.status(400).json({ error: 'Falta la clave API de Gemini en las cabeceras' });
+  const { provider, groqKey, geminiKey, model, enableThinking } = getAiConfig(req);
+  const hasKey = (provider === 'groq' && groqKey) || (provider === 'gemini' && geminiKey) || geminiKey;
+  if (!hasKey) {
+    return res.status(400).json({ error: provider === 'groq' ? 'Falta la clave API de Groq en las cabeceras' : 'Falta la clave API de Gemini en las cabeceras' });
   }
 
   const { imageBase64, mimeType = 'image/jpeg' } = req.body || {};
@@ -1270,39 +1337,53 @@ Devuelve OBLIGATORIAMENTE un JSON estructurado con estas claves:
 }`;
 
   try {
-    const multimodalContents = [
-      {
-        parts: [
-          { text: prompt },
-          {
-            inlineData: {
-              mimeType: validMime,
-              data: cleanBase64
+    let bagData;
+    if (provider === 'groq' && groqKey) {
+      bagData = await callGroqWithRetry(
+        prompt,
+        groqKey,
+        'llama-3.2-11b-vision-preview',
+        true,
+        25000,
+        `data:${validMime};base64,${cleanBase64}`
+      );
+    } else if (geminiKey) {
+      const multimodalContents = [
+        {
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                mimeType: validMime,
+                data: cleanBase64
+              }
             }
-          }
-        ]
-      }
-    ];
-
-    const bagData = await callGeminiWithRetry(multimodalContents, apiKey, model, enableThinking);
-    res.json(bagData);
+          ]
+        }
+      ];
+      bagData = await callGeminiWithRetry(multimodalContents, geminiKey, model, enableThinking);
+    } else {
+      return res.status(400).json({ error: 'Falta la clave API de IA en las cabeceras' });
+    }
+    return res.json(bagData);
   } catch (err) {
     console.warn(`[AI Scan-Bag Failed] ${err.message}`);
-    res.status(err.status || 500).json({ error: 'Error al escanear la bolsa de café: ' + err.message });
+    return res.status(err.status || 500).json({ error: 'Error al escanear la bolsa de café: ' + err.message });
   }
 });
 
 // 4. AI Inventory Sommelier Endpoint (Recommends Peak Coffee from Freezer Tubes)
 app.post('/api/ai/sommelier', async (req, res) => {
-  const { apiKey, model, enableThinking } = getGeminiConfig(req);
+  const { provider, groqKey, geminiKey, model, enableThinking } = getAiConfig(req);
   const { batches, timeOfDay = 'mañana' } = req.body || {};
 
   if (!batches || !Array.isArray(batches) || batches.length === 0) {
     return res.status(400).json({ error: 'No hay lotes disponibles en el inventario para evaluar' });
   }
 
+  const hasKey = (provider === 'groq' && groqKey) || (provider === 'gemini' && geminiKey);
   // If no API key is provided, serve deterministic offline sommelier directly
-  if (!apiKey) {
+  if (!hasKey) {
     const fallbackResult = computeOfflineSommelier(batches, timeOfDay);
     if (!fallbackResult) {
       return res.json({
@@ -1351,10 +1432,31 @@ Selecciona el mejor lote para preparar ahora mismo y genera un JSON con esta est
 }`;
 
   try {
-    const sommelierResult = await callGeminiWithRetry(prompt, apiKey, model, enableThinking);
-    return res.json(sommelierResult);
+    let sommelierResult = null;
+    if (provider === 'groq' && groqKey) {
+      sommelierResult = await callGroqWithRetry(prompt, groqKey, model);
+    } else if (provider === 'gemini' && geminiKey) {
+      sommelierResult = await callGeminiWithRetry(prompt, geminiKey, model, enableThinking);
+    }
+    if (sommelierResult) {
+      return res.json(sommelierResult);
+    }
+    const fallbackResult = computeOfflineSommelier(batches, timeOfDay);
+    if (!fallbackResult) {
+      return res.json({
+        recommended_batch_id: null,
+        headline: 'Sin dosis disponibles',
+        reason: 'Todos los lotes en tu inventario tienen 0 dosis restantes.',
+        badge: 'Sin dosis',
+        suggested_method: 'N/A',
+        flavor_highlight: 'Repón tus dosis para recibir sugerencias',
+        flavor_focus: 'Repón tus dosis para recibir sugerencias',
+        _source: 'barista_fallback'
+      });
+    }
+    return res.json(fallbackResult);
   } catch (err) {
-    console.warn(`[AI Sommelier Fallback] Error with Gemini (${model}): ${err.message}. Serving deterministic sommelier fallback.`);
+    console.warn(`[AI Sommelier Fallback] Error with ${provider} (${model}): ${err.message}. Serving deterministic sommelier fallback.`);
     const fallbackResult = computeOfflineSommelier(batches, timeOfDay);
     if (!fallbackResult) {
       return res.json({
