@@ -1360,13 +1360,14 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               </div>
 
               {/* Template Selector */}
-              <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-muted)', padding: '0 4px' }}>ESTILO:</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '9.5px', fontWeight: '800', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
                 {[
-                  { id: 'blueprint', label: 'Blueprint' },
-                  { id: 'neobrutalist', label: '⚡ Brutalismo' },
-                  { id: 'diner', label: 'Retro 50s' },
-                  { id: 'kissaten', label: 'Kissaten' }
+                  { id: 'studio', label: 'Studio' },
+                  { id: 'kissaten', label: 'Kissaten' },
+                  { id: 'blueprint', label: 'Dark Lab' },
+                  { id: 'neobrutalist', label: 'Nomad' },
+                  { id: 'diner', label: 'Botanical' }
                 ].map(t => (
                   <button
                     key={t.id}
@@ -1376,11 +1377,11 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                       handleOpenMenuShare(t.id);
                     }}
                     style={{
-                      flex: 1,
-                      padding: '4px 6px',
-                      fontSize: '10px',
-                      fontWeight: 'bold',
-                      border: 'none',
+                      flex: '1 1 auto',
+                      padding: '5px 8px',
+                      fontSize: '10.5px',
+                      fontWeight: menuShareTemplate === t.id ? '800' : '600',
+                      border: menuShareTemplate === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
                       borderRadius: '6px',
                       background: menuShareTemplate === t.id ? 'var(--bg-card)' : 'transparent',
                       color: menuShareTemplate === t.id ? 'var(--color-crimson)' : 'var(--color-text)',

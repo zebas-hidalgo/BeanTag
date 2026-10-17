@@ -2796,13 +2796,14 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               )}
 
               {/* Aesthetic Template Selector */}
-              <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', padding: '0 4px' }}>ESTILO:</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '9.5px', fontWeight: '800', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
                 {[
-                  { id: 'blueprint', label: '📐 Blueprint' },
-                  { id: 'neobrutalist', label: '⚡ Brutalismo' },
-                  { id: 'diner', label: '📻 Retro 50s' },
-                  { id: 'kissaten', label: '🍵 Kissaten' }
+                  { id: 'studio', label: 'Studio' },
+                  { id: 'kissaten', label: 'Kissaten' },
+                  { id: 'blueprint', label: 'Dark Lab' },
+                  { id: 'neobrutalist', label: 'Nomad' },
+                  { id: 'diner', label: 'Botanical' }
                 ].map(t => (
                   <button
                     key={t.id}
@@ -2813,14 +2814,14 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       handleShareBatchCard(shareIncludeRecipe, t.id, shareScope, stickerTransparent, stickerOrientation);
                     }}
                     style={{
-                      flex: 1,
-                      padding: '4px 6px',
-                      fontSize: '9.5px',
-                      borderRadius: '4px',
-                      border: (shareTemplate || 'blueprint') === t.id ? '1px solid var(--color-crimson)' : 'none',
-                      backgroundColor: (shareTemplate || 'blueprint') === t.id ? 'var(--bg-card)' : 'transparent',
-                      fontWeight: (shareTemplate || 'blueprint') === t.id ? '900' : 'normal',
-                      color: (shareTemplate || 'blueprint') === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
+                      flex: '1 1 auto',
+                      padding: '5px 8px',
+                      fontSize: '10.5px',
+                      borderRadius: '6px',
+                      border: (shareTemplate || 'studio') === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
+                      backgroundColor: (shareTemplate || 'studio') === t.id ? 'var(--bg-card)' : 'transparent',
+                      fontWeight: (shareTemplate || 'studio') === t.id ? '800' : '600',
+                      color: (shareTemplate || 'studio') === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
                       cursor: 'pointer'
                     }}
                   >
