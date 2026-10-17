@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircle2, AlertTriangle, Loader2, Sparkles, Compass, Share2, ClipboardList, X, Eye, EyeOff } from 'lucide-react';
+import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircle2, AlertTriangle, Loader2, Sparkles, Compass, Share2, ClipboardList, X, Eye, EyeOff, Coffee, Zap, Cpu, Palette, SlidersHorizontal } from 'lucide-react';
 import NfcToolsModal from './NfcToolsModal';
 import { apiUrl } from '../utils/api';
 import { GRINDERS } from '../utils/grinders';
@@ -474,14 +474,14 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              background: '#FFFFFF',
+              background: 'var(--bg-card, #FFFFFF)',
               border: '1px solid var(--border-color)',
               color: 'var(--color-crimson)',
               boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
             }}
           >
             {sommelierLoading ? <Loader2 size={15} className="spin" /> : <Sparkles size={15} />}
-            <span>{sommelierLoading ? 'Pensando...' : '✨ Sommelier IA'}</span>
+            <span>{sommelierLoading ? 'Pensando...' : 'Sommelier IA'}</span>
           </button>
 
           <button
@@ -497,7 +497,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              background: '#FFFFFF',
+              background: 'var(--bg-card, #FFFFFF)',
               border: '1px solid var(--border-color)',
               color: 'var(--color-text)',
               boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
@@ -537,7 +537,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                     alignItems: 'center',
                     gap: '4px'
                   }}>
-                    ⚡ Sommelier Local (Modo Cero Desconexión)
+                    <Zap size={11} />
+                    <span>Sommelier Local (Modo Cero Desconexión)</span>
                   </span>
                 )}
                 {sommelierResult.badge && (
@@ -551,19 +552,20 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             {sommelierResult.recommended_batch_id === null ? (
               <div style={{ marginTop: '8px', padding: '10px', background: 'var(--bg-canvas, #F9FAFB)', borderRadius: '8px', border: '1px dashed var(--border-color, #E5E7EB)' }}>
                 <h4 style={{ margin: '0 0 6px 0', fontSize: '13px', fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
-                  📦 Sin dosis disponibles en inventario
+                  Sin dosis disponibles en inventario
                 </h4>
                 <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 8px 0', lineHeight: 1.4 }}>
                   {sommelierResult.reason || 'Todos los lotes en tu cava tienen 0 dosis restantes. Repón tu stock o registra nuevas dosis para recibir recomendaciones del sommelier.'}
                 </p>
                 <div style={{ fontSize: '11px', color: 'var(--color-crimson)', fontWeight: '600' }}>
-                  💡 Sugerencia: Repón dosis de café en tus lotes para activar la selección experta de cata.
+                  Sugerencia: Repón dosis de café en tus lotes para activar la selección experta de cata.
                 </div>
               </div>
             ) : (
               <>
-                <h4 style={{ margin: '4px 0 6px 0', fontSize: '15px', fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
-                  ☕ {sommelierResult.recommended_batch_name}
+                <h4 style={{ margin: '4px 0 6px 0', fontSize: '15px', fontFamily: 'var(--font-heading)', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Coffee size={15} color="var(--color-crimson)" />
+                  <span>{sommelierResult.recommended_batch_name}</span>
                 </h4>
 
                 <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 10px 0', lineHeight: 1.4 }}>
@@ -572,7 +574,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
 
                 {sommelierResult.flavor_focus && (
                   <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span>🎯 Perfil:</span>
+                    <span>Perfil:</span>
                     <span style={{ color: 'var(--color-crimson)' }}>{sommelierResult.flavor_focus}</span>
                   </div>
                 )}
@@ -585,8 +587,9 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       {/* Tema de la Aplicación */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
         <div>
-          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
-            🎨 Tema de la Aplicación
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Palette size={14} color="var(--color-crimson)" />
+            <span>Tema de la Aplicación</span>
           </h4>
           <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
             Elige la estética global del sistema: tonos cálidos artesanales o un diseño nórdico minimalista
@@ -614,7 +617,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               transition: 'all 0.18s ease'
             }}
           >
-            <span>☕ BeanTag Clásico (Terracotta)</span>
+            <Coffee size={14} strokeWidth={2.2} />
+            <span>BeanTag Clásico (Terracotta)</span>
           </button>
           <button
             type="button"
@@ -637,7 +641,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               transition: 'all 0.18s ease'
             }}
           >
-            <span>📐 Studio Minimal (Monocromo)</span>
+            <Compass size={14} strokeWidth={2.2} />
+            <span>Studio Minimal (Monocromo)</span>
           </button>
         </div>
       </div>
@@ -645,8 +650,9 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       {/* Estilo Visual del Inventario */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
         <div>
-          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
-            🎛️ Estilo Visual del Inventario
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <SlidersHorizontal size={14} color="var(--color-crimson)" />
+            <span>Estilo Visual del Inventario</span>
           </h4>
           <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
             Elige cómo se presentan las tarjetas de café en tu congelador por defecto
@@ -656,19 +662,19 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
           {[
             { 
               id: 'editorial', 
-              name: '🏷️ Editorial', 
+              name: 'Editorial', 
               subtitle: 'Nordic Atelier', 
               desc: 'Respiro nórdico, chips pastel, cápsula de stock y botón rápido.' 
             },
             { 
               id: 'list', 
-              name: '📋 Lista', 
+              name: 'Lista', 
               subtitle: 'Cupertino Table', 
               desc: 'Filas compactas (~52px), pastilla de stock y flecha indicadora.' 
             },
             { 
               id: 'archive', 
-              name: '📐 Archivo', 
+              name: 'Archivo', 
               subtitle: 'Tokyo Coffee Lab', 
               desc: 'Ficha técnica monoespaciada, código #01 • LOT y matriz 2x2.' 
             }
@@ -726,8 +732,9 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       {/* Temas Visuales de Fantasía */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
         <div>
-          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
-            🎨 Temas Visuales de Fantasía
+          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Palette size={14} color="var(--color-crimson)" />
+            <span>Temas Visuales de Fantasía</span>
           </h4>
           <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
             Elige una paleta Neobrutalista inspirada en el café de especialidad
@@ -735,12 +742,12 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
           {[
-            { id: 'matcha', name: '🌿 Organic Matcha', desc: 'Menta & Miel', colors: ['#FFFFFF', '#ECFDF5', '#059669', '#D97706'] },
-            { id: 'espresso', name: '☕ Espresso Terracotta', desc: 'Terracotta & Caramelo', colors: ['#FFFFFF', '#FFF5F5', '#E76F51', '#F4A261'] },
-            { id: 'cyber', name: '⚡ Cyber Kinetic', desc: 'Azul Lab & Cinabrio', colors: ['#FFFFFF', '#EFF6FF', '#2563EB', '#FF5E36'] },
-            { id: 'sakura', name: '🌸 Sakura Cold Brew', desc: 'Rosa Cryo & Floral', colors: ['#FFFFFF', '#FDF2F8', '#EC4899', '#D946EF'] },
-            { id: 'caramel', name: '🍯 Amber Caramel', desc: 'Ámbar & Avellana', colors: ['#FFFFFF', '#FFFBEB', '#D97706', '#B45309'] },
-            { id: 'frost', name: '🧊 Nordic Frost', desc: 'Hielo Ártico & Púrpura', colors: ['#FFFFFF', '#F0F9FF', '#0284C7', '#6366F1'] }
+            { id: 'matcha', name: 'Organic Matcha', desc: 'Menta & Miel', colors: ['#FFFFFF', '#ECFDF5', '#059669', '#D97706'] },
+            { id: 'espresso', name: 'Espresso Terracotta', desc: 'Terracotta & Caramelo', colors: ['#FFFFFF', '#FFF5F5', '#E76F51', '#F4A261'] },
+            { id: 'cyber', name: 'Cyber Kinetic', desc: 'Azul Lab & Cinabrio', colors: ['#FFFFFF', '#EFF6FF', '#2563EB', '#FF5E36'] },
+            { id: 'sakura', name: 'Sakura Cold Brew', desc: 'Rosa Cryo & Floral', colors: ['#FFFFFF', '#FDF2F8', '#EC4899', '#D946EF'] },
+            { id: 'caramel', name: 'Amber Caramel', desc: 'Ámbar & Avellana', colors: ['#FFFFFF', '#FFFBEB', '#D97706', '#B45309'] },
+            { id: 'frost', name: 'Nordic Frost', desc: 'Hielo Ártico & Púrpura', colors: ['#FFFFFF', '#F0F9FF', '#0284C7', '#6366F1'] }
           ].map((t) => {
             const isActive = (appTheme || theme || 'matcha') === t.id;
             return (
@@ -765,7 +772,6 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   color: 'var(--color-text)',
                   cursor: 'pointer',
                   transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                  transform: isActive ? 'scale(1.03)' : 'scale(1)',
                   fontWeight: 'bold',
                   display: 'flex',
                   flexDirection: 'column',
@@ -835,7 +841,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               transition: 'all 0.15s ease'
             }}
           >
-            <span>⚡ Groq (LPU Ultra-Rápido)</span>
+            <Zap size={14} strokeWidth={2.2} />
+            <span>Groq (LPU Ultra-Rápido)</span>
           </button>
           <button
             type="button"
@@ -858,7 +865,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               transition: 'all 0.15s ease'
             }}
           >
-            <span>🧠 Google Gemini</span>
+            <Cpu size={14} strokeWidth={2.2} />
+            <span>Google Gemini</span>
           </button>
         </div>
 

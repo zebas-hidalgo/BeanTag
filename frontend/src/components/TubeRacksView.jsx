@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Coffee, MoreVertical, Trash2, Edit3, Layers, Check, X, RefreshCw, AlertCircle, ArrowRight, Zap, Snowflake } from 'lucide-react';
+import { Plus, Coffee, MoreVertical, Trash2, Edit3, Layers, Check, X, RefreshCw, AlertCircle, ArrowRight, Zap, Snowflake, FlaskConical } from 'lucide-react';
 import { apiUrl } from '../utils/api';
 import SlotAssignModal from './SlotAssignModal';
 
@@ -300,17 +300,21 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
         }}
       >
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <h2
               style={{
                 margin: 0,
                 fontSize: '18px',
                 fontWeight: '900',
                 fontFamily: 'var(--font-heading)',
-                color: 'var(--color-text, #0F172A)'
+                color: 'var(--color-text, #0F172A)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '7px'
               }}
             >
-              🧪 Portatubos (2×3)
+              <FlaskConical size={18} color="var(--barista-accent-honey, #D97706)" strokeWidth={2.3} />
+              <span>Portatubos (2×3)</span>
             </h2>
             <span
               style={{
@@ -932,11 +936,13 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                                     position: 'absolute',
                                     top: '3px',
                                     left: '3px',
-                                    fontSize: '9px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
                                     lineHeight: 1
                                   }}
                                 >
-                                  ❄️
+                                  <Snowflake size={10} color="#0284C7" strokeWidth={2.5} />
                                 </span>
                               )}
 
