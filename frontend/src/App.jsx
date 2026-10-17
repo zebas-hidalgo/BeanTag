@@ -412,58 +412,111 @@ export default function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* Tiny Variant 3 Logo */}
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style={{ width: '24px', height: '24px' }}>
-            <rect x="35" y="15" width="135" height="175" rx="10" fill="#000000"/>
-            <rect x="30" y="10" width="135" height="175" rx="10" fill="#F4A261" stroke="#000000" strokeWidth="6"/>
-            <circle cx="97" cy="30" r="10" fill="#FFF5F5" stroke="#000000" strokeWidth="4"/>
-            <g transform="translate(68, 60)">
-              <path d="M5 5 H 35 C 50 5, 50 30, 35 30 C 50 30, 50 55, 30 55 H 5 Z" fill="none" stroke="#000000" strokeWidth="12" strokeLinejoin="round" strokeLinecap="round"/>
-              <path d="M5 5 V 55" fill="none" stroke="#000000" strokeWidth="12" strokeLinecap="round"/>
-              <path d="M55 40 C 63 40, 68 45, 68 52 C 68 60, 63 65, 55 65 C 47 65, 42 60, 55 40 Z" fill="#E76F51" stroke="#000000" strokeWidth="3"/>
-              <line x1="51" y1="61" x2="59" y2="44" stroke="#000000" strokeWidth="3"/>
-            </g>
-          </svg>
-          <span style={{
-            fontFamily: 'var(--font-heading)',
-            fontSize: '18px',
-            fontWeight: '700',
-            textTransform: 'uppercase',
-            letterSpacing: '2px',
-            color: 'var(--color-header-text)',
-            lineHeight: 1
-          }}>BeanTag</span>
+        <div
+          onClick={() => setCurrentView('inventory')}
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', userSelect: 'none' }}
+          role="button"
+          tabIndex={0}
+          aria-label="Ir al inventario de BeanTag"
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setCurrentView('inventory'); }}
+        >
+          <div style={{
+            width: '34px',
+            height: '34px',
+            borderRadius: '10px',
+            backgroundColor: 'var(--barista-bg-surface, var(--bg-card))',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }} fill="none">
+              <rect x="4" y="2.5" width="16" height="19" rx="3.5" stroke="var(--color-text)" strokeWidth="1.8" />
+              <circle cx="12" cy="6" r="1.3" fill="var(--color-crimson)" />
+              <ellipse cx="12" cy="13.5" rx="4.2" ry="3.2" transform="rotate(-24 12 13.5)" stroke="var(--color-crimson)" strokeWidth="1.8" />
+              <path d="M9.6 15.2C11.1 13.4 12.9 13.6 14.4 11.8" stroke="var(--color-crimson)" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <span style={{
+              fontFamily: 'var(--font-heading)',
+              fontSize: '16px',
+              fontWeight: '800',
+              letterSpacing: '-0.02em',
+              color: 'var(--color-header-text)',
+              lineHeight: 1
+            }}>BeanTag</span>
+            <span style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '9px',
+              fontWeight: '700',
+              letterSpacing: '0.08em',
+              color: 'var(--color-text-muted)',
+              lineHeight: 1
+            }}>CELLAR LAB</span>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           {currentUser ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-surface, #FFF)', border: '1.5px solid var(--color-border, #E5E7EB)', borderRadius: '20px', padding: '3px 8px 3px 4px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '7px',
+              background: 'var(--barista-bg-surface, var(--bg-card))',
+              border: '1px solid var(--border-color)',
+              borderRadius: '9999px',
+              padding: '4px 10px 4px 5px',
+              minHeight: '34px',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
+            }}>
               {currentUser.picture ? (
                 <img src={currentUser.picture} alt="Avatar" style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
-                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--color-crimson, #E53E3E)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '900' }}>
+                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--color-crimson, #BC5449)', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '800' }}>
                   {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
                 </div>
               )}
-              <span style={{ fontSize: '11px', fontWeight: 'bold', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: '11.5px', fontWeight: '700', color: 'var(--color-text)', maxWidth: '84px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {currentUser.name}
               </span>
-              <button onClick={handleLogout} title="Cerrar Sesión" aria-label="Cerrar sesión" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}>
-                <LogOut size={13} color="var(--color-text-muted)" />
+              <button onClick={handleLogout} title="Cerrar Sesión" aria-label="Cerrar sesión" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)' }}>
+                <LogOut size={13} />
               </button>
             </div>
           ) : (
             <button 
               className="btn-candy primary"
               onClick={() => setShowAuthModal(true)}
-              style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 'bold', margin: 0 }}
+              style={{ padding: '6px 12px', minHeight: '34px', borderRadius: '9999px', fontSize: '11.5px', fontWeight: '800', margin: 0 }}
             >
               Iniciar Sesión
             </button>
           )}
 
-          <button className="app-bar-btn" onClick={() => setShowNfcTools(true)} title="Herramientas NFC" aria-label="Herramientas NFC" style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: '1.5px solid var(--color-border, #E5E7EB)' }}>
-            <Nfc size={14} strokeWidth={2} />
+          <button
+            className="app-bar-btn"
+            onClick={() => setShowNfcTools(true)}
+            title="Herramientas NFC"
+            aria-label="Herramientas NFC"
+            style={{
+              width: '34px',
+              height: '34px',
+              borderRadius: '10px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'var(--barista-bg-surface, var(--bg-card))',
+              border: '1px solid var(--border-color)',
+              color: 'var(--color-text)',
+              cursor: 'pointer',
+              padding: 0,
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+              transition: 'all 150ms ease'
+            }}
+          >
+            <Nfc size={15} strokeWidth={2} />
           </button>
         </div>
       </header>
