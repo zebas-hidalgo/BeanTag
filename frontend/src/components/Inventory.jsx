@@ -1,8 +1,19 @@
 import React, { useState, lazy, Suspense } from 'react';
-import { Plus, Zap, Snowflake, CheckCircle2, Mountain, X, MoreHorizontal, MapPin, Flag, ClipboardList, Coffee, Flame, Search as SearchIcon, Package } from 'lucide-react';
+import { Plus, Zap, Snowflake, CheckCircle2, Mountain, X, MoreHorizontal, MapPin, Flag, ClipboardList, Coffee, Flame, Search as SearchIcon, Package, Share2, AlertTriangle } from 'lucide-react';
 import { RenderScaChips } from '../utils/scaIcons';
 
 const TubeRacksView = lazy(() => import('./TubeRacksView'));
+
+const getRoastDotColor = (roast) => {
+  const r = String(roast || '').toLowerCase();
+  if (r.includes('oscuro') || r.includes('dark') || r.includes('frances') || r.includes('italiano')) {
+    return '#475569';
+  }
+  if (r.includes('medio') || r.includes('medium')) {
+    return '#B45309';
+  }
+  return '#D97706';
+};
 
 export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onSubtractDose, onRefreshBatches, showToast }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,7 +67,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
         backgroundColor: 'var(--segmented-bg, rgba(118, 118, 128, 0.12))',
         padding: '4px',
         borderRadius: 'var(--barista-radius-pill, 9999px)',
-        marginBottom: '16px',
+        marginBottom: '14px',
         border: '1px solid var(--barista-border-hairline, var(--border-color))'
       }}>
         <button
@@ -94,7 +105,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
             borderRadius: 'var(--barista-radius-pill, 9999px)',
             border: 'none',
             backgroundColor: inventorySubView === 'racks' ? 'var(--segmented-active, #FFFFFF)' : 'transparent',
-            color: inventorySubView === 'racks' ? 'var(--barista-accent-honey, #D97706)' : 'var(--barista-text-secondary, #64748B)',
+            color: inventorySubView === 'racks' ? 'var(--color-crimson, #D97706)' : 'var(--barista-text-secondary, #64748B)',
             fontWeight: '800',
             fontSize: '13px',
             fontFamily: 'var(--font-heading)',
@@ -107,7 +118,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
             gap: '6px'
           }}
         >
-          <Coffee size={15} color={inventorySubView === 'racks' ? 'var(--barista-accent-honey, #D97706)' : undefined} />
+          <Coffee size={15} color={inventorySubView === 'racks' ? 'var(--color-crimson, #D97706)' : undefined} />
           <span>Portatubos (2×3)</span>
         </button>
       </div>
@@ -123,260 +134,341 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
         </Suspense>
       ) : (
         <>
-          {/* 1. Search Bar */}
-          <div style={{ marginBottom: '12px' }}>
-        <input 
-          className="candy-input" 
-          placeholder="Buscar café, origen, productor o variedad..." 
-          aria-label="Buscar café por nombre, origen o variedad"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ width: '100%', boxSizing: 'border-box', margin: 0, padding: '12px 16px', fontSize: '13.5px' }}
-        />
-      </div>
-
-      {/* 2. Cupertino Segmented Status Tabs */}
-      <div className="cupertino-segmented" style={{ marginBottom: '14px' }}>
-        <button 
-          type="button"
-          className={`cupertino-segmented-btn ${!showFinished ? 'active' : ''}`}
-          onClick={() => {
-            if (navigator.vibrate) navigator.vibrate(8);
-            setShowFinished(false);
-          }}
-        >
-          <Snowflake size={14} strokeWidth={2.5} />
-          <span>En Congelador ({availableBatches.length})</span>
-        </button>
-        <button 
-          type="button"
-          className={`cupertino-segmented-btn ${showFinished ? 'active' : ''}`}
-          onClick={() => {
-            if (navigator.vibrate) navigator.vibrate(8);
-            setShowFinished(true);
-          }}
-        >
-          <CheckCircle2 size={14} strokeWidth={2.5} />
-          <span>Agotados ({finishedBatches.length})</span>
-        </button>
-      </div>
-
-      {/* 2.1 Batch Counter */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-        <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          {filteredBatches.length} {filteredBatches.length === 1 ? 'Lote en bodega' : 'Lotes en bodega'}
-        </span>
-      </div>
-
-      {/* 3. Empty State */}
-      {filteredBatches.length === 0 ? (
-        <div className="candy-card static" style={{ textAlign: 'center', padding: '40px 20px', borderStyle: 'dashed', backgroundColor: 'var(--bg-card)', borderRadius: '14px' }}>
-          <div style={{ fontSize: '38px', marginBottom: '10px' }}>
-            {showFinished ? <Flag size={32} /> : <Snowflake size={32} />}
-          </div>
-          <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', textTransform: 'uppercase', margin: '0 0 6px 0', color: 'var(--color-text)' }}>
-            {showFinished ? 'Sin cafés agotados' : 'No hay cafés en el congelador'}
-          </h3>
-          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 18px 0', lineHeight: 1.4 }}>
-            {!showFinished ? 'Registra tu primer lote de tubos congelados para empezar a preparar.' : 'Los lotes cuyos tubos lleguen a 0 se moverán aquí.'}
-          </p>
-          {!showFinished && (
-            <button className="btn-candy primary" onClick={onCreateTrigger} style={{ margin: '0 auto', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontSize: '12px' }}>
-              <Plus size={16} strokeWidth={2.5} />
-              Registrar Primer Lote
-            </button>
-          )}
-        </div>
-      ) : (
-        /* 🏷️ ESTILO EDITORIAL (Nordic Atelier) */
-        filteredBatches.map(batch => {
-          const isLowStock = batch.remaining_doses <= 2 && batch.remaining_doses > 0;
-          const currentWeight = parseFloat(batch.remaining_weight_g || 0);
-          const hasRecipes = batch.recipes && batch.recipes.length > 0;
-          const firstRecipe = hasRecipes ? batch.recipes[0] : null;
-
-          return (
-            <div 
-              key={batch.id} 
-              className={`card-editorial ${isLowStock ? 'low-stock' : ''}`}
-              onClick={() => onSelectBatch(batch.id)}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setContextBatch(batch);
+          {/* 1. Search Bar with Leading Icon & Clear Button */}
+          <div style={{ position: 'relative', marginBottom: '12px' }}>
+            <SearchIcon
+              size={16}
+              style={{
+                position: 'absolute',
+                left: '14px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--color-text-muted)',
+                pointerEvents: 'none'
               }}
-            >
-              {/* Top Row: Name & Quick Action */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '3px' }}>
-                    <h3 style={{ 
-                      margin: 0, 
-                      fontFamily: 'var(--font-heading)', 
-                      fontSize: '16.5px', 
-                      fontWeight: '700', 
-                      lineHeight: 1.25,
-                      color: 'var(--color-text)',
-                      wordBreak: 'break-word'
+            />
+            <input 
+              className="candy-input" 
+              placeholder="Buscar café, origen, productor o variedad..." 
+              aria-label="Buscar café por nombre, origen o variedad"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                margin: 0,
+                padding: searchQuery ? '11px 38px 11px 38px' : '11px 16px 11px 38px',
+                fontSize: '13.5px',
+                borderRadius: '12px'
+              }}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                aria-label="Limpiar búsqueda"
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: 'var(--segmented-bg, rgba(120,120,128,0.14))',
+                  color: 'var(--color-text-muted)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  padding: 0
+                }}
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+
+          {/* 2. Unified Counter + Compact Status Filter Bar */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '12px'
+          }}>
+            <span style={{
+              fontSize: '11px',
+              fontWeight: '800',
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--color-text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>
+              {filteredBatches.length} {filteredBatches.length === 1 ? 'Lote en bodega' : 'Lotes en bodega'}
+            </span>
+
+            <div className="inventory-view-selector" role="tablist" aria-label="Estado de lotes">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={!showFinished}
+                className={`inventory-view-btn ${!showFinished ? 'active' : ''}`}
+                onClick={() => {
+                  if (navigator.vibrate) {
+                    try { navigator.vibrate(8); } catch (e) {}
+                  }
+                  setShowFinished(false);
+                }}
+              >
+                <Snowflake size={12} strokeWidth={2.3} />
+                <span>Congelador ({availableBatches.length})</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={showFinished}
+                className={`inventory-view-btn ${showFinished ? 'active' : ''}`}
+                onClick={() => {
+                  if (navigator.vibrate) {
+                    try { navigator.vibrate(8); } catch (e) {}
+                  }
+                  setShowFinished(true);
+                }}
+              >
+                <CheckCircle2 size={12} strokeWidth={2.3} />
+                <span>Agotados ({finishedBatches.length})</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 3. Empty State */}
+          {filteredBatches.length === 0 ? (
+            <div className="candy-card static" style={{ textAlign: 'center', padding: '40px 20px', borderStyle: 'dashed', backgroundColor: 'var(--bg-card)', borderRadius: '14px' }}>
+              <div style={{ fontSize: '38px', marginBottom: '10px', color: 'var(--color-text-muted)' }}>
+                {showFinished ? <Flag size={32} /> : <Snowflake size={32} />}
+              </div>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', textTransform: 'uppercase', margin: '0 0 6px 0', color: 'var(--color-text)' }}>
+                {showFinished ? 'Sin cafés agotados' : 'No hay cafés en el congelador'}
+              </h3>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 18px 0', lineHeight: 1.4 }}>
+                {!showFinished ? 'Registra tu primer lote de tubos congelados para empezar a preparar.' : 'Los lotes cuyos tubos lleguen a 0 se moverán aquí.'}
+              </p>
+              {!showFinished && (
+                <button className="btn-candy primary" onClick={onCreateTrigger} style={{ margin: '0 auto', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontSize: '12px' }}>
+                  <Plus size={16} strokeWidth={2.5} />
+                  Registrar Primer Lote
+                </button>
+              )}
+            </div>
+          ) : (
+            /* 🏷️ ESTILO EDITORIAL (Nordic Atelier & Precision Lab) */
+            filteredBatches.map(batch => {
+              const isLowStock = batch.remaining_doses <= 2 && batch.remaining_doses > 0;
+              const currentWeight = parseFloat(batch.remaining_weight_g || 0);
+              const hasRecipes = batch.recipes && batch.recipes.length > 0;
+              const firstRecipe = hasRecipes ? batch.recipes[0] : null;
+              const roastColor = getRoastDotColor(batch.roast_level);
+
+              return (
+                <div 
+                  key={batch.id} 
+                  className={`card-editorial ${isLowStock ? 'low-stock' : ''}`}
+                  onClick={() => onSelectBatch(batch.id)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setContextBatch(batch);
+                  }}
+                >
+                  {/* Top Row: Name, Roast Indicator & Quick Action */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                        <span
+                          title={`Tueste: ${batch.roast_level || 'Medio'}`}
+                          style={{
+                            width: '7px',
+                            height: '7px',
+                            borderRadius: '50%',
+                            backgroundColor: roastColor,
+                            flexShrink: 0,
+                            display: 'inline-block'
+                          }}
+                        />
+                        <h3 style={{ 
+                          margin: 0, 
+                          fontFamily: 'var(--font-heading)', 
+                          fontSize: '16.5px', 
+                          fontWeight: '700', 
+                          lineHeight: 1.25,
+                          color: 'var(--color-text)',
+                          wordBreak: 'break-word'
+                        }}>
+                          {batch.name}
+                        </h3>
+                        {batch.roaster && (
+                          <span
+                            style={{
+                              fontSize: '10.5px',
+                              fontWeight: '800',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              backgroundColor: 'var(--barista-accent-honey-bg, #FEF3C7)',
+                              color: 'var(--barista-accent-honey-text, #92400E)',
+                              border: '1px solid var(--barista-instr-border, #FDE68A)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3.5px',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            <Flame size={10} color="var(--barista-accent-honey, #D97706)" />
+                            {batch.roaster}
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ 
+                        margin: 0, 
+                        fontSize: '12px', 
+                        color: 'var(--color-text-muted)', 
+                        lineHeight: 1.4,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {batch.producer || 'Origen Finca'} {batch.variety ? `• ${batch.variety}` : ''} {batch.process ? `• ${batch.process}` : ''}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (navigator.vibrate) {
+                          try { navigator.vibrate(8); } catch (err) {}
+                        }
+                        setContextBatch(batch);
+                      }}
+                      style={{
+                        background: 'var(--barista-bg-elevated, var(--segmented-bg, rgba(120, 120, 128, 0.12)))',
+                        border: '1px solid var(--barista-border-hairline, var(--border-color))',
+                        borderRadius: 'var(--barista-radius-md, 12px)',
+                        width: '38px',
+                        height: '38px',
+                        minWidth: '38px',
+                        minHeight: '38px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: 'var(--barista-text-primary, var(--color-text))',
+                        padding: 0,
+                        flexShrink: 0,
+                        transition: 'all 120ms ease'
+                      }}
+                      title="Opciones rápidas"
+                      aria-label="Opciones rápidas"
+                    >
+                      <MoreHorizontal size={17} />
+                    </button>
+                  </div>
+
+                  {/* Origin, Altitude & Roast details */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11.5px', color: 'var(--color-text-muted)', flexWrap: 'wrap' }}>
+                    {batch.origin && (
+                      <span style={{ fontWeight: '600', color: 'var(--color-text)', display: 'inline-flex', alignItems: 'center', gap: '3.5px' }}>
+                        <MapPin size={11} strokeWidth={2.5} style={{ color: 'var(--color-crimson)', flexShrink: 0 }} /> {batch.origin}
+                      </span>
+                    )}
+                    {batch.altitude && (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                        <Mountain size={11} color="var(--color-crimson)" /> {batch.altitude}m
+                      </span>
+                    )}
+                    {batch.roast_level && (
+                      <span>• {batch.roast_level}</span>
+                    )}
+                  </div>
+
+                  {/* Tasting notes chips */}
+                  {batch.roaster_notes ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                      <RenderScaChips notesStr={batch.roaster_notes} maxChips={3} />
+                    </div>
+                  ) : null}
+
+                  {/* Footer: Stock capsule + Quick Action */}
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    paddingTop: '10px', 
+                    borderTop: '1px solid var(--border-color)',
+                    marginTop: '2px'
+                  }}>
+                    <span style={{ 
+                      fontSize: '11.5px', 
+                      fontFamily: 'var(--font-mono)', 
+                      fontWeight: '700',
+                      padding: '4px 10px',
+                      borderRadius: '9999px',
+                      backgroundColor: isLowStock ? 'var(--barista-accent-danger-bg, rgba(239, 68, 68, 0.12))' : 'var(--barista-bg-elevated, rgba(2, 132, 199, 0.08))',
+                      color: isLowStock ? 'var(--barista-accent-danger, #EF4444)' : 'var(--barista-accent-cryo, #0284C7)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px'
                     }}>
-                      {batch.name}
-                    </h3>
-                    {batch.roaster && (
-                      <span
+                      {isLowStock ? <AlertTriangle size={12} strokeWidth={2.4} /> : <Snowflake size={12} strokeWidth={2.4} />}
+                      <span>
+                        {batch.remaining_doses} {batch.remaining_doses === 1 ? 'tubo' : 'tubos'}
+                        {currentWeight > 0 ? ` • ${currentWeight}g` : ''}
+                      </span>
+                    </span>
+
+                    {firstRecipe ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectBatch(batch, { prefillRecipe: firstRecipe });
+                        }}
                         style={{
-                          fontSize: '10.5px',
-                          fontWeight: '800',
-                          padding: '2px 8px',
-                          borderRadius: '6px',
-                          backgroundColor: 'var(--barista-accent-honey-bg, #FEF3C7)',
-                          color: 'var(--barista-accent-honey-text, #92400E)',
-                          border: '1px solid #FDE68A',
+                          background: 'var(--barista-bg-elevated, rgba(188, 84, 73, 0.08))',
+                          border: '1px solid var(--barista-border-hairline, transparent)',
+                          borderRadius: 'var(--barista-radius-sm, 8px)',
+                          color: 'var(--color-crimson)',
+                          fontWeight: '700',
+                          fontSize: '12px',
+                          cursor: 'pointer',
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '3px',
-                          whiteSpace: 'nowrap'
+                          gap: '5px',
+                          padding: '6px 10px',
+                          minHeight: '34px'
                         }}
                       >
-                        <Flame size={10} color="#D97706" />
-                        {batch.roaster}
+                        <Zap size={13} strokeWidth={2.5} />
+                        <span>Repetir {(firstRecipe.method || 'V60').replace(' (Filtrado)', '')} →</span>
+                      </button>
+                    ) : (
+                      <span style={{ 
+                        fontSize: '11.5px', 
+                        fontWeight: '700', 
+                        color: 'var(--color-crimson)', 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '2px' 
+                      }}>
+                        Ver Ficha →
                       </span>
                     )}
                   </div>
-                  <p style={{ 
-                    margin: 0, 
-                    fontSize: '12px', 
-                    color: 'var(--color-text-muted)', 
-                    lineHeight: 1.4,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}>
-                    {batch.producer || 'Origen Finca'} {batch.variety ? `• ${batch.variety}` : ''} {batch.process ? `• ${batch.process}` : ''}
-                  </p>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (navigator.vibrate) {
-                      try { navigator.vibrate(8); } catch (err) {}
-                    }
-                    setContextBatch(batch);
-                  }}
-                  style={{
-                    background: 'var(--barista-bg-elevated, var(--segmented-bg, rgba(120, 120, 128, 0.12)))',
-                    border: '1px solid var(--barista-border-hairline, var(--border-color))',
-                    borderRadius: 'var(--barista-radius-md, 12px)',
-                    width: '44px',
-                    height: '44px',
-                    minWidth: '44px',
-                    minHeight: '44px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    color: 'var(--barista-text-primary, var(--color-text))',
-                    padding: 0,
-                    flexShrink: 0,
-                    transition: 'all 120ms ease'
-                  }}
-                  title="Opciones rápidas"
-                  aria-label="Opciones rápidas"
-                >
-                  <MoreHorizontal size={18} />
-                </button>
-              </div>
-
-              {/* Origin, Altitude & Roast details */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11.5px', color: 'var(--color-text-muted)' }}>
-                {batch.origin && (
-                  <span style={{ fontWeight: '600', color: 'var(--color-text)' }}>
-                    <MapPin size={11} strokeWidth={2.5} style={{ color: 'var(--color-crimson)', flexShrink: 0 }} /> {batch.origin}
-                  </span>
-                )}
-                {batch.altitude && (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                    <Mountain size={11} color="var(--color-crimson)" /> {batch.altitude}m
-                  </span>
-                )}
-                {batch.roast_level && (
-                  <span>• {batch.roast_level}</span>
-                )}
-              </div>
-
-              {/* Tasting notes chips */}
-              {batch.roaster_notes ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                  <RenderScaChips notesStr={batch.roaster_notes} maxChips={3} />
-                </div>
-              ) : null}
-
-              {/* Footer: Stock capsule + Quick Action */}
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
-                paddingTop: '8px', 
-                borderTop: '1px solid var(--border-color)',
-                marginTop: '2px'
-              }}>
-                <span style={{ 
-                  fontSize: '12px', 
-                  fontFamily: 'var(--font-mono)', 
-                  fontWeight: '700',
-                  color: isLowStock ? 'var(--barista-accent-danger, #EF4444)' : 'var(--barista-accent-cryo, #38BDF8)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}>
-                  {isLowStock ? <span style={{color:'var(--barista-accent-danger)'}}>⚠</span> : <Snowflake size={12} />}{' '}
-                  {batch.remaining_doses} {batch.remaining_doses === 1 ? 'tubo' : 'tubos'}
-                  {currentWeight > 0 ? ` (~${currentWeight}g)` : ''}
-                </span>
-
-                {firstRecipe ? (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectBatch(batch, { prefillRecipe: firstRecipe });
-                    }}
-                    style={{
-                      background: 'var(--barista-bg-elevated, rgba(188, 84, 73, 0.08))',
-                      border: '1px solid var(--barista-border-hairline, transparent)',
-                      borderRadius: 'var(--barista-radius-sm, 8px)',
-                      color: 'var(--barista-accent-honey, var(--color-crimson))',
-                      fontWeight: '700',
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      padding: '6px 10px',
-                      minHeight: '36px'
-                    }}
-                  >
-                    <Zap size={14} strokeWidth={2.5} />
-                    <span>Repetir {(firstRecipe.method || 'V60').replace(' (Filtrado)', '')} →</span>
-                  </button>
-                ) : (
-                  <span style={{ 
-                    fontSize: '11.5px', 
-                    fontWeight: '600', 
-                    color: 'var(--color-crimson)', 
-                    display: 'inline-flex', 
-                    alignItems: 'center', 
-                    gap: '2px' 
-                  }}>
-                    Ver Ficha →
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })
-      )}
+              );
+            })
+          )}
         </>
       )}
 
@@ -449,7 +541,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
               onClick={() => setContextBatch(null)}
               aria-label="Cerrar menú de acciones"
             >
-              <span>✕ Cancelar</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><X size={14} /> Cancelar</span>
               <X size={15} />
             </button>
           </div>
