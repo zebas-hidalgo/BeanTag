@@ -128,12 +128,14 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [shareTemplate, setShareTemplate] = useState(() => {
     try {
       const pref = localStorage.getItem('beantag-share-style');
+      if (pref === 'studio') return 'studio';
       if (pref === 'neobrutalist') return 'neobrutalist';
       if (pref === 'diner' || pref === 'aurora') return 'diner';
       if (pref === 'kissaten' || pref === 'hangtag') return 'kissaten';
-      return 'blueprint';
+      if (pref === 'blueprint') return 'blueprint';
+      return 'studio';
     } catch (e) {
-      return 'blueprint';
+      return 'studio';
     }
   });
   const [shareStatus, setShareStatus] = useState('');

@@ -44,12 +44,14 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   const [shareTemplate, setShareTemplate] = useState(() => {
     try {
       const pref = localStorage.getItem('beantag-share-style');
+      if (pref === 'studio') return 'studio';
       if (pref === 'neobrutalist') return 'neobrutalist';
       if (pref === 'diner' || pref === 'aurora') return 'diner';
       if (pref === 'kissaten' || pref === 'hangtag') return 'kissaten';
-      return 'blueprint';
+      if (pref === 'blueprint') return 'blueprint';
+      return 'studio';
     } catch (e) {
-      return 'blueprint';
+      return 'studio';
     }
   });
   const textureRef = useRef(null);
@@ -686,7 +688,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                     className={`canvas-tab-btn ${shareIncludeRecipe ? 'active' : ''}`}
                     onClick={() => {
                       setShareIncludeRecipe(true);
-                      exportRecipeAsImage(selectedRecipe, 'receipt', true);
+                      exportRecipeAsImage(selectedRecipe, shareTemplate, true);
                     }}
                   >
                     🧾 Con Receta (Extracción)
@@ -696,7 +698,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                     className={`canvas-tab-btn ${!shareIncludeRecipe ? 'active' : ''}`}
                     onClick={() => {
                       setShareIncludeRecipe(false);
-                      exportRecipeAsImage(selectedRecipe, 'receipt', false);
+                      exportRecipeAsImage(selectedRecipe, shareTemplate, false);
                     }}
                   >
                     🌾 Solo Grano (Ficha Café)
@@ -720,7 +722,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   <Edit3 size={12} strokeWidth={2.5} />
                   Editar
                 </button>
-                <button type="button" className="btn-candy" style={{ padding: '8px 10px', margin: 0, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => exportRecipeAsImage(selectedRecipe, 'receipt', shareIncludeRecipe)}>
+                <button type="button" className="btn-candy" style={{ padding: '8px 10px', margin: 0, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe)}>
                   <ImageIcon size={12} strokeWidth={2.5} />
                   Exportar Ticket
                 </button>
@@ -1131,7 +1133,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                         type="button" 
                         onClick={() => {
                           setShareIncludeRecipe(true);
-                          exportRecipeAsImage(selectedRecipe, shareTemplate || 'blueprint', true, 'card', stickerTransparent, stickerOrientation);
+                          exportRecipeAsImage(selectedRecipe, shareTemplate || 'studio', true, 'card', stickerTransparent, stickerOrientation);
                         }}
                         style={{
                           padding: '3px 8px',
@@ -1150,7 +1152,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                         type="button" 
                         onClick={() => {
                           setShareIncludeRecipe(false);
-                          exportRecipeAsImage(selectedRecipe, shareTemplate || 'blueprint', false, 'card', stickerTransparent, stickerOrientation);
+                          exportRecipeAsImage(selectedRecipe, shareTemplate || 'studio', false, 'card', stickerTransparent, stickerOrientation);
                         }}
                         style={{
                           padding: '3px 8px',
@@ -1171,13 +1173,14 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               </div>
 
               {/* Row 3: Aesthetic Template Selector */}
-              <div style={{ display: 'flex', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '4px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)', padding: '0 4px' }}>ESTILO:</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '9.5px', fontWeight: '800', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
                 {[
-                  { id: 'blueprint', label: '📐 Blueprint' },
-                  { id: 'neobrutalist', label: '⚡ Brutalismo' },
-                  { id: 'diner', label: '📻 Retro 50s' },
-                  { id: 'kissaten', label: '🍵 Kissaten' }
+                  { id: 'studio', label: 'Studio' },
+                  { id: 'kissaten', label: 'Kissaten' },
+                  { id: 'blueprint', label: 'Dark Lab' },
+                  { id: 'neobrutalist', label: 'Nomad' },
+                  { id: 'diner', label: 'Botanical' }
                 ].map(t => (
                   <button
                     key={t.id}
@@ -1188,14 +1191,14 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       exportRecipeAsImage(selectedRecipe, t.id, shareIncludeRecipe, shareFormat, stickerTransparent, stickerOrientation);
                     }}
                     style={{
-                      flex: 1,
-                      padding: '4px 6px',
-                      fontSize: '9.5px',
-                      borderRadius: '4px',
-                      border: (shareTemplate || 'blueprint') === t.id ? '1.5px solid var(--color-crimson)' : 'none',
-                      backgroundColor: (shareTemplate || 'blueprint') === t.id ? 'var(--bg-card)' : 'transparent',
-                      fontWeight: (shareTemplate || 'blueprint') === t.id ? '900' : 'normal',
-                      color: (shareTemplate || 'blueprint') === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
+                      flex: '1 1 auto',
+                      padding: '5px 8px',
+                      fontSize: '10.5px',
+                      borderRadius: '6px',
+                      border: (shareTemplate || 'studio') === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
+                      backgroundColor: (shareTemplate || 'studio') === t.id ? 'var(--bg-card)' : 'transparent',
+                      fontWeight: (shareTemplate || 'studio') === t.id ? '800' : '600',
+                      color: (shareTemplate || 'studio') === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
                       cursor: 'pointer'
                     }}
                   >

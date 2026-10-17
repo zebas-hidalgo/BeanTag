@@ -829,10 +829,51 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   drawStyledBox(ctx, cardX, cardY, cardW, cardH, theme, {
     fill: theme.cardBg,
     stroke: theme.border,
-    lineWidth: style === 'neobrutalist' ? 2.5 : 1.5,
+    lineWidth: style === 'neobrutalist' ? 2.5 : (style === 'diner' || style === 'kissaten' ? 2 : 1.5),
     radius: theme.cornerRadius,
     shadow: style === 'neobrutalist'
   });
+
+  // Style-specific architectural framing details
+  if (style === 'kissaten') {
+    // Inner traditional sumi/vermilion hairline frame
+    ctx.strokeStyle = 'rgba(185, 28, 28, 0.28)';
+    ctx.lineWidth = 1;
+    drawRoundedRect(ctx, cardX + 6, cardY + 6, cardW - 12, cardH - 12, Math.max(4, theme.cornerRadius - 4), false, true);
+  } else if (style === 'diner') {
+    // Inner botanical herbarium frame + corner diamond stars
+    ctx.strokeStyle = 'rgba(194, 65, 12, 0.35)';
+    ctx.lineWidth = 1;
+    drawRoundedRect(ctx, cardX + 6, cardY + 6, cardW - 12, cardH - 12, Math.max(4, theme.cornerRadius - 4), false, true);
+    ctx.fillStyle = '#C2410C';
+    ctx.font = `700 12px ${theme.fontMono}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✦', cardX + 15, cardY + 15);
+    ctx.fillText('✦', cardX + cardW - 15, cardY + 15);
+    ctx.fillText('✦', cardX + 15, cardY + cardH - 15);
+    ctx.fillText('✦', cardX + cardW - 15, cardY + cardH - 15);
+  } else if (style === 'blueprint') {
+    // Corner HUD targeting reticles
+    const drawHudCorner = (cx, cy, dx, dy) => {
+      ctx.strokeStyle = '#38BDF8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy + dy * 12);
+      ctx.lineTo(cx, cy);
+      ctx.lineTo(cx + dx * 12, cy);
+      ctx.stroke();
+    };
+    drawHudCorner(cardX + 8, cardY + 8, 1, 1);
+    drawHudCorner(cardX + cardW - 8, cardY + 8, -1, 1);
+    drawHudCorner(cardX + 8, cardY + cardH - 8, 1, -1);
+    drawHudCorner(cardX + cardW - 8, cardY + cardH - 8, -1, -1);
+  } else if (style === 'studio') {
+    // Top solid Swiss architectural bar
+    ctx.fillStyle = '#09090B';
+    drawRoundedRect(ctx, cardX, cardY, cardW, 10, theme.cornerRadius, true, false);
+    ctx.fillRect(cardX, cardY + 5, cardW, 5);
+  }
 
   // =========================================================================
   // ZONE 1: EDITORIAL HEADER & HERO COFFEE IDENTITY
@@ -844,15 +885,20 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   ctx.font = `800 12px ${theme.fontMono}`;
   const roasterPillW = Math.min(ctx.measureText(roasterBadgeText).width + 24, innerW - 115);
 
+  const badgeFill = style === 'neobrutalist'
+    ? '#FDE68A'
+    : (style === 'studio' ? '#09090B' : (style === 'diner' ? '#E2ECE6' : theme.surfaceBg));
+  const badgeTextCol = style === 'studio' ? '#FFFFFF' : (style === 'neobrutalist' ? '#18181B' : theme.textSecondary);
+
   drawStyledBox(ctx, innerX, headerPillY, roasterPillW, headerPillH, theme, {
-    fill: theme.surfaceBg,
-    stroke: theme.border,
+    fill: badgeFill,
+    stroke: style === 'studio' ? '#09090B' : theme.border,
     lineWidth: style === 'neobrutalist' ? 1.8 : 1,
-    radius: 8,
-    shadow: false
+    radius: style === 'studio' ? 4 : 8,
+    shadow: style === 'neobrutalist'
   });
 
-  ctx.fillStyle = theme.textSecondary;
+  ctx.fillStyle = badgeTextCol;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   drawCanvasTruncatedText(ctx, roasterBadgeText, innerX + 12, headerPillY + headerPillH / 2 + 0.5, roasterPillW - 24);
@@ -868,8 +914,8 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
       fill: theme.accentBg,
       stroke: theme.borderStrong,
       lineWidth: style === 'neobrutalist' ? 1.8 : 1,
-      radius: 8,
-      shadow: false
+      radius: style === 'studio' ? 4 : 8,
+      shadow: style === 'neobrutalist'
     });
 
     ctx.fillStyle = theme.accentText;
@@ -915,44 +961,44 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   const tiles = incRecipe
     ? [
         {
-          label: 'MÉTODO // BREWER',
+          label: style === 'kissaten' ? '抽出器具 // MÉTODO' : 'MÉTODO // BREWER',
           value: methodStr.toUpperCase(),
           sub: `RATIO 1:${cleanRatio}`
         },
         {
-          label: 'DOSIS // IN → OUT',
+          label: style === 'kissaten' ? '抽出量 // DOSIS' : 'DOSIS // IN → OUT',
           value: (coffeeG && waterG) ? `${coffeeG}g → ${waterG}g` : `1:${cleanRatio}`,
           sub: coffeeG ? `${coffeeG}g CAFÉ • ${waterG || ''}g AGUA` : 'FÓRMULA CALIBRADA'
         },
         {
-          label: grinderName ? `MOLINO // ${grinderName.toUpperCase()}` : 'MOLIENDA // DIAL',
+          label: grinderName ? `MOLINO // ${grinderName.toUpperCase()}` : (style === 'kissaten' ? '挽き目 // MOLIENDA' : 'MOLIENDA // DIAL'),
           value: grindDisplayVal.toUpperCase(),
           sub: microns ? `~${microns} µm MICRONES` : 'AJUSTE DE MOLIENDA'
         },
         {
-          label: 'TIEMPO & TEMP',
+          label: style === 'kissaten' ? '時間・温度 // TIEMPO' : 'TIEMPO & TEMP',
           value: `${timeStr} • ${tempStr}`,
           sub: 'EXTRACCIÓN OBJETIVO'
         }
       ]
     : [
         {
-          label: 'ORIGEN & TERROIR',
+          label: style === 'kissaten' ? '産地 // ORIGEN' : 'ORIGEN & TERROIR',
           value: (origin || 'ORIGEN ÚNICO').toUpperCase(),
           sub: altitude ? `ALTITUD: ${altitude}` : 'TERROIR DE ESPECIALIDAD'
         },
         {
-          label: 'BENEFICIO / PROCESO',
+          label: style === 'kissaten' ? '精製 // PROCESO' : 'BENEFICIO / PROCESO',
           value: (process || 'LAVADO / NATURAL').toUpperCase(),
           sub: roastLevel ? `TUESTE: ${roastLevel.toUpperCase()}` : 'BENEFICIO SELECTO'
         },
         {
-          label: 'VARIEDAD BOTÁNICA',
+          label: style === 'kissaten' ? '品種 // VARIEDAD' : 'VARIEDAD BOTÁNICA',
           value: (variety || 'ARABICA').toUpperCase(),
           sub: 'ESPECIE BOTÁNICA'
         },
         {
-          label: 'PRODUCTOR / TOSTADOR',
+          label: style === 'kissaten' ? '焙煎所 // TOSTADOR' : 'PRODUCTOR / TOSTADOR',
           value: (producer || roaster || 'LOTE ESPECIAL').toUpperCase(),
           sub: roastDate ? `TOSTADO: ${roastDate}` : (roaster ? `TOSTADOR: ${roaster.toUpperCase()}` : 'TRAZABILIDAD')
         }
@@ -964,17 +1010,31 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
     const tx = innerX + col * (tileW + gridGap);
     const ty = gridY + row * (tileH + gridGap);
 
-    const tileFill = (style === 'neobrutalist' && idx === 0)
-      ? '#FDE68A'
-      : (style === 'neobrutalist' && idx === 2 ? '#FED7AA' : theme.surfaceBg);
+    const neoTileColors = ['#FDE68A', '#FFFDF9', '#FED7AA', '#E0F2FE'];
+    const tileFill = style === 'neobrutalist' ? neoTileColors[idx % neoTileColors.length] : theme.surfaceBg;
 
     drawStyledBox(ctx, tx, ty, tileW, tileH, theme, {
       fill: tileFill,
       stroke: theme.border,
-      lineWidth: style === 'neobrutalist' ? 2 : 1.2,
-      radius: 12,
+      lineWidth: style === 'neobrutalist' ? 2.2 : 1.2,
+      radius: style === 'studio' ? 6 : 12,
       shadow: style === 'neobrutalist'
     });
+
+    // Style-specific tile accent indicator
+    if (style === 'studio') {
+      ctx.fillStyle = '#09090B';
+      ctx.fillRect(tx, ty + 8, 3.5, tileH - 16);
+    } else if (style === 'diner') {
+      ctx.fillStyle = '#C2410C';
+      ctx.fillRect(tx + 10, ty, tileW - 20, 3);
+    } else if (style === 'blueprint') {
+      ctx.fillStyle = '#38BDF8';
+      ctx.fillRect(tx + 8, ty, 36, 2.5);
+    } else if (style === 'kissaten') {
+      ctx.fillStyle = '#B91C1C';
+      ctx.fillRect(tx, ty + 12, 3, 20);
+    }
 
     // Label (12px bold)
     ctx.fillStyle = style === 'neobrutalist' ? '#18181B' : theme.textMuted;
@@ -1007,14 +1067,14 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
       fill: theme.surfaceAlt,
       stroke: theme.border,
       lineWidth: style === 'neobrutalist' ? 2 : 1.2,
-      radius: 12,
+      radius: style === 'studio' ? 6 : 12,
       shadow: false
     });
 
     ctx.fillStyle = theme.accent;
     ctx.font = `800 12px ${theme.fontMono}`;
     ctx.textAlign = 'left';
-    ctx.fillText('PASAPORTE DE CAVA & CONSERVACIÓN', innerX + 16, zone3Y + 14);
+    ctx.fillText(style === 'kissaten' ? '保存状態 // PASAPORTE DE CAVA' : 'PASAPORTE DE CAVA & CONSERVACIÓN', innerX + 16, zone3Y + 14);
 
     ctx.fillStyle = theme.text;
     ctx.font = `700 13.5px ${theme.fontBody}`;
@@ -1036,14 +1096,14 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
     fill: theme.surfaceBg,
     stroke: theme.border,
     lineWidth: style === 'neobrutalist' ? 2.2 : 1.2,
-    radius: 14,
+    radius: style === 'studio' ? 8 : 14,
     shadow: style === 'neobrutalist'
   });
 
   ctx.fillStyle = theme.accent;
   ctx.font = `800 12px ${theme.fontMono}`;
   ctx.textAlign = 'left';
-  ctx.fillText('PERFIL SENSORIAL & NOTAS DE CATA', innerX + 16, sensoryY + 24);
+  ctx.fillText(style === 'kissaten' ? '風味特性 // PERFIL SENSORIAL & NOTAS' : 'PERFIL SENSORIAL & NOTAS DE CATA', innerX + 16, sensoryY + 24);
 
   const hasRadar = incRecipe ? sensoryData !== null : Boolean(rec.sensory_balance || rec.sensory_body || rec.sensory_extraction);
   const pillsAreaW = hasRadar ? innerW - 175 : innerW - 32;
@@ -1072,7 +1132,7 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
           fill: pillFill,
           stroke: style === 'neobrutalist' ? '#18181B' : theme.pillBorder,
           lineWidth: style === 'neobrutalist' ? 1.8 : 1.2,
-          radius: 9,
+          radius: style === 'studio' ? 4 : 9,
           shadow: false
         });
 
@@ -1101,15 +1161,30 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   // FOOTER SIGNATURE BAR
   // =========================================================================
   const footY = cardY + cardH - 22;
-  ctx.fillStyle = theme.textMuted;
-  ctx.font = `700 11.5px ${theme.fontMono}`;
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'alphabetic';
-  const leftFooter = dosesStr ? `BEANTAG CELLAR • ${dosesStr}` : `BEANTAG SPECIALTY ARCHIVE • ${theme.name}`;
-  drawCanvasTruncatedText(ctx, leftFooter, innerX, footY, innerW * 0.68);
+  if (style === 'neobrutalist') {
+    // Roastery vector barcode + Nomad stamp
+    const barPattern = [3, 1, 2, 3, 1, 2, 1, 3, 2, 1, 2, 3, 1];
+    let bx = innerX;
+    ctx.fillStyle = '#18181B';
+    barPattern.forEach((w, i) => {
+      if (i % 2 === 0) ctx.fillRect(bx, footY - 12, w * 2, 14);
+      bx += w * 2 + 1.5;
+    });
+    ctx.font = `800 11.5px ${theme.fontMono}`;
+    ctx.textAlign = 'left';
+    ctx.fillText(dosesStr || 'NOMAD ROASTERY LOT', bx + 10, footY);
+  } else {
+    ctx.fillStyle = theme.textMuted;
+    ctx.font = `700 11.5px ${theme.fontMono}`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    const leftFooter = dosesStr ? `BEANTAG CELLAR • ${dosesStr}` : `BEANTAG SPECIALTY ARCHIVE • ${theme.name}`;
+    drawCanvasTruncatedText(ctx, leftFooter, innerX, footY, innerW * 0.68);
+  }
 
   ctx.textAlign = 'right';
   ctx.fillStyle = theme.accent;
+  ctx.font = `800 11.5px ${theme.fontMono}`;
   ctx.fillText(incRecipe ? 'BREW PROTOCOL ✓' : 'ORIGIN LOT ✓', innerX + innerW, footY);
   ctx.textAlign = 'left';
 
