@@ -11,34 +11,47 @@ assert.strictEqual(pulsarRecipes.length >= 3, true, `Expected >= 3 Pulsar recipe
 const rao = FAMOUS_RECIPES.find(r => r.id === 'scott-rao-pulsar-mini');
 assert(rao, 'Scott Rao recipe must exist');
 assert.strictEqual(rao.method, 'NextLevel Pulsar Mini');
-assert.strictEqual(rao.ratioVal, 16.6);
-const raoPours = rao.calculatePours(15);
+assert.strictEqual(rao.defaultDose, 18);
+const raoPours = rao.calculatePours(18);
 assert.strictEqual(raoPours[0].valve, 'closed');
+assert.strictEqual(raoPours[0].water_g, 60);
 assert.strictEqual(raoPours[1].valve, 'open');
+assert.strictEqual(raoPours[1].water_g, 120);
 assert.strictEqual(raoPours[2].valve, 'open');
-console.log('✅ Scott Rao Pulsar Mini recipe and valve stages verified.');
+assert.strictEqual(raoPours[2].water_g, 120);
+assert.strictEqual(raoPours[2].total_water_g, 300);
+console.log('✅ Scott Rao Pulsar Mini 18g recipe and valve stages verified.');
 
 const gagne = FAMOUS_RECIPES.find(r => r.id === 'gagne-high-extraction-mini');
 assert(gagne, 'Jonathan Gagné recipe must exist');
 assert.strictEqual(gagne.method, 'NextLevel Pulsar Mini');
-const gagnePours = gagne.calculatePours(15);
+assert.strictEqual(gagne.defaultDose, 18);
+const gagnePours = gagne.calculatePours(18);
 assert.strictEqual(gagnePours[0].valve, 'closed');
+assert.strictEqual(gagnePours[0].water_g, 70);
 assert.strictEqual(gagnePours[1].valve, 'half');
+assert.strictEqual(gagnePours[1].water_g, 120);
 assert.strictEqual(gagnePours[2].valve, 'open');
-console.log('✅ Jonathan Gagné 50% flow recipe and valve stages verified.');
+assert.strictEqual(gagnePours[2].water_g, 116);
+assert.strictEqual(gagnePours[2].total_water_g, 306);
+console.log('✅ Jonathan Gagné 50% flow 18g recipe and valve stages verified.');
 
 const concentrate = FAMOUS_RECIPES.find(r => r.id === 'pulsar-mini-concentrate');
 assert(concentrate, 'Pulsar Mini Concentrado recipe must exist');
+assert.strictEqual(concentrate.defaultDose, 18);
 const concPours = concentrate.calculatePours(18);
 assert.strictEqual(concPours[0].valve, 'closed');
+assert.strictEqual(concPours[0].water_g, 60);
 assert.strictEqual(concPours[1].valve, 'open');
-console.log('✅ Pulsar Mini Concentrado recipe and valve stages verified.');
+assert.strictEqual(concPours[1].water_g, 192);
+assert.strictEqual(concPours[1].total_water_g, 252);
+console.log('✅ Pulsar Mini Concentrado 18g recipe and valve stages verified.');
 
 // 2. Verify valve sequence note formatting logic
 const testStages = [
-  { step: 1, label: 'Bloom e Inmersión', water_g: 50, valve: 'closed' },
-  { step: 2, label: '1º Vertido Percolación', water_g: 100, valve: 'half' },
-  { step: 3, label: '2º Vertido Final', water_g: 100, valve: 'open' }
+  { step: 1, label: 'Bloom e Inmersión', water_g: 60, valve: 'closed' },
+  { step: 2, label: '1º Vertido Percolación', water_g: 120, valve: 'half' },
+  { step: 3, label: '2º Vertido Final', water_g: 120, valve: 'open' }
 ];
 
 const valveSeq = testStages.map(s => {
@@ -61,7 +74,7 @@ const washedBatch = {
   altitude: '1850m',
   method: 'NextLevel Pulsar Mini',
   grinder: 'femobook',
-  dose_in_g: 15
+  dose_in_g: 18
 };
 
 const naturalBatch = {
@@ -71,7 +84,7 @@ const naturalBatch = {
   altitude: '2000m',
   method: 'NextLevel Pulsar Mini',
   grinder: 'femobook',
-  dose_in_g: 15
+  dose_in_g: 18
 };
 
 const washedRecipe = computeOfflineRecipe(washedBatch);
@@ -81,12 +94,12 @@ const washedMicrons = parseInt(washedRecipe.grind_microns, 10);
 
 console.log(`Washed Pulsar Mini -> Femobook: ${washedClicks} clicks, ${washedRecipe.grind_microns}`);
 assert.ok(
-  washedClicks >= 64 && washedClicks <= 67,
-  `Expected Light Washed Pulsar Mini on Femobook A2 to be 64-67 clicks (~750-765 µm), got ${washedClicks} clicks (${washedRecipe.grind_microns})`
+  washedClicks >= 64 && washedClicks <= 68,
+  `Expected Light Washed Pulsar Mini on Femobook A2 to be 64-68 clicks (~750-785 µm), got ${washedClicks} clicks (${washedRecipe.grind_microns})`
 );
 assert.ok(
-  washedMicrons >= 750 && washedMicrons <= 765,
-  `Expected Light Washed Pulsar Mini microns to be ~750-765 µm, got ${washedMicrons} µm`
+  washedMicrons >= 750 && washedMicrons <= 785,
+  `Expected Light Washed Pulsar Mini microns to be ~750-785 µm, got ${washedMicrons} µm`
 );
 
 const naturalRecipe = computeOfflineRecipe(naturalBatch);

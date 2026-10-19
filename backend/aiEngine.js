@@ -314,13 +314,13 @@ function normalizeRecipe(rawRec, targetMethod, dose, requestedGrinder = 'femoboo
   const rawDose = parseFloat(rawRec.dose_in_g);
   const fallbackDose = (Number.isFinite(rawDose) && rawDose > 0)
     ? rawDose
-    : (isEspresso ? 18.0 : (isGo ? 14.0 : 15.0));
+    : (isEspresso || isPulsar ? 18.0 : (isGo ? 14.0 : 15.0));
   const doseNum = (Number.isFinite(parsedDose) && parsedDose > 0) ? parsedDose : fallbackDose;
 
   // 1. Water and Ratio normalization
   let waterTotalG = parseInt(rawRec.water_total_g, 10);
   if (!Number.isFinite(waterTotalG) || waterTotalG <= 0) {
-    const ratioNum = parseFloat(String(rawRec.ratio || '').replace('1:', '')) || (isEspresso ? 2.2 : (isPulsar ? 16.2 : (isGo ? 14.3 : 16.0)));
+    const ratioNum = parseFloat(String(rawRec.ratio || '').replace('1:', '')) || (isEspresso ? 2.2 : (isPulsar ? 16.67 : (isGo ? 14.3 : 16.0)));
     waterTotalG = Math.round(doseNum * ratioNum);
   }
 
@@ -344,13 +344,14 @@ function normalizeRecipe(rawRec, targetMethod, dose, requestedGrinder = 'femoboo
         { step: 2, label: 'Extracción Principal', water_g: Math.max(0, waterTotalG - bloom), time: '6s - 30s', description: 'Rampa de presión constante hasta alcanzar el rendimiento objetivo.' }
       ];
     } else if (isPulsar) {
-      const bloom = Math.round(doseNum * 3);
+      const bloom = Math.round(doseNum * (60 / 18));
       const rem = Math.max(0, waterTotalG - bloom);
-      const pulse1 = Math.round(rem * 0.5);
+      const pulse1 = Math.round(doseNum * (120 / 18));
+      const pulse2 = Math.max(0, rem - pulse1);
       pours = [
         { step: 1, title: 'Bloom e Inmersión (🔒 Válvula CERRADA)', label: 'Bloom e Inmersión (🔒 Válvula CERRADA)', valve: 'closed', water_g: bloom, time: '0:00 - 0:45', description: 'Verter agua a través de la tapa de dispersión con válvula cerrada.' },
         { step: 2, title: '1º Vertido Percolación (⚡ Válvula 45-50% de flujo)', label: '1º Vertido Percolación (⚡ Válvula 45-50% de flujo)', valve: 'half', water_g: pulse1, time: '0:45 - 1:45', description: 'Abrir válvula al 45-50% de flujo (~2-2.5 ml/s) manteniendo columna de agua.' },
-        { step: 3, title: '2º Vertido y Caída Final (🔓 Válvula 100% ABIERTA)', label: '2º Vertido y Caída Final (🔓 Válvula 100% ABIERTA)', valve: 'open', water_g: Math.max(0, rem - pulse1), time: '1:45 - 3:30', description: 'Verter el resto y abrir válvula al 100% para una caída final limpia.' }
+        { step: 3, title: '2º Vertido y Caída Final (🔓 Válvula 100% ABIERTA)', label: '2º Vertido y Caída Final (🔓 Válvula 100% ABIERTA)', valve: 'open', water_g: pulse2, time: '1:45 - 3:30', description: 'Verter el resto y abrir válvula al 100% para una caída final limpia.' }
       ];
     } else {
       const bloom = Math.min(65, Math.round(doseNum * 3));
@@ -510,7 +511,7 @@ function computeOfflineRecipe(batch) {
   const isChemex = method.toLowerCase().includes('chemex');
 
   let refDose = 15.0;
-  if (isEspresso) {
+  if (isEspresso || isPulsar) {
     refDose = 18.0;
   } else if (isChemex) {
     refDose = 30.0;
@@ -557,8 +558,8 @@ function computeOfflineRecipe(batch) {
     brewTime = isLightRoast ? '30s' : '26s';
     grindDesc = 'Espresso Fino';
   } else if (isPulsar) {
-    ratioMultiplier = (isLightRoast && isWashed) ? 16.6 : 16.0;
-    ratioStr = '1:16';
+    ratioMultiplier = (isLightRoast && isWashed) ? 16.67 : 16.0;
+    ratioStr = (isLightRoast && isWashed) ? '1:16.67' : '1:16';
     baseMicrons = 780;
     baseTemp = isLightRoast ? 94 : 93;
     brewTime = '3:30 min';
@@ -728,7 +729,7 @@ function computeOfflineRecipe(batch) {
   const bloomWaterG = isEspresso 
     ? Math.round(dose * 0.5) 
     : (isPulsar 
-      ? Math.round(dose * 3) 
+      ? Math.round(dose * (60 / 18)) 
       : (isAeropressGo ? Math.min(40, Math.round(dose * 2.8)) : Math.min(65, Math.round(dose * (isVeryFresh ? 3.3 : 3.0)))));
   const remainingWaterG = totalWaterG - bloomWaterG;
 
@@ -753,8 +754,8 @@ function computeOfflineRecipe(batch) {
       `Servir inmediatamente en taza pre-calentada y evaluar balance de crema.`
     ];
   } else if (isPulsar) {
-    const pulse1 = Math.round(remainingWaterG * 0.5);
-    const pulse2 = totalWaterG - bloomWaterG - pulse1;
+    const pulse1 = Math.round(dose * (120 / 18));
+    const pulse2 = Math.max(0, totalWaterG - bloomWaterG - pulse1);
     const bloomSec = isVeryFresh ? '55-60s' : '45-50s';
     const bloomTime = isVeryFresh ? '0:00 - 0:55' : '0:00 - 0:45';
     const p1Time = isVeryFresh ? '0:55 - 1:50' : '0:45 - 1:45';
@@ -1021,10 +1022,10 @@ function computeOfflineTuning(data) {
   const isEsp = method.toLowerCase().includes('espresso');
   const isPulsar = method.toLowerCase().includes('pulsar');
   const isGo = method.toLowerCase().includes('go');
-  const ratioMultiplier = isEsp ? 2.2 : (isPulsar ? 16.2 : (isGo ? 14.3 : 15.5));
+  const ratioMultiplier = isEsp ? 2.2 : (isPulsar ? 16.67 : (isGo ? 14.3 : 15.5));
   let totalWater = Math.round(dose * ratioMultiplier);
   if (isGo && totalWater > 215) totalWater = 210;
-  const bloomWater = isEsp ? Math.round(dose * 0.5) : (isPulsar ? Math.round(dose * 3) : (isGo ? 40 : 60));
+  const bloomWater = isEsp ? Math.round(dose * 0.5) : (isPulsar ? Math.round(dose * (60 / 18)) : (isGo ? 40 : 60));
   const remWater = totalWater - bloomWater;
 
   const odeVal = micronsToOdeGen2(currentMicrons, isPulsar);
@@ -1354,10 +1355,10 @@ MATRIZ UNIFICADA DE CALIBRACIÓN DE LOS 8 MOLINOS:
 PROTOCOLOS DE EXTRACCIÓN Y VÁLVULA:
 - NEXTLEVEL PULSAR MINI (CERO BYPASS):
   * FÍSICA NO-BYPASS: Cama cilíndrica de 45mm con 0% de bypass. Moliendas menores a 740 µm colmatan el lecho de filtro. Rango estricto: 740 - 830 µm (Femobook A2 64-72 clics).
-  * PROTOCOLO DE VÁLVULA DE 3 FASES OBLIGATORIO:
-    1. Fase 1: Bloom e Inmersión con Válvula 100% CERRADA ('closed'). Verter 3x a 4x de agua (45-60g) con dispersor de ducha. Mantener cerrada 45-50s (o 55-60s si tueste < 7 días).
-    2. Fase 2: Percolación Continua con Válvula al 45-50% de flujo ('half', caudal controlado ~2-2.5 ml/s). Verter manteniendo ~1 cm de columna de agua sobre el dispersor.
-    3. Fase 3: Drenaje y Caída Final con Válvula 100% ABIERTA ('open') para un flujo por gravedad libre y cama plana. Tiempo total: 3:15 a 3:45 min.
+  * PROTOCOLO DE VÁLVULA DE 3 FASES OBLIGATORIO (Calibrado para dosis estándar de 18g):
+    1. Fase 1: Bloom e Inmersión con Válvula 100% CERRADA ('closed'). Verter 60g de agua con dispersor de ducha. Mantener cerrada 45-50s (o 55-60s si tueste < 7 días).
+    2. Fase 2: Percolación Continua con Válvula al 45-50% de flujo ('half', caudal controlado ~2-2.5 ml/s). Verter 120g manteniendo ~1 cm de columna de agua sobre el dispersor.
+    3. Fase 3: Drenaje y Caída Final con Válvula 100% ABIERTA ('open') para un flujo por gravedad libre y cama plana (últimos 120g hasta 300g a ratio 1:16.67). Tiempo total: 3:30 a 3:45 min.
   * Todo vertido generado para Pulsar Mini DEBE incluir: "title", "label", "valve" ('closed', 'half', o 'open'), "flow_rate", "water_g", "total_water_g", "time", "description".
 - V60 / FILTRADOS CÓNICOS:
   * Vertidos en espiral concéntricos desde el centro hacia 1cm de las paredes (sin tocar el papel para no provocar bypass periférico). Altura de vertido baja (~5-8 cm).

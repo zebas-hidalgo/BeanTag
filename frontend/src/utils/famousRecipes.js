@@ -480,11 +480,11 @@ export const FAMOUS_RECIPES = [
     badge: '🏆 Protocolo No-Bypass',
     method: 'NextLevel Pulsar Mini',
     description: 'Inmersión inicial con válvula cerrada y WWDT suave, seguida de percolación continua con tapa de dispersión.',
-    ratio: '1:16.6',
-    ratioVal: 16.6,
-    defaultDose: 15,
+    ratio: '1:16.67',
+    ratioVal: 16.67,
+    defaultDose: 18,
     temperature: 94,
-    brewTime: '3:30 min',
+    brewTime: '3:30 - 3:45 min',
     grind: 'Media No-Bypass (Rao)',
     grindMicrons: 800,
     grinderSettings: {
@@ -494,10 +494,9 @@ export const FAMOUS_RECIPES = [
       comandante: { clicks: 25, text: '25 clics' }
     },
     calculatePours: (dose) => {
-      const totalWater = Math.round(dose * (250 / 15));
-      const bloom = Math.round(dose * (50 / 15));
-      const remaining = totalWater - bloom;
-      const pour1 = Math.round(remaining / 2);
+      const totalWater = Math.round(dose * (300 / 18));
+      const bloom = Math.round(dose * (60 / 18));
+      const pour1 = Math.round(dose * (120 / 18));
       const pour2 = totalWater - bloom - pour1;
       return [
         {
@@ -507,7 +506,7 @@ export const FAMOUS_RECIPES = [
           total_water_g: bloom,
           time: '0:00 - 0:45',
           valve: 'closed',
-          description: `Con válvula cerrada, verter ${bloom}g de agua y realizar agitación suave con aguja WWDT para saturar homogéneamente sin compactar.`
+          description: `Con válvula cerrada, verter ${bloom}g de agua a 94°C y realizar agitación suave con aguja WWDT para saturar homogéneamente sin compactar.`
         },
         {
           step: 2,
@@ -523,7 +522,7 @@ export const FAMOUS_RECIPES = [
           label: '2º Vertido Final (Válvula Abierta)',
           water_g: pour2,
           total_water_g: totalWater,
-          time: '2:00 - 3:30',
+          time: '2:00 - 3:45',
           valve: 'open',
           description: `Verter los últimos ${pour2}g hasta alcanzar ${totalWater}g y dejar drenar completamente hasta cama plana.`
         }
@@ -531,10 +530,10 @@ export const FAMOUS_RECIPES = [
     },
     steps: [
       'Cerrar la válvula completamente y colocar filtro de papel humedecido en el Pulsar Mini.',
-      'Añadir 15g de café molido medio y nivelar con cuidado.',
-      'Verter 50g de agua a 94°C y hacer WWDT suave por 15s para desgasificación uniforme sin compactar.',
-      'A los 0:45 abrir la válvula por completo y verter 100g sobre la tapa de dispersión.',
-      'A los 2:00 verter los últimos 100g hasta 250g y esperar a que el lecho drene completamente con lecho plano.'
+      'Añadir 18g de café molido medio (~800 µm) y nivelar con cuidado.',
+      'Verter 60g de agua a 94°C y hacer WWDT suave por 15s para desgasificación uniforme sin compactar.',
+      'A los 0:45 abrir la válvula por completo y verter 120g sobre la tapa de dispersión (hasta 180g).',
+      'A los 2:00 verter los últimos 120g hasta 300g y esperar a que el lecho drene completamente con lecho plano.'
     ],
     notes: 'Protocolo estándar Rao sin bypass: taza limpia, balance acidez-dulzor sobresaliente y reproducibilidad perfecta.'
   },
@@ -547,21 +546,21 @@ export const FAMOUS_RECIPES = [
     description: 'Bloom prolongado de 1 minuto en inmersión total y percolación regulada a medio flujo para tuestes nórdicos ultra-claros.',
     ratio: '1:17',
     ratioVal: 17,
-    defaultDose: 15,
+    defaultDose: 18,
     temperature: 96,
-    brewTime: '4:15 min',
+    brewTime: '4:15 - 4:30 min',
     grind: 'Media-Fina No-Bypass (Gagné)',
-    grindMicrons: 780,
+    grindMicrons: 790,
     grinderSettings: {
-      ...get8GrinderSettingsForMicrons(780, false, true),
-      jmax: { rot: 2, num: 4, click: 0, text: '2.4.0 (~780 µm)' },
-      femobook: { clicks: 68, text: '68 clics (~1.7 Rot.)' },
-      comandante: { clicks: 24, text: '24 clics' }
+      ...get8GrinderSettingsForMicrons(790, false, true),
+      jmax: { rot: 2, num: 4, click: 2, text: '2.4.2 (~790 µm)' },
+      femobook: { clicks: 69, text: '69 clics (~1.7 Rot.)' },
+      comandante: { clicks: 25, text: '25 clics' }
     },
     calculatePours: (dose) => {
       const totalWater = Math.round(dose * 17);
-      const bloom = Math.round(dose * 4);
-      const pour1 = Math.round(dose * (100 / 15));
+      const bloom = Math.round(dose * (70 / 18));
+      const pour1 = Math.round(dose * (120 / 18));
       const pour2 = totalWater - bloom - pour1;
       return [
         {
@@ -587,18 +586,18 @@ export const FAMOUS_RECIPES = [
           label: 'Vertido Final (Válvula Abierta)',
           water_g: pour2,
           total_water_g: totalWater,
-          time: '2:30 - 4:15',
+          time: '2:30 - 4:30',
           valve: 'open',
           description: `Abrir la válvula completamente y verter los últimos ${pour2}g hasta ${totalWater}g; dejar drenar hasta secar.`
         }
       ];
     },
     steps: [
-      'Válvula cerrada. Poner filtro mojado y añadir café molienda fina-media.',
-      'Bloom de 60g de agua casi hirviendo (96°C) durante 1 minuto entero.',
+      'Válvula cerrada. Poner filtro mojado y añadir 18g de café molienda media-fina (~790 µm).',
+      'Bloom de 70g de agua casi hirviendo (96°C) durante 1 minuto entero en inmersión total.',
       'Ajustar la válvula a media apertura (50%) para regular la velocidad de percolación y evitar canalización.',
-      'Verter 100g manteniendo una columna de agua baja sobre el café.',
-      'Abrir válvula al 100% para el vertido final de 95g y dejar drenar.'
+      'Verter 120g manteniendo una columna de agua baja sobre el dispersor (hasta 190g).',
+      'Abrir válvula al 100% para el vertido final de 116g (hasta 306g) y dejar drenar hasta secar.'
     ],
     notes: 'Extracción extrema superando el 23% EY, brillantez cristalina y acidez muy refinada para tuestes ligeros.'
   },
@@ -650,7 +649,7 @@ export const FAMOUS_RECIPES = [
     steps: [
       'Moler 18g en punto medio-grueso para permitir flujo sostenido.',
       'Válvula cerrada. Verter 60g de agua a 92°C y esperar 45 segundos de saturación.',
-      'Abrir válvula al 100% y verter gradualmente los 192g restantes sobre el dispersor.',
+      'Abrir válvula al 100% y verter gradualmente los 192g restantes sobre el dispersor (hasta 252g).',
       'Drenaje constante para una extracción concentrada y melosa.'
     ],
     notes: 'Cuerpo denso, textura sedosa y notas acarameladas de alta concentración.'

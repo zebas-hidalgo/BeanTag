@@ -494,7 +494,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   const handleApplyFamousRecipe = (famous) => {
     setMethod(famous.method);
-    const effectiveDose = famous.defaultDose || (famous.method === 'NextLevel Pulsar Mini' ? 15 : doseInG);
+    const effectiveDose = famous.defaultDose || (famous.method === 'NextLevel Pulsar Mini' ? 18 : doseInG);
     if (famous.defaultDose || famous.method === 'NextLevel Pulsar Mini') {
       setDoseInG(effectiveDose);
     }
@@ -520,7 +520,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     };
     setDoseAdjustmentFeedback(null);
     if (famous.ratioVal) setRatioVal(famous.ratioVal);
-    else if (famous.method === 'NextLevel Pulsar Mini') setRatioVal(16.6);
+    else if (famous.method === 'NextLevel Pulsar Mini') setRatioVal(16.67);
     if (famous.temperature) setWaterTemp(famous.temperature);
     if (famous.brewTime) setBrewTime(famous.brewTime);
 
@@ -616,10 +616,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             if (targetRecipe.ratio && targetRecipe.ratio.includes('1:')) {
               const ratioMatch = targetRecipe.ratio.match(/1:([0-9.]+)/);
               if (ratioMatch) {
-                setRatioVal(parseFloat(ratioMatch[1]) || (loadedMethod === 'NextLevel Pulsar Mini' ? 16.6 : 15.0));
+                setRatioVal(parseFloat(ratioMatch[1]) || (loadedMethod === 'NextLevel Pulsar Mini' ? 16.67 : 15.0));
               }
             } else if (loadedMethod === 'NextLevel Pulsar Mini') {
-              setRatioVal(16.6);
+              setRatioVal(16.67);
             }
             
             // Parse grind settings and synchronize initial baseline
@@ -696,7 +696,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             };
 
             // Pre-populate new fields
-            const defaultDoseForMethod = loadedMethod === 'NextLevel Pulsar Mini' ? 15.0 : (parseFloat(data.dose_weight) || 20.0);
+            const defaultDoseForMethod = loadedMethod === 'NextLevel Pulsar Mini' ? 18.0 : (parseFloat(data.dose_weight) || 20.0);
             const initDose = targetRecipe.dose_in_g !== null && targetRecipe.dose_in_g !== undefined ? (parseFloat(targetRecipe.dose_in_g) || defaultDoseForMethod) : defaultDoseForMethod;
             setDoseInG(initDose);
             baseDoseRef.current = initDose;
@@ -810,10 +810,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     if (rec.ratio && String(rec.ratio).includes('1:')) {
       const ratioMatch = String(rec.ratio).match(/1:([0-9.]+)/);
       if (ratioMatch) {
-        setRatioVal(parseFloat(ratioMatch[1]) || (loadedMethod === 'NextLevel Pulsar Mini' ? 16.6 : 15.0));
+        setRatioVal(parseFloat(ratioMatch[1]) || (loadedMethod === 'NextLevel Pulsar Mini' ? 16.67 : 15.0));
       }
     } else if (loadedMethod === 'NextLevel Pulsar Mini') {
-      setRatioVal(16.6);
+      setRatioVal(16.67);
     }
 
     // Parse grind settings and synchronize all 8 grinders
@@ -1524,12 +1524,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       }
                       setMethod(m.id);
                       if (m.id === 'NextLevel Pulsar Mini') {
-                        if (!doseInG || doseInG === 20.0) {
-                          setDoseInG(15.0);
-                          baseDoseRef.current = 15.0;
+                        if (!doseInG || doseInG === 20.0 || doseInG === 15.0) {
+                          setDoseInG(18.0);
+                          baseDoseRef.current = 18.0;
                           setDoseAdjustmentFeedback(null);
                         }
-                        if (!ratioVal || ratioVal === 15.0) setRatioVal(16.6);
+                        if (!ratioVal || ratioVal === 15.0 || ratioVal === 16.6) setRatioVal(16.67);
                       } else if (m.id === 'AeroPress Go') {
                         if (!doseInG || doseInG === 20.0 || doseInG > 15.0) {
                           setDoseInG(14.0);

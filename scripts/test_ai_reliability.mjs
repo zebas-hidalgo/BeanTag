@@ -5,16 +5,16 @@ console.log('🧪 Running AI Reliability & Fallback Engine Unit Tests...\n');
 
 // 1. Test Model Sanitization
 console.log('Test 1: Model Sanitization');
-assert.equal(sanitizeModel('gemini-3.7-flash'), 'gemini-3.6-flash', 'Should map gemini-3.7-flash to gemini-3.6-flash');
-assert.equal(sanitizeModel('gemini-3.7-pro'), 'gemini-2.5-pro', 'Should map gemini-3.7-pro to gemini-2.5-pro');
+assert.equal(sanitizeModel('gemini-3.7-flash'), 'gemini-3.8-flash', 'Should map gemini-3.7-flash to gemini-3.8-flash');
+assert.equal(sanitizeModel('gemini-3.7-pro'), 'gemini-3.1-pro-preview', 'Should map gemini-3.7-pro to gemini-3.1-pro-preview');
 assert.equal(sanitizeModel('gemini-3.6-flash'), 'gemini-3.6-flash', 'Should preserve valid gemini-3.6-flash');
 assert.equal(sanitizeModel('gemini-3.5-flash-lite'), 'gemini-3.5-flash-lite', 'Should preserve valid gemini-3.5-flash-lite');
-assert.equal(sanitizeModel('gemini-2.5-flash'), 'gemini-2.5-flash', 'Should preserve valid gemini-2.5-flash');
-assert.equal(sanitizeModel('gemini-2.0-flash'), 'gemini-2.0-flash', 'Should preserve valid gemini-2.0-flash');
-assert.equal(sanitizeModel('gemini-1.5-flash'), 'gemini-1.5-flash', 'Should preserve valid gemini-1.5-flash');
-assert.equal(sanitizeModel('gemini-1.5-pro'), 'gemini-2.5-pro', 'Should map deprecated gemini-1.5-pro to gemini-2.5-pro');
-assert.equal(sanitizeModel(null), 'gemini-3.6-flash', 'Should default null to gemini-3.6-flash');
-assert.equal(sanitizeModel(''), 'gemini-3.6-flash', 'Should default empty to gemini-3.6-flash');
+assert.equal(sanitizeModel('gemini-2.5-flash'), 'gemini-3.1-pro-preview', 'Should map gemini-2.5-flash to gemini-3.1-pro-preview');
+assert.equal(sanitizeModel('gemini-2.0-flash'), 'gemini-3.8-flash', 'Should map gemini-2.0-flash to gemini-3.8-flash');
+assert.equal(sanitizeModel('gemini-1.5-flash'), 'gemini-3.8-flash', 'Should map gemini-1.5-flash to gemini-3.8-flash');
+assert.equal(sanitizeModel('gemini-1.5-pro'), 'gemini-3.1-pro-preview', 'Should map deprecated gemini-1.5-pro to gemini-3.1-pro-preview');
+assert.equal(sanitizeModel(null), 'gemini-3.8-flash', 'Should default null to gemini-3.8-flash');
+assert.equal(sanitizeModel(''), 'gemini-3.8-flash', 'Should default empty to gemini-3.8-flash');
 console.log('✅ Model sanitization tests passed.\n');
 
 // 2. Test Offline Recipe Computation for V60 (Dynamic Terroir & Roast Adaptive)
@@ -67,11 +67,11 @@ const pulsarRecipe = computeOfflineRecipe({
   altitude: '2100m',
   roast_level: 'Claro',
   method: 'NextLevel Pulsar Mini',
-  dose_in_g: 15
+  dose_in_g: 18
 });
 
 assert.equal(pulsarRecipe.method, 'NextLevel Pulsar Mini');
-assert.equal(pulsarRecipe.water_total_g, 240); // 1:16 ratio
+assert.equal(pulsarRecipe.water_total_g, 288); // 1:16 ratio with 18g
 assert.ok(pulsarRecipe.pours.some(p => p.description.toLowerCase().includes('válvula') || p.label.toLowerCase().includes('bloom')), 'Should mention valve instructions');
 
 const pulsarMicrons = parseInt(pulsarRecipe.active_grinder_dial?.microns || pulsarRecipe.grind_microns, 10);
