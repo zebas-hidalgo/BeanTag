@@ -711,9 +711,23 @@ app.put('/api/racks/:id/slots/:position', async (req, res) => {
     }
 
     if (batch_id) {
-      const batch = await db.get('SELECT id FROM batches WHERE id = ?', batch_id);
+      const batch = await db.get('SELECT id, remaining_doses FROM batches WHERE id = ?', batch_id);
       if (!batch) {
         return res.status(404).json({ error: 'El lote seleccionado no existe.' });
+      }
+
+      // Check how many slots already hold this batch (excluding current slot if it already had this batch)
+      const assignedCountRow = await db.get(
+        'SELECT COUNT(*) as count FROM tube_rack_slots WHERE batch_id = ? AND NOT (rack_id = ? AND position = ?)',
+        [batch_id, req.params.id, position]
+      );
+      const assignedOtherSlots = assignedCountRow ? assignedCountRow.count : 0;
+      const availableDoses = (batch.remaining_doses || 0) - assignedOtherSlots;
+
+      if (availableDoses <= 0) {
+        return res.status(400).json({ 
+          error: `No quedan dosis disponibles de este café en inventario (${assignedOtherSlots} ya asignadas en portatubos).` 
+        });
       }
     }
 
@@ -755,22 +769,40 @@ app.post('/api/racks/:id/fill', async (req, res) => {
       return res.status(403).json({ error: 'No tienes permiso para editar este portatubos.' });
     }
 
-    const batch = await db.get('SELECT id FROM batches WHERE id = ?', batch_id);
+    const batch = await db.get('SELECT id, remaining_doses FROM batches WHERE id = ?', batch_id);
     if (!batch) {
       return res.status(404).json({ error: 'El lote seleccionado no existe.' });
     }
 
+    // Count how many slots in ALL racks already hold this batch
+    const assignedCountRow = await db.get(
+      'SELECT COUNT(*) as count FROM tube_rack_slots WHERE batch_id = ?',
+      [batch_id]
+    );
+    const currentlyAssigned = assignedCountRow ? assignedCountRow.count : 0;
+    const availableDoses = Math.max(0, (batch.remaining_doses || 0) - currentlyAssigned);
+
+    if (availableDoses <= 0) {
+      return res.status(400).json({ 
+        error: `No quedan dosis disponibles de este café para asignar (${currentlyAssigned} ya asignadas en portatubos).` 
+      });
+    }
+
     await ensureRackSlots(db, rack.id);
 
-    if (only_empty === false) {
+    // Find slots in target rack
+    const targetSlots = await db.all(
+      only_empty === false
+        ? 'SELECT id, position FROM tube_rack_slots WHERE rack_id = ? ORDER BY position ASC'
+        : 'SELECT id, position FROM tube_rack_slots WHERE rack_id = ? AND batch_id IS NULL ORDER BY position ASC',
+      [req.params.id]
+    );
+
+    const slotsToFill = targetSlots.slice(0, availableDoses);
+    for (const s of slotsToFill) {
       await db.run(
-        'UPDATE tube_rack_slots SET batch_id = ?, updated_at = CURRENT_TIMESTAMP WHERE rack_id = ?',
-        [batch_id, req.params.id]
-      );
-    } else {
-      await db.run(
-        'UPDATE tube_rack_slots SET batch_id = ?, updated_at = CURRENT_TIMESTAMP WHERE rack_id = ? AND batch_id IS NULL',
-        [batch_id, req.params.id]
+        'UPDATE tube_rack_slots SET batch_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [batch_id, s.id]
       );
     }
 

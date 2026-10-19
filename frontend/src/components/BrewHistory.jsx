@@ -113,7 +113,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
     try {
       let dataUrl;
       if (currentFormat === 'sticker') {
-        dataUrl = await generateCoffeeStickerImage(recipe, { template: currentTpl, transparent: isTransparent, orientation: currentOrientation });
+        dataUrl = await generateCoffeeStickerImage(recipe, { template: currentTpl, transparent: isTransparent, orientation: currentOrientation, includeRecipe: incRecipe });
         setShareStatus('✅ Sticker Story generado con éxito');
       } else {
         dataUrl = await generateRecipeCardImage(recipe, currentTpl, incRecipe);
@@ -1035,9 +1035,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 </div>
               </div>
 
-              {/* Row 2: Sub-options (Content scope if card, orientation & background if sticker) */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-                {shareFormat === 'sticker' ? (
+              {/* Row 2: Sub-options (Orientation & background if sticker, plus Content toggle for both) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {shareFormat === 'sticker' && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '6px', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>FORMATO:</span>
@@ -1123,53 +1123,53 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       </button>
                     </div>
                   </div>
-                ) : (
-                  <>
-                    <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>
-                      CONTENIDO:
-                    </span>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <button 
-                        type="button" 
-                        onClick={() => {
-                          setShareIncludeRecipe(true);
-                          exportRecipeAsImage(selectedRecipe, shareTemplate || 'studio', true, 'card', stickerTransparent, stickerOrientation);
-                        }}
-                        style={{
-                          padding: '3px 8px',
-                          fontSize: '9.5px',
-                          borderRadius: '4px',
-                          border: shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                          backgroundColor: shareIncludeRecipe ? 'var(--bg-header)' : 'var(--bg-card)',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)'
-                        }}
-                      >
-                        🧾 Con Receta
-                      </button>
-                      <button 
-                        type="button" 
-                        onClick={() => {
-                          setShareIncludeRecipe(false);
-                          exportRecipeAsImage(selectedRecipe, shareTemplate || 'studio', false, 'card', stickerTransparent, stickerOrientation);
-                        }}
-                        style={{
-                          padding: '3px 8px',
-                          fontSize: '9.5px',
-                          borderRadius: '4px',
-                          border: !shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                          backgroundColor: !shareIncludeRecipe ? 'var(--bg-header)' : 'var(--bg-card)',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)'
-                        }}
-                      >
-                        🌾 Solo Grano
-                      </button>
-                    </div>
-                  </>
                 )}
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                  <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>
+                    CONTENIDO:
+                  </span>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setShareIncludeRecipe(true);
+                        exportRecipeAsImage(selectedRecipe, shareTemplate || 'studio', true, shareFormat, stickerTransparent, stickerOrientation);
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        fontSize: '9.5px',
+                        borderRadius: '4px',
+                        border: shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        backgroundColor: shareIncludeRecipe ? 'var(--bg-header)' : 'var(--bg-card)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)'
+                      }}
+                    >
+                      🧾 Telemetría / Receta
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setShareIncludeRecipe(false);
+                        exportRecipeAsImage(selectedRecipe, shareTemplate || 'studio', false, shareFormat, stickerTransparent, stickerOrientation);
+                      }}
+                      style={{
+                        padding: '3px 8px',
+                        fontSize: '9.5px',
+                        borderRadius: '4px',
+                        border: !shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        backgroundColor: !shareIncludeRecipe ? 'var(--bg-header)' : 'var(--bg-card)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)'
+                      }}
+                    >
+                      🌾 Perfil & Notas
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Row 3: Aesthetic Template Selector */}

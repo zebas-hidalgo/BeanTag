@@ -7,6 +7,7 @@ export default function SlotAssignModal({
   rack,
   position,
   batches,
+  racks = [],
   onAssignSlot,
   onFillRack,
   onClearSlot,
@@ -21,22 +22,50 @@ export default function SlotAssignModal({
   const currentSlot = rack.slots ? rack.slots.find(s => s.position === position) : null;
   const isCurrentlyOccupied = Boolean(currentSlot && currentSlot.batch_id);
 
+  // Calculate how many tubes of a batch are assigned across all racks
+  const getAssignedCountInAllRacks = (batchId) => {
+    if (!racks || !Array.isArray(racks)) return 0;
+    return racks.reduce((acc, r) => {
+      if (!r.slots || !Array.isArray(r.slots)) return acc;
+      return acc + r.slots.filter(s => s.batch_id === batchId).length;
+    }, 0);
+  };
+
+  const getAvailableForAssignment = (batch) => {
+    if (!batch) return 0;
+    const assignedCount = getAssignedCountInAllRacks(batch.id);
+    const isCurrentSlotThisBatch = currentSlot && currentSlot.batch_id === batch.id;
+    return Math.max(0, (batch.remaining_doses || 0) - assignedCount + (isCurrentSlotThisBatch ? 1 : 0));
+  };
+
   // Filter batches: only coffees with stock available (remaining_doses > 0)
   const availableBatches = (batches || []).filter(batch => batch && (batch.remaining_doses || 0) > 0);
 
-  // Filter batches by search term
-  const filteredBatches = availableBatches.filter(batch => {
-    if (!searchTerm.trim()) return true;
-    const term = searchTerm.toLowerCase();
-    return (
-      (batch.name && batch.name.toLowerCase().includes(term)) ||
-      (batch.roaster && batch.roaster.toLowerCase().includes(term)) ||
-      (batch.origin && batch.origin.toLowerCase().includes(term)) ||
-      (batch.variety && batch.variety.toLowerCase().includes(term))
-    );
-  });
+  // Filter batches by search term, and prioritize coffees with available doses to assign
+  const filteredBatches = availableBatches
+    .filter(batch => {
+      if (!searchTerm.trim()) return true;
+      const term = searchTerm.toLowerCase();
+      return (
+        (batch.name && batch.name.toLowerCase().includes(term)) ||
+        (batch.roaster && batch.roaster.toLowerCase().includes(term)) ||
+        (batch.origin && batch.origin.toLowerCase().includes(term)) ||
+        (batch.variety && batch.variety.toLowerCase().includes(term))
+      );
+    })
+    .sort((a, b) => {
+      const availA = getAvailableForAssignment(a);
+      const availB = getAvailableForAssignment(b);
+      if (availA > 0 && availB <= 0) return -1;
+      if (availA <= 0 && availB > 0) return 1;
+      return (a.name || '').localeCompare(b.name || '');
+    });
 
   const emptySlotsCount = rack.slots ? rack.slots.filter(s => !s.batch_id).length : 0;
+
+  const selectedBatch = (batches || []).find(b => b.id === selectedBatchId) || null;
+  const selectedAvailable = selectedBatch ? getAvailableForAssignment(selectedBatch) : 0;
+  const fillableCount = Math.min(emptySlotsCount, selectedAvailable);
 
   const handleAssignSingle = async (batchId) => {
     const targetId = batchId || selectedBatchId;
@@ -267,13 +296,28 @@ export default function SlotAssignModal({
           ) : (
             filteredBatches.map((batch) => {
               const isSelected = selectedBatchId === batch.id;
-              const isLow = (batch.remaining_doses || 0) <= 2;
-              const isOutOfStock = (batch.remaining_doses || 0) <= 0;
+              const assignedInRacks = getAssignedCountInAllRacks(batch.id);
+              const isCurrentSlotThisBatch = currentSlot && currentSlot.batch_id === batch.id;
+              const availableToAssign = Math.max(
+                0,
+                (batch.remaining_doses || 0) - assignedInRacks + (isCurrentSlotThisBatch ? 1 : 0)
+              );
+              const isOutOfStockForAssignment = availableToAssign <= 0;
+              const isLow = availableToAssign > 0 && availableToAssign <= 2;
 
               return (
                 <div
                   key={batch.id}
-                  onClick={() => !isSubmitting && setSelectedBatchId(batch.id)}
+                  onClick={() => {
+                    if (isSubmitting) return;
+                    if (isOutOfStockForAssignment) {
+                      if (showToast) {
+                        showToast(`Todas las dosis de "${batch.name}" (${assignedInRacks}) ya están en tus portatubos.`, { type: 'info' });
+                      }
+                      return;
+                    }
+                    setSelectedBatchId(batch.id);
+                  }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -286,7 +330,8 @@ export default function SlotAssignModal({
                     backgroundColor: isSelected
                       ? 'var(--barista-instr-bg, rgba(217, 119, 6, 0.08))'
                       : 'var(--barista-bg-surface, var(--bg-card))',
-                    cursor: 'pointer',
+                    opacity: isOutOfStockForAssignment ? 0.6 : 1,
+                    cursor: isOutOfStockForAssignment ? 'not-allowed' : 'pointer',
                     transition: 'all 0.15s ease',
                     boxShadow: isSelected ? '0 2px 8px rgba(217, 119, 6, 0.15)' : 'none'
                   }}
@@ -298,7 +343,7 @@ export default function SlotAssignModal({
                           fontSize: '14px',
                           fontWeight: '800',
                           fontFamily: 'var(--font-heading)',
-                          color: 'var(--color-text, #0F172A)',
+                          color: isOutOfStockForAssignment ? 'var(--barista-text-muted, #94A3B8)' : 'var(--color-text, #0F172A)',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis'
@@ -343,8 +388,8 @@ export default function SlotAssignModal({
                       style={{
                         fontSize: '12px',
                         fontFamily: 'var(--font-mono)',
-                        fontWeight: '700',
-                        color: isOutOfStock
+                        fontWeight: '800',
+                        color: isOutOfStockForAssignment
                           ? 'var(--barista-accent-danger, #EF4444)'
                           : isLow
                           ? 'var(--barista-accent-honey, #D97706)'
@@ -352,16 +397,21 @@ export default function SlotAssignModal({
                         display: 'block'
                       }}
                     >
-                      {batch.remaining_doses || 0} {batch.remaining_doses === 1 ? 'tubo' : 'tubos'}
+                      {isOutOfStockForAssignment
+                        ? '0 disponibles'
+                        : `${availableToAssign} ${availableToAssign === 1 ? 'tubo libre' : 'tubos libres'}`}
                     </span>
                     <span
                       style={{
-                        fontSize: '11px',
+                        fontSize: '10.5px',
                         fontFamily: 'var(--font-mono)',
-                        color: 'var(--barista-text-muted, #94A3B8)'
+                        color: 'var(--barista-text-muted, #94A3B8)',
+                        display: 'block'
                       }}
                     >
-                      {batch.dose_weight || '20.0g'}
+                      {isOutOfStockForAssignment
+                        ? `(${assignedInRacks} en racks)`
+                        : `de ${batch.remaining_doses || 0} en bolsa`}
                     </span>
                   </div>
                 </div>
@@ -385,7 +435,7 @@ export default function SlotAssignModal({
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button
                 type="button"
-                disabled={isSubmitting}
+                disabled={isSubmitting || selectedAvailable <= 0}
                 onClick={() => handleAssignSingle()}
                 style={{
                   flex: 1,
@@ -395,13 +445,13 @@ export default function SlotAssignModal({
                   justifyContent: 'center',
                   gap: '6px',
                   padding: '10px 16px',
-                  backgroundColor: 'var(--barista-accent-honey, #D97706)',
+                  backgroundColor: selectedAvailable > 0 ? 'var(--barista-accent-honey, #D97706)' : 'var(--barista-text-disabled, #94A3B8)',
                   color: '#FFFFFF',
                   border: 'none',
                   borderRadius: 'var(--barista-radius-md, 12px)',
                   fontWeight: '700',
                   fontSize: '13px',
-                  cursor: 'pointer',
+                  cursor: selectedAvailable > 0 ? 'pointer' : 'not-allowed',
                   transition: 'opacity 0.15s ease'
                 }}
               >
@@ -409,7 +459,7 @@ export default function SlotAssignModal({
                 <span>Asignar solo al Tubo #{position}</span>
               </button>
 
-              {emptySlotsCount > 1 && (
+              {emptySlotsCount > 1 && fillableCount > 1 && (
                 <button
                   type="button"
                   disabled={isSubmitting}
@@ -429,10 +479,12 @@ export default function SlotAssignModal({
                     cursor: 'pointer',
                     transition: 'all 0.15s ease'
                   }}
-                  title="Llenar todas las ranuras vacías de este rack con este café"
+                  title={`Llenar hasta ${fillableCount} ranuras vacías de este rack con este café`}
                 >
                   <Layers size={16} color="var(--barista-accent-honey, #D97706)" />
-                  <span>Llenar vacíos ({emptySlotsCount})</span>
+                  <span>
+                    Llenar vacíos ({fillableCount}{fillableCount < emptySlotsCount ? ` de ${emptySlotsCount}` : ''})
+                  </span>
                 </button>
               )}
             </div>

@@ -145,11 +145,43 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     setShareScope(scope);
     setShareStatus('Generando imagen...');
 
+    // Construct recipe/batch object with full telemetry & terroir
+    const activePours = (aiRecommendation && aiRecommendation.pours && aiRecommendation.pours.length > 0)
+      ? aiRecommendation.pours
+      : (batch?.recipes && batch.recipes.length > 0 && batch.recipes[0].pours ? batch.recipes[0].pours : undefined);
+
+    const syntheticRecipe = {
+      ...batch,
+      id: batch.id,
+      batch_name: batch.name,
+      batch_roaster: batch.roaster,
+      batch_producer: batch.producer,
+      batch_origin: batch.origin,
+      batch_altitude: batch.altitude,
+      batch_variety: batch.variety,
+      batch_process: batch.process,
+      batch_roast_date: batch.roast_date,
+      batch_roaster_notes: batch.roaster_notes,
+      method: method || 'V60 (Filtrado)',
+      dose_in_g: doseInG,
+      ratio: `1:${ratioVal}`,
+      grind: getGrindString(),
+      temperature: `${waterTemp}°C`,
+      brew_time: brewTime || '2:30 min',
+      sensory_balance: incRecipe ? sensoryBalance : batch.sensory_balance,
+      sensory_body: incRecipe ? sensoryBody : batch.sensory_body,
+      sensory_extraction: incRecipe ? sensoryExtraction : batch.sensory_extraction,
+      notes: notes,
+      pours: activePours,
+      created_at: new Date().toISOString()
+    };
+
     if (scope === 'sticker') {
       try {
-        const dataUrl = await generateCoffeeStickerImage(batch, { template: templ, transparent, orientation });
+        const dataUrl = await generateCoffeeStickerImage(syntheticRecipe, { template: templ, transparent, orientation, includeRecipe: incRecipe });
         setShareImage(dataUrl);
         setShareTemplate(templ);
+        setShareIncludeRecipe(incRecipe);
         setShareStatus('✅ Sticker Story generado con éxito');
       } catch (err) {
         console.error("Sticker generation error:", err);
@@ -171,36 +203,6 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       }
       return;
     }
-    
-    // Construct recipe/batch object
-    const activePours = (aiRecommendation && aiRecommendation.pours && aiRecommendation.pours.length > 0)
-      ? aiRecommendation.pours
-      : (batch?.recipes && batch.recipes.length > 0 && batch.recipes[0].pours ? batch.recipes[0].pours : undefined);
-
-    const syntheticRecipe = {
-      id: batch.id,
-      batch_name: batch.name,
-      batch_roaster: batch.roaster,
-      batch_producer: batch.producer,
-      batch_origin: batch.origin,
-      batch_altitude: batch.altitude,
-      batch_variety: batch.variety,
-      batch_process: batch.process,
-      batch_roast_date: batch.roast_date,
-      batch_roaster_notes: batch.roaster_notes,
-      method: method || 'V60 (Filtrado)',
-      dose_in_g: doseInG,
-      ratio: `1:${ratioVal}`,
-      grind: getGrindString(),
-      temperature: `${waterTemp}°C`,
-      brew_time: brewTime || '2:30 min',
-      sensory_balance: sensoryBalance,
-      sensory_body: sensoryBody,
-      sensory_extraction: sensoryExtraction,
-      notes: notes,
-      pours: activePours,
-      created_at: new Date().toISOString()
-    };
 
     try {
       const dataUrl = await generateRecipeCardImage(syntheticRecipe, templ, incRecipe);
@@ -2773,25 +2775,25 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 </div>
               )}
 
-              {shareScope === 'single' && (
+              {(shareScope === 'single' || shareScope === 'sticker') && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '10.5px', fontWeight: '700', color: 'var(--color-text)' }}>
-                    {batch?.name}
+                    {shareScope === 'sticker' ? 'CONTENIDO DEL STICKER:' : batch?.name}
                   </span>
                   <div style={{ display: 'flex', gap: '4px' }}>
                     <button 
                       type="button" 
-                      onClick={() => { setShareIncludeRecipe(false); handleShareBatchCard(false, shareTemplate, 'single', stickerTransparent, stickerOrientation); }}
+                      onClick={() => { setShareIncludeRecipe(false); handleShareBatchCard(false, shareTemplate, shareScope, stickerTransparent, stickerOrientation); }}
                       style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: !shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
                     >
-                      🌾 Solo Grano
+                      🌾 Perfil & Notas
                     </button>
                     <button 
                       type="button" 
-                      onClick={() => { setShareIncludeRecipe(true); handleShareBatchCard(true, shareTemplate, 'single', stickerTransparent, stickerOrientation); }}
+                      onClick={() => { setShareIncludeRecipe(true); handleShareBatchCard(true, shareTemplate, shareScope, stickerTransparent, stickerOrientation); }}
                       style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
                     >
-                      🧾 Con Receta
+                      🧾 Telemetría / Receta
                     </button>
                   </div>
                 </div>

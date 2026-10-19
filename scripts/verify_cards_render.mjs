@@ -509,6 +509,36 @@ async function verify() {
     }
   }
 
+  // E. Verify Story Stickers in Telemetry / Recipe Mode (includeRecipe: true)
+  for (const style of STYLES) {
+    try {
+      mockOps.length = 0;
+      mockOpsDetailed.length = 0;
+      const dataUrl = await window.__generateCoffeeStickerImage(sampleRecipe, { template: style, transparent: true, orientation: 'horizontal', includeRecipe: true });
+      const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
+      const opsCount = mockOps.length;
+      const hasTelemetryChip = mockContext.operations.some(op => op.name === 'fillText' && typeof op.args[0] === 'string' && (op.args[0].includes('V60') || op.args[0].includes('1:15.6') || op.args[0].includes('250g')));
+      assert(hasTelemetryChip, 'Sticker in telemetry mode must render brew telemetry chips');
+      const passed = isValidDataUrl && opsCount > 25 && hasTelemetryChip;
+      if (!passed) hasFailure = true;
+      results.push({
+        style,
+        type: 'Sticker Brew',
+        mode: 'H • Receta',
+        ops: opsCount,
+        status: passed ? 'PASS' : 'FAIL'
+      });
+      console.log(
+        `│ ${style.padEnd(15)} │ ${'Sticker Brew'.padEnd(12)} │ ${'H • Receta'.padEnd(12)} │ ${String(opsCount).padStart(10)} │ ${passed ? '✅ PASS' : '❌ FAIL'} │`
+      );
+    } catch (err) {
+      hasFailure = true;
+      results.push({ style, type: 'Sticker Brew', mode: 'H • Receta', ops: 0, status: 'ERROR' });
+      console.log(`│ ${style.padEnd(15)} │ ${'Sticker Brew'.padEnd(12)} │ ${'H • Receta'.padEnd(12)} │ ${'0'.padStart(10)} │ ❌ ERR  │`);
+      console.error(`   ⚠️ Error details (${style} Sticker Brew):`, err.message);
+    }
+  }
+
   console.log('└─────────────────┴──────────────┴──────────────┴────────────┴────────┘');
 
   const totalPassed = results.filter(r => r.status === 'PASS').length;

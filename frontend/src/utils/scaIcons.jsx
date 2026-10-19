@@ -438,21 +438,24 @@ export function RenderScaChips({ notesStr, maxChips = 4 }) {
   if (notesList.length === 0) return null;
 
   return (
-    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginTop: '4px' }}>
       {notesList.map((note, idx) => {
         const colors = getScaColorForNote(note);
         return (
           <span key={idx} style={{
-            fontSize: '9.5px',
+            fontSize: '10px',
             fontWeight: '800',
-            padding: '2px 6px',
-            borderRadius: '4px',
+            padding: '3px 7px',
+            borderRadius: '6px',
             backgroundColor: colors.bg,
             border: `1.5px solid ${colors.border}`,
             color: colors.text,
             textTransform: 'uppercase',
-            display: 'inline-block'
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px'
           }}>
+            {getScaIcon(note, 12, 2.5)}
             {note}
           </span>
         );
@@ -460,5 +463,282 @@ export function RenderScaChips({ notesStr, maxChips = 4 }) {
     </div>
   );
 }
+
+export const SCA_CANVAS_PALETTE = {
+  floral:    { bg: '#F3E8FF', border: '#9333EA', icon: '#7E22CE', badgeBg: '#9333EA', badgeIcon: '#FFFFFF' },
+  herbal:    { bg: '#DCFCE7', border: '#16A34A', icon: '#15803D', badgeBg: '#16A34A', badgeIcon: '#FFFFFF' },
+  berries:   { bg: '#FFE4E6', border: '#E11D48', icon: '#BE123C', badgeBg: '#E11D48', badgeIcon: '#FFFFFF' },
+  citrus:    { bg: '#FEF3C7', border: '#D97706', icon: '#B45309', badgeBg: '#EA580C', badgeIcon: '#FFFFFF' },
+  fruit:     { bg: '#FFEDD5', border: '#EA580C', icon: '#C2410C', badgeBg: '#F97316', badgeIcon: '#FFFFFF' },
+  sweet:     { bg: '#FEF9C3', border: '#CA8A04', icon: '#A16207', badgeBg: '#D97706', badgeIcon: '#FFFFFF' },
+  nuts:      { bg: '#FDE68A', border: '#92400E', icon: '#78350F', badgeBg: '#92400E', badgeIcon: '#FFFFFF' },
+  chocolate: { bg: '#F5EFE6', border: '#57534E', icon: '#44403C', badgeBg: '#57361C', badgeIcon: '#FFFFFF' },
+  spices:    { bg: '#FEE2E2', border: '#DC2626', icon: '#B91C1C', badgeBg: '#DC2626', badgeIcon: '#FFFFFF' },
+  cereals:   { bg: '#FEF3C7', border: '#B45309', icon: '#92400E', badgeBg: '#B45309', badgeIcon: '#FFFFFF' },
+  roasted:   { bg: '#FFEDD5', border: '#C2410C', icon: '#9A3412', badgeBg: '#C2410C', badgeIcon: '#FFFFFF' },
+  tobacco:   { bg: '#E7E5E4', border: '#57534E', icon: '#44403C', badgeBg: '#57534E', badgeIcon: '#FFFFFF' },
+  vegetal:   { bg: '#D1FAE5', border: '#059669', icon: '#047857', badgeBg: '#059669', badgeIcon: '#FFFFFF' },
+  fermented: { bg: '#FCE7F3', border: '#BE185D', icon: '#9D174D', badgeBg: '#BE185D', badgeIcon: '#FFFFFF' },
+  acidity:   { bg: '#E0F2FE', border: '#0284C7', icon: '#0369A1', badgeBg: '#0284C7', badgeIcon: '#FFFFFF' },
+  default:   { bg: '#F1F5F9', border: '#475569', icon: '#334155', badgeBg: '#334155', badgeIcon: '#FFFFFF' }
+};
+
+export function getScaCanvasPalette(tagLabel) {
+  const cat = getScaCategory(tagLabel);
+  return SCA_CANVAS_PALETTE[cat] || SCA_CANVAS_PALETTE.default;
+}
+
+/**
+ * Draws a crisp, custom-illustrated SCA Flavor Wheel vector icon inside a semantic circular badge on Canvas 2D.
+ * Supports all 15 SCA Flavor families + default Coffee Bean.
+ */
+export function drawScaCanvasIcon(ctx, tagLabel, cx, cy, radius = 15, options = {}) {
+  const cat = getScaCategory(tagLabel);
+  const pal = SCA_CANVAS_PALETTE[cat] || SCA_CANVAS_PALETTE.default;
+  const badgeBg = options.badgeBg || pal.badgeBg;
+  const fg = options.iconColor || '#FFFFFF';
+
+  ctx.save();
+
+  // 1. Semantic Circular Badge Container with subtle inner highlight ring
+  ctx.fillStyle = badgeBg;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = options.borderColor || 'rgba(255, 255, 255, 0.35)';
+  ctx.lineWidth = options.borderWidth || 1.5;
+  ctx.stroke();
+
+  // 2. Crisp, Bold Vector Silhouette Icon inside Badge
+  ctx.strokeStyle = fg;
+  ctx.fillStyle = fg;
+  ctx.lineWidth = Math.max(2.0, radius * 0.16);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  const r = radius * 0.64;
+
+  switch (cat) {
+    case 'floral': {
+      // Bold 5-petal blossom with contrasting pistil
+      for (let i = 0; i < 5; i++) {
+        const a = (i * Math.PI * 2) / 5 - Math.PI / 2;
+        const px = cx + Math.cos(a) * (r * 0.56);
+        const py = cy + Math.sin(a) * (r * 0.56);
+        ctx.beginPath();
+        ctx.arc(px, py, r * 0.42, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = badgeBg;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.28, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = fg;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.12, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case 'berries': {
+      // Twin cherries with joined stems & leaf
+      const c1x = cx - r * 0.42;
+      const c2x = cx + r * 0.42;
+      const cyBerry = cy + r * 0.38;
+      const stemTopX = cx + r * 0.1;
+      const stemTopY = cy - r * 0.85;
+      ctx.beginPath();
+      ctx.moveTo(c1x, cyBerry - r * 0.2);
+      ctx.quadraticCurveTo(cx - r * 0.2, cy - r * 0.45, stemTopX, stemTopY);
+      ctx.moveTo(c2x, cyBerry - r * 0.2);
+      ctx.quadraticCurveTo(cx + r * 0.25, cy - r * 0.45, stemTopX, stemTopY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(c1x, cyBerry, r * 0.42, 0, Math.PI * 2);
+      ctx.arc(c2x, cyBerry, r * 0.42, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case 'citrus': {
+      // Bold Citrus Wedge / Wheel with segments
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.92, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = badgeBg;
+      for (let i = 0; i < 6; i++) {
+        const a1 = (i * Math.PI) / 3 + 0.14;
+        const a2 = ((i + 1) * Math.PI) / 3 - 0.14;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos((a1 + a2) / 2) * r * 0.16, cy + Math.sin((a1 + a2) / 2) * r * 0.16);
+        ctx.arc(cx, cy, r * 0.72, a1, a2);
+        ctx.closePath();
+        ctx.fill();
+      }
+      break;
+    }
+    case 'fruit': {
+      // Peach / Apple silhouette with top leaf
+      ctx.beginPath();
+      ctx.arc(cx - r * 0.22, cy + r * 0.18, r * 0.56, 0, Math.PI * 2);
+      ctx.arc(cx + r * 0.22, cy + r * 0.18, r * 0.56, 0, Math.PI * 2);
+      ctx.fill();
+      // Stem & Leaf
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - r * 0.35);
+      ctx.lineTo(cx, cy - r * 0.9);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(cx + r * 0.32, cy - r * 0.72, r * 0.32, r * 0.16, -Math.PI / 6, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case 'sweet': {
+      // Golden Honey Drop with inner highlight
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - r * 0.95);
+      ctx.bezierCurveTo(cx + r * 0.92, cy - r * 0.05, cx + r * 0.82, cy + r * 0.95, cx, cy + r * 0.95);
+      ctx.bezierCurveTo(cx - r * 0.82, cy + r * 0.95, cx - r * 0.92, cy - r * 0.05, cx, cy - r * 0.95);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = badgeBg;
+      ctx.lineWidth = Math.max(1.6, radius * 0.12);
+      ctx.beginPath();
+      ctx.arc(cx - r * 0.18, cy + r * 0.22, r * 0.28, Math.PI * 0.55, Math.PI * 1.15);
+      ctx.stroke();
+      break;
+    }
+    case 'chocolate': {
+      // Solid Chocolate Bar Grid (2x2 squares)
+      const s = r * 0.68;
+      const g = r * 0.14;
+      ctx.fillRect(cx - s - g / 2, cy - s - g / 2, s, s);
+      ctx.fillRect(cx + g / 2, cy - s - g / 2, s, s);
+      ctx.fillRect(cx - s - g / 2, cy + g / 2, s, s);
+      ctx.fillRect(cx + g / 2, cy + g / 2, s, s);
+      break;
+    }
+    case 'nuts': {
+      // Acorn / Hazelnut with textured dome cap
+      ctx.beginPath();
+      ctx.arc(cx, cy + r * 0.15, r * 0.68, 0, Math.PI);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - r * 0.15, r * 0.82, r * 0.38, 0, Math.PI, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - r * 0.5);
+      ctx.lineTo(cx + r * 0.2, cy - r * 0.9);
+      ctx.stroke();
+      break;
+    }
+    case 'spices': {
+      // 4-point star burst + satellite sparkles
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - r);
+      ctx.quadraticCurveTo(cx, cy, cx + r, cy);
+      ctx.quadraticCurveTo(cx, cy, cx, cy + r);
+      ctx.quadraticCurveTo(cx, cy, cx - r, cy);
+      ctx.quadraticCurveTo(cx, cy, cx, cy - r);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(cx + r * 0.62, cy - r * 0.62, r * 0.18, 0, Math.PI * 2);
+      ctx.arc(cx - r * 0.62, cy + r * 0.62, r * 0.18, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case 'herbal':
+    case 'vegetal': {
+      // Bold Botanical Leaf with cut-out central vein
+      ctx.beginPath();
+      ctx.moveTo(cx - r * 0.8, cy + r * 0.8);
+      ctx.quadraticCurveTo(cx - r * 0.85, cy - r * 0.85, cx + r * 0.85, cy - r * 0.85);
+      ctx.quadraticCurveTo(cx + r * 0.85, cy + r * 0.85, cx - r * 0.8, cy + r * 0.8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = badgeBg;
+      ctx.lineWidth = Math.max(1.8, radius * 0.14);
+      ctx.beginPath();
+      ctx.moveTo(cx - r * 0.75, cy + r * 0.75);
+      ctx.lineTo(cx + r * 0.45, cy - r * 0.45);
+      ctx.stroke();
+      break;
+    }
+    case 'fermented': {
+      // Filled Wine / Goblet Chalice
+      ctx.beginPath();
+      ctx.moveTo(cx - r * 0.72, cy - r * 0.85);
+      ctx.lineTo(cx + r * 0.72, cy - r * 0.85);
+      ctx.quadraticCurveTo(cx + r * 0.72, cy + r * 0.2, cx, cy + r * 0.2);
+      ctx.quadraticCurveTo(cx - r * 0.72, cy + r * 0.2, cx - r * 0.72, cy - r * 0.85);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy + r * 0.15);
+      ctx.lineTo(cx, cy + r * 0.88);
+      ctx.moveTo(cx - r * 0.52, cy + r * 0.88);
+      ctx.lineTo(cx + r * 0.52, cy + r * 0.88);
+      ctx.stroke();
+      break;
+    }
+    case 'acidity': {
+      // Bright Acidity Lightning Bolt
+      ctx.beginPath();
+      ctx.moveTo(cx + r * 0.2, cy - r);
+      ctx.lineTo(cx - r * 0.68, cy + r * 0.1);
+      ctx.lineTo(cx + r * 0.05, cy + r * 0.1);
+      ctx.lineTo(cx - r * 0.2, cy + r);
+      ctx.lineTo(cx + r * 0.68, cy - r * 0.1);
+      ctx.lineTo(cx - r * 0.05, cy - r * 0.1);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case 'cereals': {
+      // Bold Wheat Ear
+      ctx.beginPath();
+      ctx.moveTo(cx, cy + r * 0.95);
+      ctx.lineTo(cx, cy - r * 0.9);
+      ctx.stroke();
+      [-0.35, 0.25].forEach(offsetY => {
+        ctx.beginPath();
+        ctx.ellipse(cx - r * 0.42, cy + r * offsetY, r * 0.35, r * 0.18, Math.PI / 4, 0, Math.PI * 2);
+        ctx.ellipse(cx + r * 0.42, cy + r * offsetY, r * 0.35, r * 0.18, -Math.PI / 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      break;
+    }
+    case 'roasted':
+    case 'tobacco': {
+      // Bold Roast Flame Silhouette
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - r * 0.98);
+      ctx.bezierCurveTo(cx + r * 0.95, cy - r * 0.15, cx + r * 0.78, cy + r * 0.95, cx, cy + r * 0.95);
+      ctx.bezierCurveTo(cx - r * 0.78, cy + r * 0.95, cx - r * 0.95, cy - r * 0.15, cx, cy - r * 0.98);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = badgeBg;
+      ctx.beginPath();
+      ctx.arc(cx, cy + r * 0.35, r * 0.32, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    default: {
+      // Solid Coffee Bean with S-crease
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, r * 0.86, r * 0.62, -Math.PI / 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = badgeBg;
+      ctx.lineWidth = Math.max(1.8, radius * 0.15);
+      ctx.beginPath();
+      ctx.moveTo(cx - r * 0.65, cy + r * 0.32);
+      ctx.bezierCurveTo(cx - r * 0.15, cy - r * 0.35, cx + r * 0.15, cy + r * 0.35, cx + r * 0.65, cy - r * 0.32);
+      ctx.stroke();
+      break;
+    }
+  }
+
+  ctx.restore();
+}
+
 
 

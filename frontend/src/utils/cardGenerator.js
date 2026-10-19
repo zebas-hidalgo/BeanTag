@@ -9,8 +9,8 @@
 // Pure Canvas 2D vector & typography (Zero external raster images),
 // +60% larger typography for Instagram Story legibility, and WCAG AAA contrast.
 
-export { getScaWheelIcon, cleanNotesString, getScaCategory, STYLE_SCA_ICONS } from './scaIcons';
-import { getScaWheelIcon, cleanNotesString, getScaCategory, STYLE_SCA_ICONS } from './scaIcons';
+export { getScaWheelIcon, cleanNotesString, getScaCategory, STYLE_SCA_ICONS, drawScaCanvasIcon, getScaCanvasPalette, SCA_CANVAS_PALETTE } from './scaIcons';
+import { getScaWheelIcon, cleanNotesString, getScaCategory, STYLE_SCA_ICONS, drawScaCanvasIcon, getScaCanvasPalette } from './scaIcons';
 
 export { parseGrindToMicrons } from './grinders';
 import { parseGrindToMicrons, GRINDERS } from './grinders';
@@ -42,19 +42,19 @@ export const CARD_THEMES = {
     surfaceBg: '#FAFAFA',
     surfaceAlt: '#F4F4F5',
     text: '#09090B',
-    textSecondary: '#3F3F46',
-    textMuted: '#71717A',
-    border: '#E4E4E7',
+    textSecondary: '#27272A',
+    textMuted: '#52525B',
+    border: '#D4D4D8',
     borderStrong: '#18181B',
-    borderSubtle: 'rgba(9, 9, 11, 0.08)',
+    borderSubtle: 'rgba(9, 9, 11, 0.12)',
     accent: '#18181B',
     accentBg: '#18181B',
     accentText: '#FFFFFF',
     accentSoft: '#F4F4F5',
-    pillBg: '#F4F4F5',
+    pillBg: '#FFFFFF',
     pillBorder: '#D4D4D8',
     pillText: '#09090B',
-    radarFill: 'rgba(24, 24, 27, 0.12)',
+    radarFill: 'rgba(24, 24, 27, 0.14)',
     radarStroke: '#18181B',
     fontHeading: '"Outfit", "Space Grotesk", sans-serif',
     fontBody: '"Plus Jakarta Sans", "Space Grotesk", sans-serif',
@@ -71,19 +71,19 @@ export const CARD_THEMES = {
     surfaceBg: '#F3EFE6',
     surfaceAlt: '#EDE7DA',
     text: '#1C1917',
-    textSecondary: '#44403C',
-    textMuted: '#78716C',
+    textSecondary: '#292524',
+    textMuted: '#57534E',
     border: '#D6CFC1',
     borderStrong: '#1C1917',
-    borderSubtle: 'rgba(28, 25, 23, 0.12)',
+    borderSubtle: 'rgba(28, 25, 23, 0.14)',
     accent: '#B91C1C',
     accentBg: '#B91C1C',
     accentText: '#FFFFFF',
-    accentSoft: 'rgba(185, 28, 28, 0.08)',
-    pillBg: '#F3EFE6',
-    pillBorder: '#C7BFA E',
+    accentSoft: 'rgba(185, 28, 28, 0.10)',
+    pillBg: '#FAF7F0',
+    pillBorder: '#C7BFAE',
     pillText: '#1C1917',
-    radarFill: 'rgba(185, 28, 28, 0.16)',
+    radarFill: 'rgba(185, 28, 28, 0.18)',
     radarStroke: '#B91C1C',
     fontHeading: '"Playfair Display", Georgia, serif',
     fontBody: '"Plus Jakarta Sans", "Space Grotesk", sans-serif',
@@ -100,19 +100,19 @@ export const CARD_THEMES = {
     surfaceBg: '#131C31',
     surfaceAlt: '#192540',
     text: '#F8FAFC',
-    textSecondary: '#CBD5E1',
+    textSecondary: '#E2E8F0',
     textMuted: '#94A3B8',
-    border: 'rgba(56, 189, 248, 0.35)',
+    border: 'rgba(56, 189, 248, 0.38)',
     borderStrong: '#38BDF8',
-    borderSubtle: 'rgba(56, 189, 248, 0.14)',
+    borderSubtle: 'rgba(56, 189, 248, 0.16)',
     accent: '#38BDF8',
-    accentBg: 'rgba(56, 189, 248, 0.16)',
+    accentBg: 'rgba(56, 189, 248, 0.20)',
     accentText: '#38BDF8',
-    accentSoft: 'rgba(56, 189, 248, 0.10)',
-    pillBg: 'rgba(56, 189, 248, 0.12)',
+    accentSoft: 'rgba(56, 189, 248, 0.14)',
+    pillBg: '#131C31',
     pillBorder: '#38BDF8',
-    pillText: '#F0F9FF',
-    radarFill: 'rgba(56, 189, 248, 0.24)',
+    pillText: '#F8FAFC',
+    radarFill: 'rgba(56, 189, 248, 0.26)',
     radarStroke: '#38BDF8',
     fontHeading: '"Space Grotesk", sans-serif',
     fontBody: '"Plus Jakarta Sans", "Space Grotesk", sans-serif',
@@ -129,11 +129,11 @@ export const CARD_THEMES = {
     surfaceBg: '#F7F3EB',
     surfaceAlt: '#FEF3C7',
     text: '#18181B',
-    textSecondary: '#27272A',
-    textMuted: '#52525B',
+    textSecondary: '#18181B',
+    textMuted: '#3F3F46',
     border: '#18181B',
     borderStrong: '#18181B',
-    borderSubtle: 'rgba(24, 24, 27, 0.2)',
+    borderSubtle: 'rgba(24, 24, 27, 0.22)',
     accent: '#EA580C',
     accentBg: '#FDE68A',
     accentText: '#18181B',
@@ -141,7 +141,7 @@ export const CARD_THEMES = {
     pillBg: '#FEF3C7',
     pillBorder: '#18181B',
     pillText: '#18181B',
-    radarFill: 'rgba(234, 88, 12, 0.22)',
+    radarFill: 'rgba(234, 88, 12, 0.24)',
     radarStroke: '#EA580C',
     fontHeading: '"Space Grotesk", sans-serif',
     fontBody: '"Space Grotesk", sans-serif',
@@ -158,19 +158,19 @@ export const CARD_THEMES = {
     surfaceBg: '#EFF5F1',
     surfaceAlt: '#E2ECE6',
     text: '#143326',
-    textSecondary: '#1E4635',
-    textMuted: '#4A6B5D',
-    border: '#C5D6CC',
+    textSecondary: '#143326',
+    textMuted: '#355848',
+    border: '#B5CBBF',
     borderStrong: '#143326',
-    borderSubtle: 'rgba(20, 51, 38, 0.14)',
+    borderSubtle: 'rgba(20, 51, 38, 0.16)',
     accent: '#C2410C',
     accentBg: '#C2410C',
     accentText: '#FFFFFF',
     accentSoft: '#FFEDD5',
-    pillBg: '#EFF5F1',
+    pillBg: '#FCFDFB',
     pillBorder: '#86A797',
     pillText: '#143326',
-    radarFill: 'rgba(194, 65, 12, 0.18)',
+    radarFill: 'rgba(194, 65, 12, 0.20)',
     radarStroke: '#C2410C',
     fontHeading: '"Outfit", "Space Grotesk", sans-serif',
     fontBody: '"Plus Jakarta Sans", "Space Grotesk", sans-serif',
@@ -230,11 +230,11 @@ export function drawCanvasTruncatedText(ctx, text, x, y, maxWidth) {
 function drawHeroTitleBlock(ctx, text, x, y, maxWidth, options = {}) {
   const {
     maxLines = 2,
-    maxFontSize = 36,
-    minFontSize = 24,
+    maxFontSize = 44,
+    minFontSize = 28,
     fontFamily = '"Space Grotesk", sans-serif',
     fontWeight = '800',
-    lineHeightRatio = 1.12,
+    lineHeightRatio = 1.08,
     color = '#09090B'
   } = options;
 
@@ -325,7 +325,7 @@ function drawStyledBox(ctx, x, y, w, h, theme, options = {}) {
   const {
     fill = theme.surfaceBg,
     stroke = theme.border,
-    lineWidth = theme.id === 'neobrutalist' ? 2.2 : 1.2,
+    lineWidth = theme.id === 'neobrutalist' ? 2.4 : 1.4,
     radius = 12,
     shadow = theme.shadowOffset > 0
   } = options;
@@ -343,7 +343,63 @@ function drawStyledBox(ctx, x, y, w, h, theme, options = {}) {
 }
 
 /**
- * Draws a 5-axis SCA Sensory Radar Chart with high-legibility 11.5px labels
+ * Draws a Flavor Note Pill with a custom-illustrated SCA semantic circular badge icon
+ * AND registers the style-specific SCA glyph for automated telemetry verification.
+ */
+function drawFlavorNotePill(ctx, tag, x, y, w, h, style, theme, options = {}) {
+  const pal = getScaCanvasPalette(tag);
+  const fontSize = options.fontSize || 17;
+  const badgeRadius = options.badgeRadius || Math.min(17, Math.floor((h - 8) / 2));
+
+  // Semantic SCA tinted pill background & border so each note flavor family stands out visually
+  const pillFill = style === 'blueprint'
+    ? 'rgba(19, 28, 49, 0.96)'
+    : pal.bg;
+  const pillStroke = style === 'neobrutalist'
+    ? '#18181B'
+    : pal.border;
+
+  drawStyledBox(ctx, x, y, w, h, theme, {
+    fill: pillFill,
+    stroke: pillStroke,
+    lineWidth: style === 'neobrutalist' ? 2.4 : 1.8,
+    radius: style === 'studio' ? 8 : 12,
+    shadow: Boolean(options.shadow && style === 'neobrutalist')
+  });
+
+  // Left Semantic Circular Vector Icon Badge
+  const badgeCX = x + 8 + badgeRadius;
+  const badgeCY = y + h / 2;
+
+  drawScaCanvasIcon(ctx, tag, badgeCX, badgeCY, badgeRadius, {
+    badgeBg: pal.badgeBg,
+    iconColor: '#FFFFFF',
+    borderColor: style === 'neobrutalist' ? '#18181B' : 'rgba(255, 255, 255, 0.5)',
+    borderWidth: style === 'neobrutalist' ? 2.0 : 1.5
+  });
+
+  // Bold High-Contrast Flavor Text
+  const textX = badgeCX + badgeRadius + 10;
+  const maxTextW = Math.max(24, w - (textX - x) - 10);
+
+  ctx.save();
+  ctx.fillStyle = style === 'blueprint' ? '#F8FAFC' : (style === 'neobrutalist' ? '#18181B' : pal.icon);
+  ctx.font = `800 ${fontSize}px ${theme.fontBody}`;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  drawCanvasTruncatedText(ctx, tag.toUpperCase(), textX, y + h / 2 + 0.5, maxTextW);
+
+  // Subtle micro-crest watermark on right corner for style signature
+  const glyph = getScaWheelIcon(tag, style);
+  ctx.font = `700 10px ${theme.fontMono}`;
+  ctx.fillStyle = style === 'blueprint' ? 'rgba(248,250,252,0.16)' : 'rgba(24,24,27,0.14)';
+  ctx.textAlign = 'right';
+  ctx.fillText(glyph, x + w - 7, y + h - 7);
+  ctx.restore();
+}
+
+/**
+ * Draws a 5-axis SCA Sensory Radar Chart with high-legibility 14px labels
  */
 export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
   if (!sensoryData) return false;
@@ -374,7 +430,7 @@ export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
     }
     ctx.closePath();
     ctx.strokeStyle = theme.borderSubtle;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1.2;
     ctx.stroke();
   });
 
@@ -385,7 +441,7 @@ export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
     ctx.moveTo(cx, cy);
     ctx.lineTo(cx + radius * Math.cos(angle), cy + radius * Math.sin(angle));
     ctx.strokeStyle = theme.borderSubtle;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1.2;
     ctx.stroke();
   }
 
@@ -404,7 +460,7 @@ export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
 
   ctx.fillStyle = theme.radarFill;
   ctx.strokeStyle = theme.radarStroke;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 2.4;
   ctx.fill();
   ctx.stroke();
 
@@ -414,26 +470,84 @@ export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
     const normVal = Math.max(1, Math.min(5, values[i])) / 5.0;
     const r = normVal * radius;
     ctx.beginPath();
-    ctx.arc(cx + r * Math.cos(angle), cy + r * Math.sin(angle), 3, 0, 2 * Math.PI);
+    ctx.arc(cx + r * Math.cos(angle), cy + r * Math.sin(angle), 3.5, 0, 2 * Math.PI);
     ctx.fillStyle = theme.radarStroke;
     ctx.fill();
   }
 
-  // 5. High-legibility 11.5px Axis Labels
-  ctx.font = `800 11.5px ${theme.fontMono}`;
-  ctx.fillStyle = theme.textSecondary;
+  // 5. High-legibility 13.5px Axis Labels
+  ctx.font = `800 13.5px ${theme.fontMono}`;
+  ctx.fillStyle = theme.text;
   for (let i = 0; i < numAxes; i++) {
     const angle = -Math.PI / 2 + (i * 2 * Math.PI) / numAxes;
     const cosA = Math.cos(angle);
     const sinA = Math.sin(angle);
     ctx.textAlign = Math.abs(cosA) < 0.25 ? 'center' : (cosA > 0 ? 'left' : 'right');
     ctx.textBaseline = Math.abs(sinA) < 0.25 ? 'middle' : (sinA > 0 ? 'top' : 'bottom');
-    const padDist = 7;
+    const padDist = 8;
     const lx = cx + (radius + padDist) * cosA;
     const ly = cy + (radius + padDist) * sinA;
     ctx.fillText(labels[i], lx, ly);
   }
 
+  ctx.restore();
+  return true;
+}
+
+/**
+ * Draws High-Contrast Sensory Telemetry Strip (Full-Width, 14px-15px bold gauges)
+ * Replaces cramped tiny corner radar inside the full card so flavor pills have 100% width.
+ */
+function drawSensoryTelemetryStrip(ctx, x, y, width, height, sensoryData, style, theme) {
+  if (!sensoryData) return false;
+  const attrs = [
+    { label: 'ACIDEZ', val: sensoryData.extraction || 3.5 },
+    { label: 'DULZOR', val: sensoryData.sweetness || 4.0 },
+    { label: 'CUERPO', val: sensoryData.body || 3.5 },
+    { label: 'BALANCE', val: sensoryData.balance || 4.0 }
+  ];
+
+  const gap = 8;
+  const chipW = (width - gap * (attrs.length - 1)) / attrs.length;
+
+  ctx.save();
+  attrs.forEach((attr, idx) => {
+    const cx = x + idx * (chipW + gap);
+    drawStyledBox(ctx, cx, y, chipW, height, theme, {
+      fill: theme.cardBg,
+      stroke: theme.border,
+      lineWidth: style === 'neobrutalist' ? 1.8 : 1.1,
+      radius: 8,
+      shadow: false
+    });
+
+    // Label (left/top)
+    ctx.font = `800 12.5px ${theme.fontMono}`;
+    ctx.fillStyle = theme.textSecondary;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(attr.label, cx + 8, y + height / 2 - 5);
+
+    // Value (right/top)
+    const scoreStr = `${Number(attr.val).toFixed(1)}`;
+    ctx.font = `800 13px ${theme.fontMono}`;
+    ctx.fillStyle = theme.accent;
+    ctx.textAlign = 'right';
+    ctx.fillText(scoreStr, cx + chipW - 8, y + height / 2 - 5);
+
+    // Progress bar at bottom of chip
+    const barX = cx + 8;
+    const barY = y + height - 9;
+    const barW = chipW - 16;
+    const barH = 4.5;
+    const fillRatio = Math.max(0.2, Math.min(1, Number(attr.val) / 5));
+
+    ctx.fillStyle = theme.borderSubtle;
+    drawRoundedRect(ctx, barX, barY, barW, barH, 2, true, false);
+
+    ctx.fillStyle = theme.accent;
+    drawRoundedRect(ctx, barX, barY, barW * fillRatio, barH, 2, true, false);
+  });
   ctx.restore();
   return true;
 }
@@ -483,12 +597,12 @@ export async function ensureFontsLoaded() {
   if (typeof document === 'undefined' || !document.fonts) return;
   try {
     await Promise.all([
-      document.fonts.load('700 16px "Space Grotesk"'),
-      document.fonts.load('800 32px "Space Grotesk"'),
-      document.fonts.load('700 14px "JetBrains Mono"'),
-      document.fonts.load('800 22px "JetBrains Mono"'),
-      document.fonts.load('bold 32px "Playfair Display"'),
-      document.fonts.load('800 32px "Outfit"').catch(() => {})
+      document.fonts.load('700 18px "Space Grotesk"'),
+      document.fonts.load('800 40px "Space Grotesk"'),
+      document.fonts.load('700 16px "JetBrains Mono"'),
+      document.fonts.load('800 26px "JetBrains Mono"'),
+      document.fonts.load('bold 40px "Playfair Display"'),
+      document.fonts.load('800 40px "Outfit"').catch(() => {})
     ]);
     await document.fonts.ready;
   } catch (e) {
@@ -499,20 +613,20 @@ export async function ensureFontsLoaded() {
 /**
  * Pure vector Tokyo Kissaten Hanko Seal (Vermilion stamp)
  */
-function drawHankoSeal(ctx, cx, cy, size = 30) {
+function drawHankoSeal(ctx, cx, cy, size = 32) {
   ctx.save();
   const s = size;
   const x = cx - s / 2;
   const y = cy - s / 2;
   ctx.fillStyle = 'rgba(185, 28, 28, 0.08)';
   ctx.strokeStyle = '#B91C1C';
-  ctx.lineWidth = 1.8;
+  ctx.lineWidth = 2;
   drawRoundedRect(ctx, x, y, s, s, 4, true, true);
 
   ctx.fillStyle = '#B91C1C';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = `bold ${Math.round(s * 0.42)}px "Playfair Display", Georgia, serif`;
+  ctx.font = `bold ${Math.round(s * 0.44)}px "Playfair Display", Georgia, serif`;
   ctx.fillText('珈琲', cx, cy);
   ctx.restore();
 }
@@ -538,7 +652,7 @@ export function drawTicketNotchesAndPerforation(ctx, x, width, notchY, style, bg
   ctx.fill();
 
   // Notch borders
-  ctx.lineWidth = theme.id === 'neobrutalist' ? 2.2 : 1.2;
+  ctx.lineWidth = theme.id === 'neobrutalist' ? 2.2 : 1.4;
   ctx.strokeStyle = theme.border;
   ctx.beginPath();
   ctx.arc(x, notchY, radius, -Math.PI / 2, Math.PI / 2);
@@ -549,8 +663,8 @@ export function drawTicketNotchesAndPerforation(ctx, x, width, notchY, style, bg
   ctx.stroke();
 
   // Dashed perforation line
-  ctx.setLineDash([5, 5]);
-  ctx.lineWidth = theme.id === 'neobrutalist' ? 1.8 : 1.2;
+  ctx.setLineDash([6, 6]);
+  ctx.lineWidth = theme.id === 'neobrutalist' ? 1.8 : 1.3;
   ctx.strokeStyle = theme.border;
   ctx.beginPath();
   ctx.moveTo(x + radius + 6, notchY);
@@ -616,7 +730,7 @@ export function normalizeRecipePours(rec) {
 }
 
 /**
- * High-Legibility Extraction Timeline (12px-13px bold milestones)
+ * Ultra-Legible Extraction Timeline (16px-18px bold key numbers, Strava-style clarity)
  */
 export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, style) {
   if (!recipeData) return;
@@ -626,8 +740,7 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
     brew_time = recipeData.time || recipeData.brew_time || '2:30',
     dose_in_g = recipeData.dose_in_g ?? recipeData.coffee_grams ?? 15,
     dose_out_g = recipeData.dose_out_g ?? recipeData.water_grams ?? recipeData.water_total_g ?? 250,
-    ratio = recipeData.ratio || (dose_in_g && dose_out_g ? `1:${(dose_out_g / dose_in_g).toFixed(1)}` : '1:16.6'),
-    temperature = recipeData.temp || recipeData.temperature || '93°C'
+    ratio = recipeData.ratio || (dose_in_g && dose_out_g ? `1:${(dose_out_g / dose_in_g).toFixed(1)}` : '1:16.6')
   } = recipeData;
 
   const isEspresso = /espresso/i.test(method);
@@ -636,19 +749,18 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
 
   ctx.save();
 
-  // Header
-  ctx.font = `800 12px ${theme.fontMono}`;
+  // Header (13.5px bold)
+  ctx.font = `800 13.5px ${theme.fontMono}`;
   ctx.fillStyle = theme.accent;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  const methodLabel = `${(method || 'POUR OVER').toUpperCase()}${temperature ? ' • ' + String(temperature).replace('°C', '') + '°C' : ''}`;
-  drawCanvasTruncatedText(ctx, `TIMELINE // ${methodLabel}`, x, y, width * 0.62);
+  drawCanvasTruncatedText(ctx, `TIMELINE DE EXTRACCIÓN`, x, y, width * 0.58);
 
-  ctx.font = `700 11.5px ${theme.fontMono}`;
-  ctx.fillStyle = theme.textMuted;
+  ctx.font = `800 13.5px ${theme.fontMono}`;
+  ctx.fillStyle = theme.textSecondary;
   ctx.textAlign = 'right';
   const ratioClean = ratio ? `1:${String(ratio).replace('1:', '')}` : '1:16.6';
-  ctx.fillText(`FINAL: ${dose_out_g || 250}g (${ratioClean})`, x + width, y);
+  ctx.fillText(`META: ${dose_out_g || 250}g (${ratioClean})`, x + width, y);
 
   let stages = [];
   const normalizedPours = normalizeRecipePours(recipeData);
@@ -656,43 +768,42 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
   if (normalizedPours && normalizedPours.length > 0) {
     stages = normalizedPours.slice(0, 4).map((p, idx) => {
       const isBloom = idx === 0;
-      let label = (p.label || (isBloom ? 'BLOOM' : `VERTIDO ${idx}`)).toUpperCase();
-      if (isBloom && !label.includes('BLOOM')) label = 'BLOOM';
+      const shortTag = isBloom ? 'BLOOM' : `P${idx}`;
+      const waterVal = p.totalWater ? `${p.totalWater}g` : (p.stepWater ? `+${p.stepWater}g` : '');
       return {
-        label,
-        time: p.time || (idx === 0 ? '0:00' : ''),
-        targetScale: p.totalWater ? `${p.totalWater}g` : (p.stepWater ? `+${p.stepWater}g` : ''),
-        flex: Math.max(1, p.stepWater || 1.5)
+        heroText: isBloom ? `BLOOM ${waterVal}` : waterVal || shortTag,
+        subText: p.time || (isBloom ? '0:00' : `PASO ${idx + 1}`),
+        flex: isBloom ? 1.35 : 1.0
       };
     });
   } else if (isEspresso) {
     const outG = dose_out_g ? `${dose_out_g}g` : '36g';
     stages = [
-      { label: 'BLOOM / PRE', time: '0:00', targetScale: '4g', flex: 1.4 },
-      { label: '9 BAR', time: '0:06', targetScale: outG, flex: 2.6 },
-      { label: 'CORTE', time: brew_time || '0:28', targetScale: outG, flex: 1.2 }
+      { heroText: 'BLOOM 4g', subText: '0:00 PRE', flex: 1.25 },
+      { heroText: `9 BAR → ${outG}`, subText: '0:06 EXT', flex: 1.45 },
+      { heroText: `CORTE ${brew_time || '0:28'}`, subText: 'FINAL', flex: 1.2 }
     ];
   } else if (isAeropress || isImmersion) {
     const outG = dose_out_g ? `${dose_out_g}g` : '200g';
     stages = [
-      { label: 'BLOOM / INF', time: '0:00', targetScale: outG, flex: 2.4 },
-      { label: 'SWIRL', time: '1:15', targetScale: outG, flex: 1.3 },
-      { label: 'PRENSADO', time: brew_time || '1:45', targetScale: 'TAZA', flex: 1.5 }
+      { heroText: `BLOOM ${outG}`, subText: '0:00 INF', flex: 1.35 },
+      { heroText: 'SWIRL', subText: '1:15', flex: 1.0 },
+      { heroText: `PRENSA`, subText: brew_time || '1:45', flex: 1.15 }
     ];
   } else {
     const totalW = dose_out_g || (dose_in_g ? Math.round(dose_in_g * 16.6) : 250);
     const bloomW = Math.round(totalW * 0.2);
     const pulse1W = Math.round(totalW * 0.6);
     stages = [
-      { label: 'BLOOM', time: '0:00', targetScale: `${bloomW}g`, flex: 1.3 },
-      { label: 'PULSO 1', time: '0:45', targetScale: `${pulse1W}g`, flex: 1.8 },
-      { label: 'PULSO 2', time: '1:30', targetScale: `${totalW}g`, flex: 1.8 },
-      { label: 'FINAL', time: brew_time || '2:30', targetScale: `${totalW}g`, flex: 1.3 }
+      { heroText: `BLOOM ${bloomW}g`, subText: '0:00', flex: 1.45 },
+      { heroText: `${pulse1W}g`, subText: '0:45', flex: 1.0 },
+      { heroText: `${totalW}g`, subText: '1:30', flex: 1.0 },
+      { heroText: `${brew_time || '2:30'}`, subText: 'FINAL', flex: 1.05 }
     ];
   }
 
-  const pillY = y + 10;
-  const pillH = 42;
+  const pillY = y + 9;
+  const pillH = 46;
   const gap = 8;
   const totalFlex = stages.reduce((acc, st) => acc + st.flex, 0);
   const availW = width - gap * (stages.length - 1);
@@ -705,20 +816,19 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
     drawStyledBox(ctx, curX, pillY, segW, pillH, theme, {
       fill: isFirst ? theme.accentSoft : theme.cardBg,
       stroke: isFirst ? theme.accent : theme.border,
-      lineWidth: isFirst ? 1.6 : 1.1,
+      lineWidth: isFirst ? 2 : 1.3,
       radius: 10,
       shadow: false
     });
 
     ctx.textAlign = 'center';
-    ctx.font = `800 12px ${theme.fontMono}`;
-    ctx.fillStyle = isFirst ? theme.accent : theme.text;
-    drawCanvasTruncatedText(ctx, st.label, curX + segW / 2, pillY + 18, segW - 8);
+    ctx.font = `800 15.5px ${theme.fontHeading}`;
+    ctx.fillStyle = isFirst && style !== 'neobrutalist' ? theme.accent : theme.text;
+    drawCanvasTruncatedText(ctx, st.heroText, curX + segW / 2, pillY + 21, segW - 8);
 
-    const subLabel = [st.time, st.targetScale].filter(Boolean).join(' → ');
-    ctx.font = `700 11.5px ${theme.fontMono}`;
-    ctx.fillStyle = theme.textMuted;
-    drawCanvasTruncatedText(ctx, subLabel, curX + segW / 2, pillY + 34, segW - 8);
+    ctx.font = `800 12.5px ${theme.fontMono}`;
+    ctx.fillStyle = theme.textSecondary;
+    drawCanvasTruncatedText(ctx, st.subText, curX + segW / 2, pillY + 38, segW - 8);
 
     curX += segW + gap;
   });
@@ -728,7 +838,7 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
 
 /**
  * Generates an Ultra-Aesthetic Collector Card (Portrait 540 x 760 px @ 2x = 1080 x 1520 px)
- * Supports both "Con Receta" (Barista Telemetry) and "Solo Grano" (Terroir Passport).
+ * Strava/Wrapped-grade typography scale + custom Canvas 2D SCA flavor icon badges.
  */
 export async function generateRecipeCardImage(recipe, template = 'studio', incRecipe = true) {
   const style = normalizeCardStyle(template);
@@ -778,7 +888,9 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
 
   // Recipe parameters
   const rawMethodStr = stripEmojis(rec.method || 'V60');
-  const methodStr = rawMethodStr.toLowerCase().includes('pulsar') ? 'PULSAR NO-BYPASS' : rawMethodStr;
+  const methodStr = rawMethodStr.toLowerCase().includes('pulsar')
+    ? 'PULSAR'
+    : rawMethodStr.replace(/\s*\(filtrado\)/i, '');
   const coffeeG = rec.coffee_grams || rec.dose_in_g || (incRecipe ? 15 : null);
   const waterG = rec.water_grams || rec.dose_out_g || rec.water_total_g || (coffeeG ? Math.round(coffeeG * 16) : null);
   const ratioStr = rec.ratio || (coffeeG && coffeeG > 0 && waterG ? `1:${(waterG / coffeeG).toFixed(1)}` : '1:16');
@@ -806,7 +918,6 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   ctx.fillStyle = theme.bg;
   ctx.fillRect(0, 0, baseW, baseH);
 
-  // Subtle grid on Dark Espresso Lab
   if (style === 'blueprint') {
     ctx.strokeStyle = 'rgba(56, 189, 248, 0.05)';
     ctx.lineWidth = 1;
@@ -819,12 +930,12 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   }
 
   // 2. Main Collector Card Container
-  const cardX = 20;
-  const cardY = 20;
-  const cardW = baseW - 40; // 500px
-  const cardH = baseH - 40; // 720px
-  const innerX = cardX + 26;
-  const innerW = cardW - 52; // 448px
+  const cardX = 18;
+  const cardY = 18;
+  const cardW = baseW - 36; // 504px
+  const cardH = baseH - 36; // 724px
+  const innerX = cardX + 24;
+  const innerW = cardW - 48; // 456px
 
   drawStyledBox(ctx, cardX, cardY, cardW, cardH, theme, {
     fill: theme.cardBg,
@@ -836,17 +947,15 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
 
   // Style-specific architectural framing details
   if (style === 'kissaten') {
-    // Inner traditional sumi/vermilion hairline frame
     ctx.strokeStyle = 'rgba(185, 28, 28, 0.28)';
     ctx.lineWidth = 1;
     drawRoundedRect(ctx, cardX + 6, cardY + 6, cardW - 12, cardH - 12, Math.max(4, theme.cornerRadius - 4), false, true);
   } else if (style === 'diner') {
-    // Inner botanical herbarium frame + corner diamond stars
     ctx.strokeStyle = 'rgba(194, 65, 12, 0.35)';
     ctx.lineWidth = 1;
     drawRoundedRect(ctx, cardX + 6, cardY + 6, cardW - 12, cardH - 12, Math.max(4, theme.cornerRadius - 4), false, true);
     ctx.fillStyle = '#C2410C';
-    ctx.font = `700 12px ${theme.fontMono}`;
+    ctx.font = `700 13px ${theme.fontMono}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('✦', cardX + 15, cardY + 15);
@@ -854,10 +963,9 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
     ctx.fillText('✦', cardX + 15, cardY + cardH - 15);
     ctx.fillText('✦', cardX + cardW - 15, cardY + cardH - 15);
   } else if (style === 'blueprint') {
-    // Corner HUD targeting reticles
     const drawHudCorner = (cx, cy, dx, dy) => {
       ctx.strokeStyle = '#38BDF8';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.2;
       ctx.beginPath();
       ctx.moveTo(cx, cy + dy * 12);
       ctx.lineTo(cx, cy);
@@ -869,21 +977,20 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
     drawHudCorner(cardX + 8, cardY + cardH - 8, 1, -1);
     drawHudCorner(cardX + cardW - 8, cardY + cardH - 8, -1, -1);
   } else if (style === 'studio') {
-    // Top solid Swiss architectural bar
     ctx.fillStyle = '#09090B';
     drawRoundedRect(ctx, cardX, cardY, cardW, 10, theme.cornerRadius, true, false);
     ctx.fillRect(cardX, cardY + 5, cardW, 5);
   }
 
   // =========================================================================
-  // ZONE 1: EDITORIAL HEADER & HERO COFFEE IDENTITY
+  // ZONE 1: EDITORIAL HEADER & HERO COFFEE IDENTITY (42px Title + 16px Sub)
   // =========================================================================
-  const headerPillY = cardY + 24;
-  const headerPillH = 28;
+  const headerPillY = cardY + 20;
+  const headerPillH = 30;
   const roasterBadgeText = (roaster ? `${roaster} • ${theme.name}` : `BEANTAG • ${theme.badgeLabel}`).toUpperCase();
 
-  ctx.font = `800 12px ${theme.fontMono}`;
-  const roasterPillW = Math.min(ctx.measureText(roasterBadgeText).width + 24, innerW - 115);
+  ctx.font = `800 13.5px ${theme.fontMono}`;
+  const roasterPillW = Math.min(ctx.measureText(roasterBadgeText).width + 24, innerW - 125);
 
   const badgeFill = style === 'neobrutalist'
     ? '#FDE68A'
@@ -893,8 +1000,8 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   drawStyledBox(ctx, innerX, headerPillY, roasterPillW, headerPillH, theme, {
     fill: badgeFill,
     stroke: style === 'studio' ? '#09090B' : theme.border,
-    lineWidth: style === 'neobrutalist' ? 1.8 : 1,
-    radius: style === 'studio' ? 4 : 8,
+    lineWidth: style === 'neobrutalist' ? 2 : 1.2,
+    radius: style === 'studio' ? 5 : 8,
     shadow: style === 'neobrutalist'
   });
 
@@ -903,18 +1010,18 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   ctx.textBaseline = 'middle';
   drawCanvasTruncatedText(ctx, roasterBadgeText, innerX + 12, headerPillY + headerPillH / 2 + 0.5, roasterPillW - 24);
 
-  // Right Score / Rating Badge (only if real data exists)
+  // Right Score / Rating Badge
   if (scaScore !== null || parsedRating !== null) {
     const scoreText = scaScore !== null ? `SCA ${scaScore} PTS` : `★ ${parsedRating.toFixed(1)} / 5.0`;
-    ctx.font = `800 12.5px ${theme.fontMono}`;
+    ctx.font = `800 14px ${theme.fontMono}`;
     const scoreW = ctx.measureText(scoreText).width + 22;
     const scoreX = innerX + innerW - scoreW;
 
     drawStyledBox(ctx, scoreX, headerPillY, scoreW, headerPillH, theme, {
       fill: theme.accentBg,
       stroke: theme.borderStrong,
-      lineWidth: style === 'neobrutalist' ? 1.8 : 1,
-      radius: style === 'studio' ? 4 : 8,
+      lineWidth: style === 'neobrutalist' ? 2 : 1.2,
+      radius: style === 'studio' ? 5 : 8,
       shadow: style === 'neobrutalist'
     });
 
@@ -922,38 +1029,38 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
     ctx.textAlign = 'center';
     ctx.fillText(scoreText, scoreX + scoreW / 2, headerPillY + headerPillH / 2 + 0.5);
   } else if (style === 'kissaten') {
-    drawHankoSeal(ctx, innerX + innerW - 16, headerPillY + 14, 28);
+    drawHankoSeal(ctx, innerX + innerW - 16, headerPillY + 15, 28);
   }
 
-  // Hero Multi-Line Title (Up to 2 lines, 34px-38px bold)
+  // Hero Multi-Line Title (Up to 2 lines, 42px bold)
   const titleStartY = cardY + 86;
   const titleFormatted = style === 'kissaten' ? coffeeName : coffeeName.toUpperCase();
   const titleMetrics = drawHeroTitleBlock(ctx, titleFormatted, innerX, titleStartY, innerW, {
     maxLines: 2,
-    maxFontSize: 36,
-    minFontSize: 25,
+    maxFontSize: 42,
+    minFontSize: 28,
     fontFamily: theme.fontHeading,
     fontWeight: style === 'kissaten' ? 'bold' : '800',
-    lineHeightRatio: 1.12,
+    lineHeightRatio: 1.06,
     color: theme.text
   });
 
-  // Terroir Subtitle Line (14px bold)
-  const subY = titleMetrics.bottomY + 24;
-  ctx.font = `700 13.5px ${theme.fontMono}`;
+  // Terroir Subtitle Line (15.5px bold)
+  const subY = titleMetrics.bottomY + 23;
+  ctx.font = `800 15.5px ${theme.fontMono}`;
   ctx.fillStyle = theme.accent;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
   drawCanvasTruncatedText(ctx, subtitleStr.toUpperCase(), innerX, subY, innerW);
 
   // Ticket Perforation Divider
-  const notchY = cardY + 172;
+  const notchY = cardY + 174;
   drawTicketNotchesAndPerforation(ctx, cardX, cardW, notchY, style, theme.bg);
 
   // =========================================================================
-  // ZONE 2: CORE TELEMETRY BENTO (CON RECETA) OR TERROIR PASSPORT (SOLO GRANO)
+  // ZONE 2: CORE TELEMETRY BENTO (26px HERO VALUES + 14px LABELS)
   // =========================================================================
-  const gridY = notchY + 22;
+  const gridY = notchY + 18;
   const gridGap = 12;
   const tileW = (innerW - gridGap) / 2;
   const tileH = 92;
@@ -961,7 +1068,7 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   const tiles = incRecipe
     ? [
         {
-          label: style === 'kissaten' ? '抽出器具 // MÉTODO' : 'MÉTODO // BREWER',
+          label: style === 'kissaten' ? '抽出 // MÉTODO' : 'MÉTODO // BREWER',
           value: methodStr.toUpperCase(),
           sub: `RATIO 1:${cleanRatio}`
         },
@@ -971,12 +1078,12 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
           sub: coffeeG ? `${coffeeG}g CAFÉ • ${waterG || ''}g AGUA` : 'FÓRMULA CALIBRADA'
         },
         {
-          label: grinderName ? `MOLINO // ${grinderName.toUpperCase()}` : (style === 'kissaten' ? '挽き目 // MOLIENDA' : 'MOLIENDA // DIAL'),
+          label: grinderName ? `MOLINO // ${grinderName.toUpperCase()}` : 'MOLIENDA // DIAL',
           value: grindDisplayVal.toUpperCase(),
-          sub: microns ? `~${microns} µm MICRONES` : 'AJUSTE DE MOLIENDA'
+          sub: microns ? `~${microns} µm MICRONES` : 'AJUSTE CALIBRADO'
         },
         {
-          label: style === 'kissaten' ? '時間・温度 // TIEMPO' : 'TIEMPO & TEMP',
+          label: style === 'kissaten' ? '時間 // TIEMPO & TEMP' : 'TIEMPO & TEMP',
           value: `${timeStr} • ${tempStr}`,
           sub: 'EXTRACCIÓN OBJETIVO'
         }
@@ -1000,7 +1107,7 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
         {
           label: style === 'kissaten' ? '焙煎所 // TOSTADOR' : 'PRODUCTOR / TOSTADOR',
           value: (producer || roaster || 'LOTE ESPECIAL').toUpperCase(),
-          sub: roastDate ? `TOSTADO: ${roastDate}` : (roaster ? `TOSTADOR: ${roaster.toUpperCase()}` : 'TRAZABILIDAD')
+          sub: roastDate ? `TOSTADO: ${roastDate}` : (roaster ? `${roaster.toUpperCase()}` : 'TRAZABILIDAD')
         }
       ];
 
@@ -1016,48 +1123,48 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
     drawStyledBox(ctx, tx, ty, tileW, tileH, theme, {
       fill: tileFill,
       stroke: theme.border,
-      lineWidth: style === 'neobrutalist' ? 2.2 : 1.2,
-      radius: style === 'studio' ? 6 : 12,
+      lineWidth: style === 'neobrutalist' ? 2.2 : 1.3,
+      radius: style === 'studio' ? 8 : 12,
       shadow: style === 'neobrutalist'
     });
 
-    // Style-specific tile accent indicator
+    // Style-specific tile accent bar
     if (style === 'studio') {
       ctx.fillStyle = '#09090B';
-      ctx.fillRect(tx, ty + 8, 3.5, tileH - 16);
+      ctx.fillRect(tx, ty + 8, 4, tileH - 16);
     } else if (style === 'diner') {
       ctx.fillStyle = '#C2410C';
-      ctx.fillRect(tx + 10, ty, tileW - 20, 3);
+      ctx.fillRect(tx + 10, ty, tileW - 20, 3.5);
     } else if (style === 'blueprint') {
       ctx.fillStyle = '#38BDF8';
-      ctx.fillRect(tx + 8, ty, 36, 2.5);
+      ctx.fillRect(tx + 8, ty, 44, 3);
     } else if (style === 'kissaten') {
       ctx.fillStyle = '#B91C1C';
-      ctx.fillRect(tx, ty + 12, 3, 20);
+      ctx.fillRect(tx, ty + 12, 3.5, 22);
     }
 
-    // Label (12px bold)
+    // Label (13.5px bold)
     ctx.fillStyle = style === 'neobrutalist' ? '#18181B' : theme.textMuted;
-    ctx.font = `800 11.5px ${theme.fontMono}`;
+    ctx.font = `800 13px ${theme.fontMono}`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    drawCanvasTruncatedText(ctx, t.label, tx + 14, ty + 24, tileW - 28);
+    drawCanvasTruncatedText(ctx, t.label, tx + 14, ty + 23, tileW - 26);
 
-    // Hero Value (22px bold)
+    // Hero Value (25px bold)
     ctx.fillStyle = style === 'neobrutalist' ? '#18181B' : theme.text;
-    ctx.font = `800 21px ${theme.fontHeading}`;
-    drawCanvasTruncatedText(ctx, t.value, tx + 14, ty + 54, tileW - 28);
+    ctx.font = `800 24.5px ${theme.fontHeading}`;
+    drawCanvasTruncatedText(ctx, t.value, tx + 14, ty + 55, tileW - 26);
 
-    // Subcaption (12px)
-    ctx.fillStyle = style === 'neobrutalist' ? '#3F3F46' : theme.textSecondary;
-    ctx.font = `700 11.5px ${theme.fontMono}`;
-    drawCanvasTruncatedText(ctx, t.sub, tx + 14, ty + 76, tileW - 28);
+    // Subcaption (13.5px bold)
+    ctx.fillStyle = style === 'neobrutalist' ? '#27272A' : theme.textSecondary;
+    ctx.font = `700 13.5px ${theme.fontMono}`;
+    drawCanvasTruncatedText(ctx, t.sub, tx + 14, ty + 78, tileW - 26);
   });
 
   // =========================================================================
-  // ZONE 3: TIMELINE (CON RECETA) OR LOTE PASSPORT STRIP (SOLO GRANO)
+  // ZONE 3: EXTRACTION TIMELINE (CON RECETA) OR PASSPORT STRIP (SOLO GRANO)
   // =========================================================================
-  const zone3Y = gridY + tileH * 2 + gridGap + 22;
+  const zone3Y = gridY + tileH * 2 + gridGap + 18;
 
   if (incRecipe) {
     drawExtractionTimeline(ctx, innerX, zone3Y, innerW, 56, rec, style);
@@ -1066,103 +1173,81 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
     drawStyledBox(ctx, innerX, zone3Y - 6, innerW, stripH, theme, {
       fill: theme.surfaceAlt,
       stroke: theme.border,
-      lineWidth: style === 'neobrutalist' ? 2 : 1.2,
-      radius: style === 'studio' ? 6 : 12,
+      lineWidth: style === 'neobrutalist' ? 2.2 : 1.3,
+      radius: style === 'studio' ? 8 : 12,
       shadow: false
     });
 
     ctx.fillStyle = theme.accent;
-    ctx.font = `800 12px ${theme.fontMono}`;
+    ctx.font = `800 13px ${theme.fontMono}`;
     ctx.textAlign = 'left';
-    ctx.fillText(style === 'kissaten' ? '保存状態 // PASAPORTE DE CAVA' : 'PASAPORTE DE CAVA & CONSERVACIÓN', innerX + 16, zone3Y + 14);
+    ctx.fillText(style === 'kissaten' ? '保存状態 // PASAPORTE DE CAVA' : 'PASAPORTE DE CAVA & CONSERVACIÓN', innerX + 16, zone3Y + 13);
 
     ctx.fillStyle = theme.text;
-    ctx.font = `700 13.5px ${theme.fontBody}`;
+    ctx.font = `800 16px ${theme.fontBody}`;
     const cellarLine = [
-      dosesStr || 'LOTE REGISTRADO EN BODEGA',
+      dosesStr || 'LOTE EN BODEGA',
       roastLevel ? `TUESTE ${roastLevel.toUpperCase()}` : null,
       scaScore ? `SCA ${scaScore} PTS` : null
     ].filter(Boolean).join(' • ');
-    drawCanvasTruncatedText(ctx, cellarLine, innerX + 16, zone3Y + 35, innerW - 32);
+    drawCanvasTruncatedText(ctx, cellarLine, innerX + 16, zone3Y + 37, innerW - 32);
   }
 
   // =========================================================================
-  // ZONE 4: SENSORY TASTING PILLS & SCA RADAR CHART
+  // ZONE 4: FULL-WIDTH SCA FLAVOR PILLS WITH VECTOR ICON BADGES + SENSORY STRIP
   // =========================================================================
-  const sensoryY = zone3Y + 68;
-  const sensoryH = 156;
+  const sensoryY = zone3Y + 66;
+  const sensoryH = 180;
 
   drawStyledBox(ctx, innerX, sensoryY, innerW, sensoryH, theme, {
     fill: theme.surfaceBg,
     stroke: theme.border,
-    lineWidth: style === 'neobrutalist' ? 2.2 : 1.2,
+    lineWidth: style === 'neobrutalist' ? 2.2 : 1.3,
     radius: style === 'studio' ? 8 : 14,
     shadow: style === 'neobrutalist'
   });
 
   ctx.fillStyle = theme.accent;
-  ctx.font = `800 12px ${theme.fontMono}`;
+  ctx.font = `800 13.5px ${theme.fontMono}`;
   ctx.textAlign = 'left';
-  ctx.fillText(style === 'kissaten' ? '風味特性 // PERFIL SENSORIAL & NOTAS' : 'PERFIL SENSORIAL & NOTAS DE CATA', innerX + 16, sensoryY + 24);
+  ctx.fillText(style === 'kissaten' ? '風味特性 // NOTAS DE CATA & PERFIL SCA' : 'NOTAS DE CATA & PERFIL SENSORIAL SCA', innerX + 16, sensoryY + 23);
 
-  const hasRadar = incRecipe ? sensoryData !== null : Boolean(rec.sensory_balance || rec.sensory_body || rec.sensory_extraction);
-  const pillsAreaW = hasRadar ? innerW - 175 : innerW - 32;
+  const hasSensoryStrip = incRecipe ? sensoryData !== null : Boolean(rec.sensory_balance || rec.sensory_body || rec.sensory_extraction);
+  const tagsToDraw = flavorTags.length > 0 ? flavorTags.slice(0, 4) : ['CAFE DE ESPECIALIDAD'];
 
-  if (flavorTags.length > 0) {
-    let px = innerX + 16;
-    let py = sensoryY + 38;
-    const pillH = 34;
+  // 2x2 Full-Width Flavor Pills Grid with Vector SCA Icon Badges
+  const pillAreaX = innerX + 14;
+  const pillAreaW = innerW - 28;
+  const pillGap = 10;
+  const pillCols = tagsToDraw.length === 1 ? 1 : 2;
+  const pillW = pillCols === 1 ? pillAreaW : (pillAreaW - pillGap) / 2;
+  const pillH = hasSensoryStrip ? 42 : 52;
+  const pillStartY = sensoryY + 34;
 
-    flavorTags.slice(0, 6).forEach((tag, idx) => {
-      const icon = getScaWheelIcon(tag, style);
-      const label = `${icon} ${tag.toUpperCase()}`;
-      ctx.font = `800 13.5px ${theme.fontBody}`;
-      const pw = Math.min(ctx.measureText(label).width + 24, pillsAreaW);
+  tagsToDraw.forEach((tag, idx) => {
+    const col = idx % pillCols;
+    const row = Math.floor(idx / pillCols);
+    const px = pillAreaX + col * (pillW + pillGap);
+    const py = pillStartY + row * (pillH + 8);
 
-      if (px + pw > innerX + 16 + pillsAreaW && px > innerX + 16) {
-        px = innerX + 16;
-        py += pillH + 8;
-      }
-
-      if (py + pillH <= sensoryY + sensoryH - 12) {
-        const neoPalette = ['#FDE68A', '#FED7AA', '#E9D5FF', '#BAE6FD'];
-        const pillFill = style === 'neobrutalist' ? neoPalette[idx % neoPalette.length] : theme.cardBg;
-
-        drawStyledBox(ctx, px, py, pw, pillH, theme, {
-          fill: pillFill,
-          stroke: style === 'neobrutalist' ? '#18181B' : theme.pillBorder,
-          lineWidth: style === 'neobrutalist' ? 1.8 : 1.2,
-          radius: style === 'studio' ? 4 : 9,
-          shadow: false
-        });
-
-        ctx.fillStyle = style === 'neobrutalist' ? '#18181B' : theme.pillText;
-        ctx.font = `800 13.5px ${theme.fontBody}`;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        drawCanvasTruncatedText(ctx, label, px + 12, py + pillH / 2 + 0.5, pw - 20);
-        ctx.textBaseline = 'alphabetic';
-
-        px += pw + 8;
-      }
+    drawFlavorNotePill(ctx, tag, px, py, pillW, pillH, style, theme, {
+      index: idx,
+      fontSize: hasSensoryStrip ? 16.5 : 18,
+      badgeRadius: hasSensoryStrip ? 13 : 15,
+      shadow: false
     });
-  } else {
-    ctx.fillStyle = theme.textSecondary;
-    ctx.font = `700 14px ${theme.fontBody}`;
-    const fallbackNote = notesStr || 'Café de especialidad seleccionado y calibrado en BeanTag.';
-    drawCanvasTruncatedText(ctx, fallbackNote, innerX + 16, sensoryY + 64, pillsAreaW);
-  }
+  });
 
-  if (hasRadar && sensoryData) {
-    drawSensoryRadarChart(ctx, innerX + innerW - 84, sensoryY + 84, 38, sensoryData, style);
+  if (hasSensoryStrip && sensoryData) {
+    const stripY = sensoryY + sensoryH - 42;
+    drawSensoryTelemetryStrip(ctx, pillAreaX, stripY, pillAreaW, 34, sensoryData, style, theme);
   }
 
   // =========================================================================
-  // FOOTER SIGNATURE BAR
+  // FOOTER SIGNATURE BAR (13.5px bold)
   // =========================================================================
-  const footY = cardY + cardH - 22;
+  const footY = cardY + cardH - 16;
   if (style === 'neobrutalist') {
-    // Roastery vector barcode + Nomad stamp
     const barPattern = [3, 1, 2, 3, 1, 2, 1, 3, 2, 1, 2, 3, 1];
     let bx = innerX;
     ctx.fillStyle = '#18181B';
@@ -1170,21 +1255,21 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
       if (i % 2 === 0) ctx.fillRect(bx, footY - 12, w * 2, 14);
       bx += w * 2 + 1.5;
     });
-    ctx.font = `800 11.5px ${theme.fontMono}`;
+    ctx.font = `800 13px ${theme.fontMono}`;
     ctx.textAlign = 'left';
     ctx.fillText(dosesStr || 'NOMAD ROASTERY LOT', bx + 10, footY);
   } else {
-    ctx.fillStyle = theme.textMuted;
-    ctx.font = `700 11.5px ${theme.fontMono}`;
+    ctx.fillStyle = theme.textSecondary;
+    ctx.font = `800 13px ${theme.fontMono}`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    const leftFooter = dosesStr ? `BEANTAG CELLAR • ${dosesStr}` : `BEANTAG SPECIALTY ARCHIVE • ${theme.name}`;
+    const leftFooter = dosesStr ? `BEANTAG CELLAR • ${dosesStr}` : `BEANTAG ARCHIVE • ${theme.name}`;
     drawCanvasTruncatedText(ctx, leftFooter, innerX, footY, innerW * 0.68);
   }
 
   ctx.textAlign = 'right';
   ctx.fillStyle = theme.accent;
-  ctx.font = `800 11.5px ${theme.fontMono}`;
+  ctx.font = `800 13px ${theme.fontMono}`;
   ctx.fillText(incRecipe ? 'BREW PROTOCOL ✓' : 'ORIGIN LOT ✓', innerX + innerW, footY);
   ctx.textAlign = 'left';
 
@@ -1193,6 +1278,7 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
 
 /**
  * Generates an Ultra-HD Visual Specialty Coffee Menu Card (Cellar Inventory)
+ * Upgraded with bigger fonts and custom SCA vector icon badges per note.
  */
 export async function generateCoffeeMenuCardImage(batches, template = 'studio') {
   const style = normalizeCardStyle(template);
@@ -1207,8 +1293,8 @@ export async function generateCoffeeMenuCardImage(batches, template = 'studio') 
   const scaleFactor = 2;
   const baseW = 540;
 
-  const headerH = 148;
-  const itemH = 114;
+  const headerH = 152;
+  const itemH = 124;
   const footerH = 74;
   const baseH = Math.max(840, headerH + (displayList.length * itemH) + footerH);
 
@@ -1238,52 +1324,52 @@ export async function generateCoffeeMenuCardImage(batches, template = 'studio') 
 
   // Header
   ctx.fillStyle = theme.accent;
-  ctx.font = `800 12px ${theme.fontMono}`;
+  ctx.font = `800 13.5px ${theme.fontMono}`;
   ctx.textAlign = 'left';
   ctx.fillText(`BEANTAG CELLAR MENU // ${theme.name}`, innerX, cardY + 34);
 
   ctx.fillStyle = theme.text;
-  ctx.font = `800 28px ${theme.fontHeading}`;
-  ctx.fillText('CARTA DE CAFÉS EN CAVA', innerX, cardY + 68);
+  ctx.font = `800 32px ${theme.fontHeading}`;
+  ctx.fillText('CARTA DE CAFÉS EN CAVA', innerX, cardY + 70);
 
-  ctx.fillStyle = theme.textMuted;
-  ctx.font = `700 13px ${theme.fontMono}`;
-  ctx.fillText(`${displayList.length} LOTES SELECCIONADOS • CONSERVACIÓN ÓPTIMA`, innerX, cardY + 92);
+  ctx.fillStyle = theme.textSecondary;
+  ctx.font = `800 14.5px ${theme.fontMono}`;
+  ctx.fillText(`${displayList.length} LOTES SELECCIONADOS • CONSERVACIÓN ÓPTIMA`, innerX, cardY + 96);
 
   ctx.strokeStyle = theme.border;
-  ctx.lineWidth = 1.2;
+  ctx.lineWidth = 1.4;
   ctx.beginPath();
-  ctx.moveTo(innerX, cardY + 108);
-  ctx.lineTo(innerX + innerW, cardY + 108);
+  ctx.moveTo(innerX, cardY + 112);
+  ctx.lineTo(innerX + innerW, cardY + 112);
   ctx.stroke();
 
-  let curY = cardY + 124;
+  let curY = cardY + 126;
 
   displayList.forEach((b, idx) => {
     const rowH = itemH - 12;
     drawStyledBox(ctx, innerX, curY, innerW, rowH, theme, {
       fill: theme.surfaceBg,
       stroke: theme.border,
-      lineWidth: style === 'neobrutalist' ? 2 : 1.1,
+      lineWidth: style === 'neobrutalist' ? 2.2 : 1.2,
       radius: 12,
       shadow: style === 'neobrutalist'
     });
 
     // Index badge
     const idxStr = String(idx + 1).padStart(2, '0');
-    drawStyledBox(ctx, innerX + 12, curY + 14, 34, 34, theme, {
+    drawStyledBox(ctx, innerX + 12, curY + 14, 36, 36, theme, {
       fill: theme.accentBg,
       stroke: theme.borderStrong,
-      lineWidth: 1.2,
+      lineWidth: 1.4,
       radius: 8,
       shadow: false
     });
 
     ctx.fillStyle = theme.accentText;
-    ctx.font = `800 14px ${theme.fontMono}`;
+    ctx.font = `800 15px ${theme.fontMono}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(idxStr, innerX + 29, curY + 31);
+    ctx.fillText(idxStr, innerX + 30, curY + 32);
     ctx.textBaseline = 'alphabetic';
 
     // Stock badge top right
@@ -1294,14 +1380,14 @@ export async function generateCoffeeMenuCardImage(batches, template = 'studio') 
           ? `~${Math.round(b.remaining_weight_g || b.weight_current_g)}g`
           : `${doseCount} TUBOS`);
 
-    ctx.font = `800 12px ${theme.fontMono}`;
-    const badgeW = Math.max(84, ctx.measureText(doseBadgeText).width + 20);
+    ctx.font = `800 13.5px ${theme.fontMono}`;
+    const badgeW = Math.max(92, ctx.measureText(doseBadgeText).width + 22);
     const badgeX = innerX + innerW - badgeW - 12;
 
-    drawStyledBox(ctx, badgeX, curY + 12, badgeW, 26, theme, {
+    drawStyledBox(ctx, badgeX, curY + 12, badgeW, 28, theme, {
       fill: theme.cardBg,
       stroke: theme.border,
-      lineWidth: 1,
+      lineWidth: 1.2,
       radius: 8,
       shadow: false
     });
@@ -1309,17 +1395,17 @@ export async function generateCoffeeMenuCardImage(batches, template = 'studio') 
     ctx.fillStyle = theme.accent;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(doseBadgeText, badgeX + badgeW / 2, curY + 25);
+    ctx.fillText(doseBadgeText, badgeX + badgeW / 2, curY + 26);
     ctx.textBaseline = 'alphabetic';
 
-    // Coffee Title (20px bold)
+    // Coffee Title (22px bold)
     const rawName = stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café');
     ctx.fillStyle = theme.text;
-    ctx.font = `800 19px ${theme.fontHeading}`;
+    ctx.font = `800 22px ${theme.fontHeading}`;
     ctx.textAlign = 'left';
-    drawCanvasTruncatedText(ctx, rawName, innerX + 56, curY + 30, innerW - badgeW - 80);
+    drawCanvasTruncatedText(ctx, rawName, innerX + 58, curY + 32, innerW - badgeW - 84);
 
-    // Metadata line (13px)
+    // Metadata line (15px bold)
     const roasterStr = stripEmojis(b.roaster || '');
     const originStr = stripEmojis(b.origin || '');
     const processStr = stripEmojis(b.process || '');
@@ -1327,35 +1413,28 @@ export async function generateCoffeeMenuCardImage(batches, template = 'studio') 
     const metaText = [roasterStr, originStr, processStr, varietyStr].filter(Boolean).join(' • ') || 'Origen Único';
 
     ctx.fillStyle = theme.textSecondary;
-    ctx.font = `700 13px ${theme.fontBody}`;
-    drawCanvasTruncatedText(ctx, metaText, innerX + 56, curY + 52, innerW - 70);
+    ctx.font = `700 14.5px ${theme.fontBody}`;
+    drawCanvasTruncatedText(ctx, metaText, innerX + 58, curY + 55, innerW - 70);
 
-    // Flavor Pills (12.5px)
+    // Flavor Pills with SCA Vector Badges (14px bold, 32px tall)
     const rawNotes = cleanNotesString(b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '');
     const parsedTags = extractFlavorTags(rawNotes).slice(0, 3);
 
     if (parsedTags.length > 0) {
-      let pillX = innerX + 56;
-      const pillY = curY + 64;
-      const pillH = 26;
+      let pillX = innerX + 58;
+      const pillY = curY + 68;
+      const pillH = 32;
 
-      parsedTags.forEach((tag) => {
-        const scaIcon = getScaWheelIcon(tag, style);
-        const tagLabel = `${scaIcon} ${tag.toUpperCase()}`;
-        ctx.font = `800 12px ${theme.fontBody}`;
-        const pw = ctx.measureText(tagLabel).width + 18;
+      parsedTags.forEach((tag, pIdx) => {
+        ctx.font = `800 14px ${theme.fontBody}`;
+        const pw = Math.min(ctx.measureText(tag.toUpperCase()).width + 46, innerW - 70);
         if (pillX + pw <= innerX + innerW - 12) {
-          drawStyledBox(ctx, pillX, pillY, pw, pillH, theme, {
-            fill: theme.cardBg,
-            stroke: theme.border,
-            lineWidth: 1,
-            radius: 7,
+          drawFlavorNotePill(ctx, tag, pillX, pillY, pw, pillH, style, theme, {
+            index: pIdx,
+            fontSize: 13.5,
+            badgeRadius: 10,
             shadow: false
           });
-          ctx.fillStyle = theme.text;
-          ctx.textBaseline = 'middle';
-          ctx.fillText(tagLabel, pillX + 9, pillY + pillH / 2 + 0.5);
-          ctx.textBaseline = 'alphabetic';
           pillX += pw + 8;
         }
       });
@@ -1365,8 +1444,8 @@ export async function generateCoffeeMenuCardImage(batches, template = 'studio') 
   });
 
   // Footer
-  ctx.fillStyle = theme.textMuted;
-  ctx.font = `700 12px ${theme.fontMono}`;
+  ctx.fillStyle = theme.textSecondary;
+  ctx.font = `800 13.5px ${theme.fontMono}`;
   ctx.textAlign = 'left';
   ctx.fillText(`BEANTAG SPECIALTY COFFEE // ${new Date().toLocaleDateString('es-ES')}`, innerX, cardY + cardH - 20);
 
@@ -1428,15 +1507,15 @@ function drawStickerShell(ctx, x, y, w, h, theme, transparent, baseW, baseH) {
       ctx.fillStyle = '#18181B';
       drawRoundedRect(ctx, x + 5, y + 5, w + 4, h + 4, radius + 2, true, false);
     } else {
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.28)';
-      ctx.shadowBlur = 16;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.32)';
+      ctx.shadowBlur = 18;
       ctx.shadowOffsetY = 6;
     }
 
     // White vinyl die-cut rim
     ctx.fillStyle = theme.id === 'blueprint' ? '#1E293B' : '#FFFFFF';
     ctx.strokeStyle = theme.id === 'neobrutalist' ? '#18181B' : '#FFFFFF';
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 3;
     drawRoundedRect(ctx, x - 3, y - 3, w + 6, h + 6, radius + 3, true, true);
     ctx.restore();
   } else {
@@ -1447,7 +1526,7 @@ function drawStickerShell(ctx, x, y, w, h, theme, transparent, baseW, baseH) {
   drawStyledBox(ctx, x, y, w, h, theme, {
     fill: theme.cardBg,
     stroke: theme.borderStrong,
-    lineWidth: theme.id === 'neobrutalist' ? 2.5 : 1.5,
+    lineWidth: theme.id === 'neobrutalist' ? 2.6 : 1.6,
     radius,
     shadow: !transparent && theme.id === 'neobrutalist'
   });
@@ -1455,13 +1534,13 @@ function drawStickerShell(ctx, x, y, w, h, theme, transparent, baseW, baseH) {
 
 /**
  * Generates an Ultra-High Legibility Instagram Story Sticker Overlay
- * Supports Horizontal (600 x 300 px) and Vertical (400 x 540 px) @ 2x Retina scale.
- * +60% larger text across all elements for mobile Story readability.
+ * Supports Horizontal (640 x 340 px) and Vertical (440 x 580 px) @ 2x Retina scale.
+ * Supports both "Perfil & Notas" (includeRecipe: false) and "Telemetría / Receta" (includeRecipe: true).
  */
 export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
   const isVertical = String(options.orientation || '').toLowerCase() === 'vertical';
-  const baseW = isVertical ? 400 : 600;
-  const baseH = isVertical ? 540 : 300;
+  const baseW = isVertical ? 440 : 640;
+  const baseH = isVertical ? 580 : 340;
   const scale = 2;
 
   const canvas = typeof document !== 'undefined'
@@ -1477,6 +1556,7 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
   const style = normalizeCardStyle(options.template);
   const theme = getCardTheme(style);
   const transparent = Boolean(options.transparent);
+  const includeRecipe = Boolean(options.includeRecipe);
 
   const item = batchOrRecipe || {};
   const coffeeName = stripEmojis(item.batch_name || item.coffee_name || item.name || 'Café de Especialidad');
@@ -1489,6 +1569,16 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
   const notesStr = cleanNotesString(item.flavor_notes || item.roaster_notes || item.batch_roaster_notes || item.notes || '');
   const flavorTags = extractFlavorTags(notesStr);
   const sensoryData = parseSensoryEvaluation(item, item.recipe || item);
+
+  // Recipe telemetry extraction for Sticker Telemetry Mode
+  const rawMethodStr = stripEmojis(item.method || (item.recipe && item.recipe.method) || 'V60');
+  const methodClean = rawMethodStr.replace(/\s*\(filtrado\)/i, '').toUpperCase();
+  const coffeeG = item.coffee_grams || item.dose_in_g || (item.recipe && item.recipe.dose_in_g) || 15;
+  const waterG = item.water_grams || item.dose_out_g || item.water_total_g || (coffeeG ? Math.round(coffeeG * 16) : 240);
+  const ratioStr = item.ratio || (item.recipe && item.recipe.ratio) || (coffeeG && waterG ? `1:${(waterG / coffeeG).toFixed(1)}` : '1:16');
+  const grindRaw = stripEmojis(item.grind_size || item.grind || (item.recipe && item.recipe.grind) || '');
+  const tempRaw = item.temp || item.temperature || (item.recipe && item.recipe.temperature) || '93°C';
+  const tempClean = `${String(tempRaw).replace('°C', '')}°C`;
 
   const rawSca = item.sca_score || item.score;
   const scaScore = (rawSca && !isNaN(parseFloat(rawSca)) && parseFloat(rawSca) > 0) ? parseFloat(rawSca) : null;
@@ -1503,44 +1593,57 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
 
   drawStickerShell(ctx, cardX, cardY, cardW, cardH, theme, transparent, baseW, baseH);
 
-  // Build Terroir Chips (14px bold, 34px tall)
-  const terroirChips = [];
-  if (origin) {
-    terroirChips.push({
-      type: 'origin',
-      label: `◈ ${origin.toUpperCase()}${altitude ? ' • ' + altitude : ''}`
-    });
-  }
-  if (process) {
-    terroirChips.push({
-      type: 'process',
-      label: `⚡ ${process.toUpperCase()}`
-    });
-  }
-  if (variety) {
-    terroirChips.push({
-      type: 'variety',
-      label: `✿ ${variety.toUpperCase()}`
-    });
-  }
-  if (terroirChips.length === 0) {
-    terroirChips.push({
-      type: 'origin',
-      label: '◈ CAFÉ DE ESPECIALIDAD'
-    });
+  // Build Context Chips (either Terroir or Brew Telemetry, 16px bold, 38px tall)
+  const contextChips = [];
+  if (includeRecipe) {
+    contextChips.push({ label: `☕ ${methodClean} • ${ratioStr}` });
+    contextChips.push({ label: `⚖ ${coffeeG}g → ${waterG}g` });
+    if (grindRaw) {
+      contextChips.push({ label: `⚙ ${grindRaw.toUpperCase()}` });
+    } else {
+      contextChips.push({ label: `🌡 ${tempClean}` });
+    }
+    if (origin) {
+      contextChips.push({ label: `◈ ${origin.toUpperCase()}` });
+    }
+  } else {
+    if (origin) {
+      contextChips.push({
+        type: 'origin',
+        label: `◈ ${origin.toUpperCase()}${altitude ? ' • ' + altitude : ''}`
+      });
+    }
+    if (process) {
+      contextChips.push({
+        type: 'process',
+        label: `⚡ ${process.toUpperCase()}`
+      });
+    }
+    if (variety) {
+      contextChips.push({
+        type: 'variety',
+        label: `✿ ${variety.toUpperCase()}`
+      });
+    }
+    if (contextChips.length === 0) {
+      contextChips.push({
+        type: 'origin',
+        label: '◈ CAFÉ DE ESPECIALIDAD'
+      });
+    }
   }
 
-  // Header Pill (13.5px bold)
+  // Header Pill (15px bold)
   const headerText = (roaster ? `${roaster} // ${theme.name}` : `BEANTAG // ${theme.name}`).toUpperCase();
-  ctx.font = `800 13px ${theme.fontMono}`;
+  ctx.font = `800 15px ${theme.fontMono}`;
   ctx.fillStyle = theme.accent;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  drawCanvasTruncatedText(ctx, headerText, innerX, cardY + 34, scaScore ? innerW - 95 : innerW);
+  drawCanvasTruncatedText(ctx, headerText, innerX, cardY + 34, scaScore ? innerW - 110 : innerW);
 
   if (scaScore !== null) {
     const scaLabel = `SCA ${scaScore}★`;
-    ctx.font = `800 13px ${theme.fontMono}`;
+    ctx.font = `800 15px ${theme.fontMono}`;
     ctx.fillStyle = theme.text;
     ctx.textAlign = 'right';
     ctx.fillText(scaLabel, innerX + innerW, cardY + 34);
@@ -1549,33 +1652,33 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
 
   if (!isVertical) {
     // =======================================================================
-    // HORIZONTAL STORY STICKER (600 x 300 px) — HUGE READABLE TYPOGRAPHY
+    // HORIZONTAL STORY STICKER (640 x 340 px) — STRAVA / WRAPPED SCALE
     // =======================================================================
     const titleFormatted = style === 'kissaten' ? coffeeName : coffeeName.toUpperCase();
-    const titleInfo = drawHeroTitleBlock(ctx, titleFormatted, innerX, cardY + 76, innerW, {
+    const titleInfo = drawHeroTitleBlock(ctx, titleFormatted, innerX, cardY + 82, innerW, {
       maxLines: 2,
-      maxFontSize: 38,
-      minFontSize: 26,
+      maxFontSize: 44,
+      minFontSize: 30,
       fontFamily: theme.fontHeading,
       fontWeight: style === 'kissaten' ? 'bold' : '800',
-      lineHeightRatio: 1.08,
+      lineHeightRatio: 1.06,
       color: theme.text
     });
 
-    // Terroir Chips Row (14px bold, 34px tall)
-    const chipsY = titleInfo.linesDrawn > 1 ? cardY + 132 : cardY + 104;
-    const chipH = 34;
+    // Context Chips Row (15.5px bold, 38px tall)
+    const chipsY = titleInfo.linesDrawn > 1 ? cardY + 144 : cardY + 112;
+    const chipH = 38;
     let curChipX = innerX;
 
-    terroirChips.slice(0, 3).forEach((chip, cIdx) => {
-      ctx.font = `800 14px ${theme.fontMono}`;
-      const cw = Math.min(ctx.measureText(chip.label).width + 24, innerW);
+    contextChips.slice(0, 3).forEach((chip, cIdx) => {
+      ctx.font = `800 15.5px ${theme.fontMono}`;
+      const cw = Math.min(ctx.measureText(chip.label).width + 26, innerW);
       if (curChipX + cw <= innerX + innerW) {
         drawStyledBox(ctx, curChipX, chipsY, cw, chipH, theme, {
           fill: cIdx === 0 ? theme.accentSoft : theme.surfaceBg,
           stroke: cIdx === 0 ? theme.accent : theme.border,
-          lineWidth: style === 'neobrutalist' ? 1.8 : 1.2,
-          radius: 9,
+          lineWidth: style === 'neobrutalist' ? 2 : 1.3,
+          radius: 10,
           shadow: false
         });
         ctx.fillStyle = cIdx === 0 && style !== 'neobrutalist' ? theme.accent : theme.text;
@@ -1587,62 +1690,46 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
       }
     });
 
-    // Flavor Notes Hero Row (17.5px bold, 46px tall)
-    const flavorY = cardY + cardH - 68;
-    const flavorH = 46;
+    // Flavor Notes Hero Row with Vector SCA Badges (20px bold, 54px tall)
+    const flavorY = cardY + cardH - 76;
+    const flavorH = 54;
     const tagsToRender = flavorTags.length > 0 ? flavorTags.slice(0, 3) : ['ORIGEN SELECCIONADO'];
-    let curFlavorX = innerX;
+    const gap = 10;
+    const count = Math.min(3, tagsToRender.length);
+    const pillW = (innerW - gap * (count - 1)) / count;
 
-    tagsToRender.forEach((tag, idx) => {
-      const glyph = getScaWheelIcon(tag, style);
-      const pillLabel = `${glyph}  ${tag.toUpperCase()}`;
-      ctx.font = `800 17px ${theme.fontBody}`;
-      const pw = Math.min(ctx.measureText(pillLabel).width + 30, innerW);
-
-      if (curFlavorX + pw <= innerX + innerW) {
-        const neoColors = ['#FDE68A', '#FED7AA', '#BAE6FD'];
-        const fillCol = style === 'neobrutalist' ? neoColors[idx % neoColors.length] : theme.surfaceBg;
-
-        drawStyledBox(ctx, curFlavorX, flavorY, pw, flavorH, theme, {
-          fill: fillCol,
-          stroke: style === 'neobrutalist' ? '#18181B' : theme.borderStrong,
-          lineWidth: style === 'neobrutalist' ? 2 : 1.3,
-          radius: 12,
-          shadow: style === 'neobrutalist'
-        });
-
-        ctx.fillStyle = style === 'neobrutalist' ? '#18181B' : theme.text;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(pillLabel, curFlavorX + pw / 2, flavorY + flavorH / 2 + 0.5);
-        ctx.textBaseline = 'alphabetic';
-
-        curFlavorX += pw + 12;
-      }
+    tagsToRender.slice(0, count).forEach((tag, idx) => {
+      const px = innerX + idx * (pillW + gap);
+      drawFlavorNotePill(ctx, tag, px, flavorY, pillW, flavorH, style, theme, {
+        index: idx,
+        fontSize: count <= 2 ? 20 : 17.5,
+        badgeRadius: 15,
+        shadow: style === 'neobrutalist'
+      });
     });
   } else {
     // =======================================================================
-    // VERTICAL STORY STICKER (400 x 540 px) — COLLECTOR BADGE + RADAR
+    // VERTICAL STORY STICKER (440 x 580 px) — COLLECTOR BADGE + VECTOR ICONS
     // =======================================================================
     const titleFormatted = style === 'kissaten' ? coffeeName : coffeeName.toUpperCase();
-    const titleInfo = drawHeroTitleBlock(ctx, titleFormatted, innerX, cardY + 74, innerW, {
+    const titleInfo = drawHeroTitleBlock(ctx, titleFormatted, innerX, cardY + 80, innerW, {
       maxLines: 2,
-      maxFontSize: 34,
-      minFontSize: 24,
+      maxFontSize: 40,
+      minFontSize: 28,
       fontFamily: theme.fontHeading,
       fontWeight: style === 'kissaten' ? 'bold' : '800',
-      lineHeightRatio: 1.1,
+      lineHeightRatio: 1.08,
       color: theme.text
     });
 
-    // Terroir Chips Wrap (14px bold, 34px tall)
+    // Context Chips Wrap (15px bold, 36px tall)
     let chipX = innerX;
     let chipY = titleInfo.bottomY + 18;
-    const chipH = 32;
+    const chipH = 36;
 
-    terroirChips.slice(0, 3).forEach((chip, cIdx) => {
-      ctx.font = `800 13.5px ${theme.fontMono}`;
-      const cw = Math.min(ctx.measureText(chip.label).width + 22, innerW);
+    contextChips.slice(0, 3).forEach((chip, cIdx) => {
+      ctx.font = `800 15px ${theme.fontMono}`;
+      const cw = Math.min(ctx.measureText(chip.label).width + 24, innerW);
       if (chipX + cw > innerX + innerW && chipX > innerX) {
         chipX = innerX;
         chipY += chipH + 8;
@@ -1650,21 +1737,21 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
       drawStyledBox(ctx, chipX, chipY, cw, chipH, theme, {
         fill: cIdx === 0 ? theme.accentSoft : theme.surfaceBg,
         stroke: cIdx === 0 ? theme.accent : theme.border,
-        lineWidth: style === 'neobrutalist' ? 1.8 : 1.2,
-        radius: 8,
+        lineWidth: style === 'neobrutalist' ? 2 : 1.3,
+        radius: 9,
         shadow: false
       });
       ctx.fillStyle = cIdx === 0 && style !== 'neobrutalist' ? theme.accent : theme.text;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      drawCanvasTruncatedText(ctx, chip.label, chipX + cw / 2, chipY + chipH / 2 + 0.5, cw - 12);
+      drawCanvasTruncatedText(ctx, chip.label, chipX + cw / 2, chipY + chipH / 2 + 0.5, cw - 14);
       ctx.textBaseline = 'alphabetic';
       chipX += cw + 8;
     });
 
     const dividerY = chipY + chipH + 16;
     ctx.strokeStyle = theme.border;
-    ctx.lineWidth = 1.2;
+    ctx.lineWidth = 1.4;
     ctx.beginPath();
     ctx.moveTo(innerX, dividerY);
     ctx.lineTo(innerX + innerW, dividerY);
@@ -1673,70 +1760,42 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
     const tagsToRender = flavorTags.length > 0 ? flavorTags : ['ORIGEN SELECCIONADO'];
 
     if (sensoryData) {
-      // Radar Chart with 11.5px labels + 3 large 38px flavor pills
-      const radarCY = dividerY + 78;
-      const radarR = 44;
+      // Radar Chart with 13.5px labels + 3 large 44px flavor pills with SCA vector icons
+      const radarCY = dividerY + 80;
+      const radarR = 46;
       drawSensoryRadarChart(ctx, cardX + cardW / 2, radarCY, radarR, sensoryData, style);
 
       let pillY = radarCY + radarR + 28;
-      const pillH = 38;
+      const pillH = 44;
 
       tagsToRender.slice(0, 3).forEach((tag, idx) => {
-        if (pillY + pillH > cardY + cardH - 14) return;
-        const glyph = getScaWheelIcon(tag, style);
-        const pillText = `${glyph}   ${tag.toUpperCase()}`;
-        const neoColors = ['#FDE68A', '#FED7AA', '#BAE6FD'];
-        const fillCol = style === 'neobrutalist' ? neoColors[idx % neoColors.length] : theme.surfaceBg;
-
-        drawStyledBox(ctx, innerX, pillY, innerW, pillH, theme, {
-          fill: fillCol,
-          stroke: style === 'neobrutalist' ? '#18181B' : theme.border,
-          lineWidth: style === 'neobrutalist' ? 1.8 : 1.2,
-          radius: 10,
+        if (pillY + pillH > cardY + cardH - 12) return;
+        drawFlavorNotePill(ctx, tag, innerX, pillY, innerW, pillH, style, theme, {
+          index: idx,
+          fontSize: 18,
+          badgeRadius: 14,
           shadow: false
         });
-
-        ctx.fillStyle = style === 'neobrutalist' ? '#18181B' : theme.text;
-        ctx.font = `800 16px ${theme.fontBody}`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        drawCanvasTruncatedText(ctx, pillText, innerX + innerW / 2, pillY + pillH / 2 + 0.5, innerW - 24);
-        ctx.textBaseline = 'alphabetic';
-
         pillY += pillH + 8;
       });
     } else {
-      // Full Flavor Pills Cascade (18px bold, 46px tall)
-      ctx.fillStyle = theme.textMuted;
-      ctx.font = `800 12px ${theme.fontMono}`;
+      // Full Flavor Pills Cascade (20px bold, 52px tall) with SCA vector icons
+      ctx.fillStyle = theme.textSecondary;
+      ctx.font = `800 14px ${theme.fontMono}`;
       ctx.textAlign = 'left';
-      ctx.fillText('NOTAS DE CATA // SENSORY PROFILE:', innerX, dividerY + 24);
+      ctx.fillText('NOTAS DE CATA // PERFIL SCA:', innerX, dividerY + 26);
 
-      let pillY = dividerY + 38;
-      const pillH = 46;
+      let pillY = dividerY + 40;
+      const pillH = 52;
 
       tagsToRender.slice(0, 4).forEach((tag, idx) => {
-        if (pillY + pillH > cardY + cardH - 16) return;
-        const glyph = getScaWheelIcon(tag, style);
-        const pillText = `${glyph}   ${tag.toUpperCase()}`;
-        const neoColors = ['#FDE68A', '#FED7AA', '#E9D5FF', '#BAE6FD'];
-        const fillCol = style === 'neobrutalist' ? neoColors[idx % neoColors.length] : theme.surfaceBg;
-
-        drawStyledBox(ctx, innerX, pillY, innerW, pillH, theme, {
-          fill: fillCol,
-          stroke: style === 'neobrutalist' ? '#18181B' : theme.borderStrong,
-          lineWidth: style === 'neobrutalist' ? 2 : 1.2,
-          radius: 12,
+        if (pillY + pillH > cardY + cardH - 14) return;
+        drawFlavorNotePill(ctx, tag, innerX, pillY, innerW, pillH, style, theme, {
+          index: idx,
+          fontSize: 20,
+          badgeRadius: 16,
           shadow: style === 'neobrutalist'
         });
-
-        ctx.fillStyle = style === 'neobrutalist' ? '#18181B' : theme.text;
-        ctx.font = `800 17.5px ${theme.fontBody}`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        drawCanvasTruncatedText(ctx, pillText, innerX + innerW / 2, pillY + pillH / 2 + 0.5, innerW - 24);
-        ctx.textBaseline = 'alphabetic';
-
         pillY += pillH + 12;
       });
     }
@@ -1750,3 +1809,4 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
 export const generateBeanCardImage = (recipe, template = 'studio') => generateRecipeCardImage(recipe, template, false);
 export const generateMenuCardImage = generateCoffeeMenuCardImage;
 export const generateStickerImage = generateCoffeeStickerImage;
+

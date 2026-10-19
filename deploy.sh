@@ -6,11 +6,15 @@ VPS_USER="root"
 VPS_PATH="/var/www/beantag"
 ARCHIVE_NAME="beantag_update.tar.gz"
 
-echo "📦 1. Empaquetando BeanTag (usando directorio actual)..."
+echo "📦 1. Empaquetando BeanTag (excluyendo base de datos y backups)..."
 tar --exclude=node_modules \
     --exclude=.git \
     --exclude=frontend/node_modules \
     --exclude=backend/node_modules \
+    --exclude='backend/*.sqlite*' \
+    --exclude='backend/*.db*' \
+    --exclude='backend/.env' \
+    --exclude='backups' \
     --exclude=.superpowers \
     -czf "/tmp/${ARCHIVE_NAME}" -C . .
 
