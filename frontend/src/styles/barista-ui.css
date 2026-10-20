@@ -1,0 +1,205 @@
+/**
+ * ☕ BeanTag V4 — Barista UI Utility Classes
+ * Enforcing 44px touch targets, glanceable metrics, and zero-bloat modular styling
+ */
+
+/* ─── Buttons & Controls (44px Minimum Touch Standard) ─── */
+.barista-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  min-width: 44px;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  transition: transform var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.barista-btn:active {
+  transform: scale(0.97);
+}
+
+.barista-btn-primary {
+  background-color: var(--accent-terracotta);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(194, 65, 12, 0.28);
+}
+
+.barista-btn-primary:hover {
+  background-color: #B45309;
+}
+
+.barista-btn-secondary {
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+
+.barista-btn-secondary:hover {
+  background-color: var(--bg-subtle);
+  border-color: var(--border-strong);
+}
+
+.barista-btn-honey {
+  background-color: var(--accent-honey);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.24);
+}
+
+.barista-btn-ghost {
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
+.barista-btn-ghost:hover {
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.barista-btn-lg {
+  min-height: 52px;
+  padding: 14px 26px;
+  font-size: var(--text-base);
+}
+
+/* ─── Stepper & Number Controls ─── */
+.barista-stepper-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.barista-stepper-btn:active {
+  transform: scale(0.94);
+  background-color: var(--border-subtle);
+}
+
+/* ─── Metric & Value Displays ─── */
+.barista-metric-val {
+  font-family: var(--font-metric);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.barista-timer-display {
+  font-family: var(--font-metric);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-timer);
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  text-align: center;
+}
+
+/* ─── Surface Cards & Bento Containers ─── */
+.barista-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
+}
+
+.barista-card-elevated {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-md);
+  box-sizing: border-box;
+}
+
+.barista-card-subtle {
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  box-sizing: border-box;
+}
+
+/* ─── Badges & Status Chips ─── */
+.barista-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  line-height: 1;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+  color: var(--text-secondary);
+}
+
+.barista-chip-active {
+  background-color: var(--accent-terracotta);
+  color: #FFFFFF;
+  border-color: transparent;
+}
+
+/* ─── NextLevel Pulsar Mini Valve Badges ─── */
+.barista-valve-closed {
+  background-color: var(--valve-closed-bg);
+  color: var(--valve-closed-text);
+  border: 1px solid var(--valve-closed);
+}
+
+.barista-valve-half {
+  background-color: var(--valve-half-bg);
+  color: var(--valve-half-text);
+  border: 1px solid var(--valve-half);
+}
+
+.barista-valve-open {
+  background-color: var(--valve-open-bg);
+  color: var(--valve-open-text);
+  border: 1px solid var(--valve-open);
+}
+
+/* ─── Sticky Action Bar (Thumb-Zone Ergonomics) ─── */
+.barista-sticky-bar {
+  position: fixed;
+  bottom: calc(72px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 440px;
+  background: var(--bg-surface);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  gap: var(--space-2);
+  z-index: 990;
+  box-sizing: border-box;
+}
