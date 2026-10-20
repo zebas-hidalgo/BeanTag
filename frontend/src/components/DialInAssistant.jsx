@@ -61,9 +61,9 @@ export default function DialInAssistant({ onApplyRecommendation }) {
     <div style={{
       background: 'var(--bg-card, #ECFDF5)',
       border: '1.5px solid var(--border-color, #A7F3D0)',
-      borderRadius: '20px',
-      padding: '16px',
-      margin: '16px 0',
+      borderRadius: '16px',
+      padding: '14px 12px',
+      margin: '14px 0',
       boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
     }}>
       <div style={{
@@ -85,7 +85,7 @@ export default function DialInAssistant({ onApplyRecommendation }) {
       </p>
 
       {/* Taste Selection Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', marginBottom: '12px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px', marginBottom: '12px' }}>
         {tasteOptions.map((opt) => {
           const isSelected = selectedTaste === opt.id;
           return (

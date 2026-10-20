@@ -15,7 +15,6 @@ import BatchHeaderCard from './batch/BatchHeaderCard';
 import RecipeParamsGrid from './batch/RecipeParamsGrid';
 import GrinderSyncMatrix from './batch/GrinderSyncMatrix';
 import PourSequenceTimeline from './batch/PourSequenceTimeline';
-import BatchStickyActionBar from './batch/BatchStickyActionBar';
 
 const BrewGuideModal = lazy(() => import('./BrewGuideModal'));
 
@@ -1438,7 +1437,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             />
 
             {/* Receta Recomendada por IA */}
-            <div className="candy-card static" style={{ marginBottom: '16px', padding: '18px', backgroundColor: 'var(--bg-card)' }}>
+            <div className="candy-card static" style={{ marginBottom: '16px', padding: '14px 12px', backgroundColor: 'var(--bg-card)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ fontSize: '15px' }}>✨</span>
@@ -1710,7 +1709,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             />
 
             {/* Evaluacion Sensorial */}
-            <div className="candy-card static" style={{ marginTop: '14px', padding: '16px' }}>
+            <div className="candy-card static" style={{ marginTop: '14px', padding: '14px 12px' }}>
               <div style={{ fontSize: '10.5px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>Evaluación Sensorial</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginBottom: '10px' }}>
                 <div>
@@ -1745,50 +1744,83 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               </div>
             </div>
 
-            {isOwner ? (
-              <button type="submit" className="barista-btn-primary" style={{ width: '100%', marginTop: '16px', minHeight: '48px', height: '48px', fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                <Save size={18} />
-                Guardar Bitácora
-              </button>
-            ) : (
-              <button 
-                type="button" 
-                onClick={onRequireAuth} 
-                className="barista-btn-secondary" 
-                style={{ width: '100%', marginTop: '14px', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: 0.9, cursor: 'pointer' }}
+            {/* Form Actions (In-Flow, No Floating Sticky Bar) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigator.vibrate) navigator.vibrate(10);
+                  handleStartBrewGuide({
+                    method,
+                    dose_in_g: doseInG,
+                    water_total_g: method === 'Espresso' ? doseOutG : Math.round(doseInG * ratioVal),
+                    ratio: method === 'Espresso' ? `1:${(doseOutG / doseInG).toFixed(1)}` : `1:${ratioVal}`,
+                    temperature: `${waterTemp}°C`,
+                    brew_time: brewTime,
+                    grind: getGrindString(),
+                    pours: activePoursState.length > 0 ? activePoursState : (aiRecommendation?.pours || []),
+                    active_grinder_dial: {
+                      grinder_id: grinderType,
+                      dial: getGrindString()
+                    }
+                  });
+                }}
+                style={{
+                  width: '100%',
+                  minHeight: '48px',
+                  height: '48px',
+                  backgroundColor: 'var(--accent-honey, #D97706)',
+                  color: '#FFFFFF',
+                  borderRadius: 'var(--radius-md, 12px)',
+                  border: 'none',
+                  fontSize: '15px',
+                  fontWeight: '800',
+                  fontFamily: 'var(--font-display, inherit)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  boxShadow: 'var(--shadow-sm, 0 2px 8px rgba(217, 119, 6, 0.25))'
+                }}
               >
-                🔒 Solo el propietario puede registrar extracciones {currentUser ? '' : '(Iniciar Sesión)'}
+                <Play size={18} fill="#FFFFFF" />
+                <span>Iniciar Extracción (Modo Barista)</span>
               </button>
-            )}
+
+              {isOwner ? (
+                <button
+                  type="submit"
+                  className="barista-btn-primary"
+                  style={{
+                    width: '100%',
+                    minHeight: '48px',
+                    height: '48px',
+                    fontSize: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <Save size={18} />
+                  <span>Guardar Bitácora</span>
+                </button>
+              ) : (
+                <button 
+                  type="button" 
+                  onClick={onRequireAuth} 
+                  className="barista-btn-secondary" 
+                  style={{ width: '100%', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: 0.9, cursor: 'pointer' }}
+                >
+                  🔒 Solo el propietario puede registrar extracciones {currentUser ? '' : '(Iniciar Sesión)'}
+                </button>
+              )}
+            </div>
           </form>
 
           {/* Dial-in Calibration Assistant */}
           <DialInAssistant />
-
-          {/* V4 Sticky Action Bar */}
-          <BatchStickyActionBar
-            onStartBrew={() => handleStartBrewGuide({
-              method,
-              dose_in_g: doseInG,
-              water_total_g: method === 'Espresso' ? doseOutG : Math.round(doseInG * ratioVal),
-              ratio: method === 'Espresso' ? `1:${(doseOutG / doseInG).toFixed(1)}` : `1:${ratioVal}`,
-              temperature: `${waterTemp}°C`,
-              brew_time: brewTime,
-              grind: getGrindString(),
-              pours: activePoursState.length > 0 ? activePoursState : (aiRecommendation?.pours || []),
-              active_grinder_dial: {
-                grinder_id: grinderType,
-                dial: getGrindString()
-              }
-            })}
-            onSaveRecipe={handleRecipeSubmit}
-            onRepeatLastRecipe={handleRepeatLastRecipe}
-            isOwner={isOwner}
-            hasLastRecipe={!!lastRecipe}
-            doseInG={doseInG}
-            waterTotalG={method === 'Espresso' ? doseOutG : Math.round(doseInG * ratioVal)}
-            method={method}
-          />
         </div>
       )}
 

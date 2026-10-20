@@ -2002,10 +2002,19 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   margin-top: 6px;
 }
 
+@media (max-width: 640px) {
+  main {
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 12px;
+  }
+}
+
 @media (max-width: 375px) {
   main {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
   }
   .app-header {
     padding: 8px 16px;

@@ -78,8 +78,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
+  width: 36px;
+  height: 36px;
+  min-width: 32px;
+  min-height: 32px;
   border-radius: var(--radius-md);
   background-color: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
@@ -87,6 +89,9 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   user-select: none;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  padding: 0;
 }
 
 .barista-stepper-btn:active {
@@ -118,26 +123,32 @@
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: var(--space-4);
+  padding: 14px 12px;
   box-shadow: var(--shadow-sm);
   box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
 }
 
 .barista-card-elevated {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: var(--space-4);
+  padding: 14px 12px;
   box-shadow: var(--shadow-md);
   box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
 }
 
 .barista-card-subtle {
   background-color: var(--bg-subtle);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: var(--space-3);
+  padding: 10px 10px;
   box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* ─── Badges & Status Chips ─── */
@@ -179,27 +190,4 @@
   background-color: var(--valve-open-bg);
   color: var(--valve-open-text);
   border: 1px solid var(--valve-open);
-}
-
-/* ─── Sticky Action Bar (Thumb-Zone Ergonomics) ─── */
-.barista-sticky-bar {
-  position: fixed;
-  bottom: calc(72px + env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 32px);
-  max-width: 440px;
-  background: var(--bg-surface);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-elevated);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 10px;
-  gap: var(--space-2);
-  z-index: 990;
-  box-sizing: border-box;
 }

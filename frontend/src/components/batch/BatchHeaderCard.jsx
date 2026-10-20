@@ -125,17 +125,19 @@ export default function BatchHeaderCard({
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '10px',
         marginBottom: '12px',
-        padding: '10px 14px'
+        padding: '10px 12px'
       }}>
-        <div>
+        <div style={{ minWidth: 0, flex: '1 1 auto' }}>
           <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: '600', display: 'block' }}>
             Stock en Portatubos
           </span>
-          <span style={{ fontSize: 'var(--text-base)', fontWeight: '800', fontFamily: 'var(--font-metric)', color: 'var(--text-primary)' }}>
+          <span style={{ fontSize: 'var(--text-base)', fontWeight: '800', fontFamily: 'var(--font-metric)', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
             <span style={{ color: 'var(--accent-terracotta)' }}>{remainingDoses}</span> / {totalDoses} tubos
             <span style={{ fontSize: 'var(--text-xs)', fontWeight: '500', color: 'var(--text-muted)', marginLeft: '6px' }}>
-              ({remainingGrams}g disponibles)
+              ({remainingGrams}g rest.)
             </span>
           </span>
         </div>
@@ -148,9 +150,9 @@ export default function BatchHeaderCard({
               if (navigator.vibrate) navigator.vibrate(8);
               onSubtractDose();
             }}
-            style={{ minHeight: '44px', padding: '8px 14px', fontSize: 'var(--text-xs)' }}
+            style={{ minHeight: '38px', padding: '6px 12px', fontSize: 'var(--text-xs)', flexShrink: 0 }}
           >
-            <MinusCircle size={15} />
+            <MinusCircle size={14} />
             <span>Restar 1 Tubo</span>
           </button>
         )}

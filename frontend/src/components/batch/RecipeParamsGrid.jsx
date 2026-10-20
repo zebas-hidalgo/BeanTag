@@ -157,15 +157,15 @@ export default function RecipeParamsGrid({
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-        gap: '10px'
+        gap: '8px'
       }}>
         {/* Widget 1: Dosis Café */}
-        <div className="barista-card-subtle">
+        <div className="barista-card-subtle" style={{ padding: '10px 8px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: '700' }}>
             <span>Dosis Café</span>
             <Scale size={14} />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2px', width: '100%', minWidth: 0 }}>
             <button
               type="button"
               className="barista-stepper-btn"
@@ -178,7 +178,7 @@ export default function RecipeParamsGrid({
             >
               -
             </button>
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', minWidth: 0 }}>
               <input
                 type="number"
                 inputMode="decimal"
@@ -186,9 +186,9 @@ export default function RecipeParamsGrid({
                 value={doseInG}
                 onChange={(e) => setDoseInG(parseFloat(e.target.value) || 0)}
                 className="barista-metric-val"
-                style={{ width: '46px', textAlign: 'center', fontSize: 'var(--text-lg)', border: 'none', background: 'transparent', padding: 0 }}
+                style={{ width: '38px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
               />
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '2px' }}>g</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '1px' }}>g</span>
             </div>
             <button
               type="button"
@@ -204,7 +204,7 @@ export default function RecipeParamsGrid({
             </button>
           </div>
           {doseAdjustmentFeedback && (
-            <div style={{ fontSize: '10.5px', color: 'var(--accent-honey)', marginTop: '4px', fontWeight: '600' }}>
+            <div style={{ fontSize: '10px', color: 'var(--accent-honey)', marginTop: '4px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {doseAdjustmentFeedback}
             </div>
           )}
@@ -212,12 +212,12 @@ export default function RecipeParamsGrid({
 
         {/* Widget 2: Ratio o Dosis Salida (Espresso) */}
         {isEspresso ? (
-          <div className="barista-card-subtle">
+          <div className="barista-card-subtle" style={{ padding: '10px 8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: '700' }}>
               <span>Output Taza</span>
               <Gauge size={14} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2px', width: '100%', minWidth: 0 }}>
               <button
                 type="button"
                 className="barista-stepper-btn"
@@ -230,16 +230,16 @@ export default function RecipeParamsGrid({
               >
                 -
               </button>
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', minWidth: 0 }}>
                 <input
                   type="number"
                   inputMode="decimal"
                   value={doseOutG}
                   onChange={(e) => setDoseOutG(parseFloat(e.target.value) || 0)}
                   className="barista-metric-val"
-                  style={{ width: '46px', textAlign: 'center', fontSize: 'var(--text-lg)', border: 'none', background: 'transparent', padding: 0 }}
+                  style={{ width: '38px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
                 />
-                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '2px' }}>g</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '1px' }}>g</span>
               </div>
               <button
                 type="button"
@@ -254,17 +254,17 @@ export default function RecipeParamsGrid({
                 +
               </button>
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center', fontFamily: 'var(--font-metric)' }}>
+            <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center', fontFamily: 'var(--font-metric)', whiteSpace: 'nowrap' }}>
               Ratio ~1:{doseInG > 0 ? (doseOutG / doseInG).toFixed(1) : 2}
             </div>
           </div>
         ) : (
-          <div className="barista-card-subtle">
+          <div className="barista-card-subtle" style={{ padding: '10px 8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: '700' }}>
               <span>Ratio 1:</span>
               <Gauge size={14} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2px', width: '100%', minWidth: 0 }}>
               <button
                 type="button"
                 className="barista-stepper-btn"
@@ -277,7 +277,7 @@ export default function RecipeParamsGrid({
               >
                 -
               </button>
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', minWidth: 0 }}>
                 <input
                   type="number"
                   inputMode="decimal"
@@ -285,7 +285,7 @@ export default function RecipeParamsGrid({
                   value={ratioVal}
                   onChange={(e) => setRatioVal(parseFloat(e.target.value) || 0)}
                   className="barista-metric-val"
-                  style={{ width: '46px', textAlign: 'center', fontSize: 'var(--text-lg)', border: 'none', background: 'transparent', padding: 0 }}
+                  style={{ width: '40px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
                 />
               </div>
               <button
@@ -301,19 +301,19 @@ export default function RecipeParamsGrid({
                 +
               </button>
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center', fontFamily: 'var(--font-metric)' }}>
+            <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center', fontFamily: 'var(--font-metric)', whiteSpace: 'nowrap' }}>
               ~{Math.round(doseInG * ratioVal)}g agua
             </div>
           </div>
         )}
 
         {/* Widget 3: Temperatura de Agua */}
-        <div className="barista-card-subtle">
+        <div className="barista-card-subtle" style={{ padding: '10px 8px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: '700' }}>
             <span>Temp Agua</span>
             <Thermometer size={14} />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2px', width: '100%', minWidth: 0 }}>
             <button
               type="button"
               className="barista-stepper-btn"
@@ -326,16 +326,16 @@ export default function RecipeParamsGrid({
             >
               -
             </button>
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', minWidth: 0 }}>
               <input
                 type="number"
                 inputMode="decimal"
                 value={waterTemp}
                 onChange={(e) => setWaterTemp(parseInt(e.target.value) || 93)}
                 className="barista-metric-val"
-                style={{ width: '44px', textAlign: 'center', fontSize: 'var(--text-lg)', border: 'none', background: 'transparent', padding: 0 }}
+                style={{ width: '36px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
               />
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '2px' }}>°C</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '1px' }}>°C</span>
             </div>
             <button
               type="button"
@@ -350,29 +350,29 @@ export default function RecipeParamsGrid({
               +
             </button>
           </div>
-          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center' }}>
-            {waterTemp >= 95 ? 'Alta Extracción' : waterTemp <= 90 ? 'Baja Turbulencia' : 'Extracción Balance'}
+          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {waterTemp >= 95 ? 'Alta Extracción' : waterTemp <= 90 ? 'Baja Turbulencia' : 'Balance'}
           </div>
         </div>
 
         {/* Widget 4: Tiempo Estimado */}
-        <div className="barista-card-subtle">
+        <div className="barista-card-subtle" style={{ padding: '10px 8px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: '700' }}>
             <span>Tiempo</span>
             <Clock size={14} />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '44px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '36px' }}>
             <input
               type="text"
               value={brewTime}
               onChange={(e) => setBrewTime(e.target.value)}
               placeholder="3:30 min"
               className="barista-metric-val"
-              style={{ width: '100%', textAlign: 'center', fontSize: 'var(--text-base)', border: 'none', background: 'transparent', padding: 0 }}
+              style={{ width: '100%', textAlign: 'center', fontSize: '16px', border: 'none', background: 'transparent', padding: 0 }}
             />
           </div>
-          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center' }}>
-            {isPulsar ? '3:30 - 3:45 min' : 'Objetivo taza'}
+          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {isPulsar ? '3:30 - 3:45 min' : 'Objetivo'}
           </div>
         </div>
       </div>
