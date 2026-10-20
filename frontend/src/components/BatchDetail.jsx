@@ -1416,7 +1416,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             {/* V4 Modular Recipe Parameters Grid */}
             <RecipeParamsGrid
               method={method}
-              setMethod={setMethod}
+              setMethod={(newMethod) => {
+                setMethod(newMethod);
+                if (aiRecommendation && aiRecommendation.method !== newMethod) {
+                  setAiRecommendation(null);
+                }
+              }}
               doseInG={doseInG}
               setDoseInG={handleDoseChange}
               doseOutG={doseOutG}
@@ -1741,7 +1746,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     temperature: `${waterTemp}°C`,
                     brew_time: brewTime,
                     grind: getGrindString(),
-                    pours: aiRecommendation?.pours || [],
+                    pours: (aiRecommendation?.method === method && Array.isArray(aiRecommendation?.pours)) ? aiRecommendation.pours : [],
                     active_grinder_dial: {
                       grinder_id: grinderType,
                       dial: getGrindString()

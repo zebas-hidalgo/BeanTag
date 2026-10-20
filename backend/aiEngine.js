@@ -309,6 +309,8 @@ function normalizeRecipe(rawRec, targetMethod, dose, requestedGrinder = 'femoboo
   const isEspresso = mLower.includes('espresso');
   const isPulsar = mLower.includes('pulsar');
   const isGo = mLower.includes('go');
+  const isAeroPress = mLower.includes('aeropress') || isGo;
+  const isFrench = mLower.includes('prensa') || mLower.includes('french');
 
   const parsedDose = parseFloat(dose);
   const rawDose = parseFloat(rawRec.dose_in_g);
@@ -352,6 +354,20 @@ function normalizeRecipe(rawRec, targetMethod, dose, requestedGrinder = 'femoboo
         { step: 1, title: 'Bloom e Inmersión (🔒 Válvula CERRADA)', label: 'Bloom e Inmersión (🔒 Válvula CERRADA)', valve: 'closed', water_g: bloom, time: '0:00 - 0:45', description: 'Verter agua a través de la tapa de dispersión con válvula cerrada.' },
         { step: 2, title: '1º Vertido Percolación (⚡ Válvula 45-50% de flujo)', label: '1º Vertido Percolación (⚡ Válvula 45-50% de flujo)', valve: 'half', water_g: pulse1, time: '0:45 - 1:45', description: 'Abrir válvula al 45-50% de flujo (~2-2.5 ml/s) manteniendo columna de agua.' },
         { step: 3, title: '2º Vertido y Caída Final (🔓 Válvula 100% ABIERTA)', label: '2º Vertido y Caída Final (🔓 Válvula 100% ABIERTA)', valve: 'open', water_g: pulse2, time: '1:45 - 3:30', description: 'Verter el resto y abrir válvula al 100% para una caída final limpia.' }
+      ];
+    } else if (isAeroPress) {
+      pours = [
+        { step: 1, label: 'Vertido Rápido de Inmersión', water_g: waterTotalG, time: '0:00 - 0:15', description: 'Verter todo el agua rápidamente sobre la molienda para saturación instantánea.' },
+        { step: 2, label: 'Agitación Activa (Turbulencia)', water_g: 0, time: '0:15 - 0:30', description: 'Remover vigorosamente en cruz con la espátula para disolver grumos.' },
+        { step: 3, label: 'Inmersión & Sello de Vacío', water_g: 0, time: '0:30 - 1:15', description: 'Colocar el émbolo ligeramente en la parte superior para sellar el vacío y reposar.' },
+        { step: 4, label: 'Prensado Suave y Constante', water_g: 0, time: '1:15 - 1:45', description: 'Presionar suavemente hacia abajo durante 30s hasta el primer siseo de aire.' }
+      ];
+    } else if (isFrench) {
+      pours = [
+        { step: 1, label: 'Vertido Total y Saturación', water_g: waterTotalG, time: '0:00 - 0:30', description: 'Verter el 100% del agua enérgicamente humectando todo el café molido grueso.' },
+        { step: 2, label: 'Inmersión y Reposo', water_g: 0, time: '0:30 - 4:00', description: 'Colocar la tapa sin bajar el émbolo y dejar infusionar en reposo total.' },
+        { step: 3, label: 'Romper Costra & Desespumar', water_g: 0, time: '4:00 - 5:00', description: 'Romper la costra superficial con dos cucharas y retirar espuma flotante.' },
+        { step: 4, label: 'Prensado Superficial y Servido', water_g: 0, time: '5:00 - 5:45', description: 'Bajar el émbolo solo hasta la superficie y servir decantando suavemente.' }
       ];
     } else {
       const bloom = Math.min(65, Math.round(doseNum * 3));
