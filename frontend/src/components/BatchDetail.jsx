@@ -11,7 +11,24 @@ import DialInAssistant from './DialInAssistant';
 import DialInTimeline from './DialInTimeline';
 import { GRINDERS, getGrinderConfig, scaleGrinderSettingForDose, calculateDoseDeltaMicrons } from '../utils/grinders';
 
+import BatchHeaderCard from './batch/BatchHeaderCard';
+import RecipeParamsGrid from './batch/RecipeParamsGrid';
+import GrinderSyncMatrix from './batch/GrinderSyncMatrix';
+import PourSequenceTimeline from './batch/PourSequenceTimeline';
+import BatchStickyActionBar from './batch/BatchStickyActionBar';
+
 const BrewGuideModal = lazy(() => import('./BrewGuideModal'));
+
+const getRoastDotColor = (roast) => {
+  const r = String(roast || '').toLowerCase();
+  if (r.includes('oscuro') || r.includes('dark') || r.includes('frances') || r.includes('italiano')) {
+    return '#475569';
+  }
+  if (r.includes('medio') || r.includes('medium')) {
+    return '#B45309';
+  }
+  return '#D97706';
+};
 
 const calculateMicrons = (rot, num, click) => {
   const r = parseInt(rot) || 0;
@@ -73,6 +90,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   
   // Smart Ratio (Default: 15.0)
   const [ratioVal, setRatioVal] = useState(15.0);
+
+  // V4 Interactive Pour Timeline State
+  const [activePoursState, setActivePoursState] = useState([]);
 
   // Advanced Coffee Fields (Improvement 6 & 8)
   const [doseInG, setDoseInG] = useState(20.0);
@@ -1333,117 +1353,19 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         </div>
       )}
 
-      {/* Top Header - Row 2: Spacious Action Toolbar */}
-      <div style={{ display: 'grid', gridTemplateColumns: isOwner ? 'minmax(0, 1fr) auto auto' : '1fr', gap: '8px', marginBottom: '14px', width: '100%', boxSizing: 'border-box' }}>
-        <button 
-          className="btn-candy primary" 
-          onClick={() => handleShareBatchCard(false)} 
-          style={{ padding: '8px 12px', fontSize: '11.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', margin: 0 }}
-        >
-          <Share2 size={14} strokeWidth={2.5} />
-          <span>Compartir Ticket</span>
-        </button>
-
-        {isOwner && (
-          <button 
-            className="btn-candy" 
-            onClick={() => onEditBatch(batch)} 
-            style={{ padding: '8px 12px', fontSize: '11.5px', display: 'flex', alignItems: 'center', gap: '5px', margin: 0 }}
-          >
-            <Edit2 size={13} strokeWidth={2.5} />
-            <span>Editar</span>
-          </button>
-        )}
-
-        {isOwner && (
-          <button 
-            className="btn-candy" 
-            onClick={() => onDeleteBatch(batch.id, batch.name)} 
-            style={{ padding: '8px 12px', fontSize: '11.5px', color: 'var(--color-crimson)', borderColor: 'var(--color-crimson)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: 0 }}
-            title="Eliminar lote"
-          >
-            <Trash2 size={14} strokeWidth={2.5} />
-          </button>
-        )}
-      </div>
-
-      {/* Hero Ficha del Café */}
-      <div className="candy-card static" style={{ marginBottom: '16px', padding: '18px', backgroundColor: 'var(--bg-card)', width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
-        <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
-          <div>
-            <h2 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 4px 0', textTransform: 'uppercase', fontSize: '19px', lineHeight: 1.2 }}>{batch.name}</h2>
-            <div style={{ fontSize: '11.5px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
-              {batch.roaster || 'Tostador Especialidad'}
-            </div>
-          </div>
-          {batch.sca_score && (
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              backgroundColor: 'var(--bg-canvas)',
-              border: '1.5px solid var(--color-crimson)',
-              color: 'var(--color-crimson)',
-              padding: '3px 8px',
-              borderRadius: '6px',
-              fontFamily: 'JetBrains Mono, monospace',
-              fontSize: '11.5px',
-              fontWeight: '800'
-            }}>
-              ★ SCA {parseFloat(batch.sca_score).toFixed(1)}
-            </div>
-          )}
-        </div>
-        
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '12px' }}>
-          <span><strong>Productor:</strong> {batch.producer}</span> •
-          <span><strong>Origen:</strong> {batch.origin || 'N/A'}</span> •
-          <span><strong>Proceso:</strong> {batch.process || 'N/A'}</span>
-        </div>
-
-        {/* Tubos & Congelador Bar */}
-        <div style={{ background: 'var(--bg-canvas)', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-          <div>
-            <strong>Tubos:</strong> <span style={{ color: 'var(--color-crimson)', fontWeight: '900' }}>{batch.remaining_doses} / {batch.total_doses}</span> ({batch.remaining_weight_g || 0}g rest.)
-          </div>
-          {isOwner && batch.remaining_doses > 0 && (
-            <button className="btn-candy primary" onClick={handleDoseDeduction} style={{ margin: 0, padding: '6px 10px', fontSize: '11px', fontWeight: 'bold' }}>
-              - Restar 1 Tubo
-            </button>
-          )}
-        </div>
-
-        {/* Color-coded SCA Tags */}
-        {(() => {
-          let scaTags = [];
-          if (batch.roaster_notes && batch.roaster_notes.includes('[Notas: ')) {
-            const match = batch.roaster_notes.match(/\[Notas: (.*?)\]/);
-            if (match) scaTags = match[1].split(',').map(s => s.trim());
-          }
-          if (scaTags.length === 0) return null;
-          return (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '10px' }}>
-              {scaTags.map((tag, i) => {
-                const colors = getScaColorForNote(tag);
-                return (
-                  <span key={i} style={{ padding: '3px 8px', backgroundColor: colors.bg, border: `1.5px solid ${colors.border}`, color: colors.text, borderRadius: '6px', fontSize: '10.5px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    {getScaIcon(tag, 12)} {stripEmojis(tag)}
-                  </span>
-                );
-              })}
-            </div>
-          );
-        })()}
-
-        {/* Sensory Radar Spider Chart */}
-        <ScaRadarChart
-          sweetness={8}
-          acidity={lastRecipe ? 8 : 7}
-          body={lastRecipe ? 7 : 6}
-          aroma={9}
-          balance={lastRecipe ? 8 : 7}
-        />
-      </div>
+      {/* V4 Modular Header Card */}
+      <BatchHeaderCard
+        batch={batch}
+        isOwner={isOwner}
+        onSubtractDose={handleDoseDeduction}
+        onOpenCardModal={() => handleShareBatchCard(false)}
+        onEditBatch={() => onEditBatch(batch)}
+        onDeleteBatch={() => onDeleteBatch(batch.id, batch.name)}
+        isFrozen={isFrozen}
+        daysSinceRoast={daysSinceRoast}
+        roastDotColor={getRoastDotColor(batch.roast_level)}
+        lastRecipe={lastRecipe}
+      />
 
       {/* PESTAÑAS PRINCIPALES (Cupertino Segmented) */}
       <div className="cupertino-segmented" style={{ marginBottom: '16px' }}>
@@ -1486,133 +1408,24 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       {activeTab === 'brew' && (
         <div ref={brewFormRef} className="animate-entrance">
           <form onSubmit={handleRecipeSubmit}>
-            {/* Method Cupertino Segmented Selector */}
-            <div
-              className="cupertino-segmented hide-scrollbar"
-              style={{
-                padding: '4px',
-                gap: '6px',
-                marginBottom: '16px',
-                overflowX: 'auto',
-                overscrollBehaviorX: 'contain',
-                WebkitOverflowScrolling: 'touch',
-                scrollbarWidth: 'none',
-                display: 'flex',
-                width: '100%'
-              }}
-            >
-              {[
-                { id: 'V60 (Filtrado)', lucide: <Filter size={18} strokeWidth={2.3} />, label: 'V60' },
-                { id: 'Espresso', lucide: <Zap size={18} strokeWidth={2.3} />, label: 'Espresso' },
-                { id: 'AeroPress', lucide: <Cylinder size={18} strokeWidth={2.3} />, label: 'AeroPress' },
-                { id: 'AeroPress Go', lucide: <Compass size={18} strokeWidth={2.3} />, label: 'AeroPress Go' },
-                { id: 'Prensa Francesa', lucide: <Coffee size={18} strokeWidth={2.3} />, label: 'Prensa' },
-                { id: 'NextLevel Pulsar Mini', lucide: <SlidersHorizontal size={18} strokeWidth={2.3} />, label: 'Pulsar Mini' }
-              ].map(m => {
-                const isActive = method === m.id;
-                return (
-                  <button
-                    type="button"
-                    key={m.id}
-                    aria-pressed={isActive}
-                    onClick={(e) => {
-                      if (navigator.vibrate) navigator.vibrate(8);
-                      const container = e.currentTarget.parentElement;
-                      if (container) {
-                        const scrollTarget = e.currentTarget.offsetLeft - (container.clientWidth / 2) + (e.currentTarget.clientWidth / 2);
-                        container.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-                      }
-                      setMethod(m.id);
-                      if (m.id === 'NextLevel Pulsar Mini') {
-                        if (!doseInG || doseInG === 20.0 || doseInG === 15.0) {
-                          setDoseInG(18.0);
-                          baseDoseRef.current = 18.0;
-                          setDoseAdjustmentFeedback(null);
-                        }
-                        if (!ratioVal || ratioVal === 15.0 || ratioVal === 16.6) setRatioVal(16.67);
-                      } else if (m.id === 'AeroPress Go') {
-                        if (!doseInG || doseInG === 20.0 || doseInG > 15.0) {
-                          setDoseInG(14.0);
-                          baseDoseRef.current = 14.0;
-                          setDoseAdjustmentFeedback(null);
-                        }
-                        if (!ratioVal || ratioVal === 15.0) setRatioVal(14.3);
-                      }
-                    }}
-                    className={`cupertino-segmented-btn ${isActive ? 'active' : ''}`}
-                    style={{
-                      flex: '0 0 auto',
-                      minWidth: '88px',
-                      flexDirection: 'column',
-                      padding: '8px 6px',
-                      minHeight: '54px',
-                      gap: '4px',
-                      borderRadius: '10px'
-                    }}
-                  >
-                    {m.lucide}
-                    <span style={{ fontSize: '10.5px', fontWeight: isActive ? '800' : '600', whiteSpace: 'nowrap' }}>{m.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* 🌟 Recetas Legendarias & Técnicas de Baristas Famosos */}
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11.5px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--color-text)' }}>
-                  <Award size={14} style={{ color: 'var(--color-crimson)' }} />
-                  <span>Recetas Legendarias de Baristas</span>
-                </div>
-                <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>Carga rápida</span>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none' }}>
-                {(method === 'NextLevel Pulsar Mini'
-                  ? FAMOUS_RECIPES.filter(famous => famous.method === 'NextLevel Pulsar Mini' || famous.id.includes('pulsar'))
-                  : FAMOUS_RECIPES.filter(famous => famous.method === method).length > 0
-                    ? FAMOUS_RECIPES.filter(famous => famous.method === method)
-                    : FAMOUS_RECIPES
-                ).map((famous) => {
-                  const isSelected = selectedFamousRecipe === famous.id;
-                  return (
-                    <button
-                      key={famous.id}
-                      type="button"
-                      onClick={() => handleApplyFamousRecipe(famous)}
-                      style={{
-                        flexShrink: 0,
-                        padding: '8px 12px',
-                        borderRadius: '10px',
-                        border: isSelected ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
-                        backgroundColor: isSelected ? 'var(--bg-header)' : 'var(--bg-card)',
-                        color: 'var(--color-text)',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '2px',
-                        transition: 'all 150ms var(--transition-spring)',
-                        minWidth: '135px',
-                        boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.06)' : 'none'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: '900', color: isSelected ? 'var(--barista-accent-honey, var(--color-crimson))' : 'inherit' }}>
-                          {famous.name}
-                        </span>
-                      </div>
-                      <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
-                        {famous.badge}
-                      </span>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>
-                        {famous.ratio} • {famous.temperature}°C
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            {/* V4 Modular Recipe Parameters Grid */}
+            <RecipeParamsGrid
+              method={method}
+              setMethod={setMethod}
+              doseInG={doseInG}
+              setDoseInG={handleDoseChange}
+              doseOutG={doseOutG}
+              setDoseOutG={setDoseOutG}
+              ratioVal={ratioVal}
+              setRatioVal={setRatioVal}
+              waterTemp={waterTemp}
+              setWaterTemp={setWaterTemp}
+              brewTime={brewTime}
+              setBrewTime={setBrewTime}
+              onApplyFamousRecipe={handleApplyFamousRecipe}
+              selectedFamousRecipe={selectedFamousRecipe}
+              doseAdjustmentFeedback={doseAdjustmentFeedback ? getDoseFeedbackForGrinder(doseAdjustmentFeedback, grinderType)?.deltaText : null}
+            />
 
             {/* Receta Recomendada por IA */}
             <div className="candy-card static" style={{ marginBottom: '16px', padding: '18px', backgroundColor: 'var(--bg-card)' }}>
@@ -1844,467 +1657,47 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               )}
             </div>
 
-            {/* Quick Action: Iniciar Cronómetro Barista con parámetros actuales */}
-            <div style={{ marginBottom: '14px' }}>
-              <button
-                type="button"
-                className="btn-candy"
-                onClick={() => handleStartBrewGuide({
-                  method,
-                  dose_in_g: doseInG,
-                  water_total_g: method === 'Espresso' ? doseOutG : Math.round(doseInG * ratioVal),
-                  ratio: method === 'Espresso' ? `1:${(doseOutG / doseInG).toFixed(1)}` : `1:${ratioVal}`,
-                  temperature: `${waterTemp}°C`,
-                  brew_time: brewTime,
-                  grind: getGrindString(),
-                  active_grinder_dial: {
-                    grinder_id: grinderType,
-                    dial: getGrindString()
-                  }
-                })}
-                style={{
-                  width: '100%',
-                  minHeight: '44px',
-                  padding: '11px 16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  fontWeight: '800',
-                  fontSize: '13px',
-                  backgroundColor: 'rgba(217, 119, 6, 0.12)',
-                  border: '1.5px solid rgba(217, 119, 6, 0.45)',
-                  color: 'var(--barista-accent-honey, #D97706)',
-                  borderRadius: '12px',
-                  cursor: 'pointer'
-                }}
-              >
-                <Play size={15} fill="currentColor" />
-                <span>Iniciar Extracción con Parámetros Actuales (Modo Barista)</span>
-              </button>
-            </div>
+            {/* V4 Modular Grinder Sync Matrix */}
+            <GrinderSyncMatrix
+              grinderType={grinderType}
+              setGrinderType={handleSelectGrinder}
+              currentMicrons={currentMicrons}
+              jmaxRot={jmaxRot}
+              setJmaxRot={(v) => { setJmaxRot(v); updateManualGrinder('jmax', { rot: v, num: jmaxNum, click: jmaxClick }); }}
+              jmaxNum={jmaxNum}
+              setJmaxNum={(v) => { setJmaxNum(v); updateManualGrinder('jmax', { rot: jmaxRot, num: v, click: jmaxClick }); }}
+              jmaxClick={jmaxClick}
+              setJmaxClick={(v) => { setJmaxClick(v); updateManualGrinder('jmax', { rot: jmaxRot, num: jmaxNum, click: v }); }}
+              kUltraDial={kUltraDial}
+              setKUltraDial={(v) => { setKUltraDial(v); updateManualGrinder('k_ultra', v); }}
+              odeDial={odeDial}
+              setOdeDial={(v) => { setOdeDial(v); updateManualGrinder('ode_gen2', v); }}
+              comandanteClicks={comandanteClicks}
+              setComandanteClicks={(v) => { setComandanteClicks(v); updateManualGrinder('comandante', v); }}
+              femobookClicks={femobookClicks}
+              setFemobookClicks={(v) => { setFemobookClicks(v); updateManualGrinder('femobook', v); }}
+              kingrinderClicks={kingrinderClicks}
+              setKingrinderClicks={(v) => { setKingrinderClicks(v); updateManualGrinder('kingrinder', v); }}
+              timemoreClicks={timemoreClicks}
+              setTimemoreClicks={(v) => { setTimemoreClicks(v); updateManualGrinder('timemore', v); }}
+              baratzaStep={baratzaStep}
+              setBaratzaStep={(v) => { setBaratzaStep(v); updateManualGrinder('baratza', v); }}
+              updateManualGrinder={updateManualGrinder}
+              getGrindString={getGrindString}
+            />
 
-            {/* Formulario Bento Grid con Steppers Cupertino */}
-            <div className="bento-grid" style={{ gap: '10px', marginBottom: '16px' }}>
-              <div className="bento-widget accent">
-                <div className="bento-header">
-                  <span>Dosis In</span>
-                  <Scale size={14} />
-                </div>
-                <div className="bento-value-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', marginTop: '4px' }}>
-                  <button
-                    type="button"
-                    className="cupertino-stepper-btn"
-                    onClick={() => {
-                      if (navigator.vibrate) navigator.vibrate(8);
-                      const next = Math.max(5, parseFloat(((parseFloat(doseInG) || 20) - 0.5).toFixed(1)));
-                      handleDoseChange(next);
-                    }}
-                    aria-label="Menos dosis"
-                  >
-                    -
-                  </button>
-                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      step="0.5"
-                      value={doseInG}
-                      onChange={(e) => setDoseInG(e.target.value === '' ? '' : (parseFloat(e.target.value) || 0))}
-                      onBlur={() => {
-                        if (doseInG && doseInG > 0) {
-                          handleDoseChange(doseInG);
-                        } else {
-                          setDoseInG(baseDoseRef.current || 20.0);
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && doseInG && doseInG > 0) {
-                          handleDoseChange(doseInG);
-                          e.currentTarget.blur();
-                        }
-                      }}
-                      style={{ width: '46px', maxWidth: '48px', minWidth: 0, textAlign: 'center', fontSize: '18px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
-                    />
-                    <span className="unit" style={{ marginLeft: '2px' }}>g</span>
-                  </div>
-                  <button
-                    type="button"
-                    className="cupertino-stepper-btn"
-                    onClick={() => {
-                      if (navigator.vibrate) navigator.vibrate(8);
-                      const next = Math.min(50, parseFloat(((parseFloat(doseInG) || 20) + 0.5).toFixed(1)));
-                      handleDoseChange(next);
-                    }}
-                    aria-label="Más dosis"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              {method === 'Espresso' ? (
-                <div className="bento-widget accent">
-                  <div className="bento-header">
-                    <span>Output</span>
-                    <Droplet size={14} />
-                  </div>
-                  <div className="bento-value-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', marginTop: '4px' }}>
-                    <button
-                      type="button"
-                      className="cupertino-stepper-btn"
-                      onClick={() => {
-                        if (navigator.vibrate) navigator.vibrate(8);
-                        setDoseOutG(d => Math.max(5, parseFloat((d - 1).toFixed(1))));
-                      }}
-                      aria-label="Menos output"
-                    >
-                      -
-                    </button>
-                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        step="0.5"
-                        value={doseOutG}
-                        onChange={(e) => setDoseOutG(parseFloat(e.target.value) || 0)}
-                        style={{ width: '46px', maxWidth: '48px', minWidth: 0, textAlign: 'center', fontSize: '18px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
-                      />
-                      <span className="unit" style={{ marginLeft: '2px' }}>g</span>
-                    </div>
-                    <button
-                      type="button"
-                      className="cupertino-stepper-btn"
-                      onClick={() => {
-                        if (navigator.vibrate) navigator.vibrate(8);
-                        setDoseOutG(d => Math.min(100, parseFloat((d + 1).toFixed(1))));
-                      }}
-                      aria-label="Más output"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <div className="bento-info" style={{ marginTop: '4px' }}>
-                    Ratio ~1:{doseInG > 0 ? (doseOutG / doseInG).toFixed(1) : 2}
-                  </div>
-                </div>
-              ) : (
-                <div className="bento-widget accent">
-                  <div className="bento-header">
-                    <span>Ratio 1:</span>
-                    <Gauge size={14} />
-                  </div>
-                  <div className="bento-value-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', marginTop: '4px' }}>
-                    <button
-                      type="button"
-                      className="cupertino-stepper-btn"
-                      onClick={() => {
-                        if (navigator.vibrate) navigator.vibrate(8);
-                        setRatioVal(r => Math.max(8, parseFloat((r - 0.5).toFixed(1))));
-                      }}
-                      aria-label="Menos ratio"
-                    >
-                      -
-                    </button>
-                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        step="0.5"
-                        value={ratioVal}
-                        onChange={(e) => setRatioVal(parseFloat(e.target.value) || 0)}
-                        style={{ width: '46px', maxWidth: '48px', minWidth: 0, textAlign: 'center', fontSize: '18px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      className="cupertino-stepper-btn"
-                      onClick={() => {
-                        if (navigator.vibrate) navigator.vibrate(8);
-                        setRatioVal(r => Math.min(25, parseFloat((r + 0.5).toFixed(1))));
-                      }}
-                      aria-label="Más ratio"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <div className="bento-info" style={{ marginTop: '4px' }}>
-                    ~{Math.round(doseInG * ratioVal)}g agua
-                  </div>
-                </div>
-              )}
-
-              <div className="bento-widget">
-                <div className="bento-header">
-                  <span>Temp Agua</span>
-                  <Thermometer size={14} />
-                </div>
-                <div className="bento-value-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', marginTop: '4px' }}>
-                  <button
-                    type="button"
-                    className="cupertino-stepper-btn"
-                    onClick={() => {
-                      if (navigator.vibrate) navigator.vibrate(8);
-                      setWaterTemp(t => Math.max(70, t - 1));
-                    }}
-                    aria-label="Menos temperatura"
-                  >
-                    -
-                  </button>
-                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      value={waterTemp}
-                      onChange={(e) => setWaterTemp(parseInt(e.target.value) || 93)}
-                      style={{ width: '44px', maxWidth: '46px', minWidth: 0, textAlign: 'center', fontSize: '18px', fontWeight: '800', border: 'none', background: 'transparent', padding: 0 }}
-                    />
-                    <span className="unit" style={{ marginLeft: '2px' }}>°C</span>
-                  </div>
-                  <button
-                    type="button"
-                    className="cupertino-stepper-btn"
-                    onClick={() => {
-                      if (navigator.vibrate) navigator.vibrate(8);
-                      setWaterTemp(t => Math.min(100, t + 1));
-                    }}
-                    aria-label="Más temperatura"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              <div className="bento-widget">
-                <div className="bento-header">
-                  <span>Tiempo</span>
-                  <Timer size={14} />
-                </div>
-                <div className="bento-value-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '4px', minHeight: '34px' }}>
-                  <input
-                    type="text"
-                    style={{ fontSize: '18px', fontWeight: '800', textAlign: 'center', width: '80px', maxWidth: '84px', minWidth: 0, border: 'none', background: 'transparent' }}
-                    value={brewTime}
-                    onChange={(e) => setBrewTime(e.target.value)}
-                  />
-                </div>
-                <div className="bento-info" style={{ marginTop: '4px' }}>
-                  mm:ss objetivo
-                </div>
-              </div>
-
-              {/* Manual Grinder Selector & Dedicated Controls (8 Supported Grinders) */}
-              <div className="bento-widget bento-full-row accent">
-                <div className="bento-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <Coffee size={15} />
-                    <span style={{ fontWeight: '800' }}>Molino</span>
-                  </div>
-                  {/* Selector Pills */}
-                  <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', maxWidth: '75%', paddingBottom: '2px', scrollbarWidth: 'none' }}>
-                    {GRINDERS.map(g => {
-                      const isSel = grinderType === g.id;
-                      return (
-                        <button
-                          key={g.id}
-                          type="button"
-                          onClick={() => handleSelectGrinder(g.id)}
-                          style={{
-                            padding: '4px 8px',
-                            fontSize: '10px',
-                            fontWeight: '800',
-                            borderRadius: '6px',
-                            whiteSpace: 'nowrap',
-                            border: isSel ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                            backgroundColor: isSel ? 'var(--color-crimson)' : 'var(--bg-canvas)',
-                            color: isSel ? '#FFFFFF' : 'var(--color-text)',
-                            cursor: 'pointer',
-                            flexShrink: 0
-                          }}
-                        >
-                          {g.shortName}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Auto-ajuste por Dosis Feedback Chip */}
-                {doseAdjustmentFeedback && (() => {
-                  const currentFb = getDoseFeedbackForGrinder(doseAdjustmentFeedback, grinderType);
-                  if (!currentFb) return null;
-                  return (
-                    <div
-                      style={{
-                        margin: '6px 0 10px 0',
-                        padding: '7px 12px',
-                        borderRadius: '10px',
-                        backgroundColor: 'var(--barista-accent-honey-bg, #FEF3C7)',
-                        border: '1.5px solid var(--border-color)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '8px',
-                        fontSize: '11px',
-                        color: 'var(--barista-accent-honey-text, #92400E)'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0, flexWrap: 'wrap' }}>
-                        <Scale size={14} color="var(--barista-accent-honey, #D97706)" style={{ flexShrink: 0 }} />
-                        <span>
-                          <strong style={{ color: 'var(--barista-accent-honey, #D97706)' }}>Auto-ajuste por dosis:</strong>{' '}
-                          <span style={{ fontWeight: '800' }}>{currentFb.deltaText}</span> al pasar a {currentFb.toDose}g{' '}
-                          <span style={{ color: 'var(--barista-accent-honey-text, #92400E)', opacity: 0.85, fontSize: '10px' }}>({currentFb.description})</span>
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            handleDoseChange(currentFb.fromDose);
-                            setDoseAdjustmentFeedback(null);
-                          }}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--color-text-muted)',
-                            cursor: 'pointer',
-                            fontSize: '10px',
-                            textDecoration: 'underline',
-                            padding: 0
-                          }}
-                          title={`Restablecer a ${currentFb.fromDose}g`}
-                        >
-                          Restablecer
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDoseAdjustmentFeedback(null)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--color-text-muted)',
-                            cursor: 'pointer',
-                            padding: '2px',
-                            display: 'flex',
-                            alignItems: 'center'
-                          }}
-                          aria-label="Cerrar aviso"
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* 1. 1Zpresso J-Max Controls */}
-                {grinderType === 'jmax' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0' }}>
-                    <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxRot} onChange={(e) => { const v = parseInt(e.target.value) || 0; setJmaxRot(v); updateManualGrinder('jmax', { rot: v, num: jmaxNum, click: jmaxClick }); }}>
-                      {[0, 1, 2, 3, 4].map(v => <option key={v} value={v}>Rot: {v}</option>)}
-                    </select>
-                    <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxNum} onChange={(e) => { const v = parseInt(e.target.value) || 0; setJmaxNum(v); updateManualGrinder('jmax', { rot: jmaxRot, num: v, click: jmaxClick }); }}>
-                      {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(v => <option key={v} value={v}>Num: {v}</option>)}
-                    </select>
-                    <select className="candy-input" style={{ flex: 1, textAlign: 'center', margin: 0, padding: '8px', fontSize: '12px' }} value={jmaxClick} onChange={(e) => { const v = parseInt(e.target.value) || 0; setJmaxClick(v); updateManualGrinder('jmax', { rot: jmaxRot, num: jmaxNum, click: v }); }}>
-                      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(v => <option key={v} value={v}>Clic: {v}</option>)}
-                    </select>
-                  </div>
-                )}
-
-                {/* 2. 1Zpresso K-Ultra Controls */}
-                {grinderType === 'k_ultra' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(1.0, Math.round((kUltraDial - 0.5) * 10) / 10); setKUltraDial(v); updateManualGrinder('k_ultra', v); }}>-0.5</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(1.0, Math.round((kUltraDial - 0.1) * 10) / 10); setKUltraDial(v); updateManualGrinder('k_ultra', v); }}>-0.1</button>
-                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                      <input type="number" step="0.1" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={kUltraDial} min="1.0" max="15.0" onChange={(e) => { const v = Math.max(1.0, Math.min(15.0, parseFloat(e.target.value) || 1.0)); setKUltraDial(v); updateManualGrinder('k_ultra', v); }} />
-                    </div>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(15.0, Math.round((kUltraDial + 0.1) * 10) / 10); setKUltraDial(v); updateManualGrinder('k_ultra', v); }}>+0.1</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(15.0, Math.round((kUltraDial + 0.5) * 10) / 10); setKUltraDial(v); updateManualGrinder('k_ultra', v); }}>+0.5</button>
-                  </div>
-                )}
-
-                {/* 3. Fellow Ode Gen 2 Controls */}
-                {grinderType === 'ode_gen2' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(1.0, Math.round((odeDial - 0.5) * 10) / 10); setOdeDial(v); updateManualGrinder('ode_gen2', v); }}>-0.5</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(1.0, Math.round((odeDial - 0.1) * 10) / 10); setOdeDial(v); updateManualGrinder('ode_gen2', v); }}>-0.1</button>
-                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                      <input type="number" step="0.1" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={odeDial} min="1.0" max="11.0" onChange={(e) => { const v = Math.max(1.0, Math.min(11.0, parseFloat(e.target.value) || 1.0)); setOdeDial(v); updateManualGrinder('ode_gen2', v); }} />
-                    </div>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(11.0, Math.round((odeDial + 0.1) * 10) / 10); setOdeDial(v); updateManualGrinder('ode_gen2', v); }}>+0.1</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(11.0, Math.round((odeDial + 0.5) * 10) / 10); setOdeDial(v); updateManualGrinder('ode_gen2', v); }}>+0.5</button>
-                  </div>
-                )}
-
-                {/* 4. Comandante C40 Controls */}
-                {grinderType === 'comandante' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(0, comandanteClicks - 1); setComandanteClicks(v); updateManualGrinder('comandante', v); }}>-1</button>
-                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={comandanteClicks} min="0" max="45" onChange={(e) => { const v = Math.max(0, Math.min(45, parseInt(e.target.value) || 0)); setComandanteClicks(v); updateManualGrinder('comandante', v); }} />
-                    </div>
-                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(45, comandanteClicks + 1); setComandanteClicks(v); updateManualGrinder('comandante', v); }}>+1</button>
-                  </div>
-                )}
-
-                {/* 5. Femobook A2 Controls */}
-                {grinderType === 'femobook' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(0, femobookClicks - 5); setFemobookClicks(v); updateManualGrinder('femobook', v); }}>-5</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(0, femobookClicks - 1); setFemobookClicks(v); updateManualGrinder('femobook', v); }}>-1</button>
-                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={femobookClicks} min="0" max="120" onChange={(e) => { const v = Math.max(0, Math.min(120, parseInt(e.target.value) || 0)); setFemobookClicks(v); updateManualGrinder('femobook', v); }} />
-                    </div>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(120, femobookClicks + 1); setFemobookClicks(v); updateManualGrinder('femobook', v); }}>+1</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(120, femobookClicks + 5); setFemobookClicks(v); updateManualGrinder('femobook', v); }}>+5</button>
-                  </div>
-                )}
-
-                {/* 6. Kingrinder K6 Controls */}
-                {grinderType === 'kingrinder' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(0, kingrinderClicks - 5); setKingrinderClicks(v); updateManualGrinder('kingrinder', v); }}>-5</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(0, kingrinderClicks - 1); setKingrinderClicks(v); updateManualGrinder('kingrinder', v); }}>-1</button>
-                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={kingrinderClicks} min="0" max="180" onChange={(e) => { const v = Math.max(0, Math.min(180, parseInt(e.target.value) || 0)); setKingrinderClicks(v); updateManualGrinder('kingrinder', v); }} />
-                    </div>
-                    <button type="button" className="btn-candy" style={{ minWidth: '32px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(180, kingrinderClicks + 1); setKingrinderClicks(v); updateManualGrinder('kingrinder', v); }}>+1</button>
-                    <button type="button" className="btn-candy" style={{ minWidth: '34px', minHeight: '34px', padding: '4px 6px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(180, kingrinderClicks + 5); setKingrinderClicks(v); updateManualGrinder('kingrinder', v); }}>+5</button>
-                  </div>
-                )}
-
-                {/* 7. Timemore C2/C3 Controls */}
-                {grinderType === 'timemore' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(6, timemoreClicks - 1); setTimemoreClicks(v); updateManualGrinder('timemore', v); }}>-1</button>
-                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={timemoreClicks} min="6" max="36" onChange={(e) => { const v = Math.max(6, Math.min(36, parseInt(e.target.value) || 6)); setTimemoreClicks(v); updateManualGrinder('timemore', v); }} />
-                    </div>
-                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(36, timemoreClicks + 1); setTimemoreClicks(v); updateManualGrinder('timemore', v); }}>+1</button>
-                  </div>
-                )}
-
-                {/* 8. Baratza Encore/ESP Controls */}
-                {grinderType === 'baratza' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0', width: '100%', boxSizing: 'border-box' }}>
-                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.max(1, baratzaStep - 1); setBaratzaStep(v); updateManualGrinder('baratza', v); }}>-1</button>
-                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
-                      <input type="number" inputMode="decimal" className="candy-input" style={{ width: '100%', textAlign: 'center', margin: 0, padding: '6px 4px', fontSize: '15px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }} value={baratzaStep} min="1" max="40" onChange={(e) => { const v = Math.max(1, Math.min(40, parseInt(e.target.value) || 1)); setBaratzaStep(v); updateManualGrinder('baratza', v); }} />
-                    </div>
-                    <button type="button" className="btn-candy" style={{ minWidth: '36px', minHeight: '34px', padding: '4px 8px', margin: 0, fontSize: '11px', fontWeight: 'bold' }} onClick={() => { const v = Math.min(40, baratzaStep + 1); setBaratzaStep(v); updateManualGrinder('baratza', v); }}>+1</button>
-                  </div>
-                )}
-
-                {/* Active Grinder Specs & Calculated Microns Summary */}
-                <div className="bento-info" style={{ marginTop: '6px', fontSize: '10.5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
-                  <span><strong>{activeGrinderMeta.name}:</strong> {getGrindString().replace(/^[A-Za-z0-9\s/-]+:\s*/, '')} (~{currentMicrons} µm)</span>
-                  <span style={{ color: 'var(--color-text-muted)' }}>{activeGrinderMeta.burrs}</span>
-                </div>
-              </div>
-            </div>
+            {/* V4 Modular Pour Sequence Timeline */}
+            <PourSequenceTimeline
+              pours={activePoursState.length > 0 ? activePoursState : (aiRecommendation?.pours || (method === 'NextLevel Pulsar Mini' ? [
+                { step: 1, label: 'Pre-infusión / Bloom', water_g: 50, total_water_g: 50, time: '0:00 - 0:45', valve: 'closed', description: 'Válvula cerrada. Mojar cama uniformemente sin remover.' },
+                { step: 2, label: 'Primer Vertido (Inmersión)', water_g: 100, total_water_g: 150, time: '0:45 - 1:30', valve: 'half', description: 'Abrir al 50%. Verter con dispersor suave.' },
+                { step: 3, label: 'Segundo Vertido (Percolación)', water_g: 150, total_water_g: 300, time: '1:30 - 3:30', valve: 'open', description: 'Válvula 100% abierta para percolación controlada.' }
+              ] : []))}
+              setPours={setActivePoursState}
+              isPulsar={method === 'NextLevel Pulsar Mini'}
+              totalWaterG={method === 'Espresso' ? doseOutG : Math.round(doseInG * ratioVal)}
+              doseInG={doseInG}
+            />
 
             {/* Evaluacion Sensorial */}
             <div className="candy-card static" style={{ marginTop: '14px', padding: '16px' }}>
@@ -2361,6 +1754,31 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
           {/* Dial-in Calibration Assistant */}
           <DialInAssistant />
+
+          {/* V4 Sticky Action Bar */}
+          <BatchStickyActionBar
+            onStartBrew={() => handleStartBrewGuide({
+              method,
+              dose_in_g: doseInG,
+              water_total_g: method === 'Espresso' ? doseOutG : Math.round(doseInG * ratioVal),
+              ratio: method === 'Espresso' ? `1:${(doseOutG / doseInG).toFixed(1)}` : `1:${ratioVal}`,
+              temperature: `${waterTemp}°C`,
+              brew_time: brewTime,
+              grind: getGrindString(),
+              pours: activePoursState.length > 0 ? activePoursState : (aiRecommendation?.pours || []),
+              active_grinder_dial: {
+                grinder_id: grinderType,
+                dial: getGrindString()
+              }
+            })}
+            onSaveRecipe={handleRecipeSubmit}
+            onRepeatLastRecipe={handleRepeatLastRecipe}
+            isOwner={isOwner}
+            hasLastRecipe={!!lastRecipe}
+            doseInG={doseInG}
+            waterTotalG={method === 'Espresso' ? doseOutG : Math.round(doseInG * ratioVal)}
+            method={method}
+          />
         </div>
       )}
 

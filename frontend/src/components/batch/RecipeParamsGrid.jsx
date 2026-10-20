@@ -117,7 +117,7 @@ export default function RecipeParamsGrid({
 
           <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', paddingBottom: '4px', scrollbarWidth: 'none' }}>
             {relevantFamous.map((fam) => {
-              const isSelected = selectedFamousRecipe?.id === fam.id;
+              const isSelected = selectedFamousRecipe === fam.id || selectedFamousRecipe?.id === fam.id;
               return (
                 <button
                   type="button"
@@ -171,7 +171,8 @@ export default function RecipeParamsGrid({
               className="barista-stepper-btn"
               onClick={() => {
                 if (navigator.vibrate) navigator.vibrate(6);
-                setDoseInG(d => Math.max(5, parseFloat((d - 0.5).toFixed(1))));
+                const cur = parseFloat(doseInG) || 20;
+                setDoseInG(Math.max(5, parseFloat((cur - 0.5).toFixed(1))));
               }}
               aria-label="Menos dosis"
             >
@@ -194,7 +195,8 @@ export default function RecipeParamsGrid({
               className="barista-stepper-btn"
               onClick={() => {
                 if (navigator.vibrate) navigator.vibrate(6);
-                setDoseInG(d => Math.min(50, parseFloat((d + 0.5).toFixed(1))));
+                const cur = parseFloat(doseInG) || 20;
+                setDoseInG(Math.min(50, parseFloat((cur + 0.5).toFixed(1))));
               }}
               aria-label="Más dosis"
             >
@@ -221,7 +223,8 @@ export default function RecipeParamsGrid({
                 className="barista-stepper-btn"
                 onClick={() => {
                   if (navigator.vibrate) navigator.vibrate(6);
-                  setDoseOutG(d => Math.max(10, parseFloat((d - 1).toFixed(1))));
+                  const cur = parseFloat(doseOutG) || 36;
+                  setDoseOutG(Math.max(10, parseFloat((cur - 1).toFixed(1))));
                 }}
                 aria-label="Menos output"
               >
@@ -243,7 +246,8 @@ export default function RecipeParamsGrid({
                 className="barista-stepper-btn"
                 onClick={() => {
                   if (navigator.vibrate) navigator.vibrate(6);
-                  setDoseOutG(d => Math.min(100, parseFloat((d + 1).toFixed(1))));
+                  const cur = parseFloat(doseOutG) || 36;
+                  setDoseOutG(Math.min(100, parseFloat((cur + 1).toFixed(1))));
                 }}
                 aria-label="Más output"
               >
@@ -266,7 +270,8 @@ export default function RecipeParamsGrid({
                 className="barista-stepper-btn"
                 onClick={() => {
                   if (navigator.vibrate) navigator.vibrate(6);
-                  setRatioVal(r => Math.max(8, parseFloat((r - 0.5).toFixed(1))));
+                  const cur = parseFloat(ratioVal) || 15;
+                  setRatioVal(Math.max(8, parseFloat((cur - 0.5).toFixed(1))));
                 }}
                 aria-label="Menos ratio"
               >
@@ -288,7 +293,8 @@ export default function RecipeParamsGrid({
                 className="barista-stepper-btn"
                 onClick={() => {
                   if (navigator.vibrate) navigator.vibrate(6);
-                  setRatioVal(r => Math.min(25, parseFloat((r + 0.5).toFixed(1))));
+                  const cur = parseFloat(ratioVal) || 15;
+                  setRatioVal(Math.min(25, parseFloat((cur + 0.5).toFixed(1))));
                 }}
                 aria-label="Más ratio"
               >
@@ -313,7 +319,8 @@ export default function RecipeParamsGrid({
               className="barista-stepper-btn"
               onClick={() => {
                 if (navigator.vibrate) navigator.vibrate(6);
-                setWaterTemp(t => Math.max(70, t - 1));
+                const cur = parseInt(waterTemp) || 93;
+                setWaterTemp(Math.max(70, cur - 1));
               }}
               aria-label="Menos temperatura"
             >
@@ -335,7 +342,8 @@ export default function RecipeParamsGrid({
               className="barista-stepper-btn"
               onClick={() => {
                 if (navigator.vibrate) navigator.vibrate(6);
-                setWaterTemp(t => Math.min(100, t + 1));
+                const cur = parseInt(waterTemp) || 93;
+                setWaterTemp(Math.min(100, cur + 1));
               }}
               aria-label="Más temperatura"
             >
