@@ -28,6 +28,19 @@ export default function BatchHeaderCard({
   const totalDoses = batch.total_doses ?? 0;
   const remainingGrams = batch.remaining_weight_g ?? 0;
 
+  const isBatchFrozen = isFrozen !== undefined
+    ? isFrozen
+    : Boolean(batch.freeze_date && String(batch.freeze_date).trim() !== '');
+
+  const effectiveDaysSinceRoast = daysSinceRoast !== undefined
+    ? daysSinceRoast
+    : (() => {
+        if (!batch.roast_date) return null;
+        const roast = new Date(batch.roast_date);
+        const target = isBatchFrozen ? new Date(batch.freeze_date) : new Date();
+        return Math.ceil(Math.abs(target - roast) / (1000 * 60 * 60 * 24));
+      })();
+
   return (
     <div className="barista-card" style={{ marginBottom: '16px', position: 'relative' }}>
       {/* Top Header: Title, Roaster and SCA Score */}
@@ -95,12 +108,12 @@ export default function BatchHeaderCard({
             {batch.roast_level}
           </span>
         )}
-        {daysSinceRoast !== null && (
+        {effectiveDaysSinceRoast !== null && (
           <span className="barista-chip" title="Días desde el tueste">
-            <Flame size={12} /> {daysSinceRoast} días de reposo
+            <Flame size={12} /> {effectiveDaysSinceRoast} días de reposo
           </span>
         )}
-        {isFrozen && (
+        {isBatchFrozen && (
           <span className="barista-chip" style={{ borderColor: 'var(--accent-cryo)', color: 'var(--accent-cryo)' }} title="Preservado en Cava Criogénica">
             <Snowflake size={12} /> Cava Criogénica (-18°C)
           </span>

@@ -1122,6 +1122,16 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const isLowStock = batch.remaining_doses <= 2;
   const lastRecipe = batch.recipes && batch.recipes.length > 0 ? batch.recipes[0] : null;
 
+  // Cava Criogénica & Tiempos de Reposo
+  const isFrozen = Boolean(batch?.freeze_date && String(batch.freeze_date).trim() !== '');
+  let daysSinceRoast = null;
+  if (batch?.roast_date) {
+    const roast = new Date(batch.roast_date);
+    const targetDate = isFrozen ? new Date(batch.freeze_date) : new Date();
+    const diffTime = Math.abs(targetDate - roast);
+    daysSinceRoast = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
   // Improvement 2: Semáforo de Desgasificación Logic & Badge Color
   let restingDays = 0;
   let restingDaysText = 'Sin datos';
