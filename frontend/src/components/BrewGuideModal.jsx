@@ -541,6 +541,7 @@ export default function BrewGuideModal({
 
   // Handler: Start / Resume / Pause
   const handleTogglePlay = useCallback(() => {
+    if (navigator.vibrate) navigator.vibrate(12);
     getAudioContext(); // Prime Web Audio context on user gesture
     primeSpeechSynthesis(); // Prime Web Speech API on user gesture
     if (isActive) {
@@ -556,6 +557,7 @@ export default function BrewGuideModal({
 
   // Handler: Skip forward to next stage
   const handleNextStage = useCallback(() => {
+    if (navigator.vibrate) navigator.vibrate(16);
     if (currentStageIndex < stages.length - 1) {
       const nextIdx = currentStageIndex + 1;
       const nextStage = stages[nextIdx];
@@ -870,17 +872,18 @@ export default function BrewGuideModal({
           /* ⏱️ VIEW 1: EXTRACTION TIMER VIEW                             */
           /* ============================================================== */
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {/* Giant Monospace Timer */}
+            {/* Giant Monospace Timer with Glanceability at 1m */}
             <div style={{ textAlign: 'center', margin: '8px 0 16px' }}>
               <div
-                className="font-mono text-7xl md:text-8xl font-black tracking-tight"
+                className="barista-timer font-mono text-7xl md:text-8xl font-black tracking-tight"
                 style={{
-                  fontFamily: 'var(--font-mono, "SF Mono", "JetBrains Mono", Menlo, monospace)',
-                  fontSize: 'clamp(4.2rem, 16vw, 6.5rem)',
+                  fontFamily: 'var(--font-metric, var(--font-mono, monospace))',
+                  fontSize: 'clamp(4.2rem, 15vw, 6.5rem)',
                   fontWeight: 900,
                   letterSpacing: '-0.04em',
                   lineHeight: 1,
-                  color: 'var(--color-text, #000000)'
+                  fontVariantNumeric: 'tabular-nums',
+                  color: 'var(--text-primary, var(--color-text, #000000))'
                 }}
               >
                 {formatTime(elapsedSeconds)}
@@ -888,12 +891,13 @@ export default function BrewGuideModal({
               <div
                 style={{
                   fontSize: '13px',
-                  color: 'var(--color-text-muted, #8E8E93)',
+                  color: 'var(--text-secondary, var(--color-text-muted, #8E8E93))',
                   marginTop: '8px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '6px'
+                  gap: '6px',
+                  fontFamily: 'var(--font-display, sans-serif)'
                 }}
               >
                 <Clock size={14} />
@@ -986,18 +990,19 @@ export default function BrewGuideModal({
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '6px',
-                        padding: '4px 12px',
+                        padding: '6px 14px',
                         borderRadius: '9999px',
-                        fontSize: '11.5px',
+                        fontSize: '12px',
                         fontWeight: 800,
                         letterSpacing: '0.04em',
-                        backgroundColor: 'var(--barista-accent-danger-bg, #FEE2E2)',
-                        color: 'var(--barista-accent-danger-text, #991B1B)',
-                        border: '1px solid var(--barista-accent-danger, #EF4444)'
+                        backgroundColor: 'var(--valve-closed-bg, rgba(239, 68, 68, 0.15))',
+                        color: 'var(--valve-closed, #EF4444)',
+                        border: '1.5px solid var(--valve-closed, #EF4444)',
+                        boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)'
                       }}
                     >
-                      <Lock size={14} />
-                      <span>VÁLVULA CERRADA (100%)</span>
+                      <Lock size={15} />
+                      <span>🔒 VÁLVULA CERRADA (Bloom / Inmersión)</span>
                     </div>
                   )}
                   {currentStage.valve === 'half' && (
@@ -1006,18 +1011,19 @@ export default function BrewGuideModal({
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '6px',
-                        padding: '4px 12px',
+                        padding: '6px 14px',
                         borderRadius: '9999px',
-                        fontSize: '11.5px',
+                        fontSize: '12px',
                         fontWeight: 800,
                         letterSpacing: '0.04em',
-                        backgroundColor: 'var(--barista-accent-honey-bg, #FEF3C7)',
-                        color: 'var(--barista-accent-honey-text, #92400E)',
-                        border: '1px solid var(--barista-accent-honey, #D97706)'
+                        backgroundColor: 'var(--valve-half-bg, rgba(217, 119, 6, 0.15))',
+                        color: 'var(--valve-half, #D97706)',
+                        border: '1.5px solid var(--valve-half, #D97706)',
+                        boxShadow: '0 2px 8px rgba(217, 119, 6, 0.2)'
                       }}
                     >
-                      <Zap size={14} />
-                      <span>VÁLVULA AL 45-50% DE FLUJO</span>
+                      <Zap size={15} />
+                      <span>⚡ VÁLVULA 50% MEDIA (Caudal Regulado)</span>
                     </div>
                   )}
                   {currentStage.valve === 'open' && (
@@ -1026,18 +1032,19 @@ export default function BrewGuideModal({
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '6px',
-                        padding: '4px 12px',
+                        padding: '6px 14px',
                         borderRadius: '9999px',
-                        fontSize: '11.5px',
+                        fontSize: '12px',
                         fontWeight: 800,
                         letterSpacing: '0.04em',
-                        backgroundColor: 'var(--barista-accent-mint-bg, #D1FAE5)',
-                        color: 'var(--barista-accent-mint-text, #065F46)',
-                        border: '1px solid var(--barista-accent-mint, #10B981)'
+                        backgroundColor: 'var(--valve-open-bg, rgba(16, 185, 129, 0.15))',
+                        color: 'var(--valve-open, #10B981)',
+                        border: '1.5px solid var(--valve-open, #10B981)',
+                        boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)'
                       }}
                     >
-                      <Unlock size={14} />
-                      <span>VÁLVULA 100% ABIERTA</span>
+                      <Unlock size={15} />
+                      <span>🔓 VÁLVULA 100% ABIERTA (Drawdown / Percolación)</span>
                     </div>
                   )}
                 </div>
@@ -1245,16 +1252,18 @@ export default function BrewGuideModal({
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '10px',
-                    padding: '16px 20px',
-                    borderRadius: '12px',
-                    backgroundColor: isActive ? 'var(--barista-accent-danger, #EF4444)' : 'var(--color-crimson, #BC5449)',
+                    padding: '14px 20px',
+                    borderRadius: 'var(--radius-lg, 14px)',
+                    backgroundColor: isActive ? 'var(--valve-closed, #EF4444)' : 'var(--accent-terracotta, #BC5449)',
                     color: '#FFFFFF',
                     fontSize: '16px',
                     fontWeight: 800,
+                    fontFamily: 'var(--font-display, sans-serif)',
                     letterSpacing: '0.02em',
                     border: 'none',
                     cursor: 'pointer',
-                    minHeight: '48px',
+                    minHeight: '56px',
+                    height: '56px',
                     boxShadow: isActive ? '0 4px 16px rgba(239, 68, 68, 0.35)' : '0 4px 16px rgba(188, 84, 73, 0.35)',
                     transition: 'all 180ms ease'
                   }}
@@ -1282,16 +1291,18 @@ export default function BrewGuideModal({
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '8px',
-                    padding: '16px 14px',
-                    borderRadius: '12px',
-                    backgroundColor: 'var(--bg-card, #FFFFFF)',
-                    border: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
-                    color: 'var(--color-text, #000000)',
+                    padding: '14px 16px',
+                    borderRadius: 'var(--radius-lg, 14px)',
+                    backgroundColor: 'var(--bg-surface, var(--bg-card, #FFFFFF))',
+                    border: '1.5px solid var(--border-subtle, rgba(60, 60, 67, 0.12))',
+                    color: 'var(--text-primary, #000000)',
                     fontSize: '14px',
-                    fontWeight: 700,
+                    fontWeight: 800,
+                    fontFamily: 'var(--font-display, sans-serif)',
                     cursor: 'pointer',
-                    minHeight: '48px',
-                    boxShadow: 'var(--card-shadow, 0 2px 6px rgba(0, 0, 0, 0.04))',
+                    minHeight: '56px',
+                    height: '56px',
+                    boxShadow: 'var(--shadow-sm, 0 2px 6px rgba(0, 0, 0, 0.04))',
                     transition: 'all 180ms ease'
                   }}
                 >
@@ -1313,13 +1324,14 @@ export default function BrewGuideModal({
                     justifyContent: 'center',
                     gap: '6px',
                     padding: '12px 14px',
-                    borderRadius: '10px',
-                    backgroundColor: 'var(--barista-bg-subtle, rgba(118, 118, 128, 0.12))',
-                    border: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
-                    color: elapsedSeconds === 0 ? 'var(--color-text-muted, #8E8E93)' : 'var(--color-text, #000000)',
+                    borderRadius: 'var(--radius-md, 10px)',
+                    backgroundColor: 'var(--bg-elevated, rgba(118, 118, 128, 0.12))',
+                    border: '1px solid var(--border-subtle, rgba(60, 60, 67, 0.12))',
+                    color: elapsedSeconds === 0 ? 'var(--text-muted, #8E8E93)' : 'var(--text-primary, #000000)',
                     fontSize: '13px',
-                    fontWeight: 600,
-                    minHeight: '44px',
+                    fontWeight: 700,
+                    minHeight: '48px',
+                    height: '48px',
                     opacity: elapsedSeconds === 0 ? 0.5 : 1,
                     cursor: elapsedSeconds === 0 ? 'not-allowed' : 'pointer'
                   }}
@@ -1338,13 +1350,14 @@ export default function BrewGuideModal({
                     justifyContent: 'center',
                     gap: '6px',
                     padding: '12px 16px',
-                    borderRadius: '10px',
-                    backgroundColor: 'var(--barista-accent-mint-bg, #D1FAE5)',
-                    border: '1px solid var(--barista-accent-mint, #10B981)',
-                    color: 'var(--barista-accent-mint-text, #065F46)',
+                    borderRadius: 'var(--radius-md, 10px)',
+                    backgroundColor: 'var(--barista-accent-mint-bg, rgba(16, 185, 129, 0.15))',
+                    border: '1.5px solid var(--valve-open, #10B981)',
+                    color: 'var(--valve-open, #065F46)',
                     fontSize: '13px',
-                    fontWeight: 700,
-                    minHeight: '44px',
+                    fontWeight: 800,
+                    minHeight: '48px',
+                    height: '48px',
                     cursor: 'pointer',
                     transition: 'all 180ms ease'
                   }}
