@@ -284,7 +284,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
   const activeRack = racks.find(r => r.id === selectedRackId) || racks[0] || null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '90px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '90px', width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       {/* Top Banner / Summary */}
       <div
         style={{
@@ -874,7 +874,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
               {/* Physical Neo-Brutalist Rack Base Body (2x3 Grid) */}
               <div
                 style={{
-                  padding: '10px',
+                  padding: '8px 6px',
                   backgroundColor: 'var(--barista-bg-surface, var(--bg-card, #FFFFFF))',
                   backgroundImage: 'radial-gradient(var(--barista-border-hairline, rgba(0,0,0,0.06)) 1px, transparent 1px)',
                   backgroundSize: '16px 16px',
@@ -887,16 +887,16 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                 <div
                   style={{
                     backgroundColor: 'var(--barista-bg-elevated, #F8FAFC)',
-                    border: '2px solid var(--barista-border-hairline, var(--border-color))',
+                    border: '1.5px solid var(--barista-border-hairline, var(--border-color))',
                     borderRadius: 'var(--barista-radius-lg, 14px)',
-                    padding: '10px 8px',
+                    padding: '8px 6px',
                     boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.04)',
                     width: '100%',
                     maxWidth: '100%',
                     boxSizing: 'border-box'
                   }}
                 >
-                  {/* Stand Orientation Header: Back Row (#04-#06) & Front Row (#01-#03) */}
+                  {/* Stand Orientation Header: Front Row (#01-#03) & Back Row (#04-#06) */}
                   <div
                     style={{
                       display: 'flex',
@@ -911,13 +911,13 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                       textTransform: 'uppercase'
                     }}
                   >
-                    <span style={{ color: 'var(--barista-text-muted, #94A3B8)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <span>▲</span>
-                      <span>Fila Trasera (#04 - #06)</span>
-                    </span>
                     <span style={{ color: 'var(--barista-accent-honey, #D97706)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <span>▼</span>
+                      <span>▲</span>
                       <span>Fila Frontal (#01 - #03)</span>
+                    </span>
+                    <span style={{ color: 'var(--barista-text-muted, #94A3B8)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <span>▼</span>
+                      <span>Fila Posterior (#04 - #06)</span>
                     </span>
                   </div>
 
@@ -925,14 +925,14 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                     style={{
                       display: 'grid',
                       gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                      gap: '8px',
+                      gap: '6px',
                       width: '100%',
                       maxWidth: '100%',
                       boxSizing: 'border-box'
                     }}
                   >
-                    {/* Frontal visual ordering: Row 1 = [4, 5, 6] (trasera), Row 2 = [1, 2, 3] (frontal) */}
-                    {[4, 5, 6, 1, 2, 3].map((position) => {
+                    {/* Frontal visual ordering: Row 1 = [1, 2, 3] (frontal), Row 2 = [4, 5, 6] (posterior) */}
+                    {[1, 2, 3, 4, 5, 6].map((position) => {
                       const slot = rack.slots ? rack.slots.find(s => s.position === position) : null;
                       const isFilled = Boolean(slot && slot.batch_id);
 
@@ -994,7 +994,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                                   ? '0 3px 10px rgba(56, 189, 248, 0.18), inset 0 1px 0 rgba(255,255,255,0.8)'
                                   : '0 3px 10px rgba(217, 119, 6, 0.12), inset 0 1px 0 rgba(255,255,255,0.8)')
                               : 'none',
-                            padding: '8px 4px',
+                            padding: '8px 2px',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
