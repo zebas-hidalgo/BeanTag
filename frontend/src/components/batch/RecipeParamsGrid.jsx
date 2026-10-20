@@ -3,8 +3,8 @@ import { SlidersHorizontal, Coffee, Scale, Gauge, Thermometer, Clock, Sparkles }
 import { FAMOUS_RECIPES } from '../../utils/famousRecipes';
 
 const METHODS = [
-  { id: 'V60 (Filtrado)', label: 'V60' },
   { id: 'NextLevel Pulsar Mini', label: 'Pulsar Mini' },
+  { id: 'V60 (Filtrado)', label: 'V60' },
   { id: 'AeroPress Go', label: 'AeroPress Go' },
   { id: 'AeroPress', label: 'AeroPress' },
   { id: 'Chemex', label: 'Chemex' },

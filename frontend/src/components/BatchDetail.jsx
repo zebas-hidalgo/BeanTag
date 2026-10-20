@@ -14,7 +14,6 @@ import { GRINDERS, getGrinderConfig, scaleGrinderSettingForDose, calculateDoseDe
 import BatchHeaderCard from './batch/BatchHeaderCard';
 import RecipeParamsGrid from './batch/RecipeParamsGrid';
 import GrinderSyncMatrix from './batch/GrinderSyncMatrix';
-import PourSequenceTimeline from './batch/PourSequenceTimeline';
 
 const BrewGuideModal = lazy(() => import('./BrewGuideModal'));
 
@@ -55,8 +54,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     }
   }, [batchId]);
   
-  // Form fields
-  const [method, setMethod] = useState('V60 (Filtrado)');
+  // Form fields (Default: NextLevel Pulsar Mini)
+  const [method, setMethod] = useState('NextLevel Pulsar Mini');
   
   // Grinder Selector State (8 Supported Grinders)
   const [grinderType, setGrinderType] = useState(() => localStorage.getItem('default-grinder') || 'jmax');
@@ -87,15 +86,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   // Baratza Encore/ESP State (1 - 40 steps, default 15)
   const [baratzaStep, setBaratzaStep] = useState(15);
   
-  // Smart Ratio (Default: 15.0)
-  const [ratioVal, setRatioVal] = useState(15.0);
+  // Smart Ratio (Default: 16.67 for ~300g water with 18g dose)
+  const [ratioVal, setRatioVal] = useState(16.67);
 
-  // V4 Interactive Pour Timeline State
-  const [activePoursState, setActivePoursState] = useState([]);
-
-  // Advanced Coffee Fields (Improvement 6 & 8)
-  const [doseInG, setDoseInG] = useState(20.0);
-  const baseDoseRef = useRef(20.0);
+  // Advanced Coffee Fields (Default: 18.0g for Pulsar Mini)
+  const [doseInG, setDoseInG] = useState(18.0);
+  const baseDoseRef = useRef(18.0);
   const baseGrinderRef = useRef({
     jmax: { rot: 1, num: 5, click: 0 },
     k_ultra: 9.0,
@@ -1695,19 +1691,6 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               getGrindString={getGrindString}
             />
 
-            {/* V4 Modular Pour Sequence Timeline */}
-            <PourSequenceTimeline
-              pours={activePoursState.length > 0 ? activePoursState : (aiRecommendation?.pours || (method === 'NextLevel Pulsar Mini' ? [
-                { step: 1, label: 'Pre-infusión / Bloom', water_g: 50, total_water_g: 50, time: '0:00 - 0:45', valve: 'closed', description: 'Válvula cerrada. Mojar cama uniformemente sin remover.' },
-                { step: 2, label: 'Primer Vertido (Inmersión)', water_g: 100, total_water_g: 150, time: '0:45 - 1:30', valve: 'half', description: 'Abrir al 50%. Verter con dispersor suave.' },
-                { step: 3, label: 'Segundo Vertido (Percolación)', water_g: 150, total_water_g: 300, time: '1:30 - 3:30', valve: 'open', description: 'Válvula 100% abierta para percolación controlada.' }
-              ] : []))}
-              setPours={setActivePoursState}
-              isPulsar={method === 'NextLevel Pulsar Mini'}
-              totalWaterG={method === 'Espresso' ? doseOutG : Math.round(doseInG * ratioVal)}
-              doseInG={doseInG}
-            />
-
             {/* Evaluacion Sensorial */}
             <div className="candy-card static" style={{ marginTop: '14px', padding: '14px 12px' }}>
               <div style={{ fontSize: '10.5px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>Evaluación Sensorial</div>
@@ -1758,7 +1741,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     temperature: `${waterTemp}°C`,
                     brew_time: brewTime,
                     grind: getGrindString(),
-                    pours: activePoursState.length > 0 ? activePoursState : (aiRecommendation?.pours || []),
+                    pours: aiRecommendation?.pours || [],
                     active_grinder_dial: {
                       grinder_id: grinderType,
                       dial: getGrindString()
