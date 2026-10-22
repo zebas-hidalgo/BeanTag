@@ -211,17 +211,56 @@ export function extractFlavorTags(notes) {
 /**
  * Robust text truncation utility that guarantees text never bleeds past maxWidth
  */
-export function drawCanvasTruncatedText(ctx, text, x, y, maxWidth) {
+export function drawCanvasTruncatedText(ctx, text, x, y, maxWidth, options = {}) {
   const str = String(text || '');
   if (!maxWidth || ctx.measureText(str).width <= maxWidth) {
     ctx.fillText(str, x, y);
     return;
   }
+  // 1) Shrink the font (down to 82% of its size, min 11px) before cutting text
+  const originalFont = ctx.font;
+  const m = originalFont.match(/(\d+(?:\.\d+)?)px/);
+  if (m && options.shrink !== false) {
+    const base = parseFloat(m[1]);
+    const floor = Math.max(options.minPx || 11, base * (options.minScale || 0.82));
+    for (let size = base - 0.5; size >= floor; size -= 0.5) {
+      ctx.font = originalFont.replace(m[0], `${size}px`);
+      if (ctx.measureText(str).width <= maxWidth) {
+        ctx.fillText(str, x, y);
+        ctx.font = originalFont;
+        return;
+      }
+    }
+    ctx.font = originalFont.replace(m[0], `${floor}px`);
+  }
+  // 2) Still too long: truncate with ellipsis at the smallest size
   let truncated = str;
   while (truncated.length > 0 && ctx.measureText(truncated + '…').width > maxWidth) {
     truncated = truncated.slice(0, -1);
   }
-  ctx.fillText(truncated + '…', x, y);
+  ctx.fillText(truncated.trimEnd() + '…', x, y);
+  ctx.font = originalFont;
+}
+
+/**
+ * Wraps text into up to maxLines lines inside maxWidth. Last line is fitted/truncated.
+ */
+function drawWrappedText(ctx, text, x, y, maxWidth, lineH, maxLines = 2) {
+  const words = String(text || '').trim().split(/\s+/).filter(Boolean);
+  const lines = [];
+  let cur = '';
+  for (const w of words) {
+    const cand = cur ? `${cur} ${w}` : w;
+    if (ctx.measureText(cand).width <= maxWidth || !cur) cur = cand;
+    else { lines.push(cur); cur = w; }
+  }
+  if (cur) lines.push(cur);
+  if (lines.length > maxLines) {
+    lines[maxLines - 1] = lines.slice(maxLines - 1).join(' ');
+    lines.length = maxLines;
+  }
+  lines.forEach((l, i) => drawCanvasTruncatedText(ctx, l, x, y + i * lineH, maxWidth, { shrink: i === lines.length - 1 }));
+  return lines.length;
 }
 
 /**
@@ -500,12 +539,14 @@ export function drawSensoryRadarChart(ctx, cx, cy, radius, sensoryData, style) {
  */
 function drawSensoryTelemetryStrip(ctx, x, y, width, height, sensoryData, style, theme) {
   if (!sensoryData) return false;
+  // Only what the barista actually recorded: no derived/invented scores
   const attrs = [
-    { label: 'ACIDEZ', val: sensoryData.extraction || 3.5 },
-    { label: 'DULZOR', val: sensoryData.sweetness || 4.0 },
-    { label: 'CUERPO', val: sensoryData.body || 3.5 },
-    { label: 'BALANCE', val: sensoryData.balance || 4.0 }
-  ];
+    { label: 'BALANCE', val: sensoryData.balanceLabel },
+    { label: 'CUERPO', val: sensoryData.bodyLabel },
+    { label: 'EXTRACCIÓN', val: sensoryData.extractionLabel },
+    { label: 'VALORACIÓN', val: sensoryData.ratingLabel }
+  ].filter(a => a.val);
+  if (!attrs.length) return false;
 
   const gap = 8;
   const chipW = (width - gap * (attrs.length - 1)) / attrs.length;
@@ -521,32 +562,15 @@ function drawSensoryTelemetryStrip(ctx, x, y, width, height, sensoryData, style,
       shadow: false
     });
 
-    // Label (left/top)
-    ctx.font = `800 12.5px ${theme.fontMono}`;
-    ctx.fillStyle = theme.textSecondary;
     ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(attr.label, cx + 8, y + height / 2 - 5);
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = `800 10.5px ${theme.fontMono}`;
+    ctx.fillStyle = theme.textSecondary;
+    drawCanvasTruncatedText(ctx, attr.label, cx + 9, y + 14, chipW - 18);
 
-    // Value (right/top)
-    const scoreStr = `${Number(attr.val).toFixed(1)}`;
-    ctx.font = `800 13px ${theme.fontMono}`;
+    ctx.font = `800 14px ${theme.fontBody}`;
     ctx.fillStyle = theme.accent;
-    ctx.textAlign = 'right';
-    ctx.fillText(scoreStr, cx + chipW - 8, y + height / 2 - 5);
-
-    // Progress bar at bottom of chip
-    const barX = cx + 8;
-    const barY = y + height - 9;
-    const barW = chipW - 16;
-    const barH = 4.5;
-    const fillRatio = Math.max(0.2, Math.min(1, Number(attr.val) / 5));
-
-    ctx.fillStyle = theme.borderSubtle;
-    drawRoundedRect(ctx, barX, barY, barW, barH, 2, true, false);
-
-    ctx.fillStyle = theme.accent;
-    drawRoundedRect(ctx, barX, barY, barW * fillRatio, barH, 2, true, false);
+    drawCanvasTruncatedText(ctx, String(attr.val).toUpperCase(), cx + 9, y + height - 8, chipW - 18, { minScale: 0.62, minPx: 9 });
   });
   ctx.restore();
   return true;
@@ -587,7 +611,15 @@ export function parseSensoryEvaluation(batch, recipe) {
   const rating = typeof ratingRaw === 'number' && Number.isFinite(ratingRaw) ? ratingRaw : (parseFloat(ratingRaw) || 4);
   const sweetness = (balance + rating) / 2;
 
-  return { balance, body, extraction, rating, sweetness };
+  const word = (v) => (v === undefined || v === null || v === '' ? null : stripEmojis(String(v)).trim());
+  const ratingNum = typeof ratingRaw === 'number' ? ratingRaw : parseFloat(ratingRaw);
+  return {
+    balance, body, extraction, rating, sweetness,
+    balanceLabel: word(balanceRaw),
+    bodyLabel: word(bodyRaw),
+    extractionLabel: word(extractionRaw),
+    ratingLabel: Number.isFinite(ratingNum) && ratingNum > 0 ? `★ ${ratingNum % 1 ? ratingNum.toFixed(1) : ratingNum}/5` : null
+  };
 }
 
 /**
@@ -1004,7 +1036,7 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   // =========================================================================
   const headerPillY = cardY + 20;
   const headerPillH = 30;
-  const roasterBadgeText = (roaster ? `${roaster} • ${theme.name}` : `BEANTAG • ${theme.badgeLabel}`).toUpperCase();
+  const roasterBadgeText = (roaster || 'BeanTag').toUpperCase();
 
   ctx.font = `800 13.5px ${theme.fontMono}`;
   const roasterPillW = Math.min(ctx.measureText(roasterBadgeText).width + 24, innerW - 125);
@@ -1230,7 +1262,9 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   ctx.fillText(style === 'kissaten' ? '風味特性 // NOTAS DE CATA & PERFIL SCA' : 'NOTAS DE CATA & PERFIL SENSORIAL SCA', innerX + 16, sensoryY + 23);
 
   const hasSensoryStrip = incRecipe ? sensoryData !== null : Boolean(rec.sensory_balance || rec.sensory_body || rec.sensory_extraction);
-  const tagsToDraw = flavorTags.length > 0 ? flavorTags.slice(0, 4) : ['CAFE DE ESPECIALIDAD'];
+  // The barista's own cup note (recipe cards only) is the most personal data on the card
+  const userNote = incRecipe ? stripEmojis(String(rec.notes || rec.user_notes || '')).replace(/\s+/g, ' ').trim() : '';
+  const tagsToDraw = flavorTags.slice(0, userNote ? 2 : 4);
 
   // 2x2 Full-Width Flavor Pills Grid with Vector SCA Icon Badges
   const pillAreaX = innerX + 14;
@@ -1255,9 +1289,30 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
     });
   });
 
+  const tagRows = tagsToDraw.length ? Math.ceil(tagsToDraw.length / pillCols) : 0;
+  const noteTop = pillStartY + tagRows * (pillH + 8);
+  const noteBottom = hasSensoryStrip ? sensoryY + sensoryH - 56 : sensoryY + sensoryH - 12;
+  if (userNote && noteBottom - noteTop >= 22) {
+    ctx.save();
+    ctx.fillStyle = theme.text;
+    ctx.font = `italic 600 15px ${theme.fontBody}`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    const lines = Math.max(1, Math.min(3, Math.floor((noteBottom - noteTop) / 20)));
+    drawWrappedText(ctx, `“${userNote}”`, pillAreaX + 4, noteTop + 16, pillAreaW - 8, 20, lines);
+    ctx.restore();
+  } else if (!tagsToDraw.length) {
+    ctx.save();
+    ctx.fillStyle = theme.textSecondary;
+    ctx.font = `700 15px ${theme.fontBody}`;
+    ctx.textAlign = 'left';
+    ctx.fillText('Sin notas de cata registradas', pillAreaX + 4, pillStartY + 22);
+    ctx.restore();
+  }
+
   if (hasSensoryStrip && sensoryData) {
-    const stripY = sensoryY + sensoryH - 42;
-    drawSensoryTelemetryStrip(ctx, pillAreaX, stripY, pillAreaW, 34, sensoryData, style, theme);
+    const stripY = sensoryY + sensoryH - 50;
+    drawSensoryTelemetryStrip(ctx, pillAreaX, stripY, pillAreaW, 42, sensoryData, style, theme);
   }
 
   // =========================================================================
@@ -1280,7 +1335,7 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
     ctx.font = `800 13px ${theme.fontMono}`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    const leftFooter = dosesStr ? `BEANTAG CELLAR • ${dosesStr}` : `BEANTAG ARCHIVE • ${theme.name}`;
+    const leftFooter = dosesStr ? `BEANTAG CELLAR • ${dosesStr}` : 'BEANTAG ARCHIVE';
     drawCanvasTruncatedText(ctx, leftFooter, innerX, footY, innerW * 0.68);
   }
 
@@ -1313,7 +1368,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'studio') 
   const headerH = 152;
   const itemH = 124;
   const footerH = 74;
-  const baseH = Math.max(840, headerH + (displayList.length * itemH) + footerH);
+  const baseH = headerH + (Math.max(1, displayList.length) * itemH) + footerH;
 
   canvas.width = baseW * scaleFactor;
   canvas.height = baseH * scaleFactor;
@@ -1343,7 +1398,7 @@ export async function generateCoffeeMenuCardImage(batches, template = 'studio') 
   ctx.fillStyle = theme.accent;
   ctx.font = `800 13.5px ${theme.fontMono}`;
   ctx.textAlign = 'left';
-  ctx.fillText(`BEANTAG CELLAR MENU // ${theme.name}`, innerX, cardY + 34);
+  ctx.fillText('BEANTAG CELLAR MENU', innerX, cardY + 34);
 
   ctx.fillStyle = theme.text;
   ctx.font = `800 32px ${theme.fontHeading}`;
@@ -1427,7 +1482,9 @@ export async function generateCoffeeMenuCardImage(batches, template = 'studio') 
     const originStr = stripEmojis(b.origin || '');
     const processStr = stripEmojis(b.process || '');
     const varietyStr = stripEmojis(b.variety || '');
-    const metaText = [roasterStr, originStr, processStr, varietyStr].filter(Boolean).join(' • ') || 'Origen Único';
+    const scaNum = parseFloat(b.sca_score);
+    const scaStr = Number.isFinite(scaNum) && scaNum > 0 ? `SCA ${scaNum % 1 ? scaNum.toFixed(1) : scaNum}` : '';
+    const metaText = [roasterStr, originStr, processStr, varietyStr, scaStr].filter(Boolean).join(' • ') || 'Origen Único';
 
     ctx.fillStyle = theme.textSecondary;
     ctx.font = `700 14.5px ${theme.fontBody}`;
@@ -1444,7 +1501,8 @@ export async function generateCoffeeMenuCardImage(batches, template = 'studio') 
 
       parsedTags.forEach((tag, pIdx) => {
         ctx.font = `800 14px ${theme.fontBody}`;
-        const pw = Math.min(ctx.measureText(tag.toUpperCase()).width + 46, innerW - 70);
+        ctx.font = `800 13.5px ${theme.fontBody}`;
+        const pw = Math.min(ctx.measureText(tag.toUpperCase()).width + 56, innerW - 70);
         if (pillX + pw <= innerX + innerW - 12) {
           drawFlavorNotePill(ctx, tag, pillX, pillY, pw, pillH, style, theme, {
             index: pIdx,
@@ -1651,7 +1709,7 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
   }
 
   // Header Pill (15px bold)
-  const headerText = (roaster ? `${roaster} // ${theme.name}` : `BEANTAG // ${theme.name}`).toUpperCase();
+  const headerText = (roaster || 'BeanTag').toUpperCase();
   ctx.font = `800 15px ${theme.fontMono}`;
   ctx.fillStyle = theme.accent;
   ctx.textAlign = 'left';
@@ -1710,7 +1768,7 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
     // Flavor Notes Hero Row with Vector SCA Badges (20px bold, 54px tall)
     const flavorY = cardY + cardH - 76;
     const flavorH = 54;
-    const tagsToRender = flavorTags.length > 0 ? flavorTags.slice(0, 3) : ['ORIGEN SELECCIONADO'];
+    const tagsToRender = flavorTags.slice(0, 3);
     const gap = 10;
     const count = Math.min(3, tagsToRender.length);
     const pillW = (innerW - gap * (count - 1)) / count;
@@ -1774,15 +1832,14 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
     ctx.lineTo(innerX + innerW, dividerY);
     ctx.stroke();
 
-    const tagsToRender = flavorTags.length > 0 ? flavorTags : ['ORIGEN SELECCIONADO'];
+    const tagsToRender = flavorTags;
 
     if (sensoryData) {
       // Radar Chart with 13.5px labels + 3 large 44px flavor pills with SCA vector icons
-      const radarCY = dividerY + 80;
-      const radarR = 46;
-      drawSensoryRadarChart(ctx, cardX + cardW / 2, radarCY, radarR, sensoryData, style);
+      const stripY = dividerY + 16;
+      const drewStrip = drawSensoryTelemetryStrip(ctx, innerX, stripY, innerW, 44, sensoryData, style, theme);
 
-      let pillY = radarCY + radarR + 28;
+      let pillY = drewStrip ? stripY + 44 + 16 : dividerY + 16;
       const pillH = 44;
 
       tagsToRender.slice(0, 3).forEach((tag, idx) => {
