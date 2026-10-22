@@ -61,13 +61,44 @@ function fitSize(ctx, text, maxW, max, min, weight, family, style = '') {
 }
 
 // Fit by shrinking, then ellipsis
+// Legibility floor: nothing below 20px on a 1080px-wide image (~7pt on a phone)
+const MIN_PX = 20;
+
 function fitText(ctx, text, x, y, maxW, max, min, weight, family, style = '') {
   const str = String(text || '');
+  min = Math.max(min, Math.min(max, MIN_PX));
   fitSize(ctx, str, maxW, max, min, weight, family, style);
   if (ctx.measureText(str).width <= maxW) { ctx.fillText(str, x, y); return; }
   let t = str;
   while (t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
   ctx.fillText(t.trimEnd() + '…', x, y);
+}
+
+// One line if it fits at >= min size, otherwise two balanced lines. Returns line count.
+function fitWrap(ctx, text, x, y, maxW, max, min, weight, family, lineH, style = '') {
+  const str = String(text || '').trim();
+  if (!str) return 0;
+  min = Math.max(min, MIN_PX);
+  setFont(ctx, weight, min, family, style);
+  if (ctx.measureText(str).width <= maxW) { fitText(ctx, str, x, y, maxW, max, min, weight, family, style); return 1; }
+  const parts = str.split(' · ');
+  let a = str;
+  let b = '';
+  if (parts.length > 1) {
+    const half = Math.ceil(parts.length / 2);
+    a = parts.slice(0, half).join(' · ');
+    b = parts.slice(half).join(' · ');
+  } else {
+    const words = str.split(/\s+/);
+    const half = Math.ceil(words.length / 2);
+    a = words.slice(0, half).join(' ');
+    b = words.slice(half).join(' ');
+  }
+  // Same size on both lines
+  const sz = Math.min(fitSize(ctx, a, maxW, max, min, weight, family, style), fitSize(ctx, b, maxW, max, min, weight, family, style));
+  fitText(ctx, a, x, y, maxW, sz, sz, weight, family, style);
+  fitText(ctx, b, x, y + lineH, maxW, sz, sz, weight, family, style);
+  return 2;
 }
 
 function wrapLines(ctx, text, maxW) {
@@ -131,10 +162,11 @@ function metricCells(d, incRecipe) {
       { label: 'TIEMPO · TEMP', value: `${d.time} · ${d.temp}` }
     ];
   }
+  const first = v => String(v || '').split(/[,/]/)[0].trim();
   return [
-    { label: 'ORIGEN', value: d.origin || '—' },
+    { label: 'ORIGEN', value: first(d.origin) || '—' },
     { label: 'PROCESO', value: d.process || '—' },
-    { label: 'VARIEDAD', value: d.variety || '—' },
+    { label: 'VARIEDAD', value: first(d.variety) || '—' },
     { label: 'ALTITUD', value: d.altitude || d.roastLevel || '—' }
   ];
 }
@@ -220,7 +252,7 @@ function drawSquishy(ctx, d, incRecipe) {
 
   // Inflated title
   const { size, lines } = fitTitle(ctx, d.name, 650, 3, 124, 64, 900, SANS);
-  const lineH = Math.round(size * 0.92);
+  const lineH = Math.round(size * 1.0);
   let y = 200 + size * 0.8;
   lines.forEach((l, i) => {
     const ly = y + i * lineH;
@@ -237,10 +269,12 @@ function drawSquishy(ctx, d, incRecipe) {
   y += (lines.length - 1) * lineH;
 
   ctx.fillStyle = '#4B4570';
-  fitText(ctx, [d.origin, d.process, d.altitude].filter(Boolean).join(' · '), 72, y + 62, 936, 30, 20, 600, SANS);
+  // Keep clear of the blob on the right (it spans roughly y 265–615)
+  const subW = y + 62 < 640 ? 700 : 936;
+  const subLines = fitWrap(ctx, [d.origin, d.process, d.altitude].filter(Boolean).join(' · '), 72, y + 62, subW, 30, 24, 600, SANS, 36);
 
   // Metric pills
-  const gy = y + 112;
+  const gy = y + 112 + (subLines > 1 ? 36 : 0);
   const cells = metricCells(d, incRecipe);
   const pw = (936 - 24) / 2;
   const ph = 142;
@@ -250,7 +284,7 @@ function drawSquishy(ctx, d, incRecipe) {
     puffy(px, py, pw, ph, 44, '#FFFFFF', '#F1EEF9', 'rgba(60,40,120,0.13)');
     ctx.fillStyle = '#8A84AA';
     spaced(ctx, 2);
-    fitText(ctx, c.label, px + 34, py + 48, pw - 68, 22, 16, 700, SANS);
+    fitText(ctx, c.label, px + 34, py + 48, pw - 68, 22, 20, 700, SANS);
     spaced(ctx, 0);
     ctx.fillStyle = '#1A1630';
     fitText(ctx, c.value, px + 34, py + 108, pw - 68, 50, 28, 900, SANS);
@@ -371,7 +405,7 @@ function drawStretch(ctx, d, incRecipe) {
     const cx = 64 + i * cw;
     ctx.fillStyle = '#555555';
     spaced(ctx, 3);
-    fitText(ctx, c.label, cx, ry + 44, cw - 16, 20, 14, 600, SANS);
+    fitText(ctx, c.label, cx, ry + 44, cw - 16, 22, 20, 600, SANS);
     spaced(ctx, 0);
     ctx.fillStyle = '#111111';
     fitText(ctx, c.value, cx, ry + 112, cw - 20, 56, 26, 800, SANS);
@@ -498,7 +532,7 @@ function drawZine(ctx, d, incRecipe) {
     });
     const subY = 110 + size * 0.85 + (lines.length - 1) * lh + 52;
     ctx.fillStyle = '#1B1B1B';
-    fitText(ctx, [d.origin, d.process, d.altitude].filter(Boolean).join(' — '), 56, subY, 660, 26, 18, 600, SANS);
+    fitWrap(ctx, [d.origin, d.process, d.altitude].filter(Boolean).join(' · '), 56, Math.min(subY, 392), 660, 26, 22, 600, SANS, 30);
   });
   tape(ctx, 420, 76, 200, -0.1);
 
@@ -514,9 +548,9 @@ function drawZine(ctx, d, incRecipe) {
   ctx.beginPath(); ctx.arc(0, 0, 98, 0, Math.PI * 2); ctx.stroke();
   ctx.textAlign = 'center';
   spaced(ctx, 3);
-  setFont(ctx, 900, 20, SANS);
-  ctx.fillText(d.sca ? 'SCA' : 'BEANTAG', 0, -42);
-  ctx.fillText(d.sca ? 'CATADO' : 'BITÁCORA', 0, 64);
+  setFont(ctx, 900, 22, SANS);
+  ctx.fillText(d.sca ? 'SCA' : 'BEANTAG', 0, -44);
+  ctx.fillText(d.sca ? 'CATADO' : 'BITÁCORA', 0, 66);
   spaced(ctx, 0);
   setFont(ctx, 900, 70, SANS);
   ctx.fillText(d.sca ? String(d.sca) : (d.rating ? `${d.rating}/5` : '✓'), 0, 26);
@@ -534,7 +568,8 @@ function drawZine(ctx, d, incRecipe) {
         `${d.temp} · ${d.time}`]
       : [(d.origin || '').toUpperCase(), d.variety, d.process, [d.altitude, d.roastLevel].filter(Boolean).join(' · ')];
     rows.filter(Boolean).forEach((r, i) => {
-      fitText(ctx, r, 44, 140 + i * 62, 470, i === 0 ? 40 : 30, 18, i === 0 ? 800 : 500, MONO);
+      // Width stops before the sticky note that overlaps the right side of this sheet
+      fitText(ctx, r, 44, 140 + i * 62, 420, i === 0 ? 40 : 30, 20, i === 0 ? 800 : 500, MONO);
     });
   });
   tape(ctx, 620, 566, 150, 0.14);
@@ -548,6 +583,7 @@ function drawZine(ctx, d, incRecipe) {
     let used = 0;
     if (tagLine) used = drawWrapped(ctx, tagLine, 40, 78, 350, 48, 3);
     if (noteLine) drawWrapped(ctx, noteLine, 40, 78 + (used ? used * 48 + 30 : 0), 350, 46, Math.max(1, 6 - used));
+    if (!tagLine && !noteLine) drawWrapped(ctx, 'sin notas todavía… ¡a catar!', 40, 78, 350, 48, 3);
   });
 
   // Black profile strip
@@ -559,7 +595,7 @@ function drawZine(ctx, d, incRecipe) {
     spaced(ctx, 0);
     ctx.fillStyle = '#FBF8F1';
     const words = sensoryWords(d);
-    const text = words.length ? words.join(' · ') : (d.tags.slice(0, 3).join(' · ') || 'Café de especialidad');
+    const text = words.length ? words.join(' · ') : (d.tags.slice(0, 3).join(' · ') || 'Perfil sin registrar');
     fitText(ctx, text, 44, 138, 852, 54, 26, 900, SANS);
   });
 
@@ -613,11 +649,11 @@ function drawVhs(ctx, d, incRecipe) {
   const subY = 196 + size * 0.8 + (lines.length - 1) * lh + 60;
   ctx.fillStyle = '#B9B3C9';
   spaced(ctx, 1.5);
-  fitText(ctx, [d.roaster, d.origin, d.process, d.sca ? `SCA ${d.sca}` : ''].filter(Boolean).join(' · ').toUpperCase(), L, subY, R - L, 26, 16, 500, MONO);
+  const vhsSub = fitWrap(ctx, [d.roaster, d.origin, d.process, d.sca ? `SCA ${d.sca}` : ''].filter(Boolean).join(' · ').toUpperCase(), L, subY, R - L, 26, 22, 500, MONO, 34);
   spaced(ctx, 0);
 
   // Rainbow bands
-  const bandY = Math.max(subY + 50, 500);
+  const bandY = Math.max(subY + 50 + (vhsSub > 1 ? 34 : 0), 500);
   BANDS.forEach((c, i) => { ctx.fillStyle = c; ctx.fillRect(40, bandY + i * 44, W - 80, 44); });
 
   // Spine grid
@@ -633,7 +669,7 @@ function drawVhs(ctx, d, incRecipe) {
     if (i) { ctx.beginPath(); ctx.moveTo(cx, sy); ctx.lineTo(cx, sy + 130); ctx.stroke(); }
     ctx.fillStyle = '#8C84A6';
     spaced(ctx, 2);
-    fitText(ctx, c.label, cx + 22, sy + 40, cw - 40, 18, 12, 500, MONO);
+    fitText(ctx, c.label, cx + 22, sy + 42, cw - 40, 22, 20, 500, MONO);
     spaced(ctx, 0);
     ctx.fillStyle = '#F4F1EA';
     fitText(ctx, String(c.value).toUpperCase(), cx + 22, sy + 98, cw - 40, 44, 22, 900, SANS, 'italic');
@@ -794,7 +830,7 @@ function drawLata(ctx, d, incRecipe) {
     }
     ctx.fillStyle = '#5C7A62';
     spaced(ctx, 2);
-    fitText(ctx, String(f.label).toUpperCase(), fx + 22, fy + 44, fw - 40, 18, 12, 800, SANS);
+    fitText(ctx, String(f.label).toUpperCase(), fx + 22, fy + 44, fw - 40, 22, 20, 800, SANS);
     spaced(ctx, 0);
     ctx.fillStyle = DARK;
     fitText(ctx, f.value, fx + 22, fy + 98, fw - 40, 40, 20, 900, SANS);
@@ -922,7 +958,7 @@ const SKINS = {
     },
     title(ctx, text, x, y, maxW, maxLines, maxSize) {
       const { size, lines } = fitTitle(ctx, text, maxW, maxLines, maxSize, Math.round(maxSize * 0.5), 900, SANS);
-      const lh = Math.round(size * 0.94);
+      const lh = Math.round(size * 1.02);
       lines.forEach((l, i) => {
         const ly = y + size * 0.8 + i * lh;
         ctx.save();
@@ -979,22 +1015,11 @@ const SKINS = {
       ctx.fillStyle = '#1F4CFF'; ctx.fillRect(x, y + h - 14, w, 14);
     },
     title(ctx, text, x, y, maxW, maxLines, maxSize) {
-      const words = String(text).toUpperCase().split(/\s+/).filter(Boolean);
-      const lines = [];
-      // Greedy: as many words per line as fit at a reasonable size
-      let cur = '';
-      words.forEach(wd => {
-        const cand = cur ? `${cur} ${wd}` : wd;
-        setFont(ctx, 900, maxSize * 0.62, SANS);
-        if (!cur || ctx.measureText(cand).width <= maxW) cur = cand; else { lines.push(cur); cur = wd; }
-      });
-      if (cur) lines.push(cur);
-      const used = lines.slice(0, maxLines);
-      if (lines.length > maxLines) used[maxLines - 1] = lines.slice(maxLines - 1).join(' ');
+      const { size: s, lines: used } = fitTitle(ctx, String(text).toUpperCase(), maxW, maxLines, maxSize, Math.round(maxSize * 0.4), 900, SANS);
       const S = 1.6;
       let yy = y;
       used.forEach((l, i) => {
-        const s = fitSize(ctx, l, maxW, maxSize, 28, 900, SANS);
+        setFont(ctx, 900, s, SANS);
         spaced(ctx, -s * 0.04);
         if (/[ÁÉÍÓÚÑÜ]/.test(l)) yy += s * 0.16 * S; // room for accents above capitals
         yy += s * 0.74 * S;
@@ -1012,12 +1037,12 @@ const SKINS = {
           ctx.fillStyle = '#111111'; ctx.fillText(word.slice(cut), ax, 0);
         } else { ctx.fillStyle = '#111111'; ctx.fillText(l, 0, 0); }
         ctx.restore(); spaced(ctx, 0);
-        yy += s * 0.08;
+        yy += s * 0.1;
       });
       return yy;
     },
     meta(ctx, text, x, y, maxW, size = 30) { ctx.fillStyle = '#111111'; fitText(ctx, text, x, y, maxW, size, 16, 300, SANS); },
-    small(ctx, text, x, y, maxW, size = 20) { ctx.fillStyle = '#555555'; spaced(ctx, 3); fitText(ctx, text.toUpperCase(), x, y, maxW, size, 13, 600, SANS); spaced(ctx, 0); },
+    small(ctx, text, x, y, maxW, size = 22) { ctx.fillStyle = '#555555'; spaced(ctx, 3); fitText(ctx, text.toUpperCase(), x, y, maxW, size, 20, 600, SANS); spaced(ctx, 0); },
     tagH: 44,
     tagW(ctx, tag, i) { setFont(ctx, i === 0 ? 800 : 300, 34, SANS); return ctx.measureText(titleCase(tag) + (i === 0 ? ' ' : ' / ')).width; },
     tag(ctx, tag, x, y, i) {
@@ -1083,7 +1108,7 @@ const SKINS = {
       return y + size * 0.85 + (lines.length - 1) * lh;
     },
     meta(ctx, text, x, y, maxW, size = 24) { ctx.fillStyle = '#1B1B1B'; fitText(ctx, text, x, y, maxW, size, 15, 500, MONO); },
-    small(ctx, text, x, y, maxW, size = 20) {
+    small(ctx, text, x, y, maxW, size = 22) {
       setFont(ctx, 700, size, MONO); spaced(ctx, 2);
       const t = text.toUpperCase();
       const w = Math.min(ctx.measureText(t).width + 24, maxW);
@@ -1107,7 +1132,7 @@ const SKINS = {
       ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
       ctx.textAlign = 'center';
       const parts = String(text).split(' ');
-      setFont(ctx, 900, 16, SANS); spaced(ctx, 2); ctx.fillText(parts.length > 1 ? parts[0] : 'BEANTAG', 0, -20); spaced(ctx, 0);
+      setFont(ctx, 900, 20, SANS); spaced(ctx, 2); ctx.fillText(parts.length > 1 ? parts[0] : 'BEANTAG', 0, -22); spaced(ctx, 0);
       setFont(ctx, 900, 36, SANS); ctx.fillText(parts.length > 1 ? parts.slice(1).join(' ') : text, 0, 22);
       ctx.textAlign = 'left'; ctx.restore();
       return r * 2;
@@ -1271,7 +1296,7 @@ const SKINS = {
 // Row text colors for skins whose rows sit on a light card over a dark page (lata)
 function rowSkinText(skin) {
   return skin === SKINS.lata
-    ? { meta: (ctx, t, x, y, w) => { ctx.fillStyle = '#5C7A62'; spaced(ctx, 2); fitText(ctx, t.toUpperCase(), x, y, w, 20, 12, 800, SANS); spaced(ctx, 0); },
+    ? { meta: (ctx, t, x, y, w) => { ctx.fillStyle = '#5C7A62'; spaced(ctx, 2); fitText(ctx, t.toUpperCase(), x, y, w, 22, 20, 800, SANS); spaced(ctx, 0); },
         tag: (ctx, tag, x, y, i) => {
           setFont(ctx, 900, 24, SANS);
           let cx = x;
@@ -1324,7 +1349,7 @@ export function drawTrendMenu(ctx, style, items, width, height) {
     let badgeW = 0;
     if (stock) {
       if (style === 'zine') {
-        setFont(ctx, 700, 20, MONO);
+        setFont(ctx, 700, 22, MONO);
         badgeW = ctx.measureText(stock).width + 30;
         skin.small(ctx, stock, pad + rowW - 24 - badgeW, y + 58, badgeW);
       } else if (style === 'lata') {
@@ -1339,7 +1364,7 @@ export function drawTrendMenu(ctx, style, items, width, height) {
     skin.rowName(ctx, it.name, tx, y + 66, rowW - (tx - pad) - badgeW - 48);
     const meta = [it.roaster, it.origin, it.process, it.sca ? `SCA ${it.sca}` : ''].filter(Boolean).join(' · ');
     if (over) over.meta(ctx, meta, tx, y + 104, rowW - (tx - pad) - 30);
-    else if (style === 'vhs' || style === 'zine') skin.meta(ctx, meta, tx, y + 104, rowW - (tx - pad) - 30, 20);
+    else if (style === 'vhs' || style === 'zine') skin.meta(ctx, meta, tx, y + 104, rowW - (tx - pad) - 30, 22);
     else skin.meta(ctx, meta, tx, y + 104, rowW - (tx - pad) - 30, 24);
     if (style === 'squishy') {
       // compact bubbles inside the row
@@ -1356,11 +1381,11 @@ export function drawTrendMenu(ctx, style, items, width, height) {
     } else if (style === 'vhs') {
       let bx = tx;
       it.tags.slice(0, 3).forEach((tag, ti) => {
-        setFont(ctx, 800, 20, SANS, 'italic');
+        setFont(ctx, 800, 22, SANS, 'italic');
         const bw = ctx.measureText(tag.toUpperCase()).width + 28;
         if (bx + bw > pad + rowW - 24) return;
         ctx.strokeStyle = VHS_BANDS[ti]; ctx.fillStyle = VHS_BANDS[ti]; ctx.lineWidth = 2;
-        ctx.strokeRect(bx, y + 122, bw, 38); ctx.fillText(tag.toUpperCase(), bx + 14, y + 148);
+        ctx.strokeRect(bx, y + 120, bw, 40); ctx.fillText(tag.toUpperCase(), bx + 14, y + 148);
         bx += bw + 10;
       });
     } else if (style === 'zine') {
@@ -1417,17 +1442,24 @@ export function drawTrendSticker(ctx, style, d, opts, width, height) {
   y = skin.title(ctx, d.name, x, y, titleW, vertical ? 4 : 2, titleMax) + (style === 'stretch' ? 50 : 54);
 
   // Meta + recipe lines
-  const metaText = [d.origin, d.process, d.altitude].filter(Boolean).join(' · ');
-  skin.meta(ctx, metaText, x, y, innerW);
-  y += 46;
+  // Info lines: never shrink below the legibility floor; split long lines in two
+  const metaLine = (text) => {
+    if (!text) return;
+    setFont(ctx, 600, MIN_PX + 2, style === 'zine' || style === 'vhs' ? MONO : SANS);
+    spaced(ctx, style === 'lata' ? 3 : 0);
+    const tooLong = ctx.measureText(style === 'vhs' || style === 'lata' ? text.toUpperCase() : text).width > innerW;
+    spaced(ctx, 0);
+    const parts = text.split(' · ');
+    if (tooLong && parts.length > 1) {
+      const half = Math.ceil(parts.length / 2);
+      skin.meta(ctx, parts.slice(0, half).join(' · '), x, y, innerW); y += 40;
+      skin.meta(ctx, parts.slice(half).join(' · '), x, y, innerW); y += 46;
+    } else { skin.meta(ctx, text, x, y, innerW); y += 46; }
+  };
+  metaLine([d.origin, d.process, d.altitude].filter(Boolean).join(' · '));
   if (includeRecipe) {
-    const rec = [d.method, d.coffeeG && d.waterG ? `${d.coffeeG}g → ${d.waterG}g` : '', d.ratio ? `1:${d.ratio}` : '', d.temp].filter(Boolean).join(' · ');
-    skin.meta(ctx, rec, x, y, innerW);
-    y += 46;
-    if (vertical) {
-      const sens = [d.balanceLabel, d.bodyLabel, d.extractionLabel, d.ratingLabel].filter(Boolean).join(' · ');
-      if (sens) { skin.meta(ctx, sens, x, y, innerW); y += 46; }
-    }
+    metaLine([d.method, d.coffeeG && d.waterG ? `${d.coffeeG}g → ${d.waterG}g` : '', d.ratio ? `1:${d.ratio}` : '', d.temp].filter(Boolean).join(' · '));
+    if (vertical) metaLine([d.balanceLabel, d.bodyLabel, d.extractionLabel, d.ratingLabel].filter(Boolean).join(' · '));
   }
 
   // Tags: horizontal → one row at the bottom; vertical → wrapped rows

@@ -4,7 +4,7 @@ import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
 import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers, SlidersHorizontal, Cylinder, Compass, Target, Trophy, Sliders, Lightbulb, Check, Eye } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
-import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat } from '../utils/cardGenerator';
+import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { FAMOUS_RECIPES } from '../utils/famousRecipes';
 import ScaRadarChart from './ScaRadarChart';
 import DialInAssistant from './DialInAssistant';
@@ -149,15 +149,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [shareTemplate, setShareTemplate] = useState(() => {
     try {
       const pref = localStorage.getItem('beantag-share-style');
-      if (pref === 'studio') return 'studio';
-      if (pref === 'neobrutalist') return 'neobrutalist';
-      if (pref === 'diner' || pref === 'aurora') return 'diner';
-      if (pref === 'kissaten' || pref === 'hangtag') return 'kissaten';
-      if (pref === 'blueprint') return 'blueprint';
-      if (['squishy', 'stretch', 'zine', 'vhs', 'lata'].includes(pref)) return pref;
-      return 'studio';
+      return normalizeCardStyle(pref);
     } catch (e) {
-      return 'studio';
+      return DEFAULT_CARD_STYLE;
     }
   });
   const [shareStatus, setShareStatus] = useState('');
@@ -2289,13 +2283,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                 <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
                 {[
-                  { id: 'studio', label: 'Studio' },
-                  { id: 'kissaten', label: 'Kissaten' },
-                  { id: 'blueprint', label: 'Dark Lab' },
-                  { id: 'neobrutalist', label: 'Nomad' },
-                  { id: 'diner', label: 'Botanical' },
-                  { id: 'squishy', label: 'Squishy' },
                   { id: 'stretch', label: 'Stretch' },
+                  { id: 'squishy', label: 'Squishy' },
                   { id: 'zine', label: 'Zine' },
                   { id: 'vhs', label: 'VHS' },
                   { id: 'lata', label: 'Lata' }
@@ -2313,10 +2302,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       padding: '5px 8px',
                       fontSize: '12px',
                       borderRadius: '6px',
-                      border: (shareTemplate || 'studio') === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
-                      backgroundColor: (shareTemplate || 'studio') === t.id ? 'var(--bg-card)' : 'transparent',
-                      fontWeight: (shareTemplate || 'studio') === t.id ? '800' : '600',
-                      color: (shareTemplate || 'studio') === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
+                      border: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
+                      backgroundColor: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? 'var(--bg-card)' : 'transparent',
+                      fontWeight: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? '800' : '600',
+                      color: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
                       cursor: 'pointer'
                     }}
                   >

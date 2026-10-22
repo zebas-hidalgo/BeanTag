@@ -4,7 +4,7 @@ import { formatLocalDateStr } from '../utils/date';
 import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw, Filter, Zap, Droplet, Coffee, Edit3, SlidersHorizontal } from 'lucide-react';
 import { stripEmojis, RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
-import { generateRecipeCardImage, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat } from '../utils/cardGenerator';
+import { generateRecipeCardImage, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { parseGrindToMicrons } from '../utils/grinders';
 
 const getMethodLucideIcon = (methodName, size = 18) => {
@@ -46,15 +46,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   const [shareTemplate, setShareTemplate] = useState(() => {
     try {
       const pref = localStorage.getItem('beantag-share-style');
-      if (pref === 'studio') return 'studio';
-      if (pref === 'neobrutalist') return 'neobrutalist';
-      if (pref === 'diner' || pref === 'aurora') return 'diner';
-      if (pref === 'kissaten' || pref === 'hangtag') return 'kissaten';
-      if (pref === 'blueprint') return 'blueprint';
-      if (['squishy', 'stretch', 'zine', 'vhs', 'lata'].includes(pref)) return pref;
-      return 'studio';
+      return normalizeCardStyle(pref);
     } catch (e) {
-      return 'studio';
+      return DEFAULT_CARD_STYLE;
     }
   });
   const textureRef = useRef(null);
@@ -104,7 +98,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   };
 
   const exportRecipeAsImage = async (recipe, templateOverride, includeRecipeOverride, formatOverride, transparentOverride, orientationOverride) => {
-    const currentTpl = templateOverride || shareTemplate || 'blueprint';
+    const currentTpl = templateOverride || shareTemplate || DEFAULT_CARD_STYLE;
     const incRecipe = includeRecipeOverride !== undefined ? includeRecipeOverride : shareIncludeRecipe;
     const currentFormat = formatOverride !== undefined ? formatOverride : shareFormat;
     const isTransparent = transparentOverride !== undefined ? transparentOverride : stickerTransparent;
@@ -1167,7 +1161,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       type="button" 
                       onClick={() => {
                         setShareIncludeRecipe(true);
-                        exportRecipeAsImage(selectedRecipe, shareTemplate || 'studio', true, shareFormat, stickerTransparent, stickerOrientation);
+                        exportRecipeAsImage(selectedRecipe, shareTemplate || DEFAULT_CARD_STYLE, true, shareFormat, stickerTransparent, stickerOrientation);
                       }}
                       style={{
                         padding: '3px 8px',
@@ -1186,7 +1180,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       type="button" 
                       onClick={() => {
                         setShareIncludeRecipe(false);
-                        exportRecipeAsImage(selectedRecipe, shareTemplate || 'studio', false, shareFormat, stickerTransparent, stickerOrientation);
+                        exportRecipeAsImage(selectedRecipe, shareTemplate || DEFAULT_CARD_STYLE, false, shareFormat, stickerTransparent, stickerOrientation);
                       }}
                       style={{
                         padding: '3px 8px',
@@ -1209,13 +1203,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                 <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
                 {[
-                  { id: 'studio', label: 'Studio' },
-                  { id: 'kissaten', label: 'Kissaten' },
-                  { id: 'blueprint', label: 'Dark Lab' },
-                  { id: 'neobrutalist', label: 'Nomad' },
-                  { id: 'diner', label: 'Botanical' },
-                  { id: 'squishy', label: 'Squishy' },
                   { id: 'stretch', label: 'Stretch' },
+                  { id: 'squishy', label: 'Squishy' },
                   { id: 'zine', label: 'Zine' },
                   { id: 'vhs', label: 'VHS' },
                   { id: 'lata', label: 'Lata' }
@@ -1233,10 +1222,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       padding: '5px 8px',
                       fontSize: '12px',
                       borderRadius: '6px',
-                      border: (shareTemplate || 'studio') === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
-                      backgroundColor: (shareTemplate || 'studio') === t.id ? 'var(--bg-card)' : 'transparent',
-                      fontWeight: (shareTemplate || 'studio') === t.id ? '800' : '600',
-                      color: (shareTemplate || 'studio') === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
+                      border: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
+                      backgroundColor: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? 'var(--bg-card)' : 'transparent',
+                      fontWeight: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? '800' : '600',
+                      color: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
                       cursor: 'pointer'
                     }}
                   >

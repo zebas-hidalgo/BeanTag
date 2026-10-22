@@ -3,7 +3,7 @@ import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircl
 import NfcToolsModal from './NfcToolsModal';
 import { apiUrl } from '../utils/api';
 import { GRINDERS } from '../utils/grinders';
-import { generateCoffeeMenuCardImage, generateCoffeeMenuText } from '../utils/cardGenerator';
+import { generateCoffeeMenuCardImage, generateCoffeeMenuText, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { copyToClipboard } from '../utils/clipboard';
 
 export default function Settings({ theme, setTheme, batches = [], showToast }) {
@@ -78,15 +78,9 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   const [menuShareTemplate, setMenuShareTemplate] = useState(() => {
     try {
       const pref = localStorage.getItem('beantag-share-style');
-      if (pref === 'studio') return 'studio';
-      if (pref === 'neobrutalist') return 'neobrutalist';
-      if (pref === 'diner' || pref === 'aurora') return 'diner';
-      if (pref === 'kissaten' || pref === 'hangtag') return 'kissaten';
-      if (pref === 'blueprint') return 'blueprint';
-      if (['squishy', 'stretch', 'zine', 'vhs', 'lata'].includes(pref)) return pref;
-      return 'studio';
+      return normalizeCardStyle(pref);
     } catch (e) {
-      return 'studio';
+      return DEFAULT_CARD_STYLE;
     }
   });
   const [menuShareStatus, setMenuShareStatus] = useState('');
@@ -1396,13 +1390,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                 <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
                 {[
-                  { id: 'studio', label: 'Studio' },
-                  { id: 'kissaten', label: 'Kissaten' },
-                  { id: 'blueprint', label: 'Dark Lab' },
-                  { id: 'neobrutalist', label: 'Nomad' },
-                  { id: 'diner', label: 'Botanical' },
-                  { id: 'squishy', label: 'Squishy' },
                   { id: 'stretch', label: 'Stretch' },
+                  { id: 'squishy', label: 'Squishy' },
                   { id: 'zine', label: 'Zine' },
                   { id: 'vhs', label: 'VHS' },
                   { id: 'lata', label: 'Lata' }
