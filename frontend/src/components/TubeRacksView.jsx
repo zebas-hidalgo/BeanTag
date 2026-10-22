@@ -897,7 +897,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                     boxSizing: 'border-box'
                   }}
                 >
-                  {/* Stand Orientation Header: Front Row (#01-#03) & Back Row (#04-#06) */}
+                  {/* Stand Orientation Header: Back Row (#04-#06) above, Front Row (#01-#03) below */}
                   <div
                     style={{
                       display: 'flex',
@@ -912,13 +912,13 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                       textTransform: 'uppercase'
                     }}
                   >
-                    <span style={{ color: 'var(--barista-accent-honey, #D97706)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <span>▲</span>
-                      <span>Fila Frontal (#01 - #03)</span>
-                    </span>
                     <span style={{ color: 'var(--barista-text-muted, #94A3B8)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <span>▼</span>
+                      <span>▲</span>
                       <span>Fila Posterior (#04 - #06)</span>
+                    </span>
+                    <span style={{ color: 'var(--barista-accent-honey, #D97706)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <span>▼</span>
+                      <span>Fila Frontal (#01 - #03)</span>
                     </span>
                   </div>
 
@@ -932,8 +932,8 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                       boxSizing: 'border-box'
                     }}
                   >
-                    {/* Frontal visual ordering: Row 1 = [1, 2, 3] (frontal), Row 2 = [4, 5, 6] (posterior) */}
-                    {[1, 2, 3, 4, 5, 6].map((position) => {
+                    {/* Frontal visual ordering: Row 1 (top) = [4, 5, 6] (posterior), Row 2 (bottom) = [1, 2, 3] (frontal) */}
+                    {[4, 5, 6, 1, 2, 3].map((position) => {
                       const slot = rack.slots ? rack.slots.find(s => s.position === position) : null;
                       const isFilled = Boolean(slot && slot.batch_id);
 
