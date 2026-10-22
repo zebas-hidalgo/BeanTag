@@ -15,6 +15,14 @@ import { getScaWheelIcon, cleanNotesString, getScaCategory, STYLE_SCA_ICONS, dra
 export { parseGrindToMicrons } from './grinders';
 import { parseGrindToMicrons, GRINDERS } from './grinders';
 import { drawCardAsset, drawMetricAsset, ensureCardAssetsLoaded } from './ticketIconKits';
+import { TREND_STYLES, TREND_THEMES, drawTrendCard } from './trendCards';
+
+// 2027 trend styles (squishy, stretch, zine, vhs, lata) render their own feed/story cards.
+// Menu and sticker formats reuse the closest classic style.
+export const TREND_CARD_STYLES = TREND_STYLES;
+function legacyStyleOf(style) {
+  return TREND_THEMES[style] ? TREND_THEMES[style].legacy : style;
+}
 
 // Export formats (Instagram): feed 4:5 = 1080x1350, story 9:16 = 1080x1920
 export const CARD_FORMATS = ['feed', 'story'];
@@ -132,6 +140,7 @@ function composeStoryCanvas(feedCanvas, theme, style, footerText) {
 export function normalizeCardStyle(tpl) {
   if (!tpl) return 'studio';
   const lower = String(tpl).toLowerCase();
+  if (TREND_STYLES.includes(lower)) return lower;
   if (lower.includes('studio') || lower.includes('mono') || lower.includes('swiss') || lower.includes('helvetica') || lower.includes('grid')) return 'studio';
   if (lower.includes('blue') || lower.includes('cyan') || lower.includes('tech') || lower.includes('patent') || lower.includes('lab')) return 'blueprint';
   if (lower.includes('neo') || lower.includes('brutal') || lower.includes('pop') || lower.includes('bold') || lower.includes('nomad')) return 'neobrutalist';
@@ -291,7 +300,7 @@ export const CARD_THEMES = {
 };
 
 export function getCardTheme(style) {
-  const norm = normalizeCardStyle(style);
+  const norm = legacyStyleOf(normalizeCardStyle(style));
   return CARD_THEMES[norm] || CARD_THEMES.studio;
 }
 
@@ -735,7 +744,7 @@ export function parseSensoryEvaluation(batch, recipe) {
 /**
  * Asynchronous Font Loading Barrier
  */
-const CARD_FONTS_HREF = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&family=Space+Grotesk:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap';
+const CARD_FONTS_HREF = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&family=Space+Grotesk:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Caveat:wght@500;600;700&display=swap';
 
 // Card-only fonts load on demand, not on app start
 function injectCardFonts() {
@@ -1003,8 +1012,9 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   const style = normalizeCardStyle(template);
   const theme = getCardTheme(style);
 
+  const isTrend = TREND_STYLES.includes(style);
   const art = STYLE_ART[style] || STYLE_ART.studio;
-  await Promise.all([ensureFontsLoaded(), ensureCardAssetsLoaded(art.kit)]);
+  await Promise.all([ensureFontsLoaded(), isTrend ? null : ensureCardAssetsLoaded(art.kit)]);
 
   const canvas = document.createElement('canvas');
   // Feed 4:5: 608x760 logical units rendered at 1080x1350
@@ -1074,6 +1084,43 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   }
   const grindDisplayVal = stripEmojis(rawDial || 'Medio');
   const parsedRating = (rec.rating !== undefined && rec.rating !== null && Number.isFinite(parseFloat(rec.rating))) ? parseFloat(rec.rating) : null;
+
+  // 2027 trend styles: dedicated layouts drawn in 1080x1350 pixel space
+  if (isTrend) {
+    const note = incRecipe ? stripEmojis(String(rec.notes || rec.user_notes || '')).replace(/\s+/g, ' ').trim() : '';
+    const sd = sensoryData || {};
+    drawTrendCard(ctx, style, {
+      name: coffeeName,
+      roaster,
+      origin,
+      process,
+      variety,
+      altitude,
+      producer,
+      roastLevel,
+      sca: scaScore,
+      method: methodStr,
+      coffeeG,
+      waterG,
+      ratio: cleanRatio,
+      grind: grindDisplayVal,
+      grinderName,
+      time: timeStr,
+      temp: tempStr,
+      tags: flavorTags,
+      note,
+      balanceLabel: incRecipe || rec.sensory_balance ? sd.balanceLabel : null,
+      bodyLabel: incRecipe || rec.sensory_body ? sd.bodyLabel : null,
+      extractionLabel: incRecipe || rec.sensory_extraction ? sd.extractionLabel : null,
+      rating: incRecipe ? parsedRating : null,
+      ratingLabel: incRecipe && parsedRating ? `★ ${parsedRating % 1 ? parsedRating.toFixed(1) : parsedRating}/5` : null,
+      remaining: remainingDoses
+    }, incRecipe, baseW / 1080);
+    if (format === 'story') {
+      return composeStoryCanvas(canvas, TREND_THEMES[style], style, roaster ? `${roaster.toUpperCase()} • BEANTAG` : 'BEANTAG').toDataURL('image/png', 1.0);
+    }
+    return canvas.toDataURL('image/png', 1.0);
+  }
 
   // 1. Outer Canvas Background
   ctx.fillStyle = theme.bg;
@@ -1493,7 +1540,7 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
  * Upgraded with bigger fonts and custom SCA vector icon badges per note.
  */
 export async function generateCoffeeMenuCardImage(batches, template = 'studio') {
-  const style = normalizeCardStyle(template);
+  const style = legacyStyleOf(normalizeCardStyle(template));
   const theme = getCardTheme(style);
 
   await ensureFontsLoaded();
@@ -1768,7 +1815,7 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
   ctx.scale(scale, scale);
   await ensureFontsLoaded();
 
-  const style = normalizeCardStyle(options.template);
+  const style = legacyStyleOf(normalizeCardStyle(options.template));
   const theme = getCardTheme(style);
   const transparent = Boolean(options.transparent);
   const includeRecipe = Boolean(options.includeRecipe);

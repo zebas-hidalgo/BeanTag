@@ -154,6 +154,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       if (pref === 'diner' || pref === 'aurora') return 'diner';
       if (pref === 'kissaten' || pref === 'hangtag') return 'kissaten';
       if (pref === 'blueprint') return 'blueprint';
+      if (['squishy', 'stretch', 'zine', 'vhs', 'lata'].includes(pref)) return pref;
       return 'studio';
     } catch (e) {
       return 'studio';
@@ -2292,7 +2293,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   { id: 'kissaten', label: 'Kissaten' },
                   { id: 'blueprint', label: 'Dark Lab' },
                   { id: 'neobrutalist', label: 'Nomad' },
-                  { id: 'diner', label: 'Botanical' }
+                  { id: 'diner', label: 'Botanical' },
+                  { id: 'squishy', label: 'Squishy' },
+                  { id: 'stretch', label: 'Stretch' },
+                  { id: 'zine', label: 'Zine' },
+                  { id: 'vhs', label: 'VHS' },
+                  { id: 'lata', label: 'Lata' }
                 ].map(t => (
                   <button
                     key={t.id}

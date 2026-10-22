@@ -83,6 +83,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       if (pref === 'diner' || pref === 'aurora') return 'diner';
       if (pref === 'kissaten' || pref === 'hangtag') return 'kissaten';
       if (pref === 'blueprint') return 'blueprint';
+      if (['squishy', 'stretch', 'zine', 'vhs', 'lata'].includes(pref)) return pref; // menu uses the closest classic style
       return 'studio';
     } catch (e) {
       return 'studio';
