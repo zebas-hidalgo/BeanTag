@@ -179,11 +179,20 @@ export default function App() {
           localStorage.setItem('beantag-user', JSON.stringify(data.user));
           fetchBatches(savedToken);
         } else {
+          setCurrentUser(null);
+          setToken('');
+          localStorage.removeItem('beantag-token');
+          localStorage.removeItem('beantag-user');
           fetchBatches('');
         }
       })
-      .catch(() => {
-        fetchBatches(savedToken);
+      .catch((err) => {
+        console.warn('Sesión no válida o expirada:', err);
+        setCurrentUser(null);
+        setToken('');
+        localStorage.removeItem('beantag-token');
+        localStorage.removeItem('beantag-user');
+        fetchBatches('');
       });
     } else {
       fetchBatches('');

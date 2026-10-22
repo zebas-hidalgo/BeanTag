@@ -42,7 +42,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const brewFormRef = useRef(null);
 
   const isOwner = Boolean(
-    currentUser && (!batch?.user_id || currentUser.id === batch.user_id)
+    currentUser && (
+      !batch?.user_id ||
+      currentUser.id === batch.user_id ||
+      currentUser.is_owner ||
+      ['zebas.gpt@gmail.com', 'zeba.hidalgo@gmail.com'].includes(String(currentUser.email || '').toLowerCase().trim())
+    )
   );
 
   useEffect(() => {

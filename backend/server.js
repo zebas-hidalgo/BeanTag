@@ -51,17 +51,52 @@ const {
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-// JWT secret: never use a hardcoded default. Generate and persist one if missing.
-let JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET || JWT_SECRET === 'beantag_secret_jwt_key_2026' || JWT_SECRET.length < 32) {
-  JWT_SECRET = require('crypto').randomBytes(48).toString('hex');
-  try {
-    fs.appendFileSync(path.join(__dirname, '.env'), `\nJWT_SECRET=${JWT_SECRET}\n`, { mode: 0o600 });
-    console.warn('[security] JWT_SECRET generado y guardado en backend/.env');
-  } catch (e) {
-    console.warn('[security] JWT_SECRET temporal: no se pudo guardar en .env. Las sesiones caducan al reiniciar.');
+// JWT secret: never use a hardcoded default. Load existing or generate and persist cleanly.
+function resolveJwtSecret() {
+  const envPath = path.join(__dirname, '.env');
+  let secret = process.env.JWT_SECRET;
+
+  // If environment variable is missing, default, or suspiciously short, check .env file directly
+  if (!secret || secret === 'beantag_secret_jwt_key_2026' || secret.length < 32) {
+    if (fs.existsSync(envPath)) {
+      try {
+        const lines = fs.readFileSync(envPath, 'utf8').split('\n');
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith('JWT_SECRET=')) {
+            const candidate = trimmed.slice('JWT_SECRET='.length).trim().replace(/^["']|["']$/g, '');
+            if (candidate && candidate !== 'beantag_secret_jwt_key_2026' && candidate.length >= 32) {
+              secret = candidate;
+              break;
+            }
+          }
+        }
+      } catch (e) {}
+    }
   }
+
+  // If still missing or invalid, generate one and update .env cleanly without duplicating keys
+  if (!secret || secret === 'beantag_secret_jwt_key_2026' || secret.length < 32) {
+    secret = require('crypto').randomBytes(48).toString('hex');
+    try {
+      let content = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
+      if (content.includes('JWT_SECRET=')) {
+        content = content.replace(/^JWT_SECRET=.*$/gm, `JWT_SECRET=${secret}`);
+      } else {
+        content = `${content.trim()}\nJWT_SECRET=${secret}\n`;
+      }
+      fs.writeFileSync(envPath, content, { mode: 0o600 });
+      console.warn('[security] JWT_SECRET generado y actualizado en backend/.env');
+    } catch (e) {
+      console.warn('[security] JWT_SECRET temporal: no se pudo guardar en .env. Las sesiones caducan al reiniciar.');
+    }
+  }
+
+  process.env.JWT_SECRET = secret;
+  return secret;
 }
+
+const JWT_SECRET = resolveJwtSecret();
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
@@ -101,6 +136,30 @@ function requireAuth(req, res, next) {
   next();
 }
 
+// Recognized Cellar Owners (both Sebastian Hidalgo accounts)
+const OWNER_EMAILS = new Set([
+  'zebas.gpt@gmail.com',
+  'zeba.hidalgo@gmail.com',
+  ...(process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.toLowerCase().split(',').map(s => s.trim()) : [])
+]);
+
+function isOwnerUser(user) {
+  if (!user) return false;
+  const email = String(user.email || '').toLowerCase().trim();
+  return OWNER_EMAILS.has(email);
+}
+
+function isResourceOwner(user, resourceUserId) {
+  if (!user || !user.id) return false;
+  // If resource has no owner assigned (legacy unassigned), any logged-in user can manage it
+  if (resourceUserId === null || resourceUserId === undefined) return true;
+  // Direct user ID match
+  if (user.id === resourceUserId) return true;
+  // Global owner account match (covers both Sebastian Hidalgo emails across all his batches)
+  if (isOwnerUser(user)) return true;
+  return false;
+}
+
 // --- AUTHENTICATION ENDPOINTS ---
 
 // Register with Email & Password
@@ -120,7 +179,7 @@ app.post('/api/auth/register', async (req, res) => {
           'UPDATE users SET password_hash = ?, name = COALESCE(name, ?) WHERE id = ?',
           [passwordHash, name || null, existing.id]
         );
-        const userData = { id: existing.id, email: existing.email, name: existing.name || name || email.split('@')[0], picture: existing.picture };
+        const userData = { id: existing.id, email: existing.email, name: existing.name || name || email.split('@')[0], picture: existing.picture, is_owner: isOwnerUser(existing) };
         const token = jwt.sign(userData, JWT_SECRET, { expiresIn: '30d' });
         return res.json({ success: true, token, user: userData, linked: true, message: 'Contraseña vinculada a tu cuenta con éxito.' });
       }
@@ -135,7 +194,7 @@ app.post('/api/auth/register', async (req, res) => {
       [email.toLowerCase().trim(), passwordHash, userName]
     );
 
-    const user = { id: result.lastID, email: email.toLowerCase().trim(), name: userName, picture: null };
+    const user = { id: result.lastID, email: email.toLowerCase().trim(), name: userName, picture: null, is_owner: isOwnerUser({ email }) };
     const token = jwt.sign(user, JWT_SECRET, { expiresIn: '30d' });
 
     res.status(201).json({ success: true, token, user });
@@ -168,7 +227,7 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Contraseña incorrecta.' });
     }
 
-    const userData = { id: user.id, email: user.email, name: user.name, picture: user.picture };
+    const userData = { id: user.id, email: user.email, name: user.name, picture: user.picture, is_owner: isOwnerUser(user) };
     const token = jwt.sign(userData, JWT_SECRET, { expiresIn: '30d' });
 
     res.json({ success: true, token, user: userData });
@@ -217,7 +276,7 @@ app.post('/api/auth/google', async (req, res) => {
       user.picture = user.picture || picture;
     }
 
-    const userData = { id: user.id, email: user.email, name: user.name, picture: user.picture };
+    const userData = { id: user.id, email: user.email, name: user.name, picture: user.picture, is_owner: isOwnerUser(user) };
     const token = jwt.sign(userData, JWT_SECRET, { expiresIn: '30d' });
 
     res.json({ success: true, token, user: userData });
@@ -232,7 +291,12 @@ app.get('/api/auth/me', (req, res) => {
   if (!req.user) {
     return res.status(401).json({ error: 'No autenticado.' });
   }
-  res.json({ user: req.user });
+  res.json({
+    user: {
+      ...req.user,
+      is_owner: isOwnerUser(req.user)
+    }
+  });
 });
 
 // Auth Configuration Endpoint
@@ -250,7 +314,17 @@ app.get('/api/batches', async (req, res) => {
     const db = await getDb();
     let batches;
     if (req.user && req.user.id) {
-      batches = await db.all('SELECT * FROM batches WHERE user_id = ? OR user_id IS NULL ORDER BY created_at DESC', [req.user.id]);
+      if (isOwnerUser(req.user)) {
+        batches = await db.all(
+          `SELECT b.* FROM batches b 
+           LEFT JOIN users u ON b.user_id = u.id 
+           WHERE b.user_id = ? OR b.user_id IS NULL OR LOWER(u.email) IN ('zebas.gpt@gmail.com', 'zeba.hidalgo@gmail.com')
+           ORDER BY b.created_at DESC`,
+          [req.user.id]
+        );
+      } else {
+        batches = await db.all('SELECT * FROM batches WHERE user_id = ? OR user_id IS NULL ORDER BY created_at DESC', [req.user.id]);
+      }
     } else {
       batches = await db.all('SELECT * FROM batches ORDER BY created_at DESC');
     }
@@ -312,7 +386,7 @@ app.patch('/api/batches/:id/doses', async (req, res) => {
       return res.status(404).json({ error: 'Lote no encontrado' });
     }
 
-    if (batch.user_id !== null && (!req.user || req.user.id !== batch.user_id)) {
+    if (!isResourceOwner(req.user, batch.user_id)) {
       return res.status(403).json({ error: 'Solo el propietario de este café puede modificar las dosis.' });
     }
     
@@ -347,7 +421,7 @@ app.post('/api/recipes', async (req, res) => {
       return res.status(404).json({ error: 'Lote no encontrado' });
     }
 
-    if (batch.user_id !== null && (!req.user || req.user.id !== batch.user_id)) {
+    if (!isResourceOwner(req.user, batch.user_id)) {
       return res.status(403).json({ error: 'Solo el propietario de este café puede registrar extracciones.' });
     }
 
@@ -425,7 +499,7 @@ app.put('/api/batches/:id', async (req, res) => {
       return res.status(404).json({ error: 'Lote no encontrado' });
     }
 
-    if (current.user_id !== null && (!req.user || req.user.id !== current.user_id)) {
+    if (!isResourceOwner(req.user, current.user_id)) {
       return res.status(403).json({ error: 'Solo el propietario puede editar este lote.' });
     }
     
@@ -485,7 +559,7 @@ app.put('/api/recipes/:id', async (req, res) => {
       return res.status(404).json({ error: 'Receta no encontrada' });
     }
 
-    if (recipe.user_id !== null && (!req.user || req.user.id !== recipe.user_id)) {
+    if (!isResourceOwner(req.user, recipe.user_id)) {
       return res.status(403).json({ error: 'Solo el propietario puede editar esta receta.' });
     }
 
@@ -538,7 +612,7 @@ app.delete('/api/recipes/:id', async (req, res) => {
     if (!recipe) {
       return res.status(404).json({ error: 'Receta no encontrada' });
     }
-    if (recipe.user_id !== null && (!req.user || req.user.id !== recipe.user_id)) {
+    if (!isResourceOwner(req.user, recipe.user_id)) {
       return res.status(403).json({ error: 'Solo el propietario puede eliminar recetas de este lote.' });
     }
     await db.run('DELETE FROM recipes WHERE id = ?', req.params.id);
@@ -558,7 +632,7 @@ app.delete('/api/batches/:id', async (req, res) => {
       return res.status(404).json({ error: 'Lote no encontrado' });
     }
 
-    if (batch.user_id !== null && (!req.user || req.user.id !== batch.user_id)) {
+    if (!isResourceOwner(req.user, batch.user_id)) {
       return res.status(403).json({ error: 'Solo el propietario puede eliminar este lote.' });
     }
 
@@ -592,10 +666,20 @@ app.get('/api/racks', async (req, res) => {
     const db = await getDb();
     let racks;
     if (req.user && req.user.id) {
-      racks = await db.all(
-        'SELECT * FROM tube_racks WHERE user_id = ? OR user_id IS NULL ORDER BY order_index ASC, created_at ASC',
-        [req.user.id]
-      );
+      if (isOwnerUser(req.user)) {
+        racks = await db.all(
+          `SELECT r.* FROM tube_racks r
+           LEFT JOIN users u ON r.user_id = u.id
+           WHERE r.user_id = ? OR r.user_id IS NULL OR LOWER(u.email) IN ('zebas.gpt@gmail.com', 'zeba.hidalgo@gmail.com')
+           ORDER BY r.order_index ASC, r.created_at ASC`,
+          [req.user.id]
+        );
+      } else {
+        racks = await db.all(
+          'SELECT * FROM tube_racks WHERE user_id = ? OR user_id IS NULL ORDER BY order_index ASC, created_at ASC',
+          [req.user.id]
+        );
+      }
     } else {
       racks = await db.all('SELECT * FROM tube_racks ORDER BY order_index ASC, created_at ASC');
     }
@@ -672,7 +756,7 @@ app.put('/api/racks/:id', async (req, res) => {
     if (!rack) {
       return res.status(404).json({ error: 'Portatubos no encontrado.' });
     }
-    if (rack.user_id !== null && (!req.user || req.user.id !== rack.user_id)) {
+    if (!isResourceOwner(req.user, rack.user_id)) {
       return res.status(403).json({ error: 'Solo el propietario puede modificar este portatubos.' });
     }
 
@@ -698,7 +782,7 @@ app.delete('/api/racks/:id', async (req, res) => {
     if (!rack) {
       return res.status(404).json({ error: 'Portatubos no encontrado.' });
     }
-    if (rack.user_id !== null && (!req.user || req.user.id !== rack.user_id)) {
+    if (!isResourceOwner(req.user, rack.user_id)) {
       return res.status(403).json({ error: 'Solo el propietario puede eliminar este portatubos.' });
     }
 
@@ -724,7 +808,7 @@ app.put('/api/racks/:id/slots/:position', async (req, res) => {
     if (!rack) {
       return res.status(404).json({ error: 'Portatubos no encontrado.' });
     }
-    if (rack.user_id !== null && (!req.user || req.user.id !== rack.user_id)) {
+    if (!isResourceOwner(req.user, rack.user_id)) {
       return res.status(403).json({ error: 'No tienes permiso para editar este portatubos.' });
     }
 
@@ -783,7 +867,7 @@ app.post('/api/racks/:id/fill', async (req, res) => {
     if (!rack) {
       return res.status(404).json({ error: 'Portatubos no encontrado.' });
     }
-    if (rack.user_id !== null && (!req.user || req.user.id !== rack.user_id)) {
+    if (!isResourceOwner(req.user, rack.user_id)) {
       return res.status(403).json({ error: 'No tienes permiso para editar este portatubos.' });
     }
 
@@ -849,7 +933,7 @@ app.post('/api/racks/:id/empty', async (req, res) => {
     if (!rack) {
       return res.status(404).json({ error: 'Portatubos no encontrado.' });
     }
-    if (rack.user_id !== null && (!req.user || req.user.id !== rack.user_id)) {
+    if (!isResourceOwner(req.user, rack.user_id)) {
       return res.status(403).json({ error: 'No tienes permiso para editar este portatubos.' });
     }
 
@@ -872,7 +956,7 @@ app.post('/api/racks/:id/slots/:position/consume', async (req, res) => {
     if (!rack) {
       return res.status(404).json({ error: 'Portatubos no encontrado.' });
     }
-    if (rack.user_id !== null && (!req.user || req.user.id !== rack.user_id)) {
+    if (!isResourceOwner(req.user, rack.user_id)) {
       return res.status(403).json({ error: 'No tienes permiso para modificar este portatubos.' });
     }
 
@@ -915,11 +999,30 @@ app.post('/api/racks/:id/slots/:position/consume', async (req, res) => {
 app.get('/api/backup/export', requireAuth, async (req, res) => {
   try {
     const db = await getDb();
-    const batches = await db.all('SELECT * FROM batches WHERE user_id = ?', [req.user.id]);
-    const recipes = await db.all(
-      'SELECT r.* FROM recipes r JOIN batches b ON r.batch_id = b.id WHERE b.user_id = ?',
-      [req.user.id]
-    );
+    let batches, recipes;
+    if (isOwnerUser(req.user)) {
+      batches = await db.all(
+        `SELECT b.* FROM batches b 
+         LEFT JOIN users u ON b.user_id = u.id 
+         WHERE b.user_id = ? OR b.user_id IS NULL OR LOWER(u.email) IN ('zebas.gpt@gmail.com', 'zeba.hidalgo@gmail.com')
+         ORDER BY b.created_at DESC`,
+        [req.user.id]
+      );
+      recipes = await db.all(
+        `SELECT r.* FROM recipes r 
+         JOIN batches b ON r.batch_id = b.id 
+         LEFT JOIN users u ON b.user_id = u.id 
+         WHERE b.user_id = ? OR b.user_id IS NULL OR LOWER(u.email) IN ('zebas.gpt@gmail.com', 'zeba.hidalgo@gmail.com')
+         ORDER BY r.created_at DESC`,
+        [req.user.id]
+      );
+    } else {
+      batches = await db.all('SELECT * FROM batches WHERE user_id = ?', [req.user.id]);
+      recipes = await db.all(
+        'SELECT r.* FROM recipes r JOIN batches b ON r.batch_id = b.id WHERE b.user_id = ?',
+        [req.user.id]
+      );
+    }
     res.json({ success: true, batches, recipes });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -930,16 +1033,31 @@ app.get('/api/backup/export', requireAuth, async (req, res) => {
 app.get('/api/backup/export/csv', requireAuth, async (req, res) => {
   try {
     const db = await getDb();
-    const rows = await db.all(`
-      SELECT 
-        r.id, r.created_at, b.name as batch_name, b.roaster, b.origin, b.variety, b.process,
-        r.method, r.ratio, r.grind, r.temperature, r.brew_time, r.sensory_balance, r.sensory_body,
-        r.sensory_extraction, r.dose_in_g, r.dose_out_g, r.notes
-      FROM recipes r
-      JOIN batches b ON r.batch_id = b.id
-      WHERE b.user_id = ?
-      ORDER BY r.created_at DESC
-    `, [req.user.id]);
+    let rows;
+    if (isOwnerUser(req.user)) {
+      rows = await db.all(`
+        SELECT 
+          r.id, r.created_at, b.name as batch_name, b.roaster, b.origin, b.variety, b.process,
+          r.method, r.ratio, r.grind, r.temperature, r.brew_time, r.sensory_balance, r.sensory_body,
+          r.sensory_extraction, r.dose_in_g, r.dose_out_g, r.notes
+        FROM recipes r
+        JOIN batches b ON r.batch_id = b.id
+        LEFT JOIN users u ON b.user_id = u.id
+        WHERE b.user_id = ? OR b.user_id IS NULL OR LOWER(u.email) IN ('zebas.gpt@gmail.com', 'zeba.hidalgo@gmail.com')
+        ORDER BY r.created_at DESC
+      `, [req.user.id]);
+    } else {
+      rows = await db.all(`
+        SELECT 
+          r.id, r.created_at, b.name as batch_name, b.roaster, b.origin, b.variety, b.process,
+          r.method, r.ratio, r.grind, r.temperature, r.brew_time, r.sensory_balance, r.sensory_body,
+          r.sensory_extraction, r.dose_in_g, r.dose_out_g, r.notes
+        FROM recipes r
+        JOIN batches b ON r.batch_id = b.id
+        WHERE b.user_id = ?
+        ORDER BY r.created_at DESC
+      `, [req.user.id]);
+    }
 
     const headers = [
       'ID', 'Fecha', 'Lote', 'Tostador', 'Origen', 'Variedad', 'Proceso',
