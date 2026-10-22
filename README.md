@@ -16,7 +16,7 @@
 * **📦 Gestión de Inventario:** Control detallado de lotes de café (Tostador, Origen, Variedad, Proceso, Altitud, Fecha de tueste, Clasificación de notas SCA y peso restante en gramos).
 * **📱 Integración Web NFC & Códigos QR:** Vinculación instantánea de etiquetas NFC físicas (Web NFC API) a cada lote de café. Permite escanear tags desde el smartphone para abrir directamente la ficha del grano, con opción de códigos QR de respaldo.
 * **⚙️ Asistente de Dial-In (1Zpresso J-Max):** Calculadora e interfaz gráfica interactiva paso a paso para ajustar moliendas de precisión (clics, vueltas completas y espectro de partículas según el método de extracción).
-* **🧠 Asistente Barista IA (Google Gemini):** Integración nativa con la API de `gemini-2.5-flash`. Analiza el perfil del grano, el método seleccionado y la dosis exacta para autocompletar y recomendar recetas de extracción optimizadas.
+* **🧠 Asistente Barista IA (Google Gemini):** Integración con Google Gemini (por defecto `gemini-3.8-flash`) y Groq. Analiza el perfil del grano, el método seleccionado y la dosis exacta para autocompletar y recomendar recetas de extracción optimizadas.
 * **🧾 Tarjetas de Compartido Canvas (Ticket POS & Diseños HD):** Generador de imágenes descargables en tiempo real con la API de HTML5 Canvas:
   * **Ticket de Barista (POS Register):** Maquetación estilo recibo de caja vintage con textura de papel arrugado, tabla ítemizada de parámetros (Origen, Proceso, Ratio, Dosis, Tiempo) y sello brutalista SCA.
   * **Estilo Editorial & Earth:** Diseños verticales estilizados con iconos vectoriales de notas de cata y paleta de colores adaptable.
@@ -38,14 +38,14 @@
 ### Backend & Almacenamiento
 * **Node.js & Express** para la API REST del servidor.
 * **SQLite3** como base de datos ligera, confiable y de alta velocidad.
-* **Google Gemini API (`gemini-2.5-flash`)** para el motor de recomendación inteligente de barismo.
+* **Google Gemini API (`gemini-3.8-flash`) y Groq** para el motor de recomendación inteligente de barismo.
 
 ---
 
 ## ⚙️ Instalación y Configuración Local
 
 ### Prerrequisitos
-* Node.js (versión 16 o superior)
+* Node.js (versión 18 o superior)
 * npm
 
 ### 1. Clonar el Repositorio
@@ -74,7 +74,7 @@ Puedes crear un archivo `.env` en la carpeta `backend` para modificar el puerto 
 ```env
 PORT=5000
 ```
-*Nota: La clave API de Gemini se configura y almacena localmente de forma segura en el navegador (`localStorage`) a través del panel de Ajustes.*
+*Nota: La clave API de Gemini/Groq puede ir en el navegador (panel de Ajustes) o en el servidor (`GEMINI_API_KEY`, `GROQ_API_KEY`). `JWT_SECRET` se genera solo en `backend/.env` si falta.*
 
 ### 4. Iniciar en Entorno de Desarrollo
 Ejecuta en la raíz del proyecto:
