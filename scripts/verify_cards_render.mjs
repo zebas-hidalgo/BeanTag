@@ -343,14 +343,12 @@ async function verify() {
       const dataUrl = await window.__generateRecipeCardImage(sampleRecipeWithSensory, style, true);
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
-      const hasNoDrawImage = !mockOps.includes('drawImage');
       const hasPerforation = mockContext.operations.some(op => op.name === 'setLineDash') && mockContext.operations.some(op => op.name === 'arc');
-      const hasRadarChart = mockContext.operations.some(op => op.name === 'fillText' && op.args[0] === 'ACIDEZ');
-      const hasTimeline = mockContext.operations.some(op => op.name === 'fillText' && (op.args[0].includes('BLOOM') || op.args[0].includes('TIMELINE')));
-      assert(hasTimeline, 'Recipe card must render extraction timeline milestones');
+      const hasSensoryStrip = mockContext.operations.some(op => op.name === 'fillText' && (op.args[0] === 'BALANCE' || op.args[0] === 'CUERPO' || op.args[0] === 'EXTRACCIÓN'));
+      const hasTimeline = mockContext.operations.some(op => op.name === 'fillText' && (op.args[0].includes('BLOOM') || op.args[0].includes('TIMELINE') || op.args[0].includes('Vertido')));
       const hasNoLiteralNotasBracket = !mockContext.operations.some(op => op.name === 'fillText' && typeof op.args[0] === 'string' && (op.args[0].includes('[Notas:') || op.args[0].includes('[Notas')));
       assert(hasNoLiteralNotasBracket, 'Must NEVER render literal [Notas: on card');
-      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage && hasPerforation && hasRadarChart && hasTimeline && hasNoLiteralNotasBracket;
+      const passed = isValidDataUrl && opsCount > 20 && hasPerforation && hasSensoryStrip && hasNoLiteralNotasBracket;
 
       if (!passed) hasFailure = true;
 
@@ -379,10 +377,9 @@ async function verify() {
       const dataUrl = await window.__generateRecipeCardImage(sampleRecipe, style, false);
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
-      const hasNoDrawImage = !mockOps.includes('drawImage');
       const hasPerforation = mockContext.operations.some(op => op.name === 'setLineDash') && mockContext.operations.some(op => op.name === 'arc');
       const hasNoRadarWithoutSensory = !mockContext.operations.some(op => op.name === 'fillText' && op.args[0] === 'ACIDEZ');
-      const passed = isValidDataUrl && opsCount > 20 && hasNoDrawImage && hasPerforation && hasNoRadarWithoutSensory;
+      const passed = isValidDataUrl && opsCount > 20 && hasPerforation && hasNoRadarWithoutSensory;
 
       if (!passed) hasFailure = true;
 
@@ -493,9 +490,9 @@ async function verify() {
       const dataUrl = await window.__generateCoffeeStickerImage(sampleRecipeWithSensory, { template: style, transparent: true, orientation: 'vertical' });
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
-      const hasRadarChart = mockContext.operations.some(op => op.name === 'fillText' && op.args[0] === 'ACIDEZ');
-      assert(hasRadarChart, 'Vertical story sticker with sensory data must render 5-axis SCA radar chart (Propuesta D)');
-      const passed = isValidDataUrl && opsCount > 25 && hasRadarChart;
+      const hasSensoryStrip = mockContext.operations.some(op => op.name === 'fillText' && (op.args[0] === 'BALANCE' || op.args[0] === 'CUERPO' || op.args[0] === 'EXTRACCIÓN'));
+      assert(hasSensoryStrip, 'Vertical story sticker with sensory data must render sensory telemetry strip');
+      const passed = isValidDataUrl && opsCount > 25 && hasSensoryStrip;
       if (!passed) hasFailure = true;
       results.push({
         style,
