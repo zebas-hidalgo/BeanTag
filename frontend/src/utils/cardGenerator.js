@@ -14,6 +14,116 @@ import { getScaWheelIcon, cleanNotesString, getScaCategory, STYLE_SCA_ICONS, dra
 
 export { parseGrindToMicrons } from './grinders';
 import { parseGrindToMicrons, GRINDERS } from './grinders';
+import { drawCardAsset, drawMetricAsset, ensureCardAssetsLoaded } from './ticketIconKits';
+
+// Export formats (Instagram): feed 4:5 = 1080x1350, story 9:16 = 1080x1920
+export const CARD_FORMATS = ['feed', 'story'];
+export function getPreferredCardFormat() {
+  try { return localStorage.getItem('beantag-card-format') === 'story' ? 'story' : 'feed'; } catch (e) { return 'feed'; }
+}
+export function setPreferredCardFormat(format) {
+  try { localStorage.setItem('beantag-card-format', format === 'story' ? 'story' : 'feed'); } catch (e) {}
+}
+
+// Per-style illustration art direction (assets live in ticketIconKits)
+const STYLE_ART = {
+  studio:       { kit: 'aurora',       recipe: 'aurora_dripper',       bean: 'aurora_water',      icons: null },
+  blueprint:    { kit: 'blueprint',    recipe: 'blueprint_dripper',    bean: 'blueprint_scale',   icons: 'blueprint' },
+  neobrutalist: { kit: 'neobrutalist', recipe: 'neobrutalist_dripper', bean: 'neobrutalist_star', icons: 'neobrutalist' },
+  kissaten:     { kit: 'hangtag',      recipe: 'hangtag_kettle',       bean: 'hangtag_seal',      icons: 'kissaten' },
+  diner:        { kit: 'hangtag',      recipe: 'hangtag_timer',        bean: 'hangtag_seed',      icons: 'diner' }
+};
+
+/**
+ * Draws the style's hero illustration with its own art direction.
+ * Returns false if the image is not available (caller keeps full-width layout).
+ */
+function drawStyleHero(ctx, style, assetKey, x, y, w, h) {
+  const cx = x + w / 2;
+  const cy = y + h / 2;
+  const r = Math.min(w, h) / 2;
+  ctx.save();
+  let drawn = false;
+  if (style === 'blueprint') {
+    // CAD calibration ring behind a technical drawing
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0, 'rgba(56, 189, 248, 0.16)');
+    g.addColorStop(1, 'rgba(56, 189, 248, 0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.arc(cx, cy, r * 0.94, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(([dx, dy]) => {
+      ctx.beginPath();
+      ctx.moveTo(cx + dx * (r * 0.94 - 5), cy + dy * (r * 0.94 - 5));
+      ctx.lineTo(cx + dx * (r * 0.94 + 5), cy + dy * (r * 0.94 + 5));
+      ctx.stroke();
+    });
+    drawn = drawCardAsset(ctx, assetKey, x + 6, y + 6, w - 12, h - 12);
+  } else if (style === 'neobrutalist') {
+    // Die-cut sticker slapped on the card: tilted, hard offset shadow
+    drawn = drawCardAsset(ctx, assetKey, x - 6, y - 6, w + 12, h + 12, {
+      rotation: -0.14,
+      shadowColor: 'rgba(17, 17, 17, 0.95)',
+      shadowBlur: 0,
+      shadowOffsetX: 4,
+      shadowOffsetY: 4
+    });
+  } else if (style === 'kissaten' || style === 'diner') {
+    // Paper hang-tag on a string
+    ctx.strokeStyle = style === 'kissaten' ? 'rgba(185, 28, 28, 0.55)' : 'rgba(21, 94, 63, 0.55)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(cx, y - 14);
+    ctx.quadraticCurveTo(cx - 8, y + 2, cx + 2, y + 16);
+    ctx.stroke();
+    drawn = drawCardAsset(ctx, assetKey, x, y + 4, w, h - 4, {
+      rotation: style === 'kissaten' ? 0.06 : -0.05,
+      shadowColor: 'rgba(60, 40, 20, 0.28)',
+      shadowBlur: 10,
+      shadowOffsetY: 4
+    });
+  } else {
+    // Swiss studio: one product shot, soft floor shadow
+    drawn = drawCardAsset(ctx, assetKey, x, y, w, h, {
+      shadowColor: 'rgba(9, 9, 11, 0.18)',
+      shadowBlur: 18,
+      shadowOffsetY: 8
+    });
+  }
+  ctx.restore();
+  return drawn;
+}
+
+/**
+ * Wraps a finished 1080x1350 feed card into a 1080x1920 story canvas.
+ * The card sits inside Instagram's safe zone (top/bottom ~250px stay clear).
+ */
+function composeStoryCanvas(feedCanvas, theme, style, footerText) {
+  const story = document.createElement('canvas');
+  story.width = 1080;
+  story.height = 1920;
+  const sctx = story.getContext('2d');
+  sctx.fillStyle = theme.bg;
+  sctx.fillRect(0, 0, 1080, 1920);
+  if (style === 'blueprint') {
+    sctx.strokeStyle = 'rgba(56, 189, 248, 0.06)';
+    sctx.lineWidth = 2;
+    for (let gx = 0; gx <= 1080; gx += 48) { sctx.beginPath(); sctx.moveTo(gx, 0); sctx.lineTo(gx, 1920); sctx.stroke(); }
+    for (let gy = 0; gy <= 1920; gy += 48) { sctx.beginPath(); sctx.moveTo(0, gy); sctx.lineTo(1080, gy); sctx.stroke(); }
+  }
+  const top = Math.round((1920 - feedCanvas.height) / 2);
+  sctx.drawImage(feedCanvas, 0, top);
+  sctx.fillStyle = theme.textSecondary;
+  sctx.font = `800 26px ${theme.fontMono}`;
+  sctx.textAlign = 'center';
+  sctx.textBaseline = 'alphabetic';
+  sctx.fillText(footerText, 540, top + feedCanvas.height + 70);
+  return story;
+}
 
 /**
  * Normalizes template names to the 5 official collector styles:
@@ -889,19 +999,21 @@ export function drawExtractionTimeline(ctx, x, y, width, height, recipeData, sty
  * Generates an Ultra-Aesthetic Collector Card (Portrait 540 x 760 px @ 2x = 1080 x 1520 px)
  * Strava/Wrapped-grade typography scale + custom Canvas 2D SCA flavor icon badges.
  */
-export async function generateRecipeCardImage(recipe, template = 'studio', incRecipe = true) {
+export async function generateRecipeCardImage(recipe, template = 'studio', incRecipe = true, format = getPreferredCardFormat()) {
   const style = normalizeCardStyle(template);
   const theme = getCardTheme(style);
 
-  await ensureFontsLoaded();
+  const art = STYLE_ART[style] || STYLE_ART.studio;
+  await Promise.all([ensureFontsLoaded(), ensureCardAssetsLoaded(art.kit)]);
 
   const canvas = document.createElement('canvas');
-  const scaleFactor = 2;
-  const baseW = 540;
+  // Feed 4:5: 608x760 logical units rendered at 1080x1350
+  const baseW = 608;
   const baseH = 760;
+  const scaleFactor = 1080 / baseW;
 
-  canvas.width = baseW * scaleFactor;
-  canvas.height = baseH * scaleFactor;
+  canvas.width = 1080;
+  canvas.height = 1350;
 
   const ctx = canvas.getContext('2d');
   ctx.scale(scaleFactor, scaleFactor);
@@ -1081,10 +1193,17 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
     drawHankoSeal(ctx, innerX + innerW - 16, headerPillY + 15, 28);
   }
 
+  // Style illustration on the right of the title (each style has its own art direction)
+  const heroSize = style === 'neobrutalist' ? 128 : 120;
+  const heroX = innerX + innerW - heroSize + (style === 'neobrutalist' ? 6 : 0);
+  const heroY = headerPillY + headerPillH + (style === 'kissaten' || style === 'diner' ? 16 : 8);
+  const heroDrawn = drawStyleHero(ctx, style, incRecipe ? art.recipe : art.bean, heroX, heroY, heroSize, heroSize);
+  const titleMaxW = heroDrawn ? innerW - heroSize - 16 : innerW;
+
   // Hero Multi-Line Title (Up to 2 lines, 42px bold)
   const titleStartY = cardY + 86;
   const titleFormatted = style === 'kissaten' ? coffeeName : coffeeName.toUpperCase();
-  const titleMetrics = drawHeroTitleBlock(ctx, titleFormatted, innerX, titleStartY, innerW, {
+  const titleMetrics = drawHeroTitleBlock(ctx, titleFormatted, innerX, titleStartY, titleMaxW, {
     maxLines: 2,
     maxFontSize: 42,
     minFontSize: 28,
@@ -1100,7 +1219,7 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   ctx.fillStyle = theme.accent;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  drawCanvasTruncatedText(ctx, subtitleStr.toUpperCase(), innerX, subY, innerW);
+  drawCanvasTruncatedText(ctx, subtitleStr.toUpperCase(), innerX, subY, titleMaxW);
 
   // Ticket Perforation Divider
   const notchY = cardY + 174;
@@ -1169,18 +1288,31 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
     const neoTileColors = ['#FDE68A', '#FFFDF9', '#FED7AA', '#E0F2FE'];
     const tileFill = style === 'neobrutalist' ? neoTileColors[idx % neoTileColors.length] : theme.surfaceBg;
 
-    drawStyledBox(ctx, tx, ty, tileW, tileH, theme, {
-      fill: tileFill,
-      stroke: theme.border,
-      lineWidth: style === 'neobrutalist' ? 2.2 : 1.3,
-      radius: style === 'studio' ? 8 : 12,
-      shadow: style === 'neobrutalist'
-    });
+    if (style === 'studio') {
+      // Swiss grid: no boxes, just a strong rule on top of each cell
+      ctx.fillStyle = '#09090B';
+      ctx.fillRect(tx, ty, tileW, 2);
+    } else {
+      drawStyledBox(ctx, tx, ty, tileW, tileH, theme, {
+        fill: tileFill,
+        stroke: theme.border,
+        lineWidth: style === 'neobrutalist' ? 2.2 : 1.3,
+        radius: 12,
+        shadow: style === 'neobrutalist'
+      });
+    }
+
+    const metricTypes = ['method', 'dose', 'grind', 'time'];
+    const hasIcon = Boolean(incRecipe && art.icons);
+    if (hasIcon) {
+      drawMetricAsset(ctx, art.icons, metricTypes[idx], tx + tileW - 24, ty + 24, style === 'neobrutalist' ? 34 : 28);
+    }
+    const tilePad = style === 'studio' ? 0 : 14;
+    const textW = tileW - tilePad - 12 - (hasIcon ? 34 : 0);
 
     // Style-specific tile accent bar
     if (style === 'studio') {
-      ctx.fillStyle = '#09090B';
-      ctx.fillRect(tx, ty + 8, 4, tileH - 16);
+      // (rule drawn above)
     } else if (style === 'diner') {
       ctx.fillStyle = '#C2410C';
       ctx.fillRect(tx + 10, ty, tileW - 20, 3.5);
@@ -1197,17 +1329,17 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
     ctx.font = `800 13px ${theme.fontMono}`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    drawCanvasTruncatedText(ctx, t.label, tx + 14, ty + 23, tileW - 26);
+    drawCanvasTruncatedText(ctx, t.label, tx + tilePad, ty + 23, textW);
 
     // Hero Value (25px bold)
     ctx.fillStyle = style === 'neobrutalist' ? '#18181B' : theme.text;
-    ctx.font = `800 24.5px ${theme.fontHeading}`;
-    drawCanvasTruncatedText(ctx, t.value, tx + 14, ty + 55, tileW - 26);
+    ctx.font = `800 ${style === 'studio' ? 28 : 24.5}px ${theme.fontHeading}`;
+    drawCanvasTruncatedText(ctx, t.value, tx + tilePad, ty + 55, tileW - tilePad - 12);
 
     // Subcaption (13.5px bold)
     ctx.fillStyle = style === 'neobrutalist' ? '#27272A' : theme.textSecondary;
     ctx.font = `700 13.5px ${theme.fontMono}`;
-    drawCanvasTruncatedText(ctx, t.sub, tx + 14, ty + 78, tileW - 26);
+    drawCanvasTruncatedText(ctx, t.sub, tx + tilePad, ty + 78, tileW - tilePad - 12);
   });
 
   // =========================================================================
@@ -1248,18 +1380,23 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   const sensoryY = zone3Y + 66;
   const sensoryH = 180;
 
-  drawStyledBox(ctx, innerX, sensoryY, innerW, sensoryH, theme, {
-    fill: theme.surfaceBg,
-    stroke: theme.border,
-    lineWidth: style === 'neobrutalist' ? 2.2 : 1.3,
-    radius: style === 'studio' ? 8 : 14,
-    shadow: style === 'neobrutalist'
-  });
+  if (style === 'studio') {
+    ctx.fillStyle = '#09090B';
+    ctx.fillRect(innerX, sensoryY, innerW, 2);
+  } else {
+    drawStyledBox(ctx, innerX, sensoryY, innerW, sensoryH, theme, {
+      fill: theme.surfaceBg,
+      stroke: theme.border,
+      lineWidth: style === 'neobrutalist' ? 2.2 : 1.3,
+      radius: 14,
+      shadow: style === 'neobrutalist'
+    });
+  }
 
   ctx.fillStyle = theme.accent;
   ctx.font = `800 13.5px ${theme.fontMono}`;
   ctx.textAlign = 'left';
-  ctx.fillText(style === 'kissaten' ? '風味特性 // NOTAS DE CATA & PERFIL SCA' : 'NOTAS DE CATA & PERFIL SENSORIAL SCA', innerX + 16, sensoryY + 23);
+  ctx.fillText(style === 'kissaten' ? '風味特性 // NOTAS DE CATA & PERFIL SCA' : 'NOTAS DE CATA & PERFIL SENSORIAL SCA', innerX + (style === 'studio' ? 0 : 16), sensoryY + 23);
 
   const hasSensoryStrip = incRecipe ? sensoryData !== null : Boolean(rec.sensory_balance || rec.sensory_body || rec.sensory_extraction);
   // The barista's own cup note (recipe cards only) is the most personal data on the card
@@ -1267,8 +1404,8 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   const tagsToDraw = flavorTags.slice(0, userNote ? 2 : 4);
 
   // 2x2 Full-Width Flavor Pills Grid with Vector SCA Icon Badges
-  const pillAreaX = innerX + 14;
-  const pillAreaW = innerW - 28;
+  const pillAreaX = innerX + (style === 'studio' ? 0 : 14);
+  const pillAreaW = innerW - (style === 'studio' ? 0 : 28);
   const pillGap = 10;
   const pillCols = tagsToDraw.length === 1 ? 1 : 2;
   const pillW = pillCols === 1 ? pillAreaW : (pillAreaW - pillGap) / 2;
@@ -1345,6 +1482,9 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
   ctx.fillText(incRecipe ? 'BREW PROTOCOL ✓' : 'ORIGIN LOT ✓', innerX + innerW, footY);
   ctx.textAlign = 'left';
 
+  if (format === 'story') {
+    return composeStoryCanvas(canvas, theme, style, roaster ? `${roaster.toUpperCase()} • BEANTAG` : 'BEANTAG').toDataURL('image/png', 1.0);
+  }
   return canvas.toDataURL('image/png', 1.0);
 }
 

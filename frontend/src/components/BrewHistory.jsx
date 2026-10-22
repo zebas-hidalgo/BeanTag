@@ -4,7 +4,7 @@ import { formatLocalDateStr } from '../utils/date';
 import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw, Filter, Zap, Droplet, Coffee, Edit3, SlidersHorizontal } from 'lucide-react';
 import { stripEmojis, RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
-import { generateRecipeCardImage, generateCoffeeStickerImage } from '../utils/cardGenerator';
+import { generateRecipeCardImage, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat } from '../utils/cardGenerator';
 import { parseGrindToMicrons } from '../utils/grinders';
 
 const getMethodLucideIcon = (methodName, size = 18) => {
@@ -40,6 +40,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   const [shareStatus, setShareStatus] = useState('');
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(true);
   const [shareFormat, setShareFormat] = useState('card'); // 'card' | 'sticker'
+  const [cardFormat, setCardFormat] = useState(() => getPreferredCardFormat()); // 'feed' (4:5) | 'story' (9:16)
   const [stickerTransparent, setStickerTransparent] = useState(false);
   const [stickerOrientation, setStickerOrientation] = useState('horizontal'); // 'horizontal' | 'vertical'
   const [shareTemplate, setShareTemplate] = useState(() => {
@@ -1039,6 +1040,35 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
               {/* Row 2: Sub-options (Orientation & background if sticker, plus Content toggle for both) */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {shareFormat === 'card' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '100%', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>TAMAÑO:</span>
+                  {[{ id: 'feed', label: 'Feed 4:5' }, { id: 'story', label: 'Story 9:16' }].map(f => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      aria-pressed={cardFormat === f.id}
+                      onClick={() => {
+                        setPreferredCardFormat(f.id);
+                        setCardFormat(f.id);
+                        exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'card', stickerTransparent);
+                      }}
+                      style={{
+                        padding: '3px 7px',
+                        fontSize: '12px',
+                        borderRadius: '4px',
+                        border: cardFormat === f.id ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        backgroundColor: cardFormat === f.id ? 'var(--bg-header)' : 'var(--bg-card)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        color: cardFormat === f.id ? 'var(--color-crimson)' : 'var(--color-text)'
+                      }}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+                )}
                 {shareFormat === 'sticker' && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '6px', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>

@@ -4,7 +4,7 @@ import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
 import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers, SlidersHorizontal, Cylinder, Compass, Target, Trophy, Sliders, Lightbulb, Check, Eye } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
-import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText, generateCoffeeStickerImage } from '../utils/cardGenerator';
+import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat } from '../utils/cardGenerator';
 import { FAMOUS_RECIPES } from '../utils/famousRecipes';
 import ScaRadarChart from './ScaRadarChart';
 import DialInAssistant from './DialInAssistant';
@@ -143,6 +143,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [shareImage, setShareImage] = useState(null);
   const [shareScope, setShareScope] = useState('single'); // 'single' | 'sticker' | 'menu'
   const [stickerTransparent, setStickerTransparent] = useState(false);
+  const [cardFormat, setCardFormat] = useState(() => getPreferredCardFormat()); // 'feed' (4:5) | 'story' (9:16)
   const [stickerOrientation, setStickerOrientation] = useState('horizontal'); // 'horizontal' | 'vertical'
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(false); // Default to bean-only for batch detail
   const [shareTemplate, setShareTemplate] = useState(() => {
@@ -2138,6 +2139,37 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   <X size={20} />
                 </button>
               </div>
+
+              {/* Size: Instagram feed 4:5 or story 9:16 (single card only) */}
+              {shareScope === 'single' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '100%', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>TAMAÑO:</span>
+                  {[{ id: 'feed', label: 'Feed 4:5' }, { id: 'story', label: 'Story 9:16' }].map(f => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      aria-pressed={cardFormat === f.id}
+                      onClick={() => {
+                        setPreferredCardFormat(f.id);
+                        setCardFormat(f.id);
+                        handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'single', stickerTransparent);
+                      }}
+                      style={{
+                        padding: '3px 7px',
+                        fontSize: '12px',
+                        borderRadius: '4px',
+                        border: cardFormat === f.id ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                        backgroundColor: cardFormat === f.id ? 'var(--bg-header)' : 'var(--bg-card)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        color: cardFormat === f.id ? 'var(--color-crimson)' : 'var(--color-text)'
+                      }}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Row 2: Sub-options (Only when scope is single or sticker) */}
               {shareScope === 'sticker' && (

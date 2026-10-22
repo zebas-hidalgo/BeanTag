@@ -75,10 +75,7 @@ export function preloadCardAssets() {
   });
 }
 
-// Auto-trigger preload on module import in browser
-if (typeof window !== 'undefined') {
-  preloadCardAssets();
-}
+// Assets load on demand via ensureCardAssetsLoaded() when a card is generated (not on app start)
 
 /**
  * Ensures all assets for a given style are fully loaded before rendering
