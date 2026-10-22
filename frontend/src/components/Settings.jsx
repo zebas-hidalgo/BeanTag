@@ -367,9 +367,17 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
     }
   };
 
+  const authHeaders = () => {
+    const t = localStorage.getItem('beantag-token');
+    return t ? { 'Authorization': `Bearer ${t}` } : {};
+  };
+
   const handleExportBackup = () => {
-    fetch(apiUrl('api/backup/export'))
-      .then(res => res.json())
+    fetch(apiUrl('api/backup/export'), { headers: authHeaders() })
+      .then(res => {
+        if (res.status === 401) throw new Error('auth');
+        return res.json();
+      })
       .then(data => {
         if (data.success) {
           const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -388,16 +396,34 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
           if (showToast) showToast('Error al exportar copia de seguridad.', { type: 'error', duration: 2500 });
         }
       })
-      .catch(() => {
-        if (showToast) showToast('Error al conectar con el servidor.', { type: 'error', duration: 2500 });
+      .catch((err) => {
+        const msg = err && err.message === 'auth' ? 'Inicia sesión para exportar tus datos.' : 'Error al conectar con el servidor.';
+        if (showToast) showToast(msg, { type: 'error', duration: 2500 });
       });
   };
 
   const handleExportCsv = () => {
-    window.open(apiUrl('api/backup/export/csv'), '_blank');
-    if (showToast) {
-      showToast('Generando descarga de bitácora en CSV...', { type: 'success', duration: 2500 });
-    }
+    fetch(apiUrl('api/backup/export/csv'), { headers: authHeaders() })
+      .then(res => {
+        if (res.status === 401) throw new Error('auth');
+        if (!res.ok) throw new Error('fail');
+        return res.blob();
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `beantag_bitacora_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        if (showToast) showToast('Bitácora CSV descargada.', { type: 'success', duration: 2500 });
+      })
+      .catch((err) => {
+        const msg = err && err.message === 'auth' ? 'Inicia sesión para exportar tus datos.' : 'Error al generar el CSV.';
+        if (showToast) showToast(msg, { type: 'error', duration: 2500 });
+      });
   };
 
   const handleImportBackup = (e) => {
@@ -425,11 +451,15 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
     if (!pendingImportData) return;
     fetch(apiUrl('api/backup/import'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({ ...pendingImportData, mode: importMode })
     })
     .then(res => res.json())
     .then(data => {
+      if (data.error && !data.success) {
+        if (showToast) showToast(data.error, { type: 'error', duration: 3500 });
+        return;
+      }
       if (data.success) {
         if (showToast) showToast('Respaldo procesado con éxito.', { type: 'success', duration: 3000 });
         setPendingImportData(null);

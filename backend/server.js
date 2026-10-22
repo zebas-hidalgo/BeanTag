@@ -51,7 +51,17 @@ const {
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'beantag_secret_jwt_key_2026';
+// JWT secret: never use a hardcoded default. Generate and persist one if missing.
+let JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET === 'beantag_secret_jwt_key_2026' || JWT_SECRET.length < 32) {
+  JWT_SECRET = require('crypto').randomBytes(48).toString('hex');
+  try {
+    fs.appendFileSync(path.join(__dirname, '.env'), `\nJWT_SECRET=${JWT_SECRET}\n`, { mode: 0o600 });
+    console.warn('[security] JWT_SECRET generado y guardado en backend/.env');
+  } catch (e) {
+    console.warn('[security] JWT_SECRET temporal: no se pudo guardar en .env. Las sesiones caducan al reiniciar.');
+  }
+}
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
@@ -82,6 +92,14 @@ function authenticateToken(req, res, next) {
 }
 
 app.use(authenticateToken);
+
+// Hard gate: route needs a logged-in user
+function requireAuth(req, res, next) {
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ error: 'Debes iniciar sesión.' });
+  }
+  next();
+}
 
 // --- AUTHENTICATION ENDPOINTS ---
 
@@ -894,11 +912,14 @@ app.post('/api/racks/:id/slots/:position/consume', async (req, res) => {
 });
 
 // JSON Backup: Export all database tables
-app.get('/api/backup/export', async (req, res) => {
+app.get('/api/backup/export', requireAuth, async (req, res) => {
   try {
     const db = await getDb();
-    const batches = await db.all('SELECT * FROM batches');
-    const recipes = await db.all('SELECT * FROM recipes');
+    const batches = await db.all('SELECT * FROM batches WHERE user_id = ?', [req.user.id]);
+    const recipes = await db.all(
+      'SELECT r.* FROM recipes r JOIN batches b ON r.batch_id = b.id WHERE b.user_id = ?',
+      [req.user.id]
+    );
     res.json({ success: true, batches, recipes });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -906,7 +927,7 @@ app.get('/api/backup/export', async (req, res) => {
 });
 
 // CSV Export: Export all recipes joined with batch information
-app.get('/api/backup/export/csv', async (req, res) => {
+app.get('/api/backup/export/csv', requireAuth, async (req, res) => {
   try {
     const db = await getDb();
     const rows = await db.all(`
@@ -915,9 +936,10 @@ app.get('/api/backup/export/csv', async (req, res) => {
         r.method, r.ratio, r.grind, r.temperature, r.brew_time, r.sensory_balance, r.sensory_body,
         r.sensory_extraction, r.dose_in_g, r.dose_out_g, r.notes
       FROM recipes r
-      LEFT JOIN batches b ON r.batch_id = b.id
+      JOIN batches b ON r.batch_id = b.id
+      WHERE b.user_id = ?
       ORDER BY r.created_at DESC
-    `);
+    `, [req.user.id]);
 
     const headers = [
       'ID', 'Fecha', 'Lote', 'Tostador', 'Origen', 'Variedad', 'Proceso',
@@ -953,54 +975,65 @@ app.get('/api/backup/export/csv', async (req, res) => {
 });
 
 // JSON Backup: Import (replace or merge) database tables
-app.post('/api/backup/import', async (req, res) => {
+app.post('/api/backup/import', requireAuth, async (req, res) => {
   const { batches, recipes, mode = 'replace' } = req.body;
-  if (!Array.isArray(batches) || !Array.isArray(recipes)) {
+  if (!Array.isArray(batches) || !Array.isArray(recipes) || !['replace', 'merge'].includes(mode)) {
     return res.status(400).json({ error: 'Formato de backup inválido' });
   }
+  const userId = req.user.id;
+  const db = await getDb();
   try {
-    const db = await getDb();
-    
+    await db.exec('BEGIN IMMEDIATE');
+
     if (mode === 'replace') {
-      await db.run('DELETE FROM recipes');
-      await db.run('DELETE FROM batches');
+      // Only wipe the caller's own data, never other users'
+      await db.run('DELETE FROM recipes WHERE batch_id IN (SELECT id FROM batches WHERE user_id = ?)', [userId]);
+      await db.run('DELETE FROM batches WHERE user_id = ?', [userId]);
     }
 
-    const insertBatchSql = mode === 'merge' 
-      ? `INSERT OR IGNORE INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, sca_score, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      : `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, sca_score, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const verb = mode === 'merge' ? 'INSERT OR IGNORE' : 'INSERT';
+    const insertBatchSql = `${verb} INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, sca_score, created_at, user_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     for (const b of batches) {
       await db.run(insertBatchSql, [
-        b.id, b.name, b.producer, b.altitude, b.variety, b.process, b.roaster, b.roaster_notes, 
+        b.id, b.name, b.producer, b.altitude, b.variety, b.process, b.roaster, b.roaster_notes,
         b.dose_weight, b.total_doses, b.remaining_doses, b.origin, b.roast_level, b.roast_date, b.freeze_date,
-        b.total_weight_g !== undefined ? b.total_weight_g : 0, 
+        b.total_weight_g !== undefined ? b.total_weight_g : 0,
         b.remaining_weight_g !== undefined ? b.remaining_weight_g : 0,
         b.sca_score !== undefined && b.sca_score !== null && !isNaN(parseFloat(b.sca_score)) ? parseFloat(b.sca_score) : null,
-        b.created_at
+        b.created_at,
+        userId
       ]);
     }
 
-    const insertRecipeSql = mode === 'merge'
-      ? `INSERT OR IGNORE INTO recipes (id, batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      : `INSERT INTO recipes (id, batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    // Recipes may only attach to batches owned by the caller
+    const ownedRows = await db.all('SELECT id FROM batches WHERE user_id = ?', [userId]);
+    const owned = new Set(ownedRows.map(r => String(r.id)));
 
+    const insertRecipeSql = `${verb} INTO recipes (id, batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion, created_at, user_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    let skipped = 0;
     for (const r of recipes) {
+      if (!owned.has(String(r.batch_id))) { skipped++; continue; }
       await db.run(insertRecipeSql, [
-        r.id, r.batch_id, r.method, r.ratio, r.grind, r.temperature, r.brew_time, r.rating, r.notes, 
+        r.id, r.batch_id, r.method, r.ratio, r.grind, r.temperature, r.brew_time, r.rating, r.notes,
         r.sensory_balance, r.sensory_body, r.sensory_extraction,
         r.dose_in_g, r.dose_out_g, r.espresso_pressure, r.espresso_preinfusion,
-        r.created_at
+        r.created_at,
+        userId
       ]);
     }
 
-    res.json({ success: true });
+    await db.exec('COMMIT');
+    res.json({ success: true, skipped });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    try { await db.exec('ROLLBACK'); } catch (e) {}
+    const conflict = /UNIQUE|PRIMARY KEY/i.test(err.message || '');
+    res.status(conflict ? 409 : 500).json({
+      error: conflict ? 'Conflicto de IDs con datos existentes. Usa el modo "merge".' : 'Error al importar el respaldo.'
+    });
   }
 });
 

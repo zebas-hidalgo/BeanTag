@@ -127,7 +127,7 @@
   spawn scp -o StrictHostKeyChecking=no /tmp/beantag_update.tar.gz root@5.189.152.68:/root/beantag_update.tar.gz
   expect {
       "*password:" {
-          send "261226Kz\r"
+          send "<REDACTED>\r"
           exp_continue
       }
       eof
@@ -137,7 +137,7 @@
   spawn ssh -o StrictHostKeyChecking=no root@5.189.152.68 "tar -xzf /root/beantag_update.tar.gz -C /var/www/beantag && cd /var/www/beantag && npm run build-frontend && pm2 restart beantag"
   expect {
       "*password:" {
-          send "261226Kz\r"
+          send "<REDACTED>\r"
           exp_continue
       }
       eof
