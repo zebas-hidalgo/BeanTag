@@ -30,5 +30,7 @@ Thumbs.db
 .superpowers/
 .agents/
 .gemini/
+.claude/
+AUDITORIA_*.md
 /tmp/
 *.log

@@ -30,7 +30,9 @@ export function installModalA11y() {
     }
   };
 
-  new MutationObserver(sync).observe(document.body, { childList: true, subtree: true });
+  if (typeof MutationObserver !== 'undefined' && document.body) {
+    new MutationObserver(sync).observe(document.body, { childList: true, subtree: true });
+  }
 
   document.addEventListener('keydown', (e) => {
     const el = topModal();
@@ -52,15 +54,18 @@ export function installModalA11y() {
 // Keep the browser chrome color in sync with the active theme
 export function installThemeColorSync() {
   const apply = () => {
-    const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-canvas').trim();
+    if (typeof getComputedStyle === 'undefined' || !document?.documentElement) return;
+    const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-canvas')?.trim?.();
     if (!bg) return;
-    document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+    document.querySelectorAll?.('meta[name="theme-color"]')?.forEach?.(m => {
       m.removeAttribute('media');
       m.setAttribute('content', bg);
     });
   };
-  new MutationObserver(apply).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-  if (document.documentElement.hasAttribute('data-theme')) apply();
+  if (typeof MutationObserver !== 'undefined' && document?.documentElement) {
+    new MutationObserver(apply).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+  if (document?.documentElement?.hasAttribute?.('data-theme')) apply();
 }
 
 export function registerServiceWorker() {

@@ -171,7 +171,13 @@ global.window.removeEventListener = () => {};
 
 global.document = {
   nodeType: 9,
-  documentElement: { setAttribute: () => {}, removeAttribute: () => {}, style: {} },
+  documentElement: {
+    setAttribute: () => {},
+    removeAttribute: () => {},
+    hasAttribute: () => false,
+    getAttribute: () => null,
+    style: {}
+  },
   addEventListener: () => {},
   removeEventListener: () => {},
   fonts: {
