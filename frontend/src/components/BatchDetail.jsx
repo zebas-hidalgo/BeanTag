@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
-import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers, SlidersHorizontal, Cylinder, Compass, Target, Trophy, Sliders, Lightbulb, Check } from 'lucide-react';
+import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers, SlidersHorizontal, Cylinder, Compass, Target, Trophy, Sliders, Lightbulb, Check, Eye } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText, generateCoffeeStickerImage } from '../utils/cardGenerator';
@@ -1311,12 +1311,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           {batch.altitude && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-header)', border: '1px solid var(--border-color)', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '800', color: 'var(--color-crimson)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-header)', border: '1px solid var(--border-color)', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '800', color: 'var(--color-crimson)' }}>
               <Mountain size={12} />
               <span>{batch.altitude}</span>
             </div>
           )}
-          {isLowStock && <span className="mono-lbl-tag" style={{ background: '#E53E3E', fontSize: '10px', padding: '3px 8px' }}>¡ÚLTIMOS!</span>}
+          {isLowStock && <span className="mono-lbl-tag" style={{ background: '#E53E3E', fontSize: '12px', padding: '3px 8px' }}>¡ÚLTIMOS!</span>}
         </div>
       </div>
 
@@ -1334,12 +1334,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           gap: '10px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '18px' }}>👁️</span>
+            <Eye size={18} strokeWidth={2} aria-hidden="true" />
             <div>
-              <div style={{ fontSize: '11.5px', fontWeight: '800', color: 'var(--color-text-main)' }}>
+              <div style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text-main)' }}>
                 Modo Invitado (NFC)
               </div>
-              <div style={{ fontSize: '10.5px', color: 'var(--color-text-muted)' }}>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
                 {currentUser 
                   ? 'Ficha en modo solo lectura.'
                   : 'Ficha pública de solo lectura. Inicia sesión si eres el dueño.'}
@@ -1350,7 +1350,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             <button 
               className="btn-candy primary"
               onClick={onRequireAuth}
-              style={{ padding: '5px 10px', fontSize: '11px', whiteSpace: 'nowrap', margin: 0, fontWeight: 'bold' }}
+              style={{ padding: '5px 10px', fontSize: '12px', whiteSpace: 'nowrap', margin: 0, fontWeight: 'bold' }}
             >
               Acceder
             </button>
@@ -1441,15 +1441,15 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             <div className="candy-card static" style={{ marginBottom: '16px', padding: '14px 12px', backgroundColor: 'var(--bg-card)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '15px' }}>✨</span>
+                  <Sparkles size={15} strokeWidth={2} aria-hidden="true" />
                   <span style={{ fontWeight: '900', fontSize: '12px', textTransform: 'uppercase', fontFamily: 'var(--font-heading)' }}>
                     Asistencia IA Barista ({method})
                   </span>
                 </div>
-                <span style={{ fontSize: '11px', fontWeight: '900', color: 'var(--color-crimson)', background: 'var(--bg-header)', padding: '2px 8px', borderRadius: '6px' }}>{doseInG}g</span>
+                <span style={{ fontSize: '12px', fontWeight: '900', color: 'var(--color-crimson)', background: 'var(--bg-header)', padding: '2px 8px', borderRadius: '6px' }}>{doseInG}g</span>
               </div>
 
-              {aiError && <div style={{ color: 'var(--barista-accent-danger-text, #E53E3E)', fontSize: '11px', fontWeight: 'bold', marginTop: '8px' }}>⚠️ {aiError}</div>}
+              {aiError && <div style={{ color: 'var(--barista-accent-danger-text, #E53E3E)', fontSize: '12px', fontWeight: 'bold', marginTop: '8px' }}>⚠️ {aiError}</div>}
 
               {aiRecommendation ? (
                 <div style={{ marginTop: '12px', padding: '12px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -1457,27 +1457,27 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   {/* Badges de Parámetros Clave */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', textAlign: 'center' }}>
                     <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                      <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>Ratio / Agua</div>
+                      <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Ratio / Agua</div>
                       <strong style={{ fontSize: '12px', color: 'var(--color-crimson)' }}>{aiRecommendation.ratio} ({aiRecommendation.water_total_g || Math.round(doseInG * 15)}g)</strong>
                     </div>
                     <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                      <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>Temp</div>
+                      <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Temp</div>
                       <strong style={{ fontSize: '12px' }}>{String(aiRecommendation.temperature || 93).replace(/°C/i, '')}°C</strong>
                     </div>
                     <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                      <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>Tiempo</div>
+                      <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Tiempo</div>
                       <strong style={{ fontSize: '12px' }}>{aiRecommendation.brew_time}</strong>
                     </div>
                   </div>
 
                   {/* Chips resumen multivariable */}
-                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', fontSize: '9.5px' }}>
+                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', fontSize: '12px' }}>
                     {aiRecommendation.is_frozen && <span style={{ background: 'var(--barista-accent-cryo-bg)', color: 'var(--barista-accent-cryo-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>❄️ Frozen Dosing (-18°C)</span>}
                     {aiRecommendation.days_since_roast !== null && <span style={{ background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Timer size={10} /> Reposo: Día {aiRecommendation.days_since_roast}</span>}
                     {aiRecommendation.water_profile && <span style={{ background: 'var(--barista-accent-cryo-bg)', color: 'var(--barista-accent-cryo-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Droplet size={10} /> {aiRecommendation.water_profile}</span>}
                     {aiRecommendation.active_grinder_dial && <span style={{ background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><SlidersHorizontal size={10} /> {aiRecommendation.active_grinder_dial.grinder_name}: {aiRecommendation.active_grinder_dial.dial}</span>}
                     {aiRecommendation._source === 'barista_fallback' && (
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--barista-instr-bg, #FEF3C7)', border: '1px solid var(--barista-instr-border, #FDE68A)', color: 'var(--barista-accent-honey, #D97706)', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '800' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--barista-instr-bg, #FEF3C7)', border: '1px solid var(--barista-instr-border, #FDE68A)', color: 'var(--barista-accent-honey, #D97706)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '800' }}>
                         <Zap size={13} />
                         <span>Motor Barista Físico (Micrones & Clics Calculados)</span>
                       </div>
@@ -1486,16 +1486,16 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
                   {/* Sub-pestañas para organizar Vertidos, Molinos, Física y Pasos */}
                   <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
-                    <button type="button" className={`filter-chip ${aiSubTab === 'pours' ? 'active' : ''}`} onClick={() => setAiSubTab('pours')} style={{ padding: '4px 10px', fontSize: '10.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <button type="button" className={`filter-chip ${aiSubTab === 'pours' ? 'active' : ''}`} onClick={() => setAiSubTab('pours')} style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Droplet size={12} /> Vertidos
                     </button>
-                    <button type="button" className={`filter-chip ${aiSubTab === 'grinders' ? 'active' : ''}`} onClick={() => setAiSubTab('grinders')} style={{ padding: '4px 10px', fontSize: '10.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <button type="button" className={`filter-chip ${aiSubTab === 'grinders' ? 'active' : ''}`} onClick={() => setAiSubTab('grinders')} style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Settings2 size={12} /> Molinos
                     </button>
-                    <button type="button" className={`filter-chip ${aiSubTab === 'physics' ? 'active' : ''}`} onClick={() => setAiSubTab('physics')} style={{ padding: '4px 10px', fontSize: '10.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <button type="button" className={`filter-chip ${aiSubTab === 'physics' ? 'active' : ''}`} onClick={() => setAiSubTab('physics')} style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Sparkles size={12} /> Física
                     </button>
-                    <button type="button" className={`filter-chip ${aiSubTab === 'steps' ? 'active' : ''}`} onClick={() => setAiSubTab('steps')} style={{ padding: '4px 10px', fontSize: '10.5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <button type="button" className={`filter-chip ${aiSubTab === 'steps' ? 'active' : ''}`} onClick={() => setAiSubTab('steps')} style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <ListOrdered size={12} /> Pasos
                     </button>
                   </div>
@@ -1510,30 +1510,30 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                           const totalW = p.total_water_g !== undefined ? parseFloat(p.total_water_g) : (runningInteractive + stepW);
                           runningInteractive = totalW;
                           return (
-                            <div key={idx} style={{ padding: '8px 10px', background: 'var(--bg-card)', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '11px' }}>
+                            <div key={idx} style={{ padding: '8px 10px', background: 'var(--bg-card)', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '12px' }}>
                               {p.valve === 'closed' && (
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: 'var(--barista-accent-danger-bg)', color: 'var(--barista-accent-danger-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>🔒 VÁLVULA CERRADA (Bloom + Inmersión)</div>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '800', background: 'var(--barista-accent-danger-bg)', color: 'var(--barista-accent-danger-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>🔒 VÁLVULA CERRADA (Bloom + Inmersión)</div>
                               )}
                               {p.valve === 'open' && (
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: 'var(--barista-accent-mint-bg)', color: 'var(--barista-accent-mint-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>🔓 VÁLVULA ABIERTA (Percolación)</div>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '800', background: 'var(--barista-accent-mint-bg)', color: 'var(--barista-accent-mint-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>🔓 VÁLVULA ABIERTA (Percolación)</div>
                               )}
                               {p.valve === 'half' && (
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800', background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>⚡ VÁLVULA MEDIA (Flujo Regulado 50%)</div>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '800', background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>⚡ VÁLVULA MEDIA (Flujo Regulado 50%)</div>
                               )}
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                                 <span style={{ fontWeight: '800', color: 'var(--color-crimson)', fontSize: '12px', wordBreak: 'break-word', flex: '1 1 180px' }}>
                                   {p.step || idx + 1}. {p.label}
                                 </span>
-                                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                                   <Timer size={11} /> {p.time}
                                 </span>
                               </div>
                               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                                <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
                                   Paso: <strong style={{ color: 'var(--color-text)' }}>+{stepW}g</strong>
                                 </span>
                                 <span style={{
-                                  fontSize: '11px',
+                                  fontSize: '12px',
                                   fontWeight: '900',
                                   color: 'var(--barista-accent-honey, #D97706)',
                                   background: 'var(--barista-bg-elevated, #F1F5F9)',
@@ -1548,7 +1548,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                                   <Target size={11} /> Acumulado: {totalW}g
                                 </span>
                               </div>
-                              {p.description && <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '4px', lineHeight: '1.3' }}>{p.description}</div>}
+                              {p.description && <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '4px', lineHeight: '1.3' }}>{p.description}</div>}
                             </div>
                           );
                         });
@@ -1558,32 +1558,32 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
                   {/* Sub-Contenido: Molinos */}
                   {aiSubTab === 'grinders' && (
-                    <div style={{ fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                       {aiRecommendation.active_grinder_dial && (
                         <div style={{ background: 'var(--bg-header)', border: '1.5px solid var(--color-crimson)', borderRadius: '6px', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div>
-                            <div style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: '800', color: 'var(--color-crimson)' }}>
+                            <div style={{ fontSize: '12px', textTransform: 'uppercase', fontWeight: '800', color: 'var(--color-crimson)' }}>
                               Tu Molino: {aiRecommendation.active_grinder_dial.grinder_name}
                             </div>
                             <div style={{ fontSize: '13px', fontWeight: '900', fontFamily: 'var(--font-mono)', color: 'var(--color-text)' }}>
                               {aiRecommendation.active_grinder_dial.dial}
                             </div>
-                            <div style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>
+                            <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
                               {aiRecommendation.active_grinder_dial.burr_type} • {aiRecommendation.active_grinder_dial.microns}
                             </div>
                           </div>
-                          <span style={{ fontSize: '11px', fontWeight: 'bold', background: 'var(--color-crimson)', color: '#FFF', padding: '3px 8px', borderRadius: '4px' }}>
-                            Calibrado ✅
+                          <span style={{ fontSize: '12px', fontWeight: 'bold', background: 'var(--color-crimson)', color: '#FFF', padding: '3px 8px', borderRadius: '4px' }}>
+                            Calibrado 
                           </span>
                         </div>
                       )}
 
                       {aiRecommendation.grinders && (
                         <div>
-                          <div style={{ fontSize: '9.5px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
                             Matriz Multimolino Completa:
                           </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px', fontSize: '9.5px', borderTop: '1px dashed var(--border-color)', paddingTop: '6px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px', fontSize: '12px', borderTop: '1px dashed var(--border-color)', paddingTop: '6px' }}>
                             {aiRecommendation.grinders.jmax && <div><strong>J-Max:</strong> {String(aiRecommendation.grinders.jmax).split('(')[0]}</div>}
                             {aiRecommendation.grinders.k_ultra && <div><strong>K-Ultra:</strong> {aiRecommendation.grinders.k_ultra}</div>}
                             {aiRecommendation.grinders.ode_gen2 && <div><strong>Fellow Ode:</strong> {aiRecommendation.grinders.ode_gen2}</div>}
@@ -1604,28 +1604,28 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
                   {/* Sub-Contenido: Física */}
                   {aiSubTab === 'physics' && aiRecommendation.physics_analysis && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '6px', fontSize: '10.5px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '6px', fontSize: '12px' }}>
                       {aiRecommendation.physics_analysis.roast_and_density && (
                         <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '10px' }}>🏔️ Densidad & Tueste:</strong>
+                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '12px' }}>Densidad & Tueste:</strong>
                           <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.roast_and_density}</span>
                         </div>
                       )}
                       {aiRecommendation.physics_analysis.degas_and_rest && (
                         <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '10px' }}>⏳ Desgasificación (CO₂):</strong>
+                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '12px' }}>⏳ Desgasificación (CO₂):</strong>
                           <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.degas_and_rest}</span>
                         </div>
                       )}
                       {aiRecommendation.physics_analysis.burr_and_fines && (
                         <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                          <strong style={{ color: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px' }}><SlidersHorizontal size={11} /> Muelas & Finos:</strong>
+                          <strong style={{ color: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}><SlidersHorizontal size={11} /> Muelas & Finos:</strong>
                           <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.burr_and_fines}</span>
                         </div>
                       )}
                       {aiRecommendation.physics_analysis.extraction_strategy && (
                         <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                          <strong style={{ color: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px' }}><Target size={11} /> Estrategia Hidrodinámica:</strong>
+                          <strong style={{ color: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}><Target size={11} /> Estrategia Hidrodinámica:</strong>
                           <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.extraction_strategy}</span>
                         </div>
                       )}
@@ -1634,7 +1634,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
                   {/* Sub-Contenido: Pasos */}
                   {aiSubTab === 'steps' && aiRecommendation.steps && (
-                    <ol style={{ margin: 0, paddingLeft: '18px', fontSize: '11px', color: 'var(--color-text-muted)', lineHeight: '1.4' }}>
+                    <ol style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: 'var(--color-text-muted)', lineHeight: '1.4' }}>
                       {aiRecommendation.steps.map((st, i) => <li key={i} style={{ marginBottom: '4px' }}>{st}</li>)}
                     </ol>
                   )}
@@ -1645,16 +1645,16 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   </button>
 
                   <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                    <button type="button" className="btn-candy primary" onClick={handleApplyAiRecipe} style={{ flex: 1, padding: '8px', fontSize: '11px', minHeight: '38px' }}>
+                    <button type="button" className="btn-candy primary" onClick={handleApplyAiRecipe} style={{ flex: 1, padding: '8px', fontSize: '12px', minHeight: '38px' }}>
                       Aplicar al Formulario
                     </button>
-                    <button type="button" className="btn-candy secondary" onClick={() => setAiRecommendation(null)} style={{ padding: '8px 12px', fontSize: '11px', minHeight: '38px', margin: 0 }}>
+                    <button type="button" className="btn-candy secondary" onClick={() => setAiRecommendation(null)} style={{ padding: '8px 12px', fontSize: '12px', minHeight: '38px', margin: 0 }}>
                       Cerrar
                     </button>
                   </div>
                 </div>
               ) : (
-                <button type="button" className="btn-candy secondary" onClick={handleAiRecommend} disabled={aiLoading} style={{ width: '100%', marginTop: '10px', padding: '8px', fontSize: '11.5px', minHeight: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <button type="button" className="btn-candy secondary" onClick={handleAiRecommend} disabled={aiLoading} style={{ width: '100%', marginTop: '10px', padding: '8px', fontSize: '12px', minHeight: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                   {aiLoading ? (
                     <span>Generando receta con Thinking Mode...</span>
                   ) : (
@@ -1698,11 +1698,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
             {/* Evaluacion Sensorial */}
             <div className="candy-card static" style={{ marginTop: '14px', padding: '14px 12px' }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>Evaluación Sensorial</div>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>Evaluación Sensorial</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginBottom: '10px' }}>
                 <div>
                   <label className="barista-label">Balance</label>
-                  <select className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryBalance} onChange={e => setSensoryBalance(e.target.value)}>
+                  <select aria-label="Balance" className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryBalance} onChange={e => setSensoryBalance(e.target.value)}>
                     <option value="Dulce">Dulce</option>
                     <option value="Ácido">Ácido</option>
                     <option value="Amargo">Amargo</option>
@@ -1710,7 +1710,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 </div>
                 <div>
                   <label className="barista-label">Cuerpo</label>
-                  <select className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryBody} onChange={e => setSensoryBody(e.target.value)}>
+                  <select aria-label="Cuerpo" className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryBody} onChange={e => setSensoryBody(e.target.value)}>
                     <option value="Ligero">Ligero</option>
                     <option value="Medio">Medio</option>
                     <option value="Sedoso">Sedoso</option>
@@ -1718,7 +1718,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 </div>
                 <div>
                   <label className="barista-label">Extracción</label>
-                  <select className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryExtraction} onChange={e => setSensoryExtraction(e.target.value)}>
+                  <select aria-label="Extracción" className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryExtraction} onChange={e => setSensoryExtraction(e.target.value)}>
                     <option value="En Punto">En Punto</option>
                     <option value="Sub">Sub (Agrio)</option>
                     <option value="Sobre">Sobre (Amargo)</option>
@@ -1728,7 +1728,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="barista-label">Notas de Cata de Extracción</label>
-                <input className="barista-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Muy dulzón, acidez limpia..." />
+                <input aria-label="Notas de Cata de Extracción" className="barista-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Muy dulzón, acidez limpia..." />
               </div>
             </div>
 
@@ -1801,7 +1801,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   className="barista-btn-secondary" 
                   style={{ width: '100%', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: 0.9, cursor: 'pointer' }}
                 >
-                  🔒 Solo el propietario puede registrar extracciones {currentUser ? '' : '(Iniciar Sesión)'}
+                  Solo el propietario puede registrar extracciones {currentUser ? '' : '(Iniciar Sesión)'}
                 </button>
               )}
             </div>
@@ -1818,7 +1818,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           {/* Banner Última Configuración Exitosa */}
           {lastRecipe && (
             <div className="recipe-target-banner" style={{ marginBottom: '14px' }}>
-              <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--barista-accent-honey, #D97706)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>
+              <div style={{ fontSize: '12px', fontWeight: '800', color: 'var(--barista-accent-honey, #D97706)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>
                 Última Configuración Exitosa
               </div>
               <div style={{ fontSize: '14px', fontWeight: '900', fontFamily: 'var(--font-mono)' }}>
@@ -1827,7 +1827,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               {isOwner ? (
                 <button className="barista-btn-primary" onClick={handleRepeatLastRecipe} style={{ width: '100%', marginTop: '10px', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                   <Zap size={14} />
-                  ⚡ Repetir y Guardar esta Receta (-1 Tubo)
+                  Repetir y Guardar esta Receta (-1 Tubo)
                 </button>
               ) : (
                 <button className="barista-btn-secondary" onClick={() => handleLoadRecipeToForm(lastRecipe)} style={{ width: '100%', marginTop: '10px', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
@@ -1877,7 +1877,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             Array.isArray(batch?.recipes) && batch.recipes.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {batch.recipes.map(r => (
-                  <div key={r.id} className="candy-card static" style={{ padding: '12px', fontSize: '11px' }}>
+                  <div key={r.id} className="candy-card static" style={{ padding: '12px', fontSize: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold' }}>
                       <span>{r.method} ({r.ratio})</span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1886,7 +1886,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                           type="button"
                           className="btn-candy" 
                           onClick={() => handleStartBrewGuide(r)}
-                          style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '11px', margin: 0 }}
+                          style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '12px', margin: 0 }}
                         > 
                           <Play size={12} fill="currentColor" /> Preparar 
                         </button>
@@ -1919,21 +1919,21 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             </div>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
               <div className="form-group" style={{ flex: 1, margin: 0 }}>
-                <label style={{ fontSize: '10px' }}>Café (g)</label>
-                <input type="number" inputMode="decimal" step="0.5" className="candy-input" value={calcDose} onChange={(e) => { const d = parseFloat(e.target.value) || 0; setCalcDose(d); setCalcWater(Math.round(d * calcRatio)); }} />
+                <label style={{ fontSize: '12px' }}>Café (g)</label>
+                <input aria-label="Café (g)" type="number" inputMode="decimal" step="0.5" className="candy-input" value={calcDose} onChange={(e) => { const d = parseFloat(e.target.value) || 0; setCalcDose(d); setCalcWater(Math.round(d * calcRatio)); }} />
               </div>
               <div style={{ fontSize: '16px', fontWeight: 'bold', paddingBottom: '8px' }}>×</div>
               <div className="form-group" style={{ flex: 1, margin: 0 }}>
-                <label style={{ fontSize: '10px' }}>Ratio 1:</label>
-                <input type="number" inputMode="decimal" step="0.5" className="candy-input" value={calcRatio} onChange={(e) => { const r = parseFloat(e.target.value) || 0; setCalcRatio(r); setCalcWater(Math.round(calcDose * r)); }} />
+                <label style={{ fontSize: '12px' }}>Ratio 1:</label>
+                <input aria-label="Ratio 1:" type="number" inputMode="decimal" step="0.5" className="candy-input" value={calcRatio} onChange={(e) => { const r = parseFloat(e.target.value) || 0; setCalcRatio(r); setCalcWater(Math.round(calcDose * r)); }} />
               </div>
               <div style={{ fontSize: '16px', fontWeight: 'bold', paddingBottom: '8px' }}>=</div>
               <div className="form-group" style={{ flex: 1, margin: 0 }}>
-                <label style={{ fontSize: '10px' }}>Agua (g)</label>
-                <input type="number" inputMode="decimal" className="candy-input" value={calcWater} onChange={(e) => { const w = parseFloat(e.target.value) || 0; setCalcWater(w); if (calcDose > 0) setCalcRatio(parseFloat((w / calcDose).toFixed(1))); }} />
+                <label style={{ fontSize: '12px' }}>Agua (g)</label>
+                <input aria-label="Agua (g)" type="number" inputMode="decimal" className="candy-input" value={calcWater} onChange={(e) => { const w = parseFloat(e.target.value) || 0; setCalcWater(w); if (calcDose > 0) setCalcRatio(parseFloat((w / calcDose).toFixed(1))); }} />
               </div>
             </div>
-            <button type="button" className="btn-candy accent" style={{ width: '100%', marginTop: '10px', padding: '6px', fontSize: '10.5px' }} onClick={() => { setDoseInG(calcDose); setRatioVal(calcRatio); setActiveTab('brew'); if (showToast) showToast('Valores transferidos a la pestaña de preparación.', { type: 'success' }); }}>
+            <button type="button" className="btn-candy accent" style={{ width: '100%', marginTop: '10px', padding: '6px', fontSize: '12px' }} onClick={() => { setDoseInG(calcDose); setRatioVal(calcRatio); setActiveTab('brew'); if (showToast) showToast('Valores transferidos a la pestaña de preparación.', { type: 'success' }); }}>
               Transferir a mi receta
             </button>
           </div>
@@ -1943,17 +1943,17 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               <SlidersHorizontal size={14} />
               <span>Equivalencias de Molienda</span>
             </div>
-            <p style={{ fontSize: '10.5px', color: 'var(--color-text-muted)', margin: '0 0 10px 0' }}>
+            <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 10px 0' }}>
               Comparativa física entre molinos manuales y eléctricos de precisión:
             </p>
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', fontSize: '9.5px', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--color-text-muted)' }}>
                     <th style={{ padding: '4px 6px' }}>Método</th>
-                    <th style={{ padding: '4px 6px' }}>1Zpresso J-Max<br/><span style={{ fontWeight: 'normal', fontSize: '8px' }}>(8.8µm)</span></th>
-                    <th style={{ padding: '4px 6px' }}>Femobook A2<br/><span style={{ fontWeight: 'normal', fontSize: '8px' }}>(18µm • 40c/r)</span></th>
-                    <th style={{ padding: '4px 6px' }}>Comandante C40<br/><span style={{ fontWeight: 'normal', fontSize: '8px' }}>(30µm)</span></th>
+                    <th style={{ padding: '4px 6px' }}>1Zpresso J-Max<br/><span style={{ fontWeight: 'normal', fontSize: '12px' }}>(8.8µm)</span></th>
+                    <th style={{ padding: '4px 6px' }}>Femobook A2<br/><span style={{ fontWeight: 'normal', fontSize: '12px' }}>(18µm • 40c/r)</span></th>
+                    <th style={{ padding: '4px 6px' }}>Comandante C40<br/><span style={{ fontWeight: 'normal', fontSize: '12px' }}>(30µm)</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1989,10 +1989,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           {/* Semáforo Desgasificación */}
           {batch.roast_date && batch.freeze_date && (
             <div className="candy-card static" style={{ padding: '12px', borderLeft: `4px solid ${degasStatus.color}` }}>
-              <div style={{ fontWeight: 'bold', fontSize: '11.5px', color: degasStatus.color }}>
+              <div style={{ fontWeight: 'bold', fontSize: '12px', color: degasStatus.color }}>
                 {degasStatus.label} ({restingDays} Días de Reposo)
               </div>
-              <p style={{ fontSize: '10.5px', margin: '4px 0 0 0', color: 'var(--color-text-muted)' }}>
+              <p style={{ fontSize: '12px', margin: '4px 0 0 0', color: 'var(--color-text-muted)' }}>
                 {degasStatus.description}
               </p>
             </div>
@@ -2004,7 +2004,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               <Nfc size={16} color="var(--color-crimson)" />
               Vinculación NFC & URL Directa
             </div>
-            <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 10px 0' }}>
+            <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 10px 0' }}>
               URL directa de <strong>{batch.name}</strong> para Atajos de iOS o etiquetas NFC:
             </p>
             <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
@@ -2012,14 +2012,14 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 type="text" 
                 readOnly 
                 className="candy-input" 
-                style={{ flex: 1, fontSize: '10px', margin: 0, padding: '6px' }}
+                style={{ flex: 1, fontSize: '12px', margin: 0, padding: '6px' }}
                 value={`${window.location.origin}/beantag/?batch=${encodeURIComponent(batch.id)}&action=new_brew`}
                 onClick={(e) => e.target.select()}
               />
               <button 
                 type="button" 
                 className="btn-candy primary" 
-                style={{ padding: '6px 12px', fontSize: '10.5px', whiteSpace: 'nowrap' }}
+                style={{ padding: '6px 12px', fontSize: '12px', whiteSpace: 'nowrap' }}
                 onClick={handleWriteNfc}
               >
                 Copiar URL
@@ -2068,7 +2068,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     }}
                     style={{
                       padding: '5px 8px',
-                      fontSize: '10.5px',
+                      fontSize: '12px',
                       borderRadius: '6px',
                       border: shareScope === 'single' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
                       backgroundColor: shareScope === 'single' ? 'var(--bg-card)' : 'var(--bg-canvas)',
@@ -2089,7 +2089,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     }}
                     style={{
                       padding: '5px 8px',
-                      fontSize: '10.5px',
+                      fontSize: '12px',
                       borderRadius: '6px',
                       border: shareScope === 'sticker' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
                       backgroundColor: shareScope === 'sticker' ? 'var(--bg-card)' : 'var(--bg-canvas)',
@@ -2110,7 +2110,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     }}
                     style={{
                       padding: '5px 8px',
-                      fontSize: '10.5px',
+                      fontSize: '12px',
                       borderRadius: '6px',
                       border: shareScope === 'menu' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
                       backgroundColor: shareScope === 'menu' ? 'var(--bg-card)' : 'var(--bg-canvas)',
@@ -2125,7 +2125,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   </button>
                 </div>
 
-                <button 
+                <button aria-label="Cerrar" 
                   type="button" 
                   onClick={() => setShareImage(null)}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--color-text-muted)' }}
@@ -2138,7 +2138,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               {shareScope === 'sticker' && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '6px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>FORMATO:</span>
+                    <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>FORMATO:</span>
                     <button 
                       type="button" 
                       onClick={() => {
@@ -2147,7 +2147,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       }}
                       style={{
                         padding: '3px 7px',
-                        fontSize: '9.5px',
+                        fontSize: '12px',
                         borderRadius: '4px',
                         border: stickerOrientation === 'horizontal' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: stickerOrientation === 'horizontal' ? 'var(--bg-header)' : 'var(--bg-card)',
@@ -2156,7 +2156,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                         color: stickerOrientation === 'horizontal' ? 'var(--color-crimson)' : 'var(--color-text)'
                       }}
                     >
-                      🏷️ Horizontal
+                      Horizontal
                     </button>
                     <button 
                       type="button" 
@@ -2166,7 +2166,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       }}
                       style={{
                         padding: '3px 7px',
-                        fontSize: '9.5px',
+                        fontSize: '12px',
                         borderRadius: '4px',
                         border: stickerOrientation === 'vertical' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: stickerOrientation === 'vertical' ? 'var(--bg-header)' : 'var(--bg-card)',
@@ -2175,12 +2175,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                         color: stickerOrientation === 'vertical' ? 'var(--color-crimson)' : 'var(--color-text)'
                       }}
                     >
-                      📱 Vertical
+                      Vertical
                     </button>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>FONDO:</span>
+                    <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>FONDO:</span>
                     <button 
                       type="button" 
                       onClick={() => {
@@ -2189,7 +2189,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       }}
                       style={{
                         padding: '3px 7px',
-                        fontSize: '9.5px',
+                        fontSize: '12px',
                         borderRadius: '4px',
                         border: !stickerTransparent ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: !stickerTransparent ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)',
@@ -2208,7 +2208,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       }}
                       style={{
                         padding: '3px 7px',
-                        fontSize: '9.5px',
+                        fontSize: '12px',
                         borderRadius: '4px',
                         border: stickerTransparent ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: stickerTransparent ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)',
@@ -2217,7 +2217,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                         cursor: 'pointer'
                       }}
                     >
-                      🏁 Transp.
+                      Transp.
                     </button>
                   </div>
                 </div>
@@ -2225,23 +2225,23 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
               {(shareScope === 'single' || shareScope === 'sticker') && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '10.5px', fontWeight: '700', color: 'var(--color-text)' }}>
+                  <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-text)' }}>
                     {shareScope === 'sticker' ? 'CONTENIDO DEL STICKER:' : batch?.name}
                   </span>
                   <div style={{ display: 'flex', gap: '4px' }}>
                     <button 
                       type="button" 
                       onClick={() => { setShareIncludeRecipe(false); handleShareBatchCard(false, shareTemplate, shareScope, stickerTransparent, stickerOrientation); }}
-                      style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: !shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
+                      style={{ padding: '3px 8px', fontSize: '12px', borderRadius: '4px', border: !shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
                     >
-                      🌾 Perfil & Notas
+                      Perfil & Notas
                     </button>
                     <button 
                       type="button" 
                       onClick={() => { setShareIncludeRecipe(true); handleShareBatchCard(true, shareTemplate, shareScope, stickerTransparent, stickerOrientation); }}
-                      style={{ padding: '3px 8px', fontSize: '10px', borderRadius: '4px', border: shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
+                      style={{ padding: '3px 8px', fontSize: '12px', borderRadius: '4px', border: shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
                     >
-                      🧾 Telemetría / Receta
+                      Telemetría / Receta
                     </button>
                   </div>
                 </div>
@@ -2249,7 +2249,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
               {/* Aesthetic Template Selector */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '9.5px', fontWeight: '800', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
+                <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
                 {[
                   { id: 'studio', label: 'Studio' },
                   { id: 'kissaten', label: 'Kissaten' },
@@ -2268,7 +2268,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     style={{
                       flex: '1 1 auto',
                       padding: '5px 8px',
-                      fontSize: '10.5px',
+                      fontSize: '12px',
                       borderRadius: '6px',
                       border: (shareTemplate || 'studio') === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
                       backgroundColor: (shareTemplate || 'studio') === t.id ? 'var(--bg-card)' : 'transparent',
@@ -2318,7 +2318,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 border: '1px solid var(--border-color)',
                 borderRadius: '8px',
                 padding: '6px 12px',
-                fontSize: '11.5px',
+                fontSize: '12px',
                 fontWeight: '600',
                 textAlign: 'center',
                 flexShrink: 0
@@ -2331,7 +2331,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               <button 
                 type="button" 
                 className="btn-candy" 
-                style={{ minHeight: '44px', padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '700' }} 
+                style={{ minHeight: '44px', padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '12px', fontWeight: '700' }} 
                 onClick={handleCopyShareText}
               >
                 <ClipboardCopy size={16} strokeWidth={2.2} />
@@ -2341,7 +2341,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               <button 
                 type="button" 
                 className="btn-candy primary" 
-                style={{ minHeight: '44px', padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '700' }} 
+                style={{ minHeight: '44px', padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '12px', fontWeight: '700' }} 
                 onClick={handleNativeShare}
               >
                 <Share2 size={16} strokeWidth={2.2} />

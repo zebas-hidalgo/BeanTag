@@ -194,12 +194,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
               <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', margin: 0, fontWeight: '900' }}>
                 Acceso a BeanTag
               </h3>
-              <p style={{ fontSize: '11px', margin: '2px 0 0 0', color: 'var(--color-text-muted)' }}>
+              <p style={{ fontSize: '12px', margin: '2px 0 0 0', color: 'var(--color-text-muted)' }}>
                 Sincroniza tus dosis de café congelado y bitácoras
               </p>
             </div>
           </div>
-          <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+          <button aria-label="Cerrar" type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
             <X size={20} color="var(--color-text-muted)" />
           </button>
         </div>
@@ -219,7 +219,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
                   setIsGoogleOnlyError(false);
                 }}
                 className="btn-candy secondary"
-                style={{ width: '100%', marginTop: '8px', fontSize: '11.5px', padding: '8px 10px', background: '#FFFFFF', color: '#991B1B', borderColor: '#FCA5A5', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                style={{ width: '100%', marginTop: '8px', fontSize: '12px', padding: '8px 10px', background: '#FFFFFF', color: '#991B1B', borderColor: '#FCA5A5', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
                 <KeyRound size={14} />
                 <span>Asignar contraseña a este correo en "Crear Cuenta"</span>
@@ -239,7 +239,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
           </div>
 
           {!googleInitialized && (
-            <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '8px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '8px' }}>
               Cargando Google Sign-In... o ingresa con tu correo abajo.
             </div>
           )}
@@ -249,7 +249,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
               <button
                 type="button"
                 onClick={handlePromptFallback}
-                style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontSize: '11px', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
               >
                 ¿No puedes hacer clic? Abrir selector Google One-Tap
               </button>
@@ -258,7 +258,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
         </div>
 
         {/* Divider */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', color: 'var(--color-text-muted)', fontSize: '11px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', color: 'var(--color-text-muted)', fontSize: '12px' }}>
           <div style={{ flex: 1, height: '1px', background: 'var(--color-border, #E5E7EB)' }}></div>
           <span style={{ padding: '0 10px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>o continuar con correo</span>
           <div style={{ flex: 1, height: '1px', background: 'var(--color-border, #E5E7EB)' }}></div>
@@ -270,7 +270,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
             type="button"
             onClick={() => { setMode('login'); setErrorMsg(''); setIsGoogleOnlyError(false); }}
             style={{
-              flex: 1, padding: '7px', borderRadius: '8px', border: 'none', fontWeight: 'bold', fontSize: '11.5px', cursor: 'pointer',
+              flex: 1, padding: '7px', borderRadius: '8px', border: 'none', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer',
               background: mode === 'login' ? 'var(--color-surface, #FFF)' : 'transparent',
               color: mode === 'login' ? 'var(--color-crimson, #E53E3E)' : 'var(--color-text-muted)',
               boxShadow: mode === 'login' ? '0 2px 4px rgba(0,0,0,0.08)' : 'none'
@@ -282,7 +282,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
             type="button"
             onClick={() => { setMode('register'); setErrorMsg(''); setIsGoogleOnlyError(false); }}
             style={{
-              flex: 1, padding: '7px', borderRadius: '8px', border: 'none', fontWeight: 'bold', fontSize: '11.5px', cursor: 'pointer',
+              flex: 1, padding: '7px', borderRadius: '8px', border: 'none', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer',
               background: mode === 'register' ? 'var(--color-surface, #FFF)' : 'transparent',
               color: mode === 'register' ? 'var(--color-crimson, #E53E3E)' : 'var(--color-text-muted)',
               boxShadow: mode === 'register' ? '0 2px 4px rgba(0,0,0,0.08)' : 'none'
@@ -296,10 +296,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {mode === 'register' && (
             <div className="form-group" style={{ margin: 0 }}>
-              <label style={{ fontSize: '10.5px' }}>Nombre Barista</label>
+              <label style={{ fontSize: '12px' }}>Nombre Barista</label>
               <div style={{ position: 'relative' }}>
                 <User size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                <input
+                <input aria-label="Tu Nombre"
                   type="text" className="candy-input" placeholder="Tu Nombre"
                   style={{ paddingLeft: '34px', fontSize: '12px' }} value={name} onChange={(e) => setName(e.target.value)}
                 />
@@ -308,22 +308,22 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
           )}
 
           <div className="form-group" style={{ margin: 0 }}>
-            <label style={{ fontSize: '10.5px' }}>Correo Electrónico</label>
+            <label style={{ fontSize: '12px' }}>Correo Electrónico</label>
             <div style={{ position: 'relative' }}>
               <Mail size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
               <input
-                type="email" className="candy-input" placeholder="barista@ejemplo.com" required
+                type="email" aria-label="Correo Electrónico" autoComplete="email" className="candy-input" placeholder="barista@ejemplo.com" required
                 style={{ paddingLeft: '34px', fontSize: '12px' }} value={email} onChange={(e) => setEmail(e.target.value)}
               />
             </div>
           </div>
 
           <div className="form-group" style={{ margin: 0 }}>
-            <label style={{ fontSize: '10.5px' }}>Contraseña</label>
+            <label style={{ fontSize: '12px' }}>Contraseña</label>
             <div style={{ position: 'relative' }}>
               <Lock size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
               <input
-                type="password" className="candy-input" placeholder="••••••••" required
+                type="password" aria-label="Contraseña" autoComplete="current-password" className="candy-input" placeholder="••••••••" required
                 style={{ paddingLeft: '34px', fontSize: '12px' }} value={password} onChange={(e) => setPassword(e.target.value)}
               />
             </div>

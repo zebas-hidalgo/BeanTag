@@ -42,8 +42,11 @@ BeanTag combina dos universos:
   --border-focus: #C2410C;
 }
 
-/* Modo Oscuro True OLED (Pitch Black) */
-[data-theme="dark"],
+/* Modo Oscuro True OLED (Pitch Black)
+   Nota: un selector y un @media no se pueden combinar con coma.
+   Se declaran por separado con los mismos valores. */
+[data-theme="dark"] { /* mismos tokens que el bloque de abajo */ }
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]):not([data-theme="studio"]):not([data-theme="kissaten"]) {
     --bg-canvas: #000000;

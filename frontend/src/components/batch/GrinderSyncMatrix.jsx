@@ -113,7 +113,7 @@ export default function GrinderSyncMatrix({
             <div style={{ fontWeight: '800', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
               {activeGrinderMeta.name}
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
               {activeGrinderMeta.burrs} • {activeGrinderMeta.stepDesc}
             </div>
           </div>
@@ -124,7 +124,7 @@ export default function GrinderSyncMatrix({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
             {/* Rotación */}
             <div style={{ textAlign: 'center' }}>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Rotación</span>
+              <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Rotación</span>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2px' }}>
                 <button type="button" className="barista-stepper-btn" onClick={() => { const v = Math.max(0, jmaxRot - 1); setJmaxRot(v); updateManualGrinder('jmax', { rot: v, num: jmaxNum, click: jmaxClick }); }}>-</button>
                 <span className="barista-metric-val" style={{ fontSize: 'var(--text-lg)' }}>{jmaxRot}</span>
@@ -133,7 +133,7 @@ export default function GrinderSyncMatrix({
             </div>
             {/* Número */}
             <div style={{ textAlign: 'center' }}>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Número</span>
+              <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Número</span>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2px' }}>
                 <button type="button" className="barista-stepper-btn" onClick={() => { const v = (jmaxNum - 1 + 9) % 9; setJmaxNum(v); updateManualGrinder('jmax', { rot: jmaxRot, num: v, click: jmaxClick }); }}>-</button>
                 <span className="barista-metric-val" style={{ fontSize: 'var(--text-lg)' }}>{jmaxNum}</span>
@@ -142,7 +142,7 @@ export default function GrinderSyncMatrix({
             </div>
             {/* Clic */}
             <div style={{ textAlign: 'center' }}>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Clic</span>
+              <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Clic</span>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2px' }}>
                 <button type="button" className="barista-stepper-btn" onClick={() => { const v = (jmaxClick - 1 + 10) % 10; setJmaxClick(v); updateManualGrinder('jmax', { rot: jmaxRot, num: jmaxNum, click: v }); }}>-</button>
                 <span className="barista-metric-val" style={{ fontSize: 'var(--text-lg)' }}>{jmaxClick}</span>
@@ -158,7 +158,7 @@ export default function GrinderSyncMatrix({
             <button type="button" className="barista-stepper-btn" onClick={() => { const v = Math.max(2.0, parseFloat((kUltraDial - 0.1).toFixed(1))); setKUltraDial(v); updateManualGrinder('k_ultra', v); }}>-0.1</button>
             <div style={{ textAlign: 'center' }}>
               <span className="barista-metric-val" style={{ fontSize: 'var(--text-xl)' }}>{parseFloat(kUltraDial).toFixed(1)}</span>
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>({Math.round(kUltraDial * 10)} clics)</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>({Math.round(kUltraDial * 10)} clics)</div>
             </div>
             <button type="button" className="barista-stepper-btn" onClick={() => { const v = Math.min(13.0, parseFloat((kUltraDial + 0.1).toFixed(1))); setKUltraDial(v); updateManualGrinder('k_ultra', v); }}>+0.1</button>
           </div>
@@ -192,7 +192,7 @@ export default function GrinderSyncMatrix({
             <button type="button" className="barista-stepper-btn" onClick={() => { const v = Math.max(6, femobookClicks - 1); setFemobookClicks(v); updateManualGrinder('femobook', v); }}>-1</button>
             <div style={{ textAlign: 'center' }}>
               <span className="barista-metric-val" style={{ fontSize: 'var(--text-xl)' }}>{femobookClicks} clics</span>
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>~{(femobookClicks / 40).toFixed(1)} Rotaciones</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>~{(femobookClicks / 40).toFixed(1)} Rotaciones</div>
             </div>
             <button type="button" className="barista-stepper-btn" onClick={() => { const v = Math.min(120, femobookClicks + 1); setFemobookClicks(v); updateManualGrinder('femobook', v); }}>+1</button>
           </div>
@@ -204,7 +204,7 @@ export default function GrinderSyncMatrix({
             <button type="button" className="barista-stepper-btn" onClick={() => { const v = Math.max(12, kingrinderClicks - 1); setKingrinderClicks(v); updateManualGrinder('kingrinder', v); }}>-1</button>
             <div style={{ textAlign: 'center' }}>
               <span className="barista-metric-val" style={{ fontSize: 'var(--text-xl)' }}>{kingrinderClicks} clics</span>
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{Math.floor(kingrinderClicks / 60)} Rot. {kingrinderClicks % 60} Clics</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{Math.floor(kingrinderClicks / 60)} Rot. {kingrinderClicks % 60} Clics</div>
             </div>
             <button type="button" className="barista-stepper-btn" onClick={() => { const v = Math.min(170, kingrinderClicks + 1); setKingrinderClicks(v); updateManualGrinder('kingrinder', v); }}>+1</button>
           </div>

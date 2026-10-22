@@ -303,7 +303,7 @@ export default function DialInTimeline({
           </span>
           <span
             style={{
-              fontSize: '11px',
+              fontSize: '12px',
               fontWeight: '700',
               padding: '2px 8px',
               borderRadius: '12px',
@@ -317,7 +317,7 @@ export default function DialInTimeline({
           {sweetSpotIteration && (
             <span
               style={{
-                fontSize: '11px',
+                fontSize: '12px',
                 fontWeight: '800',
                 padding: '2px 8px',
                 borderRadius: '12px',
@@ -343,7 +343,7 @@ export default function DialInTimeline({
               display: 'inline-flex',
               alignItems: 'center',
               gap: '4px',
-              fontSize: '11px',
+              fontSize: '12px',
               padding: '4px 8px',
               cursor: 'pointer'
             }}
@@ -484,10 +484,10 @@ export default function DialInTimeline({
                     >
                       #{iterationNumber}
                     </span>
-                    <span style={{ color: 'var(--border-color)', fontSize: '11px' }}>•</span>
+                    <span style={{ color: 'var(--border-color)', fontSize: '12px' }}>•</span>
                     <span
                       style={{
-                        fontSize: '11px',
+                        fontSize: '12px',
                         color: 'var(--color-text-muted, #6B7280)',
                         fontFamily: 'var(--font-mono, monospace)',
                         fontWeight: '500'
@@ -509,7 +509,7 @@ export default function DialInTimeline({
                         border: '1.5px solid var(--barista-accent-honey, #D97706)',
                         color: 'var(--barista-accent-honey-text, #D97706)',
                         fontWeight: '800',
-                        fontSize: '11px',
+                        fontSize: '12px',
                         letterSpacing: '0.3px',
                         boxShadow: '0 2px 6px var(--barista-accent-honey-glow, rgba(217, 119, 6, 0.2))'
                       }}
@@ -551,7 +551,7 @@ export default function DialInTimeline({
                     {clickDelta !== null && clickDelta !== 0 && (
                       <span
                         style={{
-                          fontSize: '10px',
+                          fontSize: '12px',
                           fontWeight: '800',
                           padding: '1px 6px',
                           borderRadius: '6px',
@@ -585,13 +585,13 @@ export default function DialInTimeline({
                       borderRadius: '8px',
                       background: 'var(--bg-canvas, rgba(0,0,0,0.03))',
                       border: '1px solid var(--border-color)',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       color: 'var(--color-text)'
                     }}
                   >
                     <Scale size={13} color="var(--color-crimson, #BC5449)" />
                     <span>
-                      <strong style={{ color: 'var(--color-text-muted, #6B7280)', fontSize: '10px' }}>
+                      <strong style={{ color: 'var(--color-text-muted, #6B7280)', fontSize: '12px' }}>
                         Ratio / Dosis:{' '}
                       </strong>
                       {doseIn != null ? `${doseIn}g` : '—'} ➔ {doseOut != null ? `${doseOut}g` : '—'} • {rec.ratio || '1:15'}
@@ -608,20 +608,20 @@ export default function DialInTimeline({
                       borderRadius: '8px',
                       background: 'var(--bg-canvas, rgba(0,0,0,0.03))',
                       border: '1px solid var(--border-color)',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       color: 'var(--color-text)'
                     }}
                   >
                     <Thermometer size={13} color="var(--barista-accent-honey, #D97706)" />
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                      <strong style={{ color: 'var(--color-text-muted, #6B7280)', fontSize: '10px' }}>
+                      <strong style={{ color: 'var(--color-text-muted, #6B7280)', fontSize: '12px' }}>
                         Temp:{' '}
                       </strong>
                       <span>{currentTemp !== null ? `${currentTemp}°C` : (rec.temperature || '—')}</span>
                       {tempDelta !== null && tempDelta !== 0 && (
                         <span
                           style={{
-                            fontSize: '10px',
+                            fontSize: '12px',
                             fontWeight: '800',
                             padding: '1px 5px',
                             borderRadius: '5px',
@@ -646,13 +646,13 @@ export default function DialInTimeline({
                       borderRadius: '8px',
                       background: 'var(--bg-canvas, rgba(0,0,0,0.03))',
                       border: '1px solid var(--border-color)',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       color: 'var(--color-text)'
                     }}
                   >
                     <Clock size={13} color="var(--color-text-muted, #6B7280)" />
                     <span>
-                      <strong style={{ color: 'var(--color-text-muted, #6B7280)', fontSize: '10px' }}>
+                      <strong style={{ color: 'var(--color-text-muted, #6B7280)', fontSize: '12px' }}>
                         Tiempo:{' '}
                       </strong>
                       {rec.brew_time || '—'}
@@ -682,7 +682,7 @@ export default function DialInTimeline({
                         {rec.sensory_balance && (
                           <span
                             style={{
-                              fontSize: '10px',
+                              fontSize: '12px',
                               fontWeight: '700',
                               background: 'rgba(217, 119, 6, 0.12)',
                               color: 'var(--barista-accent-honey, #D97706)',
@@ -700,7 +700,7 @@ export default function DialInTimeline({
                         {rec.sensory_body && (
                           <span
                             style={{
-                              fontSize: '10px',
+                              fontSize: '12px',
                               fontWeight: '700',
                               background: 'rgba(59, 130, 246, 0.12)',
                               color: 'var(--barista-accent-cryo-text, #2563EB)',
@@ -718,7 +718,7 @@ export default function DialInTimeline({
                         {rec.sensory_extraction && (
                           <span
                             style={{
-                              fontSize: '10px',
+                              fontSize: '12px',
                               fontWeight: '700',
                               background: rec.sensory_extraction === 'En Punto' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
                               color: rec.sensory_extraction === 'En Punto' ? 'var(--barista-accent-mint-text, #059669)' : 'var(--barista-accent-danger-text, #DC2626)',
@@ -740,7 +740,7 @@ export default function DialInTimeline({
                     {rec.notes && (
                       <div
                         style={{
-                          fontSize: '11px',
+                          fontSize: '12px',
                           lineHeight: '1.45',
                           color: 'var(--color-text)',
                           wordBreak: 'break-word',
@@ -777,7 +777,7 @@ export default function DialInTimeline({
                       alignItems: 'center',
                       gap: '5px',
                       padding: '5px 12px',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: '800',
                       cursor: 'pointer',
                       margin: 0
@@ -800,7 +800,7 @@ export default function DialInTimeline({
                       alignItems: 'center',
                       gap: '5px',
                       padding: '5px 12px',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: '700',
                       cursor: 'pointer',
                       margin: 0

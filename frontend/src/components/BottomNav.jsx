@@ -81,7 +81,7 @@ export default function BottomNav({ currentView, setCurrentView }) {
             )}
             <Icon size={19} strokeWidth={isActive ? 2.4 : 1.8} />
             <span style={{
-              fontSize: '10.5px',
+              fontSize: '12px',
               fontWeight: isActive ? '800' : '600',
               fontFamily: 'var(--font-heading)',
               letterSpacing: '-0.01em',

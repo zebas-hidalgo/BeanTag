@@ -446,7 +446,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
               flex: 1,
               padding: '8px 4px',
               minHeight: '36px',
-              fontSize: '11px',
+              fontSize: '12px',
               fontWeight: creatorStep === step.id ? '800' : '600',
               fontFamily: 'var(--font-heading)',
               border: 'none',
@@ -471,39 +471,39 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
               <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: 0, color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
                 Identidad del Café
               </h4>
-              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
+              <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
                 {(localStorage.getItem('beantag-ai-provider') || 'groq') === 'groq' ? 'Groq Vision OCR' : 'Gemini Vision OCR'}
               </span>
             </div>
             <div className="form-group">
               <label className="barista-label">Nombre del Café</label>
-              <input className="candy-input" value={name} onChange={(e) => setName(e.target.value)} type="text" required placeholder="Ej. Pink Bourbon" style={{ minHeight: '44px', fontSize: '13px' }} />
+              <input aria-label="Nombre del Café" className="candy-input" value={name} onChange={(e) => setName(e.target.value)} type="text" required placeholder="Ej. Pink Bourbon" style={{ minHeight: '44px', fontSize: '13px' }} />
             </div>
             
             <div className="form-group">
               <label className="barista-label">Productor / Finca</label>
-              <input className="candy-input" value={producer} onChange={(e) => setProducer(e.target.value)} type="text" required placeholder="Ej. Nestor Lasso / El Diviso" style={{ minHeight: '44px', fontSize: '13px' }} />
+              <input aria-label="Productor / Finca" className="candy-input" value={producer} onChange={(e) => setProducer(e.target.value)} type="text" required placeholder="Ej. Nestor Lasso / El Diviso" style={{ minHeight: '44px', fontSize: '13px' }} />
             </div>
 
             <div className="form-row">
               <div className="form-group">
                 <label className="barista-label">Origen</label>
-                <input className="candy-input" value={origin} onChange={(e) => setOrigin(e.target.value)} type="text" placeholder="Ej. Colombia" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <input aria-label="Origen" className="candy-input" value={origin} onChange={(e) => setOrigin(e.target.value)} type="text" placeholder="Ej. Colombia" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
               <div className="form-group">
                 <label className="barista-label">Varietal</label>
-                <input className="candy-input" value={variety} onChange={(e) => setVariety(e.target.value)} type="text" placeholder="Ej. Bourbon" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <input aria-label="Varietal" className="candy-input" value={variety} onChange={(e) => setVariety(e.target.value)} type="text" placeholder="Ej. Bourbon" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
             </div>
 
             <div className="form-row">
               <div className="form-group">
                 <label className="barista-label">Altitud</label>
-                <input className="candy-input" value={altitude} onChange={(e) => setAltitude(e.target.value)} type="text" placeholder="Ej. 1800 msnm" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <input aria-label="Altitud" className="candy-input" value={altitude} onChange={(e) => setAltitude(e.target.value)} type="text" placeholder="Ej. 1800 msnm" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
               <div className="form-group">
                 <label className="barista-label">Proceso</label>
-                <input className="candy-input" value={process} onChange={(e) => setProcess(e.target.value)} type="text" placeholder="Ej. Anaeróbico" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <input aria-label="Proceso" className="candy-input" value={process} onChange={(e) => setProcess(e.target.value)} type="text" placeholder="Ej. Anaeróbico" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
             </div>
           </div>
@@ -518,11 +518,11 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
             <div className="form-row">
               <div className="form-group">
                 <label className="barista-label">Tostador</label>
-                <input className="candy-input" value={roaster} onChange={(e) => setRoaster(e.target.value)} type="text" placeholder="Ej. Coffee Circular" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <input aria-label="Tostador" className="candy-input" value={roaster} onChange={(e) => setRoaster(e.target.value)} type="text" placeholder="Ej. Coffee Circular" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
               <div className="form-group">
                 <label className="barista-label">Tueste</label>
-                <select className="candy-input" value={roastLevel} onChange={(e) => setRoastLevel(e.target.value)} style={{ minHeight: '44px', fontSize: '13px' }}>
+                <select aria-label="Tueste" className="candy-input" value={roastLevel} onChange={(e) => setRoastLevel(e.target.value)} style={{ minHeight: '44px', fontSize: '13px' }}>
                   <option value="Claro">Claro</option>
                   <option value="Medio">Medio</option>
                   <option value="Oscuro">Oscuro</option>
@@ -533,11 +533,11 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
             <div className="form-row">
               <div className="form-group">
                 <label className="barista-label">Fecha de Tueste</label>
-                <input className="candy-input" value={roastDate} onChange={(e) => setRoastDate(e.target.value)} type="date" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <input aria-label="Fecha de Tueste" className="candy-input" value={roastDate} onChange={(e) => setRoastDate(e.target.value)} type="date" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
               <div className="form-group">
                 <label className="barista-label">Fecha de Congelado</label>
-                <input className="candy-input" value={freezeDate} onChange={(e) => setFreezeDate(e.target.value)} type="date" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <input aria-label="Fecha de Congelado" className="candy-input" value={freezeDate} onChange={(e) => setFreezeDate(e.target.value)} type="date" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
             </div>
 
@@ -546,12 +546,12 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                 <label className="barista-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span>Puntuación SCA / Catación</span>
                   {scaScore && parseFloat(scaScore) >= 80 && (
-                    <span style={{ color: 'var(--color-crimson)', fontWeight: '700', fontSize: '11px', letterSpacing: '0.3px' }}>
+                    <span style={{ color: 'var(--color-crimson)', fontWeight: '700', fontSize: '12px', letterSpacing: '0.3px' }}>
                       ★ {parseFloat(scaScore) >= 90 ? 'Excepcional (90+)' : (parseFloat(scaScore) >= 85 ? 'Excelente (85-89)' : 'Especialidad (80-84)')}
                     </span>
                   )}
                 </label>
-                <input
+                <input aria-label="Puntuación SCA / Catación"
                   className="candy-input"
                   value={scaScore}
                   onChange={(e) => setScaScore(e.target.value)}
@@ -582,7 +582,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                 {/* Selection Summary */}
                 {selectedFlavorTags.length > 0 && (
                   <div style={{ marginBottom: '14px', padding: '12px', backgroundColor: 'var(--barista-bg-surface, var(--bg-card))', border: '1.5px solid var(--barista-border-hairline, var(--border-color))', borderRadius: '10px', boxShadow: 'var(--barista-shadow-card)' }}>
-                    <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 'bold', textTransform: 'uppercase', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 'bold', textTransform: 'uppercase', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>
                       Seleccionados ({selectedFlavorTags.length}):
                     </span>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
@@ -684,7 +684,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                             paddingTop: sIdx > 0 ? '10px' : '0', 
                             borderTop: sIdx > 0 ? '1px dashed var(--border-color)' : 'none' 
                           }}>
-                            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
+                            <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
                               {sub.name}
                             </span>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -729,7 +729,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
 
               <div className="form-group">
                 <label className="barista-label">Notas de Cata Adicionales</label>
-                <input className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Fresa, chocolate, cuerpo sedoso" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <input aria-label="Notas de Cata Adicionales" className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Fresa, chocolate, cuerpo sedoso" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
             </div>
 
@@ -748,7 +748,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                 </div>
                 <div className="form-group">
                   <label className="barista-label">Gramos por Tubo</label>
-                  <input className="candy-input" value={doseWeight} onChange={(e) => setDoseWeight(e.target.value)} type="text" inputMode="decimal" style={{ minHeight: '44px', fontSize: '13px' }} />
+                  <input aria-label="Gramos por Tubo" className="candy-input" value={doseWeight} onChange={(e) => setDoseWeight(e.target.value)} type="text" inputMode="decimal" style={{ minHeight: '44px', fontSize: '13px' }} />
                 </div>
               </div>
               <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-crimson)', marginTop: '10px', textAlign: 'center' }}>
@@ -781,10 +781,10 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
       {!batchToEdit && generatedUrl && (
         <div className="instr-box" style={{ marginTop: '14px' }}>
           <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', marginTop: 0 }}>Enlace Único de Lote NFC</h3>
-          <p style={{ fontSize: '11px', marginTop: 0 }}>Escribe este enlace en tus tags NFC usando la app "NFC Tools":</p>
+          <p style={{ fontSize: '12px', marginTop: 0 }}>Escribe este enlace en tus tags NFC usando la app "NFC Tools":</p>
           
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <input className="candy-input" value={generatedUrl} readOnly style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', flex: 1, minWidth: 0 }} />
+            <input className="candy-input" value={generatedUrl} readOnly style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', flex: 1, minWidth: 0 }} />
             <button type="button" className="btn-candy primary" style={{ margin: 0, flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px' }} onClick={copyUrl}>
               <ClipboardCopy size={16} strokeWidth={2.5} />
               Copiar
@@ -829,7 +829,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                   <h3 style={{ margin: 0, fontSize: '15px', fontFamily: 'var(--font-heading)', textTransform: 'uppercase' }}>
                     {aiProvider === 'groq' ? 'Configurar API Key de Groq' : 'Configurar API Key de Gemini'}
                   </h3>
-                  <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
                     {aiProvider === 'groq' ? 'Groq Cloud • Visión OCR (Llama 3.2)' : 'Google AI Studio • Visión OCR Multimodal'}
                   </span>
                 </div>
@@ -853,8 +853,8 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                   style={{ width: '100%', boxSizing: 'border-box', fontFamily: 'var(--font-mono)', fontSize: '13px' }}
                 />
                 {aiProvider === 'groq' ? (
-                  <div style={{ marginTop: '6px', fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                    💡 Puedes obtener tu clave gratis en{' '}
+                  <div style={{ marginTop: '6px', fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                    Puedes obtener tu clave gratis en{' '}
                     <a 
                       href="https://console.groq.com/keys" 
                       target="_blank" 
@@ -865,8 +865,8 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                     </a>
                   </div>
                 ) : (
-                  <div style={{ marginTop: '6px', fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                    💡 Puedes obtener tu clave gratis en{' '}
+                  <div style={{ marginTop: '6px', fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                    Puedes obtener tu clave gratis en{' '}
                     <a 
                       href="https://aistudio.google.com/app/apikey" 
                       target="_blank" 

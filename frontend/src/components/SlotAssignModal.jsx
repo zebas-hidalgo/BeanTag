@@ -235,7 +235,7 @@ export default function SlotAssignModal({
             }}
           >
             <Search size={16} color="var(--barista-text-muted, #94A3B8)" />
-            <input
+            <input aria-label="Buscar por café, tostador u origen..."
               type="text"
               placeholder="Buscar por café, tostador u origen..."
               value={searchTerm}
@@ -251,7 +251,7 @@ export default function SlotAssignModal({
               }}
             />
             {searchTerm && (
-              <button
+              <button aria-label="Cerrar"
                 type="button"
                 onClick={() => setSearchTerm('')}
                 style={{
@@ -357,7 +357,7 @@ export default function SlotAssignModal({
                       {batch.process && (
                         <span
                           style={{
-                            fontSize: '10px',
+                            fontSize: '12px',
                             fontWeight: '700',
                             padding: '2px 6px',
                             borderRadius: '4px',
@@ -406,7 +406,7 @@ export default function SlotAssignModal({
                     </span>
                     <span
                       style={{
-                        fontSize: '10.5px',
+                        fontSize: '12px',
                         fontFamily: 'var(--font-mono)',
                         color: 'var(--barista-text-muted, #94A3B8)',
                         display: 'block'

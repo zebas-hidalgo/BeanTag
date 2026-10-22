@@ -486,7 +486,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             <Sparkles size={15} />
             <span>Herramientas de Barista</span>
           </h4>
-          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 14px 0' }}>
+          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 14px 0' }}>
             Asistente inteligente y opciones para compartir tu carta de cafés
           </p>
         </div>
@@ -551,14 +551,14 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             boxShadow: '0 4px 16px rgba(188, 84, 73, 0.08)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '800', color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '800', color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
                 <Compass size={14} />
                 <span>Recomendación Sommelier {sommelierResult._source === 'barista_fallback' ? '(Local)' : (sommelierResult._source === 'groq' ? '(Groq)' : '(Gemini)')}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 {sommelierResult._source === 'barista_fallback' && (
                   <span style={{ 
-                    fontSize: '10px', 
+                    fontSize: '12px', 
                     background: 'var(--barista-instr-bg, #FEF3C7)', 
                     border: '1px solid var(--barista-instr-border, #FDE68A)', 
                     color: 'var(--barista-accent-honey, #D97706)', 
@@ -574,7 +574,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   </span>
                 )}
                 {sommelierResult.badge && (
-                  <span style={{ fontSize: '10px', background: 'rgba(188, 84, 73, 0.08)', border: '1px solid rgba(188, 84, 73, 0.2)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                  <span style={{ fontSize: '12px', background: 'rgba(188, 84, 73, 0.08)', border: '1px solid rgba(188, 84, 73, 0.2)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
                     {sommelierResult.badge}
                   </span>
                 )}
@@ -589,7 +589,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 8px 0', lineHeight: 1.4 }}>
                   {sommelierResult.reason || 'Todos los lotes en tu cava tienen 0 dosis restantes. Repón tu stock o registra nuevas dosis para recibir recomendaciones del sommelier.'}
                 </p>
-                <div style={{ fontSize: '11px', color: 'var(--color-crimson)', fontWeight: '600' }}>
+                <div style={{ fontSize: '12px', color: 'var(--color-crimson)', fontWeight: '600' }}>
                   Sugerencia: Repón dosis de café en tus lotes para activar la selección experta de cata.
                 </div>
               </div>
@@ -605,7 +605,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 </p>
 
                 {sommelierResult.flavor_focus && (
-                  <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span>Perfil:</span>
                     <span style={{ color: 'var(--color-crimson)' }}>{sommelierResult.flavor_focus}</span>
                   </div>
@@ -623,7 +623,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             <Palette size={14} color="var(--color-crimson)" />
             <span>Tema de la Aplicación</span>
           </h4>
-          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
+          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
             Elige la estética global del sistema: tonos cálidos artesanales o un diseño nórdico minimalista
           </p>
         </div>
@@ -686,7 +686,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             <SlidersHorizontal size={14} color="var(--color-crimson)" />
             <span>Estilo Visual del Inventario</span>
           </h4>
-          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
+          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
             Elige cómo se presentan las tarjetas de café en tu congelador por defecto
           </p>
         </div>
@@ -719,7 +719,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 onClick={() => handleCardStyleChange(item.id)}
                 style={{
                   margin: 0,
-                  fontSize: '11px',
+                  fontSize: '12px',
                   padding: '12px 10px',
                   borderRadius: '14px',
                   border: isActive ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
@@ -738,7 +738,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   <span style={{ fontSize: '12px', fontWeight: '800' }}>{item.name}</span>
                   {isActive && (
                     <span style={{ 
-                      fontSize: '9px', 
+                      fontSize: '12px', 
                       background: 'var(--color-crimson)', 
                       color: '#FFFFFF', 
                       padding: '2px 5px', 
@@ -749,10 +749,10 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                     </span>
                   )}
                 </div>
-                <span style={{ fontSize: '10px', color: 'var(--color-crimson)', fontWeight: '700' }}>
+                <span style={{ fontSize: '12px', color: 'var(--color-crimson)', fontWeight: '700' }}>
                   {item.subtitle}
                 </span>
-                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', lineHeight: 1.3 }}>
+                <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', lineHeight: 1.3 }}>
                   {item.desc}
                 </span>
               </button>
@@ -768,7 +768,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             <Palette size={14} color="var(--color-crimson)" />
             <span>Temas Visuales de Fantasía</span>
           </h4>
-          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
+          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
             Elige una paleta Neobrutalista inspirada en el café de especialidad
           </p>
         </div>
@@ -796,7 +796,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 }} 
                 style={{ 
                   margin: 0, 
-                  fontSize: '11px', 
+                  fontSize: '12px', 
                   padding: '10px 8px', 
                   borderRadius: '14px',
                   border: isActive ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
@@ -811,8 +811,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   gap: '6px'
                 }}
               >
-                <span style={{ fontSize: '11.5px', fontWeight: 'bold' }}>{t.name}</span>
-                <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>{t.desc}</span>
+                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{t.name}</span>
+                <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>{t.desc}</span>
                 <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
                   {t.colors.map((c, idx) => (
                     <span 
@@ -841,7 +841,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0, color: 'var(--color-text)', letterSpacing: '0.5px' }}>
               Configuración de Inteligencia Artificial
             </h4>
-            <span style={{ fontSize: '10px', background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '3px 8px', borderRadius: '6px', fontWeight: '900', border: '1px solid var(--border-color)' }}>
+            <span style={{ fontSize: '12px', background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '3px 8px', borderRadius: '6px', fontWeight: '900', border: '1px solid var(--border-color)' }}>
               {aiProvider === 'groq' ? `GROQ • ${groqModel.replace('openai/', '').toUpperCase()}` : `GEMINI • ${selectedModel.toUpperCase()}`}
             </span>
           </div>
@@ -909,7 +909,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               <label className="barista-label" style={{ marginBottom: '6px' }}>Clave API de Groq Cloud</label>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch', flexWrap: 'wrap' }}>
                 <div style={{ position: 'relative', flex: 1, minWidth: '180px', display: 'flex', alignItems: 'center' }}>
-                  <input 
+                  <input aria-label="Introduce tu clave API (gsk_...)" 
                     type={showGroqKey ? 'text' : 'password'} 
                     className="candy-input" 
                     value={groqKey} 
@@ -990,11 +990,11 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   <span style={{ fontWeight: '800' }}>
                     {testGroqResult.success ? 'Conexión Exitosa con Groq ⚡' : 'Error de Conexión'}
                   </span>
-                  <span style={{ fontSize: '11px', lineHeight: 1.35 }}>
+                  <span style={{ fontSize: '12px', lineHeight: 1.35 }}>
                     {testGroqResult.message || testGroqResult.error}
                   </span>
                   {testGroqResult.model && (
-                    <span style={{ fontSize: '10px', fontWeight: 'bold', opacity: 0.85, marginTop: '2px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 'bold', opacity: 0.85, marginTop: '2px' }}>
                       ⚡ Modelo: {testGroqResult.model}
                     </span>
                   )}
@@ -1007,7 +1007,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               <label className="barista-label" style={{ marginBottom: '6px' }}>
                 Modelo de Inteligencia Artificial (Groq)
               </label>
-              <select 
+              <select aria-label="Modelo de Inteligencia Artificial (Groq)" 
                 className="candy-input" 
                 value={groqModel} 
                 onChange={(e) => handleGroqModelChange(e.target.value)}
@@ -1023,7 +1023,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               href="https://console.groq.com/keys" 
               target="_blank" 
               rel="noopener noreferrer" 
-              style={{ fontSize: '11px', color: 'var(--color-crimson)', textDecoration: 'underline', fontWeight: 'bold' }}
+              style={{ fontSize: '12px', color: 'var(--color-crimson)', textDecoration: 'underline', fontWeight: 'bold' }}
             >
               Consigue tu clave gratuita sin tarjeta en console.groq.com →
             </a>
@@ -1034,7 +1034,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             <div>
               <label className="barista-label" style={{ marginBottom: '6px' }}>Clave API de Google AI Studio</label>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch', flexWrap: 'wrap' }}>
-                <input 
+                <input aria-label="Introduce tu clave API (AIzaSy...)" 
                   type="password" 
                   className="candy-input" 
                   value={apiKey} 
@@ -1098,11 +1098,11 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   <span style={{ fontWeight: '800' }}>
                     {geminiTestResult.success ? 'Conexión Exitosa con Gemini' : 'Error de Conexión'}
                   </span>
-                  <span style={{ fontSize: '11px', lineHeight: 1.35 }}>
+                  <span style={{ fontSize: '12px', lineHeight: 1.35 }}>
                     {geminiTestResult.message || geminiTestResult.error}
                   </span>
                   {geminiTestResult.latency_ms && (
-                    <span style={{ fontSize: '10px', fontWeight: 'bold', opacity: 0.85, marginTop: '2px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 'bold', opacity: 0.85, marginTop: '2px' }}>
                       ⏱️ Latencia: {geminiTestResult.latency_ms}ms • Modelo: {geminiTestResult.model}
                     </span>
                   )}
@@ -1116,7 +1116,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 <label className="barista-label" style={{ marginBottom: '6px' }}>
                   Modelo de Inteligencia Artificial (Gemini)
                 </label>
-                <select 
+                <select aria-label="Modelo de Inteligencia Artificial (Gemini)" 
                   className="candy-input" 
                   value={selectedModel} 
                   onChange={(e) => handleModelChange(e.target.value)}
@@ -1163,7 +1163,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               href="https://aistudio.google.com/app/apikey" 
               target="_blank" 
               rel="noopener noreferrer" 
-              style={{ fontSize: '11px', color: 'var(--color-crimson)', textDecoration: 'underline', fontWeight: 'bold' }}
+              style={{ fontSize: '12px', color: 'var(--color-crimson)', textDecoration: 'underline', fontWeight: 'bold' }}
             >
               Obtener clave API gratuita en Google AI Studio →
             </a>
@@ -1176,7 +1176,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
           Molino Predeterminado
         </h4>
-        <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
+        <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
           Selecciona tu molino principal para precargar sus diales y física en cada nueva receta.
         </p>
 
@@ -1208,8 +1208,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   transition: 'all 0.15s ease'
                 }}
               >
-                <strong style={{ fontSize: '11px' }}>{grinder.name}</strong>
-                <span style={{ fontSize: '9.5px', color: 'var(--color-text-muted)' }}>{grinder.stepDesc || grinder.desc}</span>
+                <strong style={{ fontSize: '12px' }}>{grinder.name}</strong>
+                <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{grinder.stepDesc || grinder.desc}</span>
               </button>
             );
           })}
@@ -1378,11 +1378,11 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: 0, fontWeight: '800', color: 'var(--color-text)' }}>
                     Carta de Cafés • Menú en Cava
                   </h3>
-                  <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
                     {availableBatches.length > 0 ? availableBatches.length : safeBatches.length} lotes disponibles
                   </span>
                 </div>
-                <button 
+                <button aria-label="Cerrar" 
                   type="button" 
                   onClick={() => setShowMenuShareModal(false)}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--color-text-muted)' }}
@@ -1393,7 +1393,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
 
               {/* Template Selector */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '9.5px', fontWeight: '800', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
+                <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
                 {[
                   { id: 'studio', label: 'Studio' },
                   { id: 'kissaten', label: 'Kissaten' },
@@ -1411,7 +1411,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                     style={{
                       flex: '1 1 auto',
                       padding: '5px 8px',
-                      fontSize: '10.5px',
+                      fontSize: '12px',
                       fontWeight: menuShareTemplate === t.id ? '800' : '600',
                       border: menuShareTemplate === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
                       borderRadius: '6px',
@@ -1461,7 +1461,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             {menuShareStatus && (
               <div style={{
                 textAlign: 'center',
-                fontSize: '11px',
+                fontSize: '12px',
                 fontWeight: 'bold',
                 color: 'var(--color-crimson)',
                 background: 'rgba(188, 84, 73, 0.08)',
@@ -1479,7 +1479,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 className="btn-candy"
                 onClick={handleCopyMenuText}
                 style={{
-                  flex: 1, margin: 0, padding: '10px 8px', fontSize: '11.5px', fontWeight: 'bold',
+                  flex: 1, margin: 0, padding: '10px 8px', fontSize: '12px', fontWeight: 'bold',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                   background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--color-text)'
                 }}
@@ -1492,7 +1492,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 className="btn-candy"
                 onClick={handleNativeMenuShare}
                 style={{
-                  flex: 1.3, margin: 0, padding: '10px 8px', fontSize: '11.5px', fontWeight: '800',
+                  flex: 1.3, margin: 0, padding: '10px 8px', fontSize: '12px', fontWeight: '800',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                   background: 'var(--color-crimson)', color: '#FFFFFF', border: 'none'
                 }}
@@ -1505,7 +1505,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         </div>
       )}
 
-      <div style={{ textAlign: 'center', marginTop: '40px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+      <div style={{ textAlign: 'center', marginTop: '40px', fontSize: '12px', color: 'var(--color-text-muted)' }}>
         <p style={{ fontWeight: 'bold', margin: 0 }}>BeanTag Coffee Bitácora</p>
         <p style={{ margin: '4px 0 0 0' }}>Versión 1.2.0 • Home Barista Edition</p>
       </div>

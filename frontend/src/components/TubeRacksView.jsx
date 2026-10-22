@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { confirmDialog } from '../utils/confirmDialog';
 import { Plus, Coffee, MoreVertical, Trash2, Edit3, Layers, Check, X, RefreshCw, AlertCircle, ArrowRight, Zap, Snowflake, FlaskConical } from 'lucide-react';
 import { apiUrl } from '../utils/api';
 import SlotAssignModal from './SlotAssignModal';
@@ -132,7 +133,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
 
   // Handle deleting rack
   const handleDeleteRack = async (rackId) => {
-    if (!window.confirm('¿Estás seguro de eliminar este portatubos?')) return;
+    if (!(await confirmDialog('¿Estás seguro de eliminar este portatubos?', { okText: 'Eliminar' }))) return;
     try {
       const res = await fetch(apiUrl(`api/racks/${rackId}`), {
         method: 'DELETE',
@@ -158,7 +159,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
 
   // Handle empty rack
   const handleEmptyRack = async (rackId) => {
-    if (!window.confirm('¿Vaciar todas las ranuras de este portatubos?')) return;
+    if (!(await confirmDialog('¿Vaciar todas las ranuras de este portatubos?', { okText: 'Vaciar' }))) return;
     try {
       const res = await fetch(apiUrl(`api/racks/${rackId}/empty`), {
         method: 'POST',
@@ -344,7 +345,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button
+          <button aria-label="Actualizar"
             type="button"
             onClick={fetchRacks}
             style={{
@@ -551,7 +552,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
               <span>🗂️ Todos ({racks.length})</span>
               <span
                 style={{
-                  fontSize: '11px',
+                  fontSize: '12px',
                   fontFamily: 'var(--font-mono)',
                   fontWeight: '800',
                   padding: '2px 7px',
@@ -612,7 +613,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                   <span>☕ {rack.name}</span>
                   <span
                     style={{
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontFamily: 'var(--font-mono)',
                       fontWeight: '800',
                       padding: '2px 7px',
@@ -730,7 +731,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                   </h3>
                   <span
                     style={{
-                      fontSize: '10.5px',
+                      fontSize: '12px',
                       fontFamily: 'var(--font-mono)',
                       fontWeight: '700',
                       padding: '2px 6px',
@@ -904,7 +905,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                       alignItems: 'center',
                       marginBottom: '8px',
                       padding: '0 4px',
-                      fontSize: '9.5px',
+                      fontSize: '12px',
                       fontFamily: 'var(--font-mono)',
                       fontWeight: '800',
                       letterSpacing: '0.3px',
@@ -1012,7 +1013,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                               {/* Slot position number indicator */}
                               <span
                                 style={{
-                                  fontSize: '9.5px',
+                                  fontSize: '12px',
                                   fontWeight: '800',
                                   fontFamily: 'var(--font-mono)',
                                   color: 'var(--color-text-muted)',
@@ -1077,7 +1078,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                                 {/* Dose weight centered at base */}
                                 <span
                                   style={{
-                                    fontSize: '9.5px',
+                                    fontSize: '12px',
                                     fontWeight: '800',
                                     fontFamily: 'var(--font-mono)',
                                     color: 'var(--color-text, #0F172A)',
@@ -1106,7 +1107,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                               >
                                 <div
                                   style={{
-                                    fontSize: '11px',
+                                    fontSize: '12px',
                                     fontWeight: '800',
                                     lineHeight: 1.15,
                                     whiteSpace: 'nowrap',
@@ -1123,7 +1124,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                                 </div>
                                 <div
                                   style={{
-                                    fontSize: '9px',
+                                    fontSize: '12px',
                                     fontWeight: '600',
                                     color: 'var(--color-text-muted)',
                                     whiteSpace: 'nowrap',
@@ -1161,7 +1162,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                               {/* Label below */}
                               <span
                                 style={{
-                                  fontSize: '9.5px',
+                                  fontSize: '12px',
                                   fontWeight: '700',
                                   color: 'var(--color-text-muted)',
                                   textAlign: 'center',
@@ -1244,7 +1245,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
               >
                 🧪 Crear Nuevo Portatubos (2×3)
               </h3>
-              <button
+              <button aria-label="Cerrar"
                 type="button"
                 onClick={() => setShowCreateModal(false)}
                 style={{
@@ -1270,7 +1271,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
               >
                 Nombre o Ubicación del Portatubos:
               </label>
-              <input
+              <input aria-label="Nombre o Ubicación del Portatubos:"
                 type="text"
                 autoFocus
                 placeholder="Ej. Rack Barra Espresso, Rack Congelador..."
@@ -1492,7 +1493,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
               <div>
                 <span
                   style={{
-                    fontSize: '11px',
+                    fontSize: '12px',
                     fontWeight: '700',
                     fontFamily: 'var(--font-mono)',
                     color: 'var(--barista-accent-honey, #D97706)',
@@ -1513,7 +1514,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                   {actionTarget.slot.batch_name || (actionTarget.batch && actionTarget.batch.name)}
                 </h3>
               </div>
-              <button
+              <button aria-label="Cerrar"
                 type="button"
                 onClick={() => setActionTarget(null)}
                 style={{
@@ -1543,25 +1544,25 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                 }}
               >
                 <div>
-                  <span style={{ fontSize: '11px', color: 'var(--barista-text-muted)', display: 'block' }}>Tostador:</span>
+                  <span style={{ fontSize: '12px', color: 'var(--barista-text-muted)', display: 'block' }}>Tostador:</span>
                   <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-text)' }}>
                     {actionTarget.slot.roaster || (actionTarget.batch && actionTarget.batch.roaster) || 'N/A'}
                   </span>
                 </div>
                 <div>
-                  <span style={{ fontSize: '11px', color: 'var(--barista-text-muted)', display: 'block' }}>Origen:</span>
+                  <span style={{ fontSize: '12px', color: 'var(--barista-text-muted)', display: 'block' }}>Origen:</span>
                   <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-text)' }}>
                     {actionTarget.slot.origin || (actionTarget.batch && actionTarget.batch.origin) || 'N/A'}
                   </span>
                 </div>
                 <div>
-                  <span style={{ fontSize: '11px', color: 'var(--barista-text-muted)', display: 'block' }}>Dosis tubo:</span>
+                  <span style={{ fontSize: '12px', color: 'var(--barista-text-muted)', display: 'block' }}>Dosis tubo:</span>
                   <span style={{ fontSize: '13px', fontWeight: '700', fontFamily: 'var(--font-mono)', color: 'var(--barista-accent-cryo, #0284C7)' }}>
                     {actionTarget.slot.dose_weight || (actionTarget.batch && actionTarget.batch.dose_weight) || '20.0g'}
                   </span>
                 </div>
                 <div>
-                  <span style={{ fontSize: '11px', color: 'var(--barista-text-muted)', display: 'block' }}>Stock en Lote:</span>
+                  <span style={{ fontSize: '12px', color: 'var(--barista-text-muted)', display: 'block' }}>Stock en Lote:</span>
                   <span style={{ fontSize: '13px', fontWeight: '700', fontFamily: 'var(--font-mono)', color: 'var(--barista-accent-honey, #D97706)' }}>
                     {actionTarget.slot.remaining_doses !== undefined ? actionTarget.slot.remaining_doses : (actionTarget.batch && actionTarget.batch.remaining_doses)} tubos
                   </span>

@@ -194,7 +194,7 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
         {/* Hardware Status Banner */}
         <div style={{
           padding: '8px 12px', borderRadius: '6px', border: '2px solid var(--border-color)',
-          fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px',
+          fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px',
           backgroundColor: hasNfc ? '#C6F6D5' : '#EBF8FF',
           color: hasNfc ? '#22543D' : '#2B6CB0'
         }}>
@@ -245,7 +245,7 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
         {/* Tab 1: iOS iPhone Native Mode */}
         {activeTab === 'ios' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: 'var(--bg-canvas)', padding: '12px', borderRadius: '6px', border: '2px solid var(--border-color)', fontSize: '11.5px', lineHeight: '1.4' }}>
+            <div style={{ background: 'var(--bg-canvas)', padding: '12px', borderRadius: '6px', border: '2px solid var(--border-color)', fontSize: '12px', lineHeight: '1.4' }}>
               <strong style={{ color: 'var(--color-crimson)', display: 'block', marginBottom: '4px' }}>
                 <HelpCircle size={14} style={{marginRight:'4px',verticalAlign:'middle'}} /> ¿Cómo funciona el NFC en iPhone?
               </strong>
@@ -255,10 +255,10 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '11px', fontWeight: 'bold', fontFamily: 'var(--font-heading)', textTransform: 'uppercase' }}>
+              <label style={{ fontSize: '12px', fontWeight: 'bold', fontFamily: 'var(--font-heading)', textTransform: 'uppercase' }}>
                 Seleccionar Lote de Café:
               </label>
-              <select
+              <select aria-label="Seleccionar Lote de Café:"
                 className="candy-input"
                 value={selectedBatchId}
                 onChange={e => setSelectedBatchId(e.target.value)}
@@ -271,10 +271,10 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
                 ))}
               </select>
 
-              <label style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginTop: '4px' }}>
                 URL Directa para NFC / QR (Haz clic para seleccionar todo):
               </label>
-              <input
+              <input aria-label="URL Directa para NFC / QR (Haz clic para seleccionar todo):"
                 type="text"
                 readOnly
                 className="candy-input"
@@ -284,7 +284,7 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
                   width: '100%',
                   boxSizing: 'border-box',
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '11px',
+                  fontSize: '12px',
                   backgroundColor: 'var(--bg-canvas)',
                   cursor: 'pointer'
                 }}
@@ -322,7 +322,7 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
               </div>
             </div>
 
-            <p style={{ fontSize: '10.5px', color: 'var(--color-text-muted)', margin: 0, textAlign: 'center', lineHeight: '1.3' }}>
+            <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: 0, textAlign: 'center', lineHeight: '1.3' }}>
               Pega la URL copiada en la app gratuita <strong>NFC Tools para iPhone</strong> (App Store) o en la app <strong>Atajos</strong> de Apple para grabar frascos o tubos en 2 segundos.
             </p>
           </div>
@@ -339,7 +339,7 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
               Iniciar Escaneo Diagnóstico
             </button>
             {scannedData && (
-              <div style={{ background: 'var(--bg-canvas)', padding: '10px', border: '2px solid var(--border-color)', borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace' }}>
+              <div style={{ background: 'var(--bg-canvas)', padding: '10px', border: '2px solid var(--border-color)', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
                 <div><strong>Nº Serie:</strong> {scannedData.serialNumber}</div>
                 <div><strong>URL RAW:</strong> {scannedData.rawUrl}</div>
                 <div><strong>Hora:</strong> {scannedData.timestamp}</div>
@@ -386,7 +386,7 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
 
         {statusMessage && (
           <div style={{
-            padding: '8px', fontSize: '11px', fontWeight: 'bold', textAlign: 'center',
+            padding: '8px', fontSize: '12px', fontWeight: 'bold', textAlign: 'center',
             border: '2px solid var(--border-color)', borderRadius: '4px',
             backgroundColor: 'var(--bg-card)'
           }}>

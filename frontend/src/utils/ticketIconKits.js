@@ -3,33 +3,33 @@
 // with 100% aspect-ratio-preserving (contain) Canvas 2D rendering and vector fallbacks.
 
 // 1. BLUEPRINT CAD ASSETS
-import blueprintHeroSrc from '../assets/cards/blueprint_hero.png';
-import blueprintDripperSrc from '../assets/cards/blueprint_dripper.png';
-import blueprintScaleSrc from '../assets/cards/blueprint_scale.png';
-import blueprintWaterSrc from '../assets/cards/blueprint_water.png';
-import blueprintTimerSrc from '../assets/cards/blueprint_timer.png';
+import blueprintHeroSrc from '../assets/cards/blueprint_hero.webp';
+import blueprintDripperSrc from '../assets/cards/blueprint_dripper.webp';
+import blueprintScaleSrc from '../assets/cards/blueprint_scale.webp';
+import blueprintWaterSrc from '../assets/cards/blueprint_water.webp';
+import blueprintTimerSrc from '../assets/cards/blueprint_timer.webp';
 
 // 2. NEO-BRUTALIST TOKYO STREETWEAR STICKERS
-import neobrutalistHeroSrc from '../assets/cards/neobrutalist_hero.png';
-import neobrutalistDripperSrc from '../assets/cards/neobrutalist_dripper.png';
-import neobrutalistFlameSrc from '../assets/cards/neobrutalist_flame.png';
-import neobrutalistStarSrc from '../assets/cards/neobrutalist_star.png';
-import neobrutalistTimerSrc from '../assets/cards/neobrutalist_timer.png';
-import neobrutalistCupSrc from '../assets/cards/neobrutalist_cup.png';
+import neobrutalistHeroSrc from '../assets/cards/neobrutalist_hero.webp';
+import neobrutalistDripperSrc from '../assets/cards/neobrutalist_dripper.webp';
+import neobrutalistFlameSrc from '../assets/cards/neobrutalist_flame.webp';
+import neobrutalistStarSrc from '../assets/cards/neobrutalist_star.webp';
+import neobrutalistTimerSrc from '../assets/cards/neobrutalist_timer.webp';
+import neobrutalistCupSrc from '../assets/cards/neobrutalist_cup.webp';
 
 // 3. HOLOGRAPHIC AURORA 3D GLASS ASSETS
-import auroraHeroSrc from '../assets/cards/aurora_hero.png';
-import auroraWaterSrc from '../assets/cards/aurora_water.png';
-import auroraDripperSrc from '../assets/cards/aurora_dripper.png';
-import auroraWaveSrc from '../assets/cards/aurora_wave.png';
-import auroraStarSrc from '../assets/cards/aurora_star.png';
+import auroraHeroSrc from '../assets/cards/aurora_hero.webp';
+import auroraWaterSrc from '../assets/cards/aurora_water.webp';
+import auroraDripperSrc from '../assets/cards/aurora_dripper.webp';
+import auroraWaveSrc from '../assets/cards/aurora_wave.webp';
+import auroraStarSrc from '../assets/cards/aurora_star.webp';
 
 // 4. SCANDINAVIAN HANGTAG BOTANICAL LITHOGRAPHS
-import hangtagHeroSrc from '../assets/cards/hangtag_hero.png';
-import hangtagKettleSrc from '../assets/cards/hangtag_kettle.png';
-import hangtagSeedSrc from '../assets/cards/hangtag_seed.png';
-import hangtagSealSrc from '../assets/cards/hangtag_seal.png';
-import hangtagTimerSrc from '../assets/cards/hangtag_timer.png';
+import hangtagHeroSrc from '../assets/cards/hangtag_hero.webp';
+import hangtagKettleSrc from '../assets/cards/hangtag_kettle.webp';
+import hangtagSeedSrc from '../assets/cards/hangtag_seed.webp';
+import hangtagSealSrc from '../assets/cards/hangtag_seal.webp';
+import hangtagTimerSrc from '../assets/cards/hangtag_timer.webp';
 
 export const CARD_ASSET_SOURCES = {
   blueprint_hero: blueprintHeroSrc,

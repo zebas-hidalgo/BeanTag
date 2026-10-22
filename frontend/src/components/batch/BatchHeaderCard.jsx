@@ -1,5 +1,5 @@
 import React from 'react';
-import { Snowflake, Flame, Mountain, Award, MinusCircle, Edit, Trash2, Share2, Tag } from 'lucide-react';
+import { Snowflake, Flame, Mountain, Award, MinusCircle, Edit, Trash2, Share2, Tag, MapPin, Sprout } from 'lucide-react';
 import ScaRadarChart from '../ScaRadarChart';
 import { getScaColorForNote, getScaIcon, stripEmojis } from '../../utils/scaIcons';
 
@@ -84,12 +84,12 @@ export default function BatchHeaderCard({
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
         {batch.origin && (
           <span className="barista-chip" title="Origen">
-            📍 {batch.origin}
+            <MapPin size={14} strokeWidth={2} aria-hidden="true" /> {batch.origin}
           </span>
         )}
         {batch.variety && (
           <span className="barista-chip" title="Variedad">
-            🌱 {batch.variety}
+            <Sprout size={14} strokeWidth={2} aria-hidden="true" /> {batch.variety}
           </span>
         )}
         {batch.process && (
@@ -224,7 +224,7 @@ export default function BatchHeaderCard({
               <Edit size={15} />
               <span>Editar</span>
             </button>
-            <button
+            <button aria-label="Eliminar"
               type="button"
               className="barista-btn barista-btn-ghost"
               onClick={() => {

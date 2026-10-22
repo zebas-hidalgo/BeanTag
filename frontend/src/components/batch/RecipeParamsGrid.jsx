@@ -143,7 +143,7 @@ export default function RecipeParamsGrid({
                   }}
                 >
                   <div style={{ fontWeight: '800' }}>{fam.name}</div>
-                  <div style={{ fontSize: '10px', opacity: 0.85, fontFamily: 'var(--font-metric)' }}>
+                  <div style={{ fontSize: '12px', opacity: 0.85, fontFamily: 'var(--font-metric)' }}>
                     {fam.defaultDose}g • {fam.ratio} • {fam.brewTime}
                   </div>
                 </button>
@@ -188,7 +188,7 @@ export default function RecipeParamsGrid({
                 className="barista-metric-val"
                 style={{ width: '38px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
               />
-              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '1px' }}>g</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '1px' }}>g</span>
             </div>
             <button
               type="button"
@@ -204,7 +204,7 @@ export default function RecipeParamsGrid({
             </button>
           </div>
           {doseAdjustmentFeedback && (
-            <div style={{ fontSize: '10px', color: 'var(--accent-honey)', marginTop: '4px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ fontSize: '12px', color: 'var(--accent-honey)', marginTop: '4px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {doseAdjustmentFeedback}
             </div>
           )}
@@ -239,7 +239,7 @@ export default function RecipeParamsGrid({
                   className="barista-metric-val"
                   style={{ width: '38px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
                 />
-                <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '1px' }}>g</span>
+                <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '1px' }}>g</span>
               </div>
               <button
                 type="button"
@@ -254,7 +254,7 @@ export default function RecipeParamsGrid({
                 +
               </button>
             </div>
-            <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center', fontFamily: 'var(--font-metric)', whiteSpace: 'nowrap' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center', fontFamily: 'var(--font-metric)', whiteSpace: 'nowrap' }}>
               Ratio ~1:{doseInG > 0 ? (doseOutG / doseInG).toFixed(1) : 2}
             </div>
           </div>
@@ -301,7 +301,7 @@ export default function RecipeParamsGrid({
                 +
               </button>
             </div>
-            <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center', fontFamily: 'var(--font-metric)', whiteSpace: 'nowrap' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center', fontFamily: 'var(--font-metric)', whiteSpace: 'nowrap' }}>
               ~{Math.round(doseInG * ratioVal)}g agua
             </div>
           </div>
@@ -335,7 +335,7 @@ export default function RecipeParamsGrid({
                 className="barista-metric-val"
                 style={{ width: '36px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
               />
-              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '1px' }}>°C</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '1px' }}>°C</span>
             </div>
             <button
               type="button"
@@ -350,7 +350,7 @@ export default function RecipeParamsGrid({
               +
             </button>
           </div>
-          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {waterTemp >= 95 ? 'Alta Extracción' : waterTemp <= 90 ? 'Baja Turbulencia' : 'Balance'}
           </div>
         </div>
@@ -362,7 +362,7 @@ export default function RecipeParamsGrid({
             <Clock size={14} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '36px' }}>
-            <input
+            <input aria-label="Tiempo de extracción"
               type="text"
               value={brewTime}
               onChange={(e) => setBrewTime(e.target.value)}
@@ -371,7 +371,7 @@ export default function RecipeParamsGrid({
               style={{ width: '100%', textAlign: 'center', fontSize: '16px', border: 'none', background: 'transparent', padding: 0 }}
             />
           </div>
-          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {isPulsar ? '3:30 - 3:45 min' : 'Objetivo'}
           </div>
         </div>

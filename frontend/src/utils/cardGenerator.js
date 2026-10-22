@@ -593,9 +593,26 @@ export function parseSensoryEvaluation(batch, recipe) {
 /**
  * Asynchronous Font Loading Barrier
  */
+const CARD_FONTS_HREF = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&family=Space+Grotesk:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap';
+
+// Card-only fonts load on demand, not on app start
+function injectCardFonts() {
+  if (document.getElementById('bt-card-fonts')) return Promise.resolve();
+  return new Promise((resolve) => {
+    const link = document.createElement('link');
+    link.id = 'bt-card-fonts';
+    link.rel = 'stylesheet';
+    link.href = CARD_FONTS_HREF;
+    link.onload = resolve;
+    link.onerror = resolve;
+    document.head.appendChild(link);
+  });
+}
+
 export async function ensureFontsLoaded() {
   if (typeof document === 'undefined' || !document.fonts) return;
   try {
+    await injectCardFonts();
     await Promise.all([
       document.fonts.load('700 18px "Space Grotesk"'),
       document.fonts.load('800 40px "Space Grotesk"'),

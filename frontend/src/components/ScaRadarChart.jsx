@@ -148,7 +148,7 @@ export default function ScaRadarChart({
               textAnchor="middle"
               dominantBaseline="middle"
               style={{
-                fontSize: '10px',
+                fontSize: '12px',
                 fontWeight: '800',
                 fill: 'var(--color-text, #064E3B)',
                 fontFamily: 'var(--font-heading)'

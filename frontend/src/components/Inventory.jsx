@@ -199,7 +199,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
             marginBottom: '12px'
           }}>
             <span style={{
-              fontSize: '11px',
+              fontSize: '12px',
               fontWeight: '800',
               fontFamily: 'var(--font-mono)',
               color: 'var(--color-text-muted)',
@@ -311,7 +311,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                         {batch.roaster && (
                           <span
                             style={{
-                              fontSize: '10.5px',
+                              fontSize: '12px',
                               fontWeight: '800',
                               padding: '2px 8px',
                               borderRadius: '6px',
@@ -376,7 +376,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                   </div>
 
                   {/* Origin, Altitude & Roast details */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11.5px', color: 'var(--color-text-muted)', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: 'var(--color-text-muted)', flexWrap: 'wrap' }}>
                     {batch.origin && (
                       <span style={{ fontWeight: '600', color: 'var(--color-text)', display: 'inline-flex', alignItems: 'center', gap: '3.5px' }}>
                         <MapPin size={11} strokeWidth={2.5} style={{ color: 'var(--color-crimson)', flexShrink: 0 }} /> {batch.origin}
@@ -409,7 +409,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                     marginTop: '2px'
                   }}>
                     <span style={{ 
-                      fontSize: '11.5px', 
+                      fontSize: '12px', 
                       fontFamily: 'var(--font-mono)', 
                       fontWeight: '700',
                       padding: '4px 10px',
@@ -454,7 +454,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                       </button>
                     ) : (
                       <span style={{ 
-                        fontSize: '11.5px', 
+                        fontSize: '12px', 
                         fontWeight: '700', 
                         color: 'var(--color-crimson)', 
                         display: 'inline-flex', 
@@ -477,13 +477,13 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
         <div className="cupertino-context-overlay" onClick={() => setContextBatch(null)} role="dialog" aria-modal="true" aria-label={`Acciones rápidas para ${contextBatch.name}`} onKeyDown={(e) => { if (e.key === 'Escape') setContextBatch(null); }} tabIndex={-1} ref={(el) => el && el.focus()}>
           <div className="cupertino-context-menu" onClick={e => e.stopPropagation()}>
             <div style={{ padding: '14px 16px 10px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-canvas)' }}>
-              <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' }}>
                 Acciones Rápidas • {contextBatch.origin || 'Origen'}
               </div>
               <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {contextBatch.name}
               </div>
-              <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
                 {contextBatch.remaining_doses} tubos restantes ({contextBatch.remaining_weight_g || 0}g)
               </div>
             </div>

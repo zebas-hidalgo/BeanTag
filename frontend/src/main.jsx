@@ -3,9 +3,13 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import ErrorBoundary from './components/ErrorBoundary'
 import './index.css'
+import { installModalA11y, installThemeColorSync, registerServiceWorker } from './utils/a11yRuntime'
 import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeStickerImage } from './utils/cardGenerator'
 
 if (typeof window !== 'undefined') {
+  installModalA11y();
+  installThemeColorSync();
+  registerServiceWorker();
   window.__generateRecipeCardImage = generateRecipeCardImage;
   window.__generateCoffeeMenuCardImage = generateCoffeeMenuCardImage;
   window.__generateCoffeeStickerImage = generateCoffeeStickerImage;

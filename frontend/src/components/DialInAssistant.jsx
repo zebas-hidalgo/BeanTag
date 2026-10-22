@@ -80,7 +80,7 @@ export default function DialInAssistant({ onApplyRecommendation }) {
         <span>ASISTENTE DE CALIBRACIÓN (DIAL-IN)</span>
       </div>
 
-      <p style={{ fontSize: '11px', color: 'var(--color-text-muted, #047857)', marginBottom: '12px', lineHeight: '1.3' }}>
+      <p style={{ fontSize: '12px', color: 'var(--color-text-muted, #047857)', marginBottom: '12px', lineHeight: '1.3' }}>
         ¿Cómo estuvo el resultado en taza? Selecciona el perfil para recibir el diagnóstico instantáneo.
       </p>
 
@@ -99,7 +99,7 @@ export default function DialInAssistant({ onApplyRecommendation }) {
                 border: isSelected ? '2px solid var(--color-crimson)' : '1px solid var(--border-color)',
                 backgroundColor: isSelected ? 'var(--bg-header)' : '#FFFFFF',
                 color: 'var(--color-text)',
-                fontSize: '11px',
+                fontSize: '12px',
                 fontWeight: '700',
                 cursor: 'pointer',
                 textAlign: 'left',
@@ -129,19 +129,19 @@ export default function DialInAssistant({ onApplyRecommendation }) {
             <span>Diagnóstico & Recomendación Barista:</span>
           </div>
 
-          <div style={{ fontSize: '11.5px', color: 'var(--color-text, #064E3B)', marginBottom: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ fontSize: '12px', color: 'var(--color-text, #064E3B)', marginBottom: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Lightbulb size={14} color="var(--barista-accent-honey, #D97706)" style={{ flexShrink: 0 }} />
             <span>{currentOption.recommendation.tip}</span>
           </div>
 
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <div style={{ fontSize: '10.5px', background: 'var(--bg-header)', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '12px', background: 'var(--bg-header)', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
               Molienda: {currentOption.recommendation.grindAction}
             </div>
-            <div style={{ fontSize: '10.5px', background: 'var(--bg-header)', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '12px', background: 'var(--bg-header)', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
               Agua: {currentOption.recommendation.tempAction}
             </div>
-            <div style={{ fontSize: '10.5px', background: 'var(--bg-header)', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '12px', background: 'var(--bg-header)', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
               Dosis: {currentOption.recommendation.ratioAction}
             </div>
           </div>

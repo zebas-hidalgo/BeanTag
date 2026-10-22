@@ -450,7 +450,7 @@ export default function App() {
             }}>BeanTag</span>
             <span style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: '9px',
+              fontSize: '12px',
               fontWeight: '700',
               letterSpacing: '0.08em',
               color: 'var(--color-text-muted)',
@@ -474,11 +474,11 @@ export default function App() {
               {currentUser.picture ? (
                 <img src={currentUser.picture} alt="Avatar" style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
-                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--color-crimson, #BC5449)', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '800' }}>
+                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--color-crimson, #BC5449)', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '800' }}>
                   {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
                 </div>
               )}
-              <span style={{ fontSize: '11.5px', fontWeight: '700', color: 'var(--color-text)', maxWidth: '84px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-text)', maxWidth: '84px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {currentUser.name}
               </span>
               <button onClick={handleLogout} title="Cerrar Sesión" aria-label="Cerrar sesión" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)' }}>
@@ -489,7 +489,7 @@ export default function App() {
             <button 
               className="btn-candy primary"
               onClick={() => setShowAuthModal(true)}
-              style={{ padding: '6px 12px', minHeight: '34px', borderRadius: '9999px', fontSize: '11.5px', fontWeight: '800', margin: 0 }}
+              style={{ padding: '6px 12px', minHeight: '34px', borderRadius: '9999px', fontSize: '12px', fontWeight: '800', margin: 0 }}
             >
               Iniciar Sesión
             </button>
@@ -624,7 +624,7 @@ export default function App() {
                 border: 'none',
                 padding: '4px 10px',
                 borderRadius: '6px',
-                fontSize: '11px',
+                fontSize: '12px',
                 fontWeight: '900',
                 cursor: 'pointer',
                 letterSpacing: '0.5px',

@@ -443,7 +443,7 @@ export function RenderScaChips({ notesStr, maxChips = 4 }) {
         const colors = getScaColorForNote(note);
         return (
           <span key={idx} style={{
-            fontSize: '10px',
+            fontSize: '12px',
             fontWeight: '800',
             padding: '3px 7px',
             borderRadius: '6px',

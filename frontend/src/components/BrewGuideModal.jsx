@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { confirmDialog } from '../utils/confirmDialog';
 import {
   Play,
   Pause,
@@ -233,7 +234,7 @@ function parseStages(recipe) {
     return [
       {
         step: 1,
-        label: 'Bloom e Inmersión (🔒 Válvula CERRADA)',
+        label: 'Bloom e Inmersión (Válvula CERRADA)',
         description: 'Verter con tapa de dispersión y válvula cerrada para desgasificar CO₂ sin fugas.',
         water_g: bloomWater,
         total_water_g: bloomWater,
@@ -244,7 +245,7 @@ function parseStages(recipe) {
       },
       {
         step: 2,
-        label: '1º Vertido Percolación (⚡ Válvula MEDIA 50%)',
+        label: '1º Vertido Percolación (Válvula MEDIA 50%)',
         description: 'Abrir válvula al 50% (~2-2.5 ml/s) manteniendo la columna de agua estable.',
         water_g: pulse1Water,
         total_water_g: bloomWater + pulse1Water,
@@ -255,7 +256,7 @@ function parseStages(recipe) {
       },
       {
         step: 3,
-        label: '2º Vertido & Caída Final (🔓 Válvula 100% ABIERTA)',
+        label: '2º Vertido & Caída Final (Válvula 100% ABIERTA)',
         description: 'Verter el agua restante y abrir válvula al 100% para un drenaje completo y limpio.',
         water_g: pulse2Water,
         total_water_g: totalWater,
@@ -806,10 +807,10 @@ export default function BrewGuideModal({
   }, []);
 
   // Handler: Safe Close
-  const handleCloseModal = useCallback(() => {
+  const handleCloseModal = useCallback(async () => {
     cancelSpeech();
     if (isActive) {
-      if (typeof window !== 'undefined' && window.confirm('¿Deseas salir del asistente de extracción? El tiempo en curso se perderá.')) {
+      if (await confirmDialog('¿Deseas salir del asistente de extracción? El tiempo en curso se perderá.', { okText: 'Salir' })) {
         setIsActive(false);
         onClose();
       }
@@ -1135,13 +1136,13 @@ export default function BrewGuideModal({
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
-                  fontSize: '10px',
+                  fontSize: '12px',
                   textTransform: 'uppercase',
                   fontWeight: 800,
                   letterSpacing: '0.06em',
                   color: isVoiceEnabled ? 'var(--barista-accent-mint-text, #065F46)' : 'var(--color-text-muted)'
                 }}>
-                  {isVoiceEnabled ? '🗣️ Asistente de Voz del Barista' : 'Voz Silenciada (Pulsa el botón superior para activar)'}
+                  {isVoiceEnabled ? 'Asistente de Voz del Barista' : 'Voz Silenciada (Pulsa el botón superior para activar)'}
                 </div>
                 <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text)', lineHeight: 1.4, marginTop: '2px' }}>
                   {getStageSpeechText(currentStageIndex, currentStage)}
@@ -1200,7 +1201,7 @@ export default function BrewGuideModal({
                       }}
                     >
                       <Lock size={15} />
-                      <span>🔒 VÁLVULA CERRADA (Bloom / Inmersión)</span>
+                      <span>VÁLVULA CERRADA (Bloom / Inmersión)</span>
                     </div>
                   )}
                   {currentStage.valve === 'half' && (
@@ -1221,7 +1222,7 @@ export default function BrewGuideModal({
                       }}
                     >
                       <Zap size={15} />
-                      <span>⚡ VÁLVULA 50% MEDIA (Caudal Regulado)</span>
+                      <span>VÁLVULA 50% MEDIA (Caudal Regulado)</span>
                     </div>
                   )}
                   {currentStage.valve === 'open' && (
@@ -1242,7 +1243,7 @@ export default function BrewGuideModal({
                       }}
                     >
                       <Unlock size={15} />
-                      <span>🔓 VÁLVULA 100% ABIERTA (Drawdown / Percolación)</span>
+                      <span>VÁLVULA 100% ABIERTA (Drawdown / Percolación)</span>
                     </div>
                   )}
                 </div>
@@ -1274,7 +1275,7 @@ export default function BrewGuideModal({
                   margin: '6px 0 12px'
                 }}
               >
-                <div style={{ fontSize: '11px', color: 'var(--color-text-muted, #8E8E93)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-muted, #8E8E93)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
                   Objetivo de Agua
                 </div>
                 <div
@@ -1404,14 +1405,14 @@ export default function BrewGuideModal({
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '10px', fontWeight: 800, color: isCurrent ? 'var(--color-crimson, #BC5449)' : (isPast ? 'var(--barista-accent-mint-text, #065F46)' : 'var(--color-text-muted, #8E8E93)') }}>
+                      <span style={{ fontSize: '12px', fontWeight: 800, color: isCurrent ? 'var(--color-crimson, #BC5449)' : (isPast ? 'var(--barista-accent-mint-text, #065F46)' : 'var(--color-text-muted, #8E8E93)') }}>
                         #{idx + 1}
                       </span>
                       {isPast && <CheckCircle2 size={12} color="var(--barista-accent-mint, #10B981)" />}
                     </div>
                     <div
                       style={{
-                        fontSize: '11px',
+                        fontSize: '12px',
                         fontWeight: 600,
                         color: isCurrent ? 'var(--color-text, #000000)' : (isPast ? 'var(--barista-accent-mint-text, #065F46)' : 'var(--color-text-muted, #8E8E93)'),
                         whiteSpace: 'nowrap',
@@ -1421,7 +1422,7 @@ export default function BrewGuideModal({
                     >
                       {stg.label}
                     </div>
-                    <div style={{ fontSize: '10px', color: 'var(--color-text-muted, #8E8E93)', fontFamily: 'var(--font-mono, monospace)' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-muted, #8E8E93)', fontFamily: 'var(--font-mono, monospace)' }}>
                       +{stg.water_g}g ({formatTime(stg.duration)})
                     </div>
                   </div>
@@ -1717,9 +1718,9 @@ export default function BrewGuideModal({
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <ItemIcon size={14} color={item.iconColor} />
-                          <span style={{ fontSize: '11.5px', fontWeight: 700 }}>{item.label}</span>
+                          <span style={{ fontSize: '12px', fontWeight: 700 }}>{item.label}</span>
                         </div>
-                        <span style={{ fontSize: '10px', color: isSelected ? 'inherit' : 'var(--color-text-muted, #8E8E93)' }}>{item.desc}</span>
+                        <span style={{ fontSize: '12px', color: isSelected ? 'inherit' : 'var(--color-text-muted, #8E8E93)' }}>{item.desc}</span>
                       </button>
                     );
                   })}
@@ -1767,9 +1768,9 @@ export default function BrewGuideModal({
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <ItemIcon size={14} color={item.iconColor} />
-                          <span style={{ fontSize: '11.5px', fontWeight: 700 }}>{item.label}</span>
+                          <span style={{ fontSize: '12px', fontWeight: 700 }}>{item.label}</span>
                         </div>
-                        <span style={{ fontSize: '10px', color: isSelected ? 'inherit' : 'var(--color-text-muted, #8E8E93)' }}>{item.desc}</span>
+                        <span style={{ fontSize: '12px', color: isSelected ? 'inherit' : 'var(--color-text-muted, #8E8E93)' }}>{item.desc}</span>
                       </button>
                     );
                   })}
@@ -1817,9 +1818,9 @@ export default function BrewGuideModal({
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <ItemIcon size={14} color={item.iconColor} />
-                          <span style={{ fontSize: '11.5px', fontWeight: 700 }}>{item.label}</span>
+                          <span style={{ fontSize: '12px', fontWeight: 700 }}>{item.label}</span>
                         </div>
-                        <span style={{ fontSize: '10px', color: isSelected ? 'inherit' : 'var(--color-text-muted, #8E8E93)' }}>{item.desc}</span>
+                        <span style={{ fontSize: '12px', color: isSelected ? 'inherit' : 'var(--color-text-muted, #8E8E93)' }}>{item.desc}</span>
                       </button>
                     );
                   })}
@@ -1844,7 +1845,7 @@ export default function BrewGuideModal({
                 </span>
                 <span
                   style={{
-                    fontSize: '11px',
+                    fontSize: '12px',
                     fontWeight: 700,
                     padding: '2px 8px',
                     borderRadius: '6px',
@@ -1859,7 +1860,7 @@ export default function BrewGuideModal({
                       : '1px solid var(--barista-accent-danger, #EF4444)'
                   }}
                 >
-                  {sensoryCorrection.diagnosis === 'balanced' ? '⭐ Extracción En Punto' : (sensoryCorrection.diagnosis === 'sub-extracted' ? '⚠️ Sub-extracción' : '⚠️ Sobre-extracción')}
+                  {sensoryCorrection.diagnosis === 'balanced' ? 'Extracción En Punto' : (sensoryCorrection.diagnosis === 'sub-extracted' ? 'Sub-extracción' : 'Sobre-extracción')}
                 </span>
               </div>
 
@@ -1874,14 +1875,14 @@ export default function BrewGuideModal({
                     border: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--color-text-muted, #8E8E93)', fontWeight: 600 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--color-text-muted, #8E8E93)', fontWeight: 600 }}>
                     <Sliders size={14} color="var(--color-crimson, #BC5449)" />
                     <span>Molino ({activeGrinderConfig?.name || 'Dial'})</span>
                   </div>
                   <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-text, #000000)', marginTop: '4px', wordBreak: 'break-word' }}>
                     {sensoryCorrection.newGrindText}
                   </div>
-                  <div style={{ fontSize: '11.5px', marginTop: '2px', fontWeight: 700, color: sensoryCorrection.clickDelta > 0 ? 'var(--barista-accent-mint-text, #065F46)' : (sensoryCorrection.clickDelta < 0 ? 'var(--barista-accent-honey-text, #92400E)' : 'var(--color-text-muted, #8E8E93)') }}>
+                  <div style={{ fontSize: '12px', marginTop: '2px', fontWeight: 700, color: sensoryCorrection.clickDelta > 0 ? 'var(--barista-accent-mint-text, #065F46)' : (sensoryCorrection.clickDelta < 0 ? 'var(--barista-accent-honey-text, #92400E)' : 'var(--color-text-muted, #8E8E93)') }}>
                     {sensoryCorrection.clickDelta > 0
                       ? `+${sensoryCorrection.clickDelta} clics (Más gruesa)`
                       : (sensoryCorrection.clickDelta < 0
@@ -1899,14 +1900,14 @@ export default function BrewGuideModal({
                     border: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--color-text-muted, #8E8E93)', fontWeight: 600 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--color-text-muted, #8E8E93)', fontWeight: 600 }}>
                     <Thermometer size={14} color="var(--color-crimson, #BC5449)" />
                     <span>Temperatura de Agua</span>
                   </div>
                   <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-text, #000000)', marginTop: '4px' }}>
                     {sensoryCorrection.newTemp}°C
                   </div>
-                  <div style={{ fontSize: '11.5px', marginTop: '2px', fontWeight: 700, color: sensoryCorrection.tempDelta > 0 ? 'var(--barista-accent-honey-text, #92400E)' : (sensoryCorrection.tempDelta < 0 ? 'var(--barista-accent-cryo, #0284C7)' : 'var(--color-text-muted, #8E8E93)') }}>
+                  <div style={{ fontSize: '12px', marginTop: '2px', fontWeight: 700, color: sensoryCorrection.tempDelta > 0 ? 'var(--barista-accent-honey-text, #92400E)' : (sensoryCorrection.tempDelta < 0 ? 'var(--barista-accent-cryo, #0284C7)' : 'var(--color-text-muted, #8E8E93)') }}>
                     {sensoryCorrection.tempDelta > 0
                       ? `+${sensoryCorrection.tempDelta}°C (Mayor extracción)`
                       : (sensoryCorrection.tempDelta < 0
