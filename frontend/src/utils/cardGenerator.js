@@ -15,10 +15,10 @@ import { getScaWheelIcon, cleanNotesString, getScaCategory, STYLE_SCA_ICONS, dra
 export { parseGrindToMicrons } from './grinders';
 import { parseGrindToMicrons, GRINDERS } from './grinders';
 import { drawCardAsset, drawMetricAsset, ensureCardAssetsLoaded } from './ticketIconKits';
-import { TREND_STYLES, TREND_THEMES, drawTrendCard } from './trendCards';
+import { TREND_STYLES, TREND_THEMES, drawTrendCard, drawTrendMenu, trendMenuSize, drawTrendSticker } from './trendCards';
 
 // 2027 trend styles (squishy, stretch, zine, vhs, lata) render their own feed/story cards.
-// Menu and sticker formats reuse the closest classic style.
+// Menu and sticker formats have their own trend layouts too (see trendCards.js).
 export const TREND_CARD_STYLES = TREND_STYLES;
 function legacyStyleOf(style) {
   return TREND_THEMES[style] ? TREND_THEMES[style].legacy : style;
@@ -1540,13 +1540,37 @@ export async function generateRecipeCardImage(recipe, template = 'studio', incRe
  * Upgraded with bigger fonts and custom SCA vector icon badges per note.
  */
 export async function generateCoffeeMenuCardImage(batches, template = 'studio') {
-  const style = legacyStyleOf(normalizeCardStyle(template));
+  const requestedStyle = normalizeCardStyle(template);
+  const style = legacyStyleOf(requestedStyle);
   const theme = getCardTheme(style);
 
   await ensureFontsLoaded();
 
   const validBatches = Array.isArray(batches) ? batches.filter(b => (b.remaining_doses || b.weight_current_g || 0) > 0) : [];
   const displayList = validBatches.length > 0 ? validBatches : (Array.isArray(batches) ? batches.slice(0, 10) : []);
+
+  if (TREND_STYLES.includes(requestedStyle)) {
+    const items = displayList.map(b => {
+      const doses = b.remaining_doses !== undefined && b.remaining_doses !== null ? b.remaining_doses : 0;
+      const grams = b.remaining_weight_g || b.weight_current_g;
+      const scaNum = parseFloat(b.sca_score);
+      return {
+        name: stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café'),
+        roaster: stripEmojis(b.roaster || ''),
+        origin: stripEmojis(b.origin || ''),
+        process: stripEmojis(b.process || ''),
+        sca: Number.isFinite(scaNum) && scaNum > 0 ? (scaNum % 1 ? scaNum.toFixed(1) : scaNum) : null,
+        tags: extractFlavorTags(cleanNotesString(b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '')),
+        stock: doses > 0 ? `${doses} ${doses === 1 ? 'TUBO' : 'TUBOS'}` : (grams ? `~${Math.round(grams)}g` : '')
+      };
+    });
+    const size = trendMenuSize(requestedStyle, items.length);
+    const tcanvas = document.createElement('canvas');
+    tcanvas.width = size.width;
+    tcanvas.height = size.height;
+    drawTrendMenu(tcanvas.getContext('2d'), requestedStyle, items, size.width, size.height);
+    return tcanvas.toDataURL('image/png', 1.0);
+  }
 
   const canvas = document.createElement('canvas');
   const scaleFactor = 2;
@@ -1815,7 +1839,8 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
   ctx.scale(scale, scale);
   await ensureFontsLoaded();
 
-  const style = legacyStyleOf(normalizeCardStyle(options.template));
+  const requestedStyle = normalizeCardStyle(options.template);
+  const style = legacyStyleOf(requestedStyle);
   const theme = getCardTheme(style);
   const transparent = Boolean(options.transparent);
   const includeRecipe = Boolean(options.includeRecipe);
@@ -1844,6 +1869,34 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
 
   const rawSca = item.sca_score || item.score;
   const scaScore = (rawSca && !isNaN(parseFloat(rawSca)) && parseFloat(rawSca) > 0) ? parseFloat(rawSca) : null;
+
+  if (TREND_STYLES.includes(requestedStyle)) {
+    const sd = sensoryData || {};
+    const ratingNum = parseFloat(item.rating);
+    ctx.save();
+    ctx.scale(1 / scale, 1 / scale);
+    drawTrendSticker(ctx, requestedStyle, {
+      name: coffeeName,
+      roaster,
+      origin,
+      process,
+      variety,
+      altitude,
+      sca: scaScore,
+      tags: flavorTags,
+      method: rawMethodStr.toLowerCase().includes('pulsar') ? 'Pulsar' : rawMethodStr.replace(/\s*\(filtrado\)/i, ''),
+      coffeeG,
+      waterG,
+      ratio: String(ratioStr).replace('1:', ''),
+      temp: tempClean,
+      balanceLabel: sd.balanceLabel,
+      bodyLabel: sd.bodyLabel,
+      extractionLabel: sd.extractionLabel,
+      ratingLabel: Number.isFinite(ratingNum) && ratingNum > 0 ? `★ ${ratingNum % 1 ? ratingNum.toFixed(1) : ratingNum}/5` : null
+    }, { vertical: isVertical, transparent, includeRecipe }, baseW * scale, baseH * scale);
+    ctx.restore();
+    return canvas.toDataURL('image/png', 1.0);
+  }
 
   const pad = transparent ? 14 : 16;
   const cardX = pad;
