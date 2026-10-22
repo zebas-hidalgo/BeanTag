@@ -16,6 +16,8 @@ tar --exclude=node_modules \
     --exclude='backend/.env' \
     --exclude='backups' \
     --exclude=.superpowers \
+    --exclude=.claude \
+    --exclude='AUDITORIA_*.md' \
     -czf "/tmp/${ARCHIVE_NAME}" -C . .
 
 echo "🚀 2. Subiendo paquete a VPS (${VPS_IP})..."
