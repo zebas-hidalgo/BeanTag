@@ -41,6 +41,9 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
   const [doseWeight, setDoseWeight] = useState(batchToEdit ? batchToEdit.dose_weight || '20.0g' : '20.0g');
   const [storageType, setStorageType] = useState(batchToEdit ? (batchToEdit.storage_type || 'tubes') : 'tubes');
   const [bagWeight, setBagWeight] = useState(batchToEdit ? (batchToEdit.total_weight_g || 250) : 250);
+  const [remainingBagWeight, setRemainingBagWeight] = useState(
+    batchToEdit ? (batchToEdit.remaining_weight_g !== null && batchToEdit.remaining_weight_g !== undefined ? batchToEdit.remaining_weight_g : batchToEdit.total_weight_g || 250) : 250
+  );
   const [generatedUrl, setGeneratedUrl] = useState('');
   
   const [origin, setOrigin] = useState(batchToEdit ? batchToEdit.origin || '' : '');
@@ -233,6 +236,14 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
       origin, roast_level: roastLevel, roast_date: roastDate, freeze_date: freezeDate,
       sca_score: scaScore ? parseFloat(scaScore) : null
     };
+
+    if (batchToEdit && storageType === 'bag') {
+      const remNum = parseFloat(remainingBagWeight);
+      if (!isNaN(remNum) && remNum >= 0) {
+        payload.remaining_weight_g = remNum;
+        payload.remaining_doses = Math.max(0, Math.round(remNum / doseWeightNum));
+      }
+    }
 
     const url = batchToEdit ? apiUrl(`api/batches/${batchToEdit.id}`) : apiUrl('api/batches');
     const method = batchToEdit ? 'PUT' : 'POST';
@@ -791,10 +802,10 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
               ) : (
                 <>
                   <div className="form-group" style={{ marginBottom: '10px' }}>
-                    <label htmlFor="bt-batchcreator-bag" className="barista-label">Peso de la Bolsa (g)</label>
+                    <label htmlFor="bt-batchcreator-bag" className="barista-label">Peso Inicial de la Bolsa (g)</label>
                     <input
                       id="bt-batchcreator-bag"
-                      aria-label="Peso de la Bolsa (g)"
+                      aria-label="Peso Inicial de la Bolsa (g)"
                       className="candy-input"
                       value={bagWeight}
                       onChange={(e) => setBagWeight(e.target.value)}
@@ -822,6 +833,25 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                       ))}
                     </div>
                   </div>
+
+                  {batchToEdit && (
+                    <div className="form-group" style={{ marginBottom: '10px' }}>
+                      <label htmlFor="bt-batchcreator-rem-bag" className="barista-label">Stock Actual Restante en Bolsa (g)</label>
+                      <input
+                        id="bt-batchcreator-rem-bag"
+                        aria-label="Stock Actual Restante en Bolsa (g)"
+                        className="candy-input"
+                        value={remainingBagWeight}
+                        onChange={(e) => setRemainingBagWeight(e.target.value)}
+                        type="number"
+                        inputMode="decimal"
+                        style={{ minHeight: '44px', fontSize: '15px', fontWeight: 'bold' }}
+                      />
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                        ⚖️ Ajusta este valor si pesaste la bolsa en tu balanza para calibrar el stock exacto.
+                      </div>
+                    </div>
+                  )}
                   <div className="form-group" style={{ marginBottom: '6px' }}>
                     <label htmlFor="bt-batchcreator-dose" className="barista-label">Dosis Habitual por Extracción (g)</label>
                     <input

@@ -323,11 +323,14 @@ export function generateCoffeeMenuText(batches) {
     const sca = b.sca_score ? ` | SCA ${b.sca_score}` : '';
     const rawNotes = cleanNotesString(b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '');
 
+    const isBag = b.storage_type === 'bag';
     const doseCount = b.remaining_doses !== undefined && b.remaining_doses !== null ? b.remaining_doses : 0;
     const estWeight = Math.round(b.remaining_weight_g || (doseCount * (parseFloat(b.dose_weight) || 20)));
-    const doses = doseCount > 0
-      ? `${doseCount} tubos (~${estWeight}g)`
-      : (b.weight_current_g ? `${b.weight_current_g}g` : `${doseCount} tubos (~${estWeight}g)`);
+    const doses = isBag
+      ? `Bolsa con ${estWeight}g (~${doseCount} tazas)`
+      : (doseCount > 0
+          ? `${doseCount} tubos (~${estWeight}g)`
+          : (b.weight_current_g ? `${b.weight_current_g}g` : `${doseCount} tubos (~${estWeight}g)`));
 
     text += `*${num}. ${name}*${roaster}\n`;
     if (origin || altitude) text += `   🌍 ${origin}${altitude}`.trimEnd() + '\n';
