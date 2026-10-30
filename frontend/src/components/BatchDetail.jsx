@@ -20,12 +20,12 @@ const BrewGuideModal = lazy(() => import('./BrewGuideModal'));
 const getRoastDotColor = (roast) => {
   const r = String(roast || '').toLowerCase();
   if (r.includes('oscuro') || r.includes('dark') || r.includes('frances') || r.includes('italiano')) {
-    return '#475569';
+    return 'var(--ink-muted)';
   }
   if (r.includes('medio') || r.includes('medium')) {
-    return '#B45309';
+    return 'var(--accent-strong)';
   }
-  return '#D97706';
+  return 'var(--accent)';
 };
 
 const calculateMicrons = (rot, num, click) => {
@@ -198,10 +198,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         setShareImage(dataUrl);
         setShareTemplate(templ);
         setShareIncludeRecipe(incRecipe);
-        setShareStatus('✅ Sticker Story generado con éxito');
+        setShareStatus('Sticker Story generado con éxito');
       } catch (err) {
         console.error("Sticker generation error:", err);
-        setShareStatus('❌ Error: ' + err.message);
+        setShareStatus('Error: ' + err.message);
       }
       return;
     }
@@ -212,10 +212,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         const dataUrl = await generateCoffeeMenuCardImage(targetList, templ);
         setShareImage(dataUrl);
         setShareTemplate(templ);
-        setShareStatus('✅ Carta de cafés generada con éxito');
+        setShareStatus('Carta de cafés generada con éxito');
       } catch (err) {
         console.error("Menu card generation error:", err);
-        setShareStatus('❌ Error: ' + err.message);
+        setShareStatus('Error: ' + err.message);
       }
       return;
     }
@@ -225,10 +225,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       setShareImage(dataUrl);
       setShareTemplate(templ);
       setShareIncludeRecipe(incRecipe);
-      setShareStatus('✅ Ticket generado con éxito');
+      setShareStatus('Ticket generado con éxito');
     } catch (err) {
       console.error("Card generation error:", err);
-      setShareStatus('❌ Error: ' + err.message);
+      setShareStatus('Error: ' + err.message);
     }
   };
 
@@ -238,8 +238,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       const text = generateCoffeeMenuText(targetList);
       const success = await copyToClipboard(text);
       if (success) {
-        setShareStatus('📋 ¡Carta de cafés copiada al portapapeles!');
-        if (showToast) showToast('📋 Carta de cafés copiada en formato texto.', { type: 'success' });
+        setShareStatus('¡Carta de cafés copiada al portapapeles!');
+        if (showToast) showToast('Carta de cafés copiada en formato texto.', { type: 'success' });
       }
     } else {
       const text = `☕ *${batch.name}* (${batch.roaster || 'Specialty'})\n` +
@@ -249,8 +249,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         (shareIncludeRecipe ? `\n🧾 *Receta:* ${method} • Dosis: ${doseInG}g • Ratio 1:${ratioVal} • Molienda: ${getGrindString()} • Temp: ${waterTemp}°C` : '');
       const success = await copyToClipboard(text);
       if (success) {
-        setShareStatus('📋 Ficha copiada al portapapeles');
-        if (showToast) showToast('📋 Ficha copiada.', { type: 'success' });
+        setShareStatus('Ficha copiada al portapapeles');
+        if (showToast) showToast('Ficha copiada.', { type: 'success' });
       }
     }
   };
@@ -278,13 +278,13 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           title: shareScope === 'menu' ? 'Carta de Cafés • BeanTag' : `Ficha de ${batch.name}`,
           text: shareScope === 'menu' ? 'Carta de cafés de especialidad disponibles en cava' : `Ficha de café de especialidad: ${batch.name}`
         });
-        setShareStatus('✅ Compartido con éxito');
+        setShareStatus('Compartido con éxito');
       } else {
         const link = document.createElement('a');
         link.download = filename;
         link.href = shareImage;
         link.click();
-        setShareStatus('📥 Imagen descargada');
+        setShareStatus('Imagen descargada');
       }
     } catch (err) {
       if (err.name !== 'AbortError') {
@@ -292,7 +292,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         link.download = shareScope === 'menu' ? `Carta_Cafes_BeanTag_${Date.now()}.png` : `${batch.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}_ficha.png`;
         link.href = shareImage;
         link.click();
-        setShareStatus('📥 Imagen descargada');
+        setShareStatus('Imagen descargada');
       }
     }
   };
@@ -356,12 +356,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       setAiRecommendation(data);
       if (data._source === 'barista_fallback') {
         if (showToast) {
-          showToast('⚡ Receta calculada con Motor Barista Físico (sin depender de internet)', { type: 'success', duration: 4500 });
+          showToast('Receta calculada con Motor Barista Físico (sin depender de internet)', { type: 'success', duration: 4500 });
         }
       } else if (data._source === 'groq') {
-        if (showToast) showToast('¡Recomendación multivariable generada por Groq AI! ⚡', { type: 'success', duration: 3000 });
+        if (showToast) showToast('¡Recomendación multivariable generada por Groq AI! ', { type: 'success', duration: 3000 });
       } else {
-        if (showToast) showToast('¡Recomendación multivariable generada por Gemini AI! 🧠', { type: 'success', duration: 2500 });
+        if (showToast) showToast('¡Recomendación multivariable generada por Gemini AI! ', { type: 'success', duration: 2500 });
       }
     })
     .catch(err => {
@@ -611,7 +611,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     });
 
     setSelectedFamousRecipe(famous.id);
-    if (showToast) showToast(`🏆 Receta "${famous.name}" aplicada al formulario.`, { type: 'success', duration: 3000 });
+    if (showToast) showToast(`Receta "${famous.name}" aplicada al formulario.`, { type: 'success', duration: 3000 });
   };
 
   useEffect(() => {
@@ -941,7 +941,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             data: batchUrl
           }]
         });
-        showToast('🎉 Etiqueta NFC vinculada y URL copiada al portapapeles.', { type: 'success', duration: 3500 });
+        showToast('Etiqueta NFC vinculada y URL copiada al portapapeles.', { type: 'success', duration: 3500 });
         return;
       } catch (error) {
         // Fallback handled below
@@ -949,7 +949,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     }
 
     if (copied) {
-      showToast(`📋 URL del lote copiada al portapapeles: ${batchUrl}`, { type: 'success', duration: 4000 });
+      showToast(`URL del lote copiada al portapapeles: ${batchUrl}`, { type: 'success', duration: 4000 });
     } else {
       showToast(`URL del lote: ${batchUrl}`, { type: 'info', duration: 4000 });
     }
@@ -1103,7 +1103,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   if (batch.error) return (
     <div style={{ textAlign: 'center', paddingTop: '10px' }}>
       <div className="candy-card static" style={{ padding: '20px' }}>
-        <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-crimson)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>⚠️ {batch.error}</h3>
+        <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-crimson)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>{batch.error}</h3>
         <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
           No pudimos encontrar los detalles del café especificado.
         </p>
@@ -1144,7 +1144,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     if (restingDays <= 5) {
       degasStatus = {
         label: 'Degas Insuficiente',
-        color: '#E53E3E',
+        color: 'var(--bad)',
         description: 'Poco reposo. El CO₂ atrapado puede producir sabores metálicos o agrios.'
       };
     } else if (restingDays >= 6 && restingDays <= 20) {
@@ -1312,12 +1312,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           {batch.altitude && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-header)', border: '1px solid var(--border-color)', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '800', color: 'var(--color-crimson)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-header)', border: '1px solid var(--border-color)', padding: '4px 10px', borderRadius: 'var(--r-control)', fontSize: '12px', fontWeight: '600', color: 'var(--color-crimson)' }}>
               <Mountain size={12} />
               <span>{batch.altitude}</span>
             </div>
           )}
-          {isLowStock && <span className="mono-lbl-tag" style={{ background: '#E53E3E', fontSize: '12px', padding: '3px 8px' }}>¡ÚLTIMOS!</span>}
+          {isLowStock && <span className="mono-lbl-tag" style={{ background: 'var(--bad)', fontSize: '12px', padding: '3px 8px' }}>¡ÚLTIMOS!</span>}
         </div>
       </div>
 
@@ -1326,7 +1326,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         <div style={{
           background: 'linear-gradient(135deg, rgba(234, 88, 12, 0.08) 0%, rgba(220, 38, 38, 0.05) 100%)',
           border: '1.5px solid rgba(234, 88, 12, 0.25)',
-          borderRadius: '12px',
+          borderRadius: 'var(--r-control)',
           padding: '10px 14px',
           marginBottom: '12px',
           display: 'flex',
@@ -1337,7 +1337,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Eye size={18} strokeWidth={2} aria-hidden="true" />
             <div>
-              <div style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text-main)' }}>
+              <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text-main)' }}>
                 Modo Invitado (NFC)
               </div>
               <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
@@ -1443,29 +1443,29 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Sparkles size={15} strokeWidth={2} aria-hidden="true" />
-                  <span style={{ fontWeight: '900', fontSize: '12px', textTransform: 'uppercase', fontFamily: 'var(--font-heading)' }}>
+                  <span style={{ fontWeight: '700', fontSize: '12px', textTransform: 'uppercase', fontFamily: 'var(--font-heading)' }}>
                     Asistencia IA Barista ({method})
                   </span>
                 </div>
-                <span style={{ fontSize: '12px', fontWeight: '900', color: 'var(--color-crimson)', background: 'var(--bg-header)', padding: '2px 8px', borderRadius: '6px' }}>{doseInG}g</span>
+                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-crimson)', background: 'var(--bg-header)', padding: '2px 8px', borderRadius: 'var(--r-control)' }}>{doseInG}g</span>
               </div>
 
-              {aiError && <div style={{ color: 'var(--barista-accent-danger-text, #E53E3E)', fontSize: '12px', fontWeight: 'bold', marginTop: '8px' }}>⚠️ {aiError}</div>}
+              {aiError && <div style={{ color: 'var(--barista-accent-danger-text)', fontSize: '12px', fontWeight: 'bold', marginTop: '8px' }}>{aiError}</div>}
 
               {aiRecommendation ? (
-                <div style={{ marginTop: '12px', padding: '12px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ marginTop: '12px', padding: '12px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: 'var(--r-control)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {/* Badges de Parámetros Clave */}
                   {/* Badges de Parámetros Clave */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', textAlign: 'center' }}>
-                    <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                    <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
                       <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Ratio / Agua</div>
                       <strong style={{ fontSize: '12px', color: 'var(--color-crimson)' }}>{aiRecommendation.ratio} ({aiRecommendation.water_total_g || Math.round(doseInG * 15)}g)</strong>
                     </div>
-                    <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                    <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
                       <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Temp</div>
                       <strong style={{ fontSize: '12px' }}>{String(aiRecommendation.temperature || 93).replace(/°C/i, '')}°C</strong>
                     </div>
-                    <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                    <div style={{ background: 'var(--bg-card)', padding: '8px 6px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
                       <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Tiempo</div>
                       <strong style={{ fontSize: '12px' }}>{aiRecommendation.brew_time}</strong>
                     </div>
@@ -1473,12 +1473,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
                   {/* Chips resumen multivariable */}
                   <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', fontSize: '12px' }}>
-                    {aiRecommendation.is_frozen && <span style={{ background: 'var(--barista-accent-cryo-bg)', color: 'var(--barista-accent-cryo-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>❄️ Frozen Dosing (-18°C)</span>}
-                    {aiRecommendation.days_since_roast !== null && <span style={{ background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Timer size={10} /> Reposo: Día {aiRecommendation.days_since_roast}</span>}
-                    {aiRecommendation.water_profile && <span style={{ background: 'var(--barista-accent-cryo-bg)', color: 'var(--barista-accent-cryo-text)', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Droplet size={10} /> {aiRecommendation.water_profile}</span>}
-                    {aiRecommendation.active_grinder_dial && <span style={{ background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><SlidersHorizontal size={10} /> {aiRecommendation.active_grinder_dial.grinder_name}: {aiRecommendation.active_grinder_dial.dial}</span>}
+                    {aiRecommendation.is_frozen && <span style={{ background: 'var(--barista-accent-cryo-bg)', color: 'var(--barista-accent-cryo-text)', padding: '2px 6px', borderRadius: 'var(--r-xs)', fontWeight: '700' }}>Frozen Dosing (-18°C)</span>}
+                    {aiRecommendation.days_since_roast !== null && <span style={{ background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', padding: '2px 6px', borderRadius: 'var(--r-xs)', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Timer size={10} /> Reposo: Día {aiRecommendation.days_since_roast}</span>}
+                    {aiRecommendation.water_profile && <span style={{ background: 'var(--barista-accent-cryo-bg)', color: 'var(--barista-accent-cryo-text)', padding: '2px 6px', borderRadius: 'var(--r-xs)', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Droplet size={10} /> {aiRecommendation.water_profile}</span>}
+                    {aiRecommendation.active_grinder_dial && <span style={{ background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: 'var(--r-xs)', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><SlidersHorizontal size={10} /> {aiRecommendation.active_grinder_dial.grinder_name}: {aiRecommendation.active_grinder_dial.dial}</span>}
                     {aiRecommendation._source === 'barista_fallback' && (
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--barista-instr-bg, #FEF3C7)', border: '1px solid var(--barista-instr-border, #FDE68A)', color: 'var(--barista-accent-honey, #D97706)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '800' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--barista-instr-bg)', border: '1px solid var(--barista-instr-border)', color: 'var(--barista-accent-honey)', padding: '4px 10px', borderRadius: 'var(--r-card)', fontSize: '12px', fontWeight: '600' }}>
                         <Zap size={13} />
                         <span>Motor Barista Físico (Micrones & Clics Calculados)</span>
                       </div>
@@ -1511,18 +1511,18 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                           const totalW = p.total_water_g !== undefined ? parseFloat(p.total_water_g) : (runningInteractive + stepW);
                           runningInteractive = totalW;
                           return (
-                            <div key={idx} style={{ padding: '8px 10px', background: 'var(--bg-card)', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '12px' }}>
+                            <div key={idx} style={{ padding: '8px 10px', background: 'var(--bg-card)', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)', fontSize: '12px' }}>
                               {p.valve === 'closed' && (
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '800', background: 'var(--barista-accent-danger-bg)', color: 'var(--barista-accent-danger-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>🔒 VÁLVULA CERRADA (Bloom + Inmersión)</div>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: 'var(--r-xs)', fontSize: '12px', fontWeight: '600', background: 'var(--barista-accent-danger-bg)', color: 'var(--barista-accent-danger-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>VÁLVULA CERRADA (Bloom + Inmersión)</div>
                               )}
                               {p.valve === 'open' && (
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '800', background: 'var(--barista-accent-mint-bg)', color: 'var(--barista-accent-mint-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>🔓 VÁLVULA ABIERTA (Percolación)</div>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: 'var(--r-xs)', fontSize: '12px', fontWeight: '600', background: 'var(--barista-accent-mint-bg)', color: 'var(--barista-accent-mint-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>VÁLVULA ABIERTA (Percolación)</div>
                               )}
                               {p.valve === 'half' && (
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '800', background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>⚡ VÁLVULA MEDIA (Flujo Regulado 50%)</div>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: 'var(--r-xs)', fontSize: '12px', fontWeight: '600', background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>VÁLVULA MEDIA (Flujo Regulado 50%)</div>
                               )}
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-                                <span style={{ fontWeight: '800', color: 'var(--color-crimson)', fontSize: '12px', wordBreak: 'break-word', flex: '1 1 180px' }}>
+                                <span style={{ fontWeight: '600', color: 'var(--color-crimson)', fontSize: '12px', wordBreak: 'break-word', flex: '1 1 180px' }}>
                                   {p.step || idx + 1}. {p.label}
                                 </span>
                                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -1535,12 +1535,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                                 </span>
                                 <span style={{
                                   fontSize: '12px',
-                                  fontWeight: '900',
-                                  color: 'var(--barista-accent-honey, #D97706)',
-                                  background: 'var(--barista-bg-elevated, #F1F5F9)',
+                                  fontWeight: '700',
+                                  color: 'var(--barista-accent-honey)',
+                                  background: 'var(--barista-bg-elevated)',
                                   padding: '2px 8px',
-                                  borderRadius: '4px',
-                                  border: '1px solid var(--barista-border-hairline, var(--border-color))',
+                                  borderRadius: 'var(--r-xs)',
+                                  border: '1px solid var(--barista-border-hairline)',
                                   fontFamily: 'var(--font-mono)',
                                   display: 'inline-flex',
                                   alignItems: 'center',
@@ -1559,21 +1559,21 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
                   {/* Sub-Contenido: Molinos */}
                   {aiSubTab === 'grinders' && (
-                    <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-card)', padding: '10px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
                       {aiRecommendation.active_grinder_dial && (
-                        <div style={{ background: 'var(--bg-header)', border: '1.5px solid var(--color-crimson)', borderRadius: '6px', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ background: 'var(--bg-header)', border: '1.5px solid var(--color-crimson)', borderRadius: 'var(--r-control)', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div>
-                            <div style={{ fontSize: '12px', textTransform: 'uppercase', fontWeight: '800', color: 'var(--color-crimson)' }}>
+                            <div style={{ fontSize: '12px', textTransform: 'uppercase', fontWeight: '600', color: 'var(--color-crimson)' }}>
                               Tu Molino: {aiRecommendation.active_grinder_dial.grinder_name}
                             </div>
-                            <div style={{ fontSize: '13px', fontWeight: '900', fontFamily: 'var(--font-mono)', color: 'var(--color-text)' }}>
+                            <div style={{ fontSize: '13px', fontWeight: '700', fontFamily: 'var(--font-mono)', color: 'var(--color-text)' }}>
                               {aiRecommendation.active_grinder_dial.dial}
                             </div>
                             <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
                               {aiRecommendation.active_grinder_dial.burr_type} • {aiRecommendation.active_grinder_dial.microns}
                             </div>
                           </div>
-                          <span style={{ fontSize: '12px', fontWeight: 'bold', background: 'var(--color-crimson)', color: '#FFF', padding: '3px 8px', borderRadius: '4px' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 'bold', background: 'var(--color-crimson)', color: 'var(--on-accent)', padding: '3px 8px', borderRadius: 'var(--r-xs)' }}>
                             Calibrado 
                           </span>
                         </div>
@@ -1581,7 +1581,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
                       {aiRecommendation.grinders && (
                         <div>
-                          <div style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
                             Matriz Multimolino Completa:
                           </div>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px', fontSize: '12px', borderTop: '1px dashed var(--border-color)', paddingTop: '6px' }}>
@@ -1607,25 +1607,25 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   {aiSubTab === 'physics' && aiRecommendation.physics_analysis && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '6px', fontSize: '12px' }}>
                       {aiRecommendation.physics_analysis.roast_and_density && (
-                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
                           <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '12px' }}>Densidad & Tueste:</strong>
                           <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.roast_and_density}</span>
                         </div>
                       )}
                       {aiRecommendation.physics_analysis.degas_and_rest && (
-                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
                           <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '12px' }}>⏳ Desgasificación (CO₂):</strong>
                           <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.degas_and_rest}</span>
                         </div>
                       )}
                       {aiRecommendation.physics_analysis.burr_and_fines && (
-                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
                           <strong style={{ color: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}><SlidersHorizontal size={11} /> Muelas & Finos:</strong>
                           <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.burr_and_fines}</span>
                         </div>
                       )}
                       {aiRecommendation.physics_analysis.extraction_strategy && (
-                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
                           <strong style={{ color: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}><Target size={11} /> Estrategia Hidrodinámica:</strong>
                           <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.extraction_strategy}</span>
                         </div>
@@ -1640,8 +1640,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     </ol>
                   )}
 
-                  <button type="button" className="btn-candy primary" onClick={() => handleStartBrewGuide(aiRecommendation)} style={{ width: '100%', marginBottom: '8px', minHeight: '44px', backgroundColor: 'var(--barista-accent-honey, #D97706)', color: '#FFFFFF', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <Play size={15} fill="#FFFFFF" />
+                  <button type="button" className="btn-candy primary" onClick={() => handleStartBrewGuide(aiRecommendation)} style={{ width: '100%', marginBottom: '8px', minHeight: '44px', backgroundColor: 'var(--barista-accent-honey)', color: 'var(--on-accent)', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <Play size={15} fill="currentColor" />
                     <span>Iniciar Extracción (Modo Barista)</span>
                   </button>
 
@@ -1660,7 +1660,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     <span>Generando receta con Thinking Mode...</span>
                   ) : (
                     <>
-                      <Sparkles size={14} color="var(--barista-accent-honey, #D97706)" />
+                      <Sparkles size={14} color="var(--barista-accent-honey)" />
                       <span>Diseñar Receta IA</span>
                     </>
                   )}
@@ -1702,24 +1702,24 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               <div style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>Evaluación Sensorial</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginBottom: '10px' }}>
                 <div>
-                  <label className="barista-label">Balance</label>
-                  <select aria-label="Balance" className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryBalance} onChange={e => setSensoryBalance(e.target.value)}>
+                  <label htmlFor="bt-batchdetail-1" className="barista-label">Balance</label>
+                  <select id="bt-batchdetail-1" aria-label="Balance" className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryBalance} onChange={e => setSensoryBalance(e.target.value)}>
                     <option value="Dulce">Dulce</option>
                     <option value="Ácido">Ácido</option>
                     <option value="Amargo">Amargo</option>
                   </select>
                 </div>
                 <div>
-                  <label className="barista-label">Cuerpo</label>
-                  <select aria-label="Cuerpo" className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryBody} onChange={e => setSensoryBody(e.target.value)}>
+                  <label htmlFor="bt-batchdetail-2" className="barista-label">Cuerpo</label>
+                  <select id="bt-batchdetail-2" aria-label="Cuerpo" className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryBody} onChange={e => setSensoryBody(e.target.value)}>
                     <option value="Ligero">Ligero</option>
                     <option value="Medio">Medio</option>
                     <option value="Sedoso">Sedoso</option>
                   </select>
                 </div>
                 <div>
-                  <label className="barista-label">Extracción</label>
-                  <select aria-label="Extracción" className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryExtraction} onChange={e => setSensoryExtraction(e.target.value)}>
+                  <label htmlFor="bt-batchdetail-3" className="barista-label">Extracción</label>
+                  <select id="bt-batchdetail-3" aria-label="Extracción" className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryExtraction} onChange={e => setSensoryExtraction(e.target.value)}>
                     <option value="En Punto">En Punto</option>
                     <option value="Sub">Sub (Agrio)</option>
                     <option value="Sobre">Sobre (Amargo)</option>
@@ -1728,8 +1728,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               </div>
 
               <div className="form-group" style={{ margin: 0 }}>
-                <label className="barista-label">Notas de Cata de Extracción</label>
-                <input aria-label="Notas de Cata de Extracción" className="barista-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Muy dulzón, acidez limpia..." />
+                <label htmlFor="bt-batchdetail-4" className="barista-label">Notas de Cata de Extracción</label>
+                <input id="bt-batchdetail-4" aria-label="Notas de Cata de Extracción" className="barista-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Muy dulzón, acidez limpia..." />
               </div>
             </div>
 
@@ -1758,22 +1758,22 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   width: '100%',
                   minHeight: '48px',
                   height: '48px',
-                  backgroundColor: 'var(--accent-honey, #D97706)',
-                  color: '#FFFFFF',
-                  borderRadius: 'var(--radius-md, 12px)',
+                  backgroundColor: 'var(--accent-honey)',
+                  color: 'var(--on-accent)',
+                  borderRadius: 'var(--radius-md)',
                   border: 'none',
                   fontSize: '15px',
-                  fontWeight: '800',
-                  fontFamily: 'var(--font-display, inherit)',
+                  fontWeight: '600',
+                  fontFamily: 'var(--font-display)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
                   cursor: 'pointer',
-                  boxShadow: 'var(--shadow-sm, 0 2px 8px rgba(217, 119, 6, 0.25))'
+                  boxShadow: 'var(--shadow-sm)'
                 }}
               >
-                <Play size={18} fill="#FFFFFF" />
+                <Play size={18} fill="currentColor" />
                 <span>Iniciar Extracción (Modo Barista)</span>
               </button>
 
@@ -1819,10 +1819,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           {/* Banner Última Configuración Exitosa */}
           {lastRecipe && (
             <div className="recipe-target-banner" style={{ marginBottom: '14px' }}>
-              <div style={{ fontSize: '12px', fontWeight: '800', color: 'var(--barista-accent-honey, #D97706)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>
+              <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--barista-accent-honey)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>
                 Última Configuración Exitosa
               </div>
-              <div style={{ fontSize: '14px', fontWeight: '900', fontFamily: 'var(--font-mono)' }}>
+              <div style={{ fontSize: '14px', fontWeight: '700', fontFamily: 'var(--font-mono)' }}>
                 {lastRecipe.method} | {lastRecipe.grind} | {lastRecipe.ratio}
               </div>
               {isOwner ? (
@@ -1840,11 +1840,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           )}
 
           {/* Sub-selector de vista: Linaje Dial-in vs Lista de Recetas */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', padding: '4px', backgroundColor: 'var(--bg-card, rgba(0,0,0,0.2))', borderRadius: '10px', border: '1px solid var(--border-color, rgba(255,255,255,0.08))' }}>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', padding: '4px', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
             <button
               type="button"
               className={`cupertino-segmented-btn ${recipeViewMode === 'timeline' ? 'active' : ''}`}
-              style={{ flex: 1, padding: '8px 12px', minHeight: '38px', fontSize: '12px', fontWeight: '700', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.15s ease', background: recipeViewMode === 'timeline' ? 'var(--color-crimson, #E11D48)' : 'transparent', color: recipeViewMode === 'timeline' ? '#fff' : 'var(--color-text-muted, #94A3B8)' }}
+              style={{ flex: 1, padding: '8px 12px', minHeight: '38px', fontSize: '12px', fontWeight: '700', borderRadius: 'var(--r-control)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', border: 'none', cursor: 'pointer', transition: 'var(--transition-ui)', background: recipeViewMode === 'timeline' ? 'var(--color-crimson)' : 'transparent', color: recipeViewMode === 'timeline' ? '#fff' : 'var(--color-text-muted)' }}
               onClick={() => {
                 if (navigator.vibrate) navigator.vibrate(6);
                 setRecipeViewMode('timeline');
@@ -1856,7 +1856,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             <button
               type="button"
               className={`cupertino-segmented-btn ${recipeViewMode === 'cards' ? 'active' : ''}`}
-              style={{ flex: 1, padding: '8px 12px', minHeight: '38px', fontSize: '12px', fontWeight: '700', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.15s ease', background: recipeViewMode === 'cards' ? 'var(--color-crimson, #E11D48)' : 'transparent', color: recipeViewMode === 'cards' ? '#fff' : 'var(--color-text-muted, #94A3B8)' }}
+              style={{ flex: 1, padding: '8px 12px', minHeight: '38px', fontSize: '12px', fontWeight: '700', borderRadius: 'var(--r-control)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', border: 'none', cursor: 'pointer', transition: 'var(--transition-ui)', background: recipeViewMode === 'cards' ? 'var(--color-crimson)' : 'transparent', color: recipeViewMode === 'cards' ? '#fff' : 'var(--color-text-muted)' }}
               onClick={() => {
                 if (navigator.vibrate) navigator.vibrate(6);
                 setRecipeViewMode('cards');
@@ -1920,18 +1920,18 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             </div>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
               <div className="form-group" style={{ flex: 1, margin: 0 }}>
-                <label style={{ fontSize: '12px' }}>Café (g)</label>
-                <input aria-label="Café (g)" type="number" inputMode="decimal" step="0.5" className="candy-input" value={calcDose} onChange={(e) => { const d = parseFloat(e.target.value) || 0; setCalcDose(d); setCalcWater(Math.round(d * calcRatio)); }} />
+                <label htmlFor="bt-batchdetail-5" style={{ fontSize: '12px' }}>Café (g)</label>
+                <input id="bt-batchdetail-5" aria-label="Café (g)" type="number" inputMode="decimal" step="0.5" className="candy-input" value={calcDose} onChange={(e) => { const d = parseFloat(e.target.value) || 0; setCalcDose(d); setCalcWater(Math.round(d * calcRatio)); }} />
               </div>
               <div style={{ fontSize: '16px', fontWeight: 'bold', paddingBottom: '8px' }}>×</div>
               <div className="form-group" style={{ flex: 1, margin: 0 }}>
-                <label style={{ fontSize: '12px' }}>Ratio 1:</label>
-                <input aria-label="Ratio 1:" type="number" inputMode="decimal" step="0.5" className="candy-input" value={calcRatio} onChange={(e) => { const r = parseFloat(e.target.value) || 0; setCalcRatio(r); setCalcWater(Math.round(calcDose * r)); }} />
+                <label htmlFor="bt-batchdetail-6" style={{ fontSize: '12px' }}>Ratio 1:</label>
+                <input id="bt-batchdetail-6" aria-label="Ratio 1:" type="number" inputMode="decimal" step="0.5" className="candy-input" value={calcRatio} onChange={(e) => { const r = parseFloat(e.target.value) || 0; setCalcRatio(r); setCalcWater(Math.round(calcDose * r)); }} />
               </div>
               <div style={{ fontSize: '16px', fontWeight: 'bold', paddingBottom: '8px' }}>=</div>
               <div className="form-group" style={{ flex: 1, margin: 0 }}>
-                <label style={{ fontSize: '12px' }}>Agua (g)</label>
-                <input aria-label="Agua (g)" type="number" inputMode="decimal" className="candy-input" value={calcWater} onChange={(e) => { const w = parseFloat(e.target.value) || 0; setCalcWater(w); if (calcDose > 0) setCalcRatio(parseFloat((w / calcDose).toFixed(1))); }} />
+                <label htmlFor="bt-batchdetail-7" style={{ fontSize: '12px' }}>Agua (g)</label>
+                <input id="bt-batchdetail-7" aria-label="Agua (g)" type="number" inputMode="decimal" className="candy-input" value={calcWater} onChange={(e) => { const w = parseFloat(e.target.value) || 0; setCalcWater(w); if (calcDose > 0) setCalcRatio(parseFloat((w / calcDose).toFixed(1))); }} />
               </div>
             </div>
             <button type="button" className="btn-candy accent" style={{ width: '100%', marginTop: '10px', padding: '6px', fontSize: '12px' }} onClick={() => { setDoseInG(calcDose); setRatioVal(calcRatio); setActiveTab('brew'); if (showToast) showToast('Valores transferidos a la pestaña de preparación.', { type: 'success' }); }}>
@@ -2037,7 +2037,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           backgroundColor: 'rgba(0, 0, 0, 0.85)',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
-          zIndex: 11000, 
+          zIndex: 'var(--z-modal)', 
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'flex-start',
@@ -2070,7 +2070,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     style={{
                       padding: '5px 8px',
                       fontSize: '12px',
-                      borderRadius: '6px',
+                      borderRadius: 'var(--r-control)',
                       border: shareScope === 'single' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
                       backgroundColor: shareScope === 'single' ? 'var(--bg-card)' : 'var(--bg-canvas)',
                       fontWeight: shareScope === 'single' ? '800' : '500',
@@ -2091,7 +2091,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     style={{
                       padding: '5px 8px',
                       fontSize: '12px',
-                      borderRadius: '6px',
+                      borderRadius: 'var(--r-control)',
                       border: shareScope === 'sticker' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
                       backgroundColor: shareScope === 'sticker' ? 'var(--bg-card)' : 'var(--bg-canvas)',
                       fontWeight: shareScope === 'sticker' ? '800' : '500',
@@ -2112,7 +2112,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     style={{
                       padding: '5px 8px',
                       fontSize: '12px',
-                      borderRadius: '6px',
+                      borderRadius: 'var(--r-control)',
                       border: shareScope === 'menu' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
                       backgroundColor: shareScope === 'menu' ? 'var(--bg-card)' : 'var(--bg-canvas)',
                       fontWeight: shareScope === 'menu' ? '800' : '500',
@@ -2152,7 +2152,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       style={{
                         padding: '3px 7px',
                         fontSize: '12px',
-                        borderRadius: '4px',
+                        borderRadius: 'var(--r-xs)',
                         border: cardFormat === f.id ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: cardFormat === f.id ? 'var(--bg-header)' : 'var(--bg-card)',
                         fontWeight: 'bold',
@@ -2180,7 +2180,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       style={{
                         padding: '3px 7px',
                         fontSize: '12px',
-                        borderRadius: '4px',
+                        borderRadius: 'var(--r-xs)',
                         border: stickerOrientation === 'horizontal' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: stickerOrientation === 'horizontal' ? 'var(--bg-header)' : 'var(--bg-card)',
                         fontWeight: 'bold',
@@ -2199,7 +2199,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       style={{
                         padding: '3px 7px',
                         fontSize: '12px',
-                        borderRadius: '4px',
+                        borderRadius: 'var(--r-xs)',
                         border: stickerOrientation === 'vertical' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: stickerOrientation === 'vertical' ? 'var(--bg-header)' : 'var(--bg-card)',
                         fontWeight: 'bold',
@@ -2222,7 +2222,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       style={{
                         padding: '3px 7px',
                         fontSize: '12px',
-                        borderRadius: '4px',
+                        borderRadius: 'var(--r-xs)',
                         border: !stickerTransparent ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: !stickerTransparent ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)',
                         color: !stickerTransparent ? 'var(--color-crimson)' : 'var(--color-text)',
@@ -2241,7 +2241,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       style={{
                         padding: '3px 7px',
                         fontSize: '12px',
-                        borderRadius: '4px',
+                        borderRadius: 'var(--r-xs)',
                         border: stickerTransparent ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: stickerTransparent ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)',
                         color: stickerTransparent ? 'var(--color-crimson)' : 'var(--color-text)',
@@ -2264,14 +2264,14 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     <button 
                       type="button" 
                       onClick={() => { setShareIncludeRecipe(false); handleShareBatchCard(false, shareTemplate, shareScope, stickerTransparent, stickerOrientation); }}
-                      style={{ padding: '3px 8px', fontSize: '12px', borderRadius: '4px', border: !shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
+                      style={{ padding: '3px 8px', fontSize: '12px', borderRadius: 'var(--r-xs)', border: !shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
                     >
                       Perfil & Notas
                     </button>
                     <button 
                       type="button" 
                       onClick={() => { setShareIncludeRecipe(true); handleShareBatchCard(true, shareTemplate, shareScope, stickerTransparent, stickerOrientation); }}
-                      style={{ padding: '3px 8px', fontSize: '12px', borderRadius: '4px', border: shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
+                      style={{ padding: '3px 8px', fontSize: '12px', borderRadius: 'var(--r-xs)', border: shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
                     >
                       Telemetría / Receta
                     </button>
@@ -2280,8 +2280,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               )}
 
               {/* Aesthetic Template Selector */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
                 {[
                   { id: 'stretch', label: 'Stretch' },
                   { id: 'squishy', label: 'Squishy' },
@@ -2301,7 +2301,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                       flex: '1 1 auto',
                       padding: '5px 8px',
                       fontSize: '12px',
-                      borderRadius: '6px',
+                      borderRadius: 'var(--r-control)',
                       border: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
                       backgroundColor: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? 'var(--bg-card)' : 'transparent',
                       fontWeight: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? '800' : '600',
@@ -2317,8 +2317,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
             <div style={{
               textAlign: 'center',
-              backgroundColor: 'var(--bg-canvas, #F1F5F9)',
-              borderRadius: '12px',
+              backgroundColor: 'var(--bg-canvas)',
+              borderRadius: 'var(--r-control)',
               padding: '8px',
               overflow: 'hidden',
               flex: '0 1 auto',
@@ -2335,7 +2335,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   maxHeight: 'calc(45dvh - 50px)',
                   height: 'auto',
                   objectFit: 'contain',
-                  borderRadius: '6px', 
+                  borderRadius: 'var(--r-control)', 
                   display: 'block',
                   margin: '0 auto',
                   boxShadow: '0 8px 24px rgba(0,0,0,0.14)'
@@ -2345,10 +2345,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             
             {shareStatus && (
               <div style={{
-                background: shareStatus.includes('❌') ? 'var(--barista-accent-danger-bg)' : 'var(--barista-accent-mint-bg)',
-                color: shareStatus.includes('❌') ? 'var(--barista-accent-danger-text)' : 'var(--barista-accent-mint-text)',
+                background: /error/i.test(shareStatus) ? 'var(--barista-accent-danger-bg)' : 'var(--barista-accent-mint-bg)',
+                color: /error/i.test(shareStatus) ? 'var(--barista-accent-danger-text)' : 'var(--barista-accent-mint-text)',
                 border: '1px solid var(--border-color)',
-                borderRadius: '8px',
+                borderRadius: 'var(--r-control)',
                 padding: '6px 12px',
                 fontSize: '12px',
                 fontWeight: '600',

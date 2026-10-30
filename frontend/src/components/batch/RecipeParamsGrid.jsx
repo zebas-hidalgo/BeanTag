@@ -82,7 +82,7 @@ export default function RecipeParamsGrid({
                 fontFamily: 'var(--font-display)',
                 cursor: 'pointer',
                 boxShadow: isActive ? 'var(--shadow-sm)' : 'none',
-                transition: 'all var(--transition-fast)',
+                transition: 'var(--transition-ui)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
@@ -142,7 +142,7 @@ export default function RecipeParamsGrid({
                     textAlign: 'left'
                   }}
                 >
-                  <div style={{ fontWeight: '800' }}>{fam.name}</div>
+                  <div style={{ fontWeight: '600' }}>{fam.name}</div>
                   <div style={{ fontSize: '12px', opacity: 0.85, fontFamily: 'var(--font-metric)' }}>
                     {fam.defaultDose}g • {fam.ratio} • {fam.brewTime}
                   </div>
@@ -179,7 +179,7 @@ export default function RecipeParamsGrid({
               -
             </button>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', minWidth: 0 }}>
-              <input
+              <input aria-label="Dosis de café (g)"
                 type="number"
                 inputMode="decimal"
                 step="0.5"
@@ -231,7 +231,7 @@ export default function RecipeParamsGrid({
                 -
               </button>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', minWidth: 0 }}>
-                <input
+                <input aria-label="Bebida en taza (g)"
                   type="number"
                   inputMode="decimal"
                   value={doseOutG}
@@ -278,7 +278,7 @@ export default function RecipeParamsGrid({
                 -
               </button>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', minWidth: 0 }}>
-                <input
+                <input aria-label="Ratio"
                   type="number"
                   inputMode="decimal"
                   step="0.5"
@@ -327,7 +327,7 @@ export default function RecipeParamsGrid({
               -
             </button>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', minWidth: 0 }}>
-              <input
+              <input aria-label="Temperatura del agua (°C)"
                 type="number"
                 inputMode="decimal"
                 value={waterTemp}

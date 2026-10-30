@@ -56,12 +56,12 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
     }
     const success = await copyToClipboard(url);
     if (success) {
-      setStatusMessage(`✅ Link NFC copiado: ${url}`);
+      setStatusMessage(`Link NFC copiado: ${url}`);
       if (showToast) {
-        showToast(`📋 Link WebNFC copiado al portapapeles.`, { type: 'success', duration: 3500 });
+        showToast(`Link WebNFC copiado al portapapeles.`, { type: 'success', duration: 3500 });
       }
     } else {
-      setStatusMessage(`⚠️ URL del Lote: ${url}`);
+      setStatusMessage(`URL del Lote: ${url}`);
       if (showToast) {
         showToast(`URL generada: ${url}`, { type: 'info', duration: 4000 });
       }
@@ -91,11 +91,11 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
           rawUrl: rawUrl || 'Registro sin URL legible',
           timestamp: new Date().toLocaleTimeString()
         });
-        setStatusMessage('✅ Etiqueta leída con éxito');
+        setStatusMessage('Etiqueta leída con éxito');
         setIsProcessing(false);
       };
     } catch (error) {
-      setStatusMessage('❌ Error: ' + error.message);
+      setStatusMessage('Error: ' + error.message);
       setIsProcessing(false);
     }
   };
@@ -112,11 +112,11 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
       await ndef.write({
         records: [{ recordType: 'url', data: `${window.location.origin}/empty` }]
       });
-      setStatusMessage('🎉 Etiqueta formateada y limpiada con éxito.');
+      setStatusMessage('Etiqueta formateada y limpiada con éxito.');
       if (showToast) showToast('Etiqueta formateada.', { type: 'success' });
       setIsProcessing(false);
     } catch (error) {
-      setStatusMessage('❌ Error al formatear: ' + error.message);
+      setStatusMessage('Error al formatear: ' + error.message);
       setIsProcessing(false);
     }
   };
@@ -140,13 +140,13 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
       await ndef.write({
         records: [{ recordType: 'url', data: targetUrl }]
       });
-      setStatusMessage(`🎉 Tag vinculado con éxito al lote: ${targetId}`);
+      setStatusMessage(`Tag vinculado con éxito al lote: ${targetId}`);
       if (showToast) showToast(`Tag grabado con lote ${targetId}`, { type: 'success' });
       setIsProcessing(false);
     } catch (error) {
       setIsProcessing(false);
       await handleCopyUrl(targetId);
-      setStatusMessage(`⚠️ WebNFC directo no permitido en HTTP. URL copiada al portapapeles: ${targetUrl}`);
+      setStatusMessage(`WebNFC directo no permitido en HTTP. URL copiada al portapapeles: ${targetUrl}`);
     }
   };
 
@@ -193,9 +193,9 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
 
         {/* Hardware Status Banner */}
         <div style={{
-          padding: '8px 12px', borderRadius: '6px', border: '2px solid var(--border-color)',
+          padding: '8px 12px', borderRadius: 'var(--r-control)', border: '2px solid var(--border-color)',
           fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px',
-          backgroundColor: hasNfc ? '#C6F6D5' : '#EBF8FF',
+          backgroundColor: hasNfc ? '#C6F6D5' : 'var(--cryo-bg)',
           color: hasNfc ? '#22543D' : '#2B6CB0'
         }}>
           {hasNfc ? <CheckCircle size={14} /> : <Smartphone size={14} />}
@@ -245,7 +245,7 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
         {/* Tab 1: iOS iPhone Native Mode */}
         {activeTab === 'ios' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: 'var(--bg-canvas)', padding: '12px', borderRadius: '6px', border: '2px solid var(--border-color)', fontSize: '12px', lineHeight: '1.4' }}>
+            <div style={{ background: 'var(--bg-canvas)', padding: '12px', borderRadius: 'var(--r-control)', border: '2px solid var(--border-color)', fontSize: '12px', lineHeight: '1.4' }}>
               <strong style={{ color: 'var(--color-crimson)', display: 'block', marginBottom: '4px' }}>
                 <HelpCircle size={14} style={{marginRight:'4px',verticalAlign:'middle'}} /> ¿Cómo funciona el NFC en iPhone?
               </strong>
@@ -255,10 +255,10 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 'bold', fontFamily: 'var(--font-heading)', textTransform: 'uppercase' }}>
+              <label htmlFor="bt-nfctoolsmodal-1" style={{ fontSize: '12px', fontWeight: 'bold', fontFamily: 'var(--font-heading)', textTransform: 'uppercase' }}>
                 Seleccionar Lote de Café:
               </label>
-              <select aria-label="Seleccionar Lote de Café:"
+              <select id="bt-nfctoolsmodal-1" aria-label="Seleccionar Lote de Café:"
                 className="candy-input"
                 value={selectedBatchId}
                 onChange={e => setSelectedBatchId(e.target.value)}
@@ -271,10 +271,10 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
                 ))}
               </select>
 
-              <label style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+              <label htmlFor="bt-nfctoolsmodal-2" style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginTop: '4px' }}>
                 URL Directa para NFC / QR (Haz clic para seleccionar todo):
               </label>
-              <input aria-label="URL Directa para NFC / QR (Haz clic para seleccionar todo):"
+              <input id="bt-nfctoolsmodal-2" aria-label="URL Directa para NFC / QR (Haz clic para seleccionar todo):"
                 type="text"
                 readOnly
                 className="candy-input"
@@ -339,7 +339,7 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
               Iniciar Escaneo Diagnóstico
             </button>
             {scannedData && (
-              <div style={{ background: 'var(--bg-canvas)', padding: '10px', border: '2px solid var(--border-color)', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
+              <div style={{ background: 'var(--bg-canvas)', padding: '10px', border: '2px solid var(--border-color)', borderRadius: 'var(--r-xs)', fontSize: '12px', fontFamily: 'monospace' }}>
                 <div><strong>Nº Serie:</strong> {scannedData.serialNumber}</div>
                 <div><strong>URL RAW:</strong> {scannedData.rawUrl}</div>
                 <div><strong>Hora:</strong> {scannedData.timestamp}</div>
@@ -353,7 +353,7 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
             <p style={{ fontSize: '12px', margin: 0, lineHeight: '1.4' }}>
               Formatea la etiqueta escribiendo un registro URL neutro (`/empty`).
             </p>
-            <button type="button" className="btn-candy" onClick={handleFormatTag} disabled={isProcessing} style={{ padding: '10px', color: '#E53E3E', borderColor: '#E53E3E', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <button type="button" className="btn-candy" onClick={handleFormatTag} disabled={isProcessing} style={{ padding: '10px', color: 'var(--bad)', borderColor: 'var(--bad)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
               <Trash2 size={14} />
               Formatear & Limpiar Tag
             </button>
@@ -387,7 +387,7 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
         {statusMessage && (
           <div style={{
             padding: '8px', fontSize: '12px', fontWeight: 'bold', textAlign: 'center',
-            border: '2px solid var(--border-color)', borderRadius: '4px',
+            border: '2px solid var(--border-color)', borderRadius: 'var(--r-xs)',
             backgroundColor: 'var(--bg-card)'
           }}>
             {statusMessage}

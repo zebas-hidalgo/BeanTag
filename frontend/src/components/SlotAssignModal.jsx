@@ -116,7 +116,7 @@ export default function SlotAssignModal({
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 1100,
+        zIndex: 'var(--z-sticky-cta)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -137,10 +137,10 @@ export default function SlotAssignModal({
           width: '100%',
           maxWidth: '520px',
           maxHeight: '90vh',
-          backgroundColor: 'var(--barista-bg-surface, var(--bg-card, #FFFFFF))',
-          borderRadius: 'var(--barista-radius-lg, 20px)',
-          border: '2px solid var(--barista-border-hairline, var(--border-color))',
-          boxShadow: 'var(--barista-shadow-elevated, 0 20px 40px rgba(0,0,0,0.3))',
+          backgroundColor: 'var(--barista-bg-surface)',
+          borderRadius: 'var(--barista-radius-lg)',
+          border: '2px solid var(--barista-border-hairline)',
+          boxShadow: 'var(--barista-shadow-elevated)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -154,8 +154,8 @@ export default function SlotAssignModal({
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '16px 20px',
-            borderBottom: '1px solid var(--barista-border-hairline, var(--border-color))',
-            backgroundColor: 'var(--barista-bg-elevated, var(--bg-header))'
+            borderBottom: '1px solid var(--barista-border-hairline)',
+            backgroundColor: 'var(--barista-bg-elevated)'
           }}
         >
           <div>
@@ -164,24 +164,24 @@ export default function SlotAssignModal({
               style={{
                 margin: 0,
                 fontSize: '18px',
-                fontWeight: '800',
+                fontWeight: '600',
                 fontFamily: 'var(--font-heading)',
-                color: 'var(--color-text, #0F172A)',
+                color: 'var(--color-text)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px'
               }}
             >
-              <span>🧪 Tubo #{position}</span>
+              <span>Tubo #{position}</span>
               <span
                 style={{
                   fontSize: '12px',
                   fontWeight: '600',
                   padding: '2px 8px',
-                  borderRadius: '9999px',
-                  backgroundColor: 'var(--barista-bg-surface, #FFFFFF)',
-                  border: '1px solid var(--barista-border-hairline, var(--border-color))',
-                  color: 'var(--barista-text-secondary, #64748B)'
+                  borderRadius: 'var(--r-pill)',
+                  backgroundColor: 'var(--barista-bg-surface)',
+                  border: '1px solid var(--barista-border-hairline)',
+                  color: 'var(--barista-text-secondary)'
                 }}
               >
                 {rack.name}
@@ -191,7 +191,7 @@ export default function SlotAssignModal({
               style={{
                 margin: '4px 0 0 0',
                 fontSize: '12px',
-                color: 'var(--barista-text-secondary, var(--color-text-muted))'
+                color: 'var(--barista-text-secondary)'
               }}
             >
               {isCurrentlyOccupied
@@ -211,7 +211,7 @@ export default function SlotAssignModal({
               padding: '8px',
               borderRadius: '50%',
               cursor: 'pointer',
-              color: 'var(--barista-text-secondary, var(--color-text-muted))',
+              color: 'var(--barista-text-secondary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -222,19 +222,19 @@ export default function SlotAssignModal({
         </div>
 
         {/* Search Input */}
-        <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--barista-border-hairline, var(--border-color))' }}>
+        <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--barista-border-hairline)' }}>
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              backgroundColor: 'var(--barista-bg-elevated, #F1F5F9)',
-              borderRadius: 'var(--barista-radius-md, 12px)',
+              backgroundColor: 'var(--barista-bg-elevated)',
+              borderRadius: 'var(--barista-radius-md)',
               padding: '8px 12px',
-              border: '1px solid var(--barista-border-hairline, var(--border-color))'
+              border: '1px solid var(--barista-border-hairline)'
             }}
           >
-            <Search size={16} color="var(--barista-text-muted, #94A3B8)" />
+            <Search size={16} color="var(--barista-text-muted)" />
             <input aria-label="Buscar por café, tostador u origen..."
               type="text"
               placeholder="Buscar por café, tostador u origen..."
@@ -246,7 +246,7 @@ export default function SlotAssignModal({
                 background: 'transparent',
                 outline: 'none',
                 fontSize: '14px',
-                color: 'var(--color-text, #0F172A)',
+                color: 'var(--color-text)',
                 fontFamily: 'var(--font-body)'
               }}
             />
@@ -285,7 +285,7 @@ export default function SlotAssignModal({
               style={{
                 textAlign: 'center',
                 padding: '32px 16px',
-                color: 'var(--barista-text-muted, #94A3B8)'
+                color: 'var(--barista-text-muted)'
               }}
             >
               <Coffee size={32} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
@@ -326,16 +326,16 @@ export default function SlotAssignModal({
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '12px 14px',
-                    borderRadius: 'var(--barista-radius-md, 12px)',
+                    borderRadius: 'var(--barista-radius-md)',
                     border: isSelected
-                      ? '2px solid var(--barista-accent-honey, #D97706)'
-                      : '1px solid var(--barista-border-hairline, var(--border-color))',
+                      ? '2px solid var(--barista-accent-honey)'
+                      : '1px solid var(--barista-border-hairline)',
                     backgroundColor: isSelected
-                      ? 'var(--barista-instr-bg, rgba(217, 119, 6, 0.08))'
-                      : 'var(--barista-bg-surface, var(--bg-card))',
+                      ? 'var(--barista-instr-bg)'
+                      : 'var(--barista-bg-surface)',
                     opacity: isOutOfStockForAssignment ? 0.6 : 1,
                     cursor: isOutOfStockForAssignment ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.15s ease',
+                    transition: 'var(--transition-ui)',
                     boxShadow: isSelected ? '0 2px 8px rgba(217, 119, 6, 0.15)' : 'none'
                   }}
                 >
@@ -344,9 +344,9 @@ export default function SlotAssignModal({
                       <span
                         style={{
                           fontSize: '14px',
-                          fontWeight: '800',
+                          fontWeight: '600',
                           fontFamily: 'var(--font-heading)',
-                          color: isOutOfStockForAssignment ? 'var(--barista-text-muted, #94A3B8)' : 'var(--color-text, #0F172A)',
+                          color: isOutOfStockForAssignment ? 'var(--barista-text-muted)' : 'var(--color-text)',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis'
@@ -360,9 +360,9 @@ export default function SlotAssignModal({
                             fontSize: '12px',
                             fontWeight: '700',
                             padding: '2px 6px',
-                            borderRadius: '4px',
-                            backgroundColor: 'var(--barista-bg-elevated, #F1F5F9)',
-                            color: 'var(--barista-text-secondary, #64748B)',
+                            borderRadius: 'var(--r-xs)',
+                            backgroundColor: 'var(--barista-bg-elevated)',
+                            color: 'var(--barista-text-secondary)',
                             textTransform: 'uppercase'
                           }}
                         >
@@ -378,7 +378,7 @@ export default function SlotAssignModal({
                         gap: '8px',
                         marginTop: '3px',
                         fontSize: '12px',
-                        color: 'var(--barista-text-secondary, #64748B)'
+                        color: 'var(--barista-text-secondary)'
                       }}
                     >
                       <span>{batch.roaster || 'Tostador artesanal'}</span>
@@ -391,12 +391,12 @@ export default function SlotAssignModal({
                       style={{
                         fontSize: '12px',
                         fontFamily: 'var(--font-mono)',
-                        fontWeight: '800',
+                        fontWeight: '600',
                         color: isOutOfStockForAssignment
-                          ? 'var(--barista-accent-danger, #EF4444)'
+                          ? 'var(--barista-accent-danger)'
                           : isLow
-                          ? 'var(--barista-accent-honey, #D97706)'
-                          : 'var(--barista-accent-cryo, #0284C7)',
+                          ? 'var(--barista-accent-honey)'
+                          : 'var(--barista-accent-cryo)',
                         display: 'block'
                       }}
                     >
@@ -408,7 +408,7 @@ export default function SlotAssignModal({
                       style={{
                         fontSize: '12px',
                         fontFamily: 'var(--font-mono)',
-                        color: 'var(--barista-text-muted, #94A3B8)',
+                        color: 'var(--barista-text-muted)',
                         display: 'block'
                       }}
                     >
@@ -427,8 +427,8 @@ export default function SlotAssignModal({
         <div
           style={{
             padding: '16px 20px',
-            borderTop: '1px solid var(--barista-border-hairline, var(--border-color))',
-            backgroundColor: 'var(--barista-bg-elevated, var(--bg-header))',
+            borderTop: '1px solid var(--barista-border-hairline)',
+            backgroundColor: 'var(--barista-bg-elevated)',
             display: 'flex',
             flexDirection: 'column',
             gap: '8px'
@@ -448,10 +448,10 @@ export default function SlotAssignModal({
                   justifyContent: 'center',
                   gap: '6px',
                   padding: '10px 16px',
-                  backgroundColor: selectedAvailable > 0 ? 'var(--barista-accent-honey, #D97706)' : 'var(--barista-text-disabled, #94A3B8)',
-                  color: '#FFFFFF',
+                  backgroundColor: selectedAvailable > 0 ? 'var(--barista-accent-honey)' : 'var(--barista-text-disabled)',
+                  color: 'var(--on-accent)',
                   border: 'none',
-                  borderRadius: 'var(--barista-radius-md, 12px)',
+                  borderRadius: 'var(--barista-radius-md)',
                   fontWeight: '700',
                   fontSize: '13px',
                   cursor: selectedAvailable > 0 ? 'pointer' : 'not-allowed',
@@ -473,18 +473,18 @@ export default function SlotAssignModal({
                     justifyContent: 'center',
                     gap: '6px',
                     padding: '10px 14px',
-                    backgroundColor: 'var(--barista-bg-surface, #FFFFFF)',
-                    color: 'var(--barista-text-primary, #0F172A)',
-                    border: '1px solid var(--barista-border-hairline, var(--border-color))',
-                    borderRadius: 'var(--barista-radius-md, 12px)',
+                    backgroundColor: 'var(--barista-bg-surface)',
+                    color: 'var(--barista-text-primary)',
+                    border: '1px solid var(--barista-border-hairline)',
+                    borderRadius: 'var(--barista-radius-md)',
                     fontWeight: '700',
                     fontSize: '13px',
                     cursor: 'pointer',
-                    transition: 'all 0.15s ease'
+                    transition: 'var(--transition-ui)'
                   }}
                   title={`Llenar hasta ${fillableCount} ranuras vacías de este rack con este café`}
                 >
-                  <Layers size={16} color="var(--barista-accent-honey, #D97706)" />
+                  <Layers size={16} color="var(--barista-accent-honey)" />
                   <span>
                     Llenar vacíos ({fillableCount}{fillableCount < emptySlotsCount ? ` de ${emptySlotsCount}` : ''})
                   </span>
@@ -497,7 +497,7 @@ export default function SlotAssignModal({
                 margin: 0,
                 fontSize: '12px',
                 textAlign: 'center',
-                color: 'var(--barista-text-muted, #94A3B8)'
+                color: 'var(--barista-text-muted)'
               }}
             >
               Selecciona un café de la lista para asignarlo a esta ranura.
@@ -516,9 +516,9 @@ export default function SlotAssignModal({
                 gap: '6px',
                 padding: '8px 12px',
                 backgroundColor: 'transparent',
-                color: 'var(--barista-accent-danger, #EF4444)',
-                border: '1px dashed var(--barista-accent-danger, #EF4444)',
-                borderRadius: 'var(--barista-radius-md, 12px)',
+                color: 'var(--barista-accent-danger)',
+                border: '1px dashed var(--barista-accent-danger)',
+                borderRadius: 'var(--barista-radius-md)',
                 fontWeight: '600',
                 fontSize: '12px',
                 cursor: 'pointer',

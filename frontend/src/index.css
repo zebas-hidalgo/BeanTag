@@ -1,226 +1,6 @@
 @import './styles/tokens.css';
 @import './styles/barista-ui.css';
 
-
-
-:root {
-  /* 🍎 Cupertino Haptic & iOS Native Luxe Design Tokens */
-  --bg-canvas: #F2F2F7; /* Apple System Gray 6 (Base) */
-  --bg-card: #FFFFFF;
-  --color-crimson: #BC5449; /* Artisan Terracotta */
-  --color-honey: #D97706;
-  --color-emerald-light: #F0FDF4;
-  --border-color: rgba(60, 60, 67, 0.12); /* Apple HIG System Separator */
-  --color-text: #000000;
-  --color-text-muted: #8E8E93; /* Apple Secondary Label */
-  --bg-header: rgba(242, 242, 247, 0.82);
-  --color-header-text: #000000;
-  --sheet-bg: rgba(255, 255, 255, 0.94);
-  --segmented-bg: rgba(118, 118, 128, 0.12);
-  --segmented-active: #FFFFFF;
-  --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
-
-  --font-heading: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Outfit', sans-serif;
-  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
-  --font-mono: 'SF Mono', 'JetBrains Mono', Menlo, monospace;
-
-  --transition-spring: cubic-bezier(0.32, 0.72, 0, 1);
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* ☕ Precision Barista Tech Design Tokens */
-  --barista-bg-canvas: #F8FAFC;
-  --barista-bg-surface: #FFFFFF;
-  --barista-bg-elevated: #F1F5F9;
-  --barista-bg-subtle: rgba(241, 245, 249, 0.8);
-
-  --barista-accent-honey: #D97706;
-  --barista-accent-honey-hover: #B45309;
-  --barista-accent-honey-glow: rgba(217, 119, 6, 0.2);
-
-  --barista-accent-mint: #10B981;
-  --barista-accent-mint-subtle: rgba(16, 185, 129, 0.12);
-
-  --barista-accent-cryo: #0284C7;
-  --barista-accent-cryo-subtle: rgba(2, 132, 199, 0.12);
-
-  --barista-accent-danger: #EF4444;
-  --barista-accent-danger-subtle: rgba(239, 68, 68, 0.12);
-
-  --barista-text-primary: #0F172A;
-  --barista-text-secondary: #475569;
-  --barista-text-muted: #64748B;
-  --barista-text-disabled: #94A3B8;
-
-  --barista-border-hairline: rgba(60, 60, 67, 0.12);
-  --barista-border-active: rgba(217, 119, 6, 0.45);
-  --barista-border-focus: #D97706;
-
-  --barista-radius-xs: 4px;
-  --barista-radius-sm: 8px;
-  --barista-radius-md: 12px;
-  --barista-radius-lg: 16px;
-  --barista-radius-pill: 9999px;
-
-  --barista-space-2: 2px;
-  --barista-space-4: 4px;
-  --barista-space-8: 8px;
-  --barista-space-12: 12px;
-  --barista-space-16: 16px;
-  --barista-space-20: 20px;
-  --barista-space-24: 24px;
-  --barista-space-32: 32px;
-
-  --barista-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px var(--barista-border-hairline);
-  --barista-shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--barista-border-hairline);
-  --barista-shadow-honey: 0 4px 14px var(--barista-accent-honey-glow);
-
-  --color-surface: var(--bg-card);
-  --color-border: var(--border-color);
-  --barista-instr-bg: #FFFBEB;
-  --barista-instr-border: #FDE68A;
-  --barista-instr-text: #92400E;
-  --barista-accent-mint-bg: #D1FAE5;
-  --barista-accent-mint-text: #065F46;
-  --barista-accent-honey-bg: #FEF3C7;
-  --barista-accent-honey-text: #92400E;
-  --barista-accent-danger-bg: #FEE2E2;
-  --barista-accent-danger-text: #991B1B;
-  --barista-accent-cryo-bg: #E0F2FE;
-  --barista-accent-cryo-text: #0369A1;
-  --barista-on-accent: #FFFFFF;
-}
-
-[data-theme="studio"] {
-  --bg-canvas: #F8F9FA;
-  --bg-card: #FFFFFF;
-  --border-color: rgba(0, 0, 0, 0.08);
-  --color-crimson: #18181B;
-  --color-honey: #27272A;
-  --color-text: #09090B;
-  --color-text-muted: #5F5F67;
-  --bg-header: rgba(248, 249, 250, 0.88);
-  --color-header-text: #09090B;
-  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --segmented-bg: rgba(0, 0, 0, 0.05);
-  --segmented-active: #FFFFFF;
-  --sheet-bg: rgba(255, 255, 255, 0.98);
-  --barista-bg-canvas: #F8F9FA;
-  --barista-bg-surface: #FFFFFF;
-  --barista-bg-elevated: #F1F3F5;
-  --barista-border-hairline: rgba(0, 0, 0, 0.08);
-  --barista-border-active: #18181B;
-  --barista-border-focus: #18181B;
-  --barista-text-primary: #09090B;
-  --barista-text-secondary: #52525B;
-  --barista-text-muted: #5F5F67;
-  --barista-accent-honey: #18181B;
-  --barista-accent-honey-hover: #27272A;
-  --barista-accent-honey-glow: rgba(24, 24, 27, 0.14);
-  --barista-shadow-honey: 0 4px 12px rgba(24, 24, 27, 0.14);
-  --barista-instr-bg: #F4F4F5;
-  --barista-instr-border: #E4E4E7;
-  --barista-instr-text: #18181B;
-  --barista-accent-honey-bg: #F4F4F5;
-  --barista-accent-honey-text: #18181B;
-  --barista-on-accent: #FFFFFF;
-  --font-heading: -apple-system, BlinkMacSystemFont, 'Inter', 'Space Grotesk', sans-serif;
-  --font-body: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
-}
-
-/* 🌑 True OLED Pure Dark Mode (#000000 Pitch Black / Neutral Charcoal - No Muddy Blue) */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]):not([data-theme="espresso"]):not([data-theme="matcha"]):not([data-theme="cyber"]):not([data-theme="sakura"]):not([data-theme="caramel"]):not([data-theme="frost"]):not([data-theme="studio"]) {
-    --bg-canvas: #000000;
-    --bg-card: #121214;
-    --color-crimson: #E06C60;
-    --color-honey: #F59E0B;
-    --border-color: rgba(255, 255, 255, 0.14);
-    --color-text: #FFFFFF;
-    --color-text-muted: #A1A1AA;
-    --bg-header: rgba(0, 0, 0, 0.88);
-    --color-header-text: #FFFFFF;
-    --sheet-bg: rgba(18, 18, 20, 0.96);
-    --segmented-bg: rgba(255, 255, 255, 0.1);
-    --segmented-active: #27272A;
-    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-
-    --barista-bg-canvas: #000000;
-    --barista-bg-surface: #121214;
-    --barista-bg-elevated: #1C1C1E;
-    --barista-bg-subtle: rgba(255, 255, 255, 0.06);
-    --barista-accent-cryo: #38BDF8;
-    --barista-accent-cryo-subtle: rgba(56, 189, 248, 0.14);
-    --barista-text-primary: #FFFFFF;
-    --barista-text-secondary: #D4D4D8;
-    --barista-text-muted: #A1A1AA;
-    --barista-text-disabled: #52525B;
-    --barista-border-hairline: rgba(255, 255, 255, 0.12);
-    --barista-border-active: rgba(217, 119, 6, 0.6);
-    --barista-shadow-card: 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--barista-border-hairline);
-    --barista-shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--barista-border-hairline);
-    --color-surface: var(--bg-card);
-    --color-border: var(--border-color);
-    --barista-instr-bg: rgba(217, 119, 6, 0.1);
-    --barista-instr-border: rgba(217, 119, 6, 0.25);
-    --barista-instr-text: #F59E0B;
-    --barista-accent-mint-bg: rgba(16, 185, 129, 0.18) !important;
-    --barista-accent-mint-text: #34D399 !important;
-    --barista-accent-honey-bg: rgba(245, 158, 11, 0.18) !important;
-    --barista-accent-honey-text: #FBBF24 !important;
-    --barista-accent-danger-bg: rgba(239, 68, 68, 0.18) !important;
-    --barista-accent-danger-text: #F87171 !important;
-    --barista-accent-cryo-bg: rgba(56, 189, 248, 0.18) !important;
-    --barista-accent-cryo-text: #38BDF8 !important;
-    --barista-on-accent: #09090B;
-  }
-}
-
-[data-theme="dark"] {
-  --bg-canvas: #000000 !important;
-  --bg-card: #121214 !important;
-  --color-crimson: #E06C60 !important;
-  --color-honey: #F59E0B !important;
-  --border-color: rgba(255, 255, 255, 0.14) !important;
-  --color-text: #FFFFFF !important;
-  --color-text-muted: #A1A1AA !important;
-  --bg-header: rgba(0, 0, 0, 0.88) !important;
-  --color-header-text: #FFFFFF !important;
-  --sheet-bg: rgba(18, 18, 20, 0.96) !important;
-  --segmented-bg: rgba(255, 255, 255, 0.1) !important;
-  --segmented-active: #27272A !important;
-  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
-
-  --barista-bg-canvas: #000000 !important;
-  --barista-bg-surface: #121214 !important;
-  --barista-bg-elevated: #1C1C1E !important;
-  --barista-bg-subtle: rgba(255, 255, 255, 0.06) !important;
-  --barista-accent-cryo: #38BDF8 !important;
-  --barista-accent-cryo-subtle: rgba(56, 189, 248, 0.14) !important;
-  --barista-text-primary: #FFFFFF !important;
-  --barista-text-secondary: #D4D4D8 !important;
-  --barista-text-muted: #A1A1AA !important;
-  --barista-text-disabled: #52525B !important;
-  --barista-border-hairline: rgba(255, 255, 255, 0.12) !important;
-  --barista-border-active: rgba(217, 119, 6, 0.6) !important;
-  --barista-shadow-card: 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--barista-border-hairline) !important;
-  --barista-shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--barista-border-hairline) !important;
-  --color-surface: var(--bg-card) !important;
-  --color-border: var(--border-color) !important;
-  --barista-instr-bg: rgba(217, 119, 6, 0.1) !important;
-  --barista-instr-border: rgba(217, 119, 6, 0.25) !important;
-  --barista-instr-text: #F59E0B !important;
-  --barista-accent-mint-bg: rgba(16, 185, 129, 0.18) !important;
-  --barista-accent-mint-text: #34D399 !important;
-  --barista-accent-honey-bg: rgba(245, 158, 11, 0.18) !important;
-  --barista-accent-honey-text: #FBBF24 !important;
-  --barista-accent-danger-bg: rgba(239, 68, 68, 0.18) !important;
-  --barista-accent-danger-text: #F87171 !important;
-  --barista-accent-cryo-bg: rgba(56, 189, 248, 0.18) !important;
-  --barista-accent-cryo-text: #38BDF8 !important;
-  --barista-on-accent: #09090B !important;
-}
-
 /* Genjutsu & Cupertino Motion Principles */
 .animate-entrance {
   animation: cupertinoSlideUp 0.32s var(--transition-spring) forwards;
@@ -250,135 +30,14 @@
 .barista-spinner {
   width: 28px;
   height: 28px;
-  border: 2.5px solid var(--border-color, rgba(0, 0, 0, 0.1));
-  border-top-color: var(--color-crimson, #BC5449);
+  border: 2.5px solid var(--border-color);
+  border-top-color: var(--color-crimson);
   border-radius: 50%;
   animation: baristaSpin 0.75s linear infinite;
 }
 
 @keyframes baristaSpin {
   to { transform: rotate(360deg); }
-}
-
-/* 🎨 Cupertino Adaptive Themes */
-[data-theme="espresso"] {
-  --bg-canvas: #F5F4F0;
-  --bg-card: #FFFFFF;
-  --bg-header: rgba(245, 244, 240, 0.85);
-  --color-crimson: #BC5449;
-  --border-color: rgba(60, 60, 67, 0.14);
-  --color-text: #1C1917;
-  --color-text-muted: #57534E;
-  --color-surface: var(--bg-card);
-  --color-border: var(--border-color);
-  --barista-accent-mint-bg: #E6F4EA;
-  --barista-accent-mint-text: #064E3B;
-  --barista-accent-honey-bg: #FEF3C7;
-  --barista-accent-honey-text: #78350F;
-  --barista-accent-danger-bg: #FEE2E2;
-  --barista-accent-danger-text: #7F1D1D;
-  --barista-accent-cryo-bg: #E0F2FE;
-  --barista-accent-cryo-text: #0C4A6E;
-}
-
-[data-theme="matcha"] {
-  --bg-canvas: #F2F5F3;
-  --bg-card: #FFFFFF;
-  --bg-header: rgba(242, 245, 243, 0.85);
-  --color-crimson: #059669;
-  --border-color: rgba(5, 150, 105, 0.18);
-  --color-text: #064E3B;
-  --color-text-muted: #065F46;
-  --color-surface: var(--bg-card);
-  --color-border: var(--border-color);
-  --barista-accent-mint-bg: #DCFCE7;
-  --barista-accent-mint-text: #064E3B;
-  --barista-accent-honey-bg: #FEF3C7;
-  --barista-accent-honey-text: #78350F;
-  --barista-accent-danger-bg: #FEE2E2;
-  --barista-accent-danger-text: #7F1D1D;
-  --barista-accent-cryo-bg: #E0F2FE;
-  --barista-accent-cryo-text: #0C4A6E;
-}
-
-[data-theme="cyber"] {
-  --bg-canvas: #F0F4F8;
-  --bg-card: #FFFFFF;
-  --bg-header: rgba(240, 244, 248, 0.85);
-  --color-crimson: #2563EB;
-  --border-color: rgba(37, 99, 235, 0.18);
-  --color-text: #1E3A8A;
-  --color-text-muted: #1E40AF;
-  --color-surface: var(--bg-card);
-  --color-border: var(--border-color);
-  --barista-accent-mint-bg: #D1FAE5;
-  --barista-accent-mint-text: #064E3B;
-  --barista-accent-honey-bg: #FEF3C7;
-  --barista-accent-honey-text: #78350F;
-  --barista-accent-danger-bg: #FEE2E2;
-  --barista-accent-danger-text: #7F1D1D;
-  --barista-accent-cryo-bg: #DBEAFE;
-  --barista-accent-cryo-text: #1E3A8A;
-}
-
-[data-theme="sakura"] {
-  --bg-canvas: #F9F3F6;
-  --bg-card: #FFFFFF;
-  --bg-header: rgba(249, 243, 246, 0.85);
-  --color-crimson: #DB2777;
-  --border-color: rgba(219, 39, 119, 0.18);
-  --color-text: #831843;
-  --color-text-muted: #831843;
-  --color-surface: var(--bg-card);
-  --color-border: var(--border-color);
-  --barista-accent-mint-bg: #D1FAE5;
-  --barista-accent-mint-text: #064E3B;
-  --barista-accent-honey-bg: #FEF3C7;
-  --barista-accent-honey-text: #78350F;
-  --barista-accent-danger-bg: #FCE7F3;
-  --barista-accent-danger-text: #831843;
-  --barista-accent-cryo-bg: #E0F2FE;
-  --barista-accent-cryo-text: #0C4A6E;
-}
-
-[data-theme="caramel"] {
-  --bg-canvas: #F7F4EC;
-  --bg-card: #FFFFFF;
-  --bg-header: rgba(247, 244, 236, 0.85);
-  --color-crimson: #D97706;
-  --border-color: rgba(217, 119, 6, 0.18);
-  --color-text: #78350F;
-  --color-text-muted: #78350F;
-  --color-surface: var(--bg-card);
-  --color-border: var(--border-color);
-  --barista-accent-mint-bg: #D1FAE5;
-  --barista-accent-mint-text: #064E3B;
-  --barista-accent-honey-bg: #FEF3C7;
-  --barista-accent-honey-text: #78350F;
-  --barista-accent-danger-bg: #FEE2E2;
-  --barista-accent-danger-text: #7F1D1D;
-  --barista-accent-cryo-bg: #E0F2FE;
-  --barista-accent-cryo-text: #0C4A6E;
-}
-
-[data-theme="frost"] {
-  --bg-canvas: #EDF4F9;
-  --bg-card: #FFFFFF;
-  --bg-header: rgba(237, 244, 249, 0.85);
-  --color-crimson: #0284C7;
-  --border-color: rgba(2, 132, 199, 0.18);
-  --color-text: #0C4A6E;
-  --color-text-muted: #0C4A6E;
-  --color-surface: var(--bg-card);
-  --color-border: var(--border-color);
-  --barista-accent-mint-bg: #D1FAE5;
-  --barista-accent-mint-text: #064E3B;
-  --barista-accent-honey-bg: #FEF3C7;
-  --barista-accent-honey-text: #78350F;
-  --barista-accent-danger-bg: #FEE2E2;
-  --barista-accent-danger-text: #7F1D1D;
-  --barista-accent-cryo-bg: #E0F2FE;
-  --barista-accent-cryo-text: #0C4A6E;
 }
 
 /* 🛡️ Global Box-Sizing & Viewport Anchoring (Eliminates Lateral Wobble & Ghost Space) */
@@ -431,9 +90,9 @@ select:focus-visible,
 textarea:focus-visible,
 [role="button"]:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--barista-border-focus, #D97706);
+  outline: 2px solid var(--barista-border-focus);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--barista-accent-honey-glow, rgba(217, 119, 6, 0.2));
+  box-shadow: 0 0 0 4px var(--barista-accent-honey-glow);
 }
 
 .app-container {
@@ -476,62 +135,60 @@ main {
 
 /* Modern Clean Specialty Coffee Card (Minimalist & Precision) */
 .candy-card {
-  background-color: var(--barista-bg-surface, var(--bg-card));
-  border: 1px solid var(--barista-border-hairline, var(--border-color));
-  border-radius: var(--barista-radius-md, 16px);
+  background-color: var(--barista-bg-surface);
+  border: 1px solid var(--barista-border-hairline);
+  border-radius: var(--barista-radius-md);
   padding: 18px;
   margin-bottom: 14px;
   position: relative;
   cursor: pointer;
-  box-shadow: var(--barista-shadow-card, 0 1px 3px rgba(0, 0, 0, 0.03));
+  box-shadow: var(--barista-shadow-card);
   transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
   box-sizing: border-box;
   overflow: hidden;
 }
 
 .candy-card:not(.static):hover {
-  border-color: var(--barista-border-active, rgba(217, 119, 6, 0.45));
-  box-shadow: var(--barista-shadow-elevated, 0 4px 12px rgba(0, 0, 0, 0.05));
+  border-color: var(--barista-border-active);
+  box-shadow: var(--barista-shadow-elevated);
 }
 
 .candy-card:not(.static):active {
   transform: scale(0.99);
-  background-color: var(--barista-bg-subtle, rgba(0, 0, 0, 0.02));
+  background-color: var(--barista-bg-subtle);
 }
 
 /* Low Stock Card */
 .candy-card.low-stock {
-  border-color: var(--barista-accent-danger, #EF4444);
-  background: linear-gradient(180deg, var(--barista-bg-surface, var(--bg-card)) 0%, rgba(239, 68, 68, 0.05) 100%);
+  border-color: var(--barista-accent-danger);
+  background: linear-gradient(180deg, var(--barista-bg-surface) 0%, rgba(239, 68, 68, 0.05) 100%);
 }
 
 /* 🎛️ Inventory View Style Selector */
 .inventory-view-selector {
   display: inline-flex;
   align-items: center;
-  background: var(--segmented-bg, rgba(120, 120, 128, 0.12));
-  padding: 2px;
-  border-radius: 9px;
+  background: var(--fill-strong);
+  padding: 3px;
+  border-radius: var(--r-pill);
   gap: 2px;
-  border: 1px solid var(--border-color);
 }
 
 .inventory-view-btn {
   border: none;
   background: transparent;
-  padding: 4px 9px;
-  border-radius: 7px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-muted);
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-12);
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--ink-muted);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
-  user-select: none;
-  -webkit-user-select: none;
-  line-height: 1.2;
+  gap: 5px;
+  transition: var(--transition-ui);
 }
 
 .inventory-view-btn:hover {
@@ -539,21 +196,20 @@ main {
 }
 
 .inventory-view-btn.active {
-  background: var(--bg-card);
-  color: var(--color-text);
-  font-weight: 700;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  background: var(--raised);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.10);
 }
 
 /* 🏷️ Estilo 1: Editorial (Nordic Atelier & Precision Lab) */
 .card-editorial {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: var(--r-tile);
   padding: 16px 18px;
   margin-bottom: 12px;
   cursor: pointer;
-  box-shadow: var(--card-shadow, 0 2px 8px rgba(0, 0, 0, 0.03));
+  box-shadow: var(--card-shadow);
   transition: transform 180ms var(--transition-spring), box-shadow 180ms ease, border-color 180ms ease, background-color 150ms ease;
   box-sizing: border-box;
   display: flex;
@@ -563,14 +219,14 @@ main {
 }
 
 .card-editorial:hover {
-  border-color: var(--barista-border-active, rgba(188, 84, 73, 0.35));
-  box-shadow: var(--barista-shadow-elevated, 0 6px 18px rgba(0, 0, 0, 0.06));
+  border-color: var(--barista-border-active);
+  box-shadow: var(--barista-shadow-elevated);
   transform: translateY(-1px);
 }
 
 .card-editorial:active {
   transform: scale(0.992);
-  background-color: var(--barista-bg-subtle, rgba(0, 0, 0, 0.02));
+  background-color: var(--barista-bg-subtle);
 }
 
 .card-editorial.low-stock {
@@ -582,7 +238,7 @@ main {
 .inventory-list-container {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 14px;
+  border-radius: var(--r-tile);
   overflow: hidden;
   margin-bottom: 16px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
@@ -623,7 +279,7 @@ main {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-left: 3.5px solid var(--color-crimson);
-  border-radius: 8px;
+  border-radius: var(--r-control);
   padding: 16px 18px;
   margin-bottom: 14px;
   cursor: pointer;
@@ -665,9 +321,9 @@ main {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 5px 12px;
-  background: var(--segmented-bg, rgba(120, 120, 128, 0.08));
+  background: var(--segmented-bg);
   padding: 8px 10px;
-  border-radius: 6px;
+  border-radius: var(--r-control);
   border: 1px solid var(--border-color);
 }
 
@@ -716,7 +372,7 @@ main {
 .app-header h1 {
   font-family: var(--font-heading);
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 600;
   margin: 0;
   letter-spacing: -0.01em;
   color: var(--color-header-text);
@@ -724,27 +380,27 @@ main {
 
 /* Modern Sleek Buttons */
 .btn-candy {
-  background-color: var(--barista-bg-surface, #FFFFFF);
-  border: 1px solid var(--barista-border-hairline, var(--border-color));
-  border-radius: var(--barista-radius-md, 12px);
+  background-color: var(--barista-bg-surface);
+  border: 1px solid var(--barista-border-hairline);
+  border-radius: var(--barista-radius-md);
   padding: 10px 18px;
   min-height: 44px;
   font-family: var(--font-heading);
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
-  color: var(--barista-text-primary, var(--color-text));
+  color: var(--barista-text-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
   transition: transform 160ms var(--transition-spring), opacity 160ms var(--transition-spring), background-color 160ms var(--transition-spring), border-color 160ms var(--transition-spring), color 160ms var(--transition-spring), box-shadow 160ms var(--transition-spring);
-  box-shadow: var(--barista-shadow-card, 0 1px 3px rgba(0, 0, 0, 0.03));
+  box-shadow: var(--barista-shadow-card);
 }
 
 .btn-candy:hover {
-  background-color: var(--barista-bg-elevated, var(--bg-canvas));
-  border-color: var(--barista-border-active, #CBD5E1);
+  background-color: var(--barista-bg-elevated);
+  border-color: var(--barista-border-active);
   transform: translateY(-1px);
 }
 
@@ -753,15 +409,15 @@ main {
 }
 
 .btn-candy.primary {
-  background-color: var(--barista-accent-honey, #D97706);
-  color: var(--barista-on-accent, #FFFFFF);
-  font-weight: 800;
+  background-color: var(--barista-accent-honey);
+  color: var(--barista-on-accent);
+  font-weight: 600;
   border: none;
-  box-shadow: var(--barista-shadow-honey, 0 4px 14px rgba(217, 119, 6, 0.28));
+  box-shadow: var(--barista-shadow-honey);
 }
 
 .btn-candy.primary:hover {
-  background-color: var(--barista-accent-honey-hover, #B45309);
+  background-color: var(--barista-accent-honey-hover);
   filter: brightness(1.04);
   transform: translateY(-1px);
 }
@@ -771,8 +427,8 @@ main {
 }
 
 .btn-candy.accent {
-  background-color: var(--barista-accent-mint-subtle, rgba(16, 185, 129, 0.12));
-  color: var(--barista-accent-mint, #10B981);
+  background-color: var(--barista-accent-mint-subtle);
+  color: var(--barista-accent-mint);
   border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
@@ -781,20 +437,20 @@ main {
 }
 
 .btn-candy.secondary {
-  background-color: var(--barista-bg-surface, #FFFFFF);
-  color: var(--barista-text-primary, var(--color-text));
-  border: 1.5px solid var(--barista-border-hairline, var(--border-color));
+  background-color: var(--barista-bg-surface);
+  color: var(--barista-text-primary);
+  border: 1.5px solid var(--barista-border-hairline);
 }
 
 .btn-candy.secondary:hover {
-  background-color: var(--barista-bg-elevated, var(--bg-canvas));
-  border-color: var(--barista-border-active, #CBD5E1);
+  background-color: var(--barista-bg-elevated);
+  border-color: var(--barista-border-active);
   transform: translateY(-1px);
 }
 
 .btn-candy.danger {
-  background-color: var(--barista-accent-danger-bg, #FEE2E2);
-  color: var(--barista-accent-danger-text, #991B1B);
+  background-color: var(--barista-accent-danger-bg);
+  color: var(--barista-accent-danger-text);
   border: 1px solid rgba(239, 68, 68, 0.25);
 }
 
@@ -812,27 +468,27 @@ main {
 }
 
 .app-bar-btn {
-  border: 1px solid var(--barista-border-hairline, var(--border-color));
-  background-color: var(--barista-bg-surface, #FFFFFF);
+  border: 1px solid var(--barista-border-hairline);
+  background-color: var(--barista-bg-surface);
   padding: 8px 14px;
   min-height: 40px;
   font-family: var(--font-heading);
   font-weight: 700;
   font-size: 12px;
   cursor: pointer;
-  color: var(--barista-text-primary, var(--color-text));
+  color: var(--barista-text-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
   transition: transform 150ms ease, opacity 150ms ease, background-color 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
-  border-radius: var(--barista-radius-sm, 10px);
+  border-radius: var(--barista-radius-sm);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .app-bar-btn:hover {
-  background-color: var(--barista-bg-elevated, var(--bg-canvas));
-  border-color: var(--barista-border-active, #CBD5E1);
+  background-color: var(--barista-bg-elevated);
+  border-color: var(--barista-border-active);
 }
 
 .app-bar-btn:active {
@@ -853,29 +509,29 @@ main {
   font-weight: 700;
   text-transform: uppercase;
   margin-bottom: 6px;
-  color: var(--barista-text-secondary, var(--color-text-muted));
+  color: var(--barista-text-secondary);
   letter-spacing: 0.04em;
 }
 
 .candy-input {
   width: 100%;
   min-height: 44px;
-  background-color: var(--barista-bg-canvas, #FFFFFF);
-  border: 1px solid var(--barista-border-hairline, var(--border-color));
-  border-radius: var(--barista-radius-md, 12px);
+  background-color: var(--barista-bg-canvas);
+  border: 1px solid var(--barista-border-hairline);
+  border-radius: var(--barista-radius-md);
   padding: 10px 14px;
   font-family: var(--font-body);
   font-size: 14px;
   box-sizing: border-box;
-  color: var(--barista-text-primary, #0F172A);
+  color: var(--barista-text-primary);
   transition: transform 180ms ease, opacity 180ms ease, background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .candy-input:focus-visible {
   outline: none;
-  border-color: var(--barista-accent-honey, var(--color-crimson));
-  box-shadow: 0 0 0 3px var(--barista-accent-honey-glow, rgba(217, 119, 6, 0.2));
+  border-color: var(--barista-accent-honey);
+  box-shadow: 0 0 0 3px var(--barista-accent-honey-glow);
 }
 
 /* Custom styling for date inputs to look clean and uniform across all browsers (including iOS Safari standalone PWA) */
@@ -914,10 +570,10 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 .barista-btn-primary {
   min-height: 48px;
   height: 48px;
-  background-color: var(--barista-accent-honey);
-  color: #000000;
+  background-color: var(--action);
+  color: var(--on-action);
   font-family: var(--font-heading);
-  font-weight: 800;
+  font-weight: 600;
   font-size: 14px;
   letter-spacing: -0.01em;
   padding: 0 var(--barista-space-20);
@@ -936,7 +592,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .barista-btn-primary:hover {
-  background-color: var(--barista-accent-honey-hover);
+  background-color: color-mix(in oklab, var(--action) 88%, var(--accent));
   filter: brightness(1.04);
 }
 
@@ -969,7 +625,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 
 .barista-btn-secondary:hover {
   border-color: var(--barista-border-active);
-  background-color: var(--barista-bg-subtle, rgba(255, 255, 255, 0.08));
+  background-color: var(--barista-bg-subtle);
 }
 
 .barista-btn-secondary:active {
@@ -985,7 +641,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   background-color: var(--barista-bg-elevated);
   color: var(--barista-text-primary);
   font-family: var(--font-mono);
-  font-weight: 800;
+  font-weight: 600;
   font-size: 18px;
   border-radius: var(--barista-radius-md);
   border: 1px solid var(--barista-border-hairline);
@@ -1129,7 +785,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 .barista-metric-display {
   font-family: var(--font-mono);
   font-size: 28px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.03em;
   color: var(--barista-text-primary);
   line-height: 1.1;
@@ -1200,7 +856,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   width: 100%;
   align-items: center;
   box-sizing: border-box;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   overflow: hidden;
 }
@@ -1263,7 +919,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   border: none;
   background: transparent;
   font-family: var(--font-mono);
-  font-weight: 800;
+  font-weight: 600;
   font-size: 13px;
   color: var(--color-text);
 }
@@ -1277,7 +933,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   height: 52px;
   background-color: var(--bg-header);
   border: 2.5px solid var(--border-color);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   box-shadow: 4px 4px 0px var(--border-color);
   display: flex;
   justify-content: space-around;
@@ -1296,7 +952,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   border: none;
   font-size: 12px;
   font-family: var(--font-heading);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-header-text);
   opacity: 0.65;
   display: flex;
@@ -1309,7 +965,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   letter-spacing: 0.04em;
   padding: 0;
   margin: 0 4px;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   transition: transform var(--transition-fast), opacity var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
@@ -1349,7 +1005,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.04);
   font-family: var(--font-body);
   font-size: 13px;
@@ -1357,7 +1013,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   display: flex;
   align-items: center;
   gap: 10px;
-  z-index: 12000;
+  z-index: var(--z-toast);
   pointer-events: auto;
 }
 
@@ -1384,7 +1040,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   font-weight: 600;
   box-sizing: border-box;
   font-size: 12.5px;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
@@ -1404,7 +1060,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   font-size: 12px;
   cursor: pointer;
   text-transform: uppercase;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
 }
 
 .undo-btn:active {
@@ -1427,7 +1083,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  border-radius: 8px;
+  border-radius: var(--r-control);
   border: none;
   display: inline-flex;
   align-items: center;
@@ -1459,7 +1115,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 .bento-accordion {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 14px;
+  border-radius: var(--r-tile);
   padding: 14px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
   margin-bottom: 12px;
@@ -1496,7 +1152,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   border: 1px solid var(--border-color);
   padding: 14px;
   margin-bottom: 16px;
-  border-radius: 14px;
+  border-radius: var(--r-tile);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
@@ -1507,14 +1163,14 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   padding: 18px;
   text-align: center;
   margin-bottom: 16px;
-  border-radius: 16px;
+  border-radius: var(--r-tile);
   box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.05);
 }
 
 .timer-display {
   font-family: var(--font-mono);
   font-size: 38px;
-  font-weight: 800;
+  font-weight: 600;
   margin: 10px 0;
   color: var(--color-text);
   letter-spacing: -0.02em;
@@ -1546,7 +1202,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   line-height: 1.5;
   margin-top: 14px;
   color: var(--barista-instr-text);
-  border-radius: 10px;
+  border-radius: var(--r-control);
 }
 
 .nb-action-wrap {
@@ -1564,7 +1220,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   background: linear-gradient(90deg, #E2E8F0 25%, #EDF2F7 50%, #E2E8F0 75%);
   background-size: 200% 100%;
   animation: skeleton-pulse 1.5s ease-in-out infinite;
-  border-radius: 4px;
+  border-radius: var(--r-xs);
 }
 
 @keyframes skeleton-pulse {
@@ -1593,7 +1249,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 .card-title {
   font-family: var(--font-heading);
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: -0.01em;
   margin: 0;
@@ -1621,7 +1277,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 .bento-widget {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: var(--r-tile);
   padding: 10px 8px;
   display: flex;
   flex-direction: column;
@@ -1672,7 +1328,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 .bento-value-container input {
   font-size: 32px;
   font-family: var(--font-mono);
-  font-weight: 800;
+  font-weight: 600;
   text-align: center;
   border: none;
   background: transparent;
@@ -1703,7 +1359,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 .bento-btn {
   background: var(--bg-canvas);
   border: 1px solid var(--border-color);
-  border-radius: 10px;
+  border-radius: var(--r-control);
   flex: 1;
   height: 44px;
   min-height: 44px;
@@ -1742,7 +1398,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   background-color: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  z-index: 10000;
+  z-index: var(--z-sheet);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1784,7 +1440,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 .sheet-drag-handle {
   width: 38px;
   height: 5px;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   background-color: rgba(120, 120, 128, 0.3);
   margin: 10px auto 4px auto;
   cursor: grab;
@@ -1808,7 +1464,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   background-color: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  z-index: 11000;
+  z-index: var(--z-modal);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1822,7 +1478,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 .cupertino-segmented {
   display: flex;
   background-color: var(--segmented-bg);
-  border-radius: 12px;
+  border-radius: var(--r-control);
   padding: 3px;
   gap: 2px;
   box-sizing: border-box;
@@ -1840,7 +1496,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   flex: 1;
   min-width: 0;
   padding: 7px 10px;
-  border-radius: 9px;
+  border-radius: var(--r-control);
   border: none;
   background: transparent;
   color: var(--color-text-muted);
@@ -1859,7 +1515,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 .cupertino-segmented-btn.active {
   background-color: var(--segmented-active);
   color: var(--color-text);
-  font-weight: 800;
+  font-weight: 600;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
@@ -1896,7 +1552,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   appearance: none;
   width: 100%;
   height: 6px;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   background: var(--segmented-bg);
   outline: none;
   margin: 6px 0;
@@ -1930,7 +1586,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   background-color: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  z-index: 10500;
+  z-index: var(--z-sheet-nested);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1947,7 +1603,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   background-color: var(--sheet-bg);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
-  border-radius: 18px;
+  border-radius: var(--r-tile);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
   border: 1px solid var(--border-color);
   overflow: hidden;
@@ -2046,7 +1702,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .soft-fade-in {
-  animation: softFadeIn 250ms var(--transition-spring, ease-out);
+  animation: softFadeIn 250ms var(--transition-spring);
 }
 
 .filter-scroll-container,
@@ -2071,7 +1727,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   font-family: var(--font-heading);
   font-size: 12px;
   padding: 6px 12px;
-  border-radius: 20px;
+  border-radius: var(--r-card);
   border: 2px solid var(--border-color);
   background-color: var(--bg-card);
   color: var(--color-text);
@@ -2131,7 +1787,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   height: 10px;
   background-color: #E2E8F0;
   border: 2px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--r-control);
   overflow: hidden;
   position: relative;
   box-shadow: inset 1px 1px 2px rgba(0,0,0,0.15);
@@ -2139,7 +1795,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 
 .weight-progress-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   transition: width 400ms var(--transition-spring), background-color 300ms ease;
   position: relative;
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.25) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0.25) 75%, transparent 75%, transparent);
@@ -2168,11 +1824,11 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   align-items: center;
   gap: 4px;
   padding: 3px 8px;
-  border-radius: 12px;
+  border-radius: var(--r-control);
   border: 2px solid var(--border-color);
   font-family: var(--font-heading);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   box-shadow: 2px 2px 0px var(--border-color);
@@ -2180,34 +1836,34 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .roast-freshness-badge.freshness-degassing {
-  background-color: var(--barista-accent-cryo-bg, #E0F2FE);
-  color: var(--barista-accent-cryo-text, #0369A1);
-  border-color: var(--barista-accent-cryo, #0284C7);
+  background-color: var(--barista-accent-cryo-bg);
+  color: var(--barista-accent-cryo-text);
+  border-color: var(--barista-accent-cryo);
 }
 
 .roast-freshness-badge.freshness-peak {
-  background-color: var(--barista-accent-mint-bg, #DCFCE7);
-  color: var(--barista-accent-mint-text, #15803D);
-  border-color: var(--barista-accent-mint, #16A34A);
+  background-color: var(--barista-accent-mint-bg);
+  color: var(--barista-accent-mint-text);
+  border-color: var(--barista-accent-mint);
 }
 
 .roast-freshness-badge.freshness-frozen {
-  background-color: var(--barista-accent-cryo-bg, #E0F7FA);
-  color: var(--barista-accent-cryo-text, #00838F);
-  border-color: var(--barista-accent-cryo, #00ACC1);
+  background-color: var(--barista-accent-cryo-bg);
+  color: var(--barista-accent-cryo-text);
+  border-color: var(--barista-accent-cryo);
 }
 
 .roast-freshness-badge.freshness-madure {
-  background-color: var(--barista-accent-honey-bg, #FEF3C7);
-  color: var(--barista-accent-honey-text, #B45309);
-  border-color: var(--barista-accent-honey, #D97706);
+  background-color: var(--barista-accent-honey-bg);
+  color: var(--barista-accent-honey-text);
+  border-color: var(--barista-accent-honey);
 }
 
 /* 4. Rotary J-Max Grinder Dial Widget */
 .rotary-dial-card {
   background-color: var(--bg-card);
   border: 2px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--r-control);
   padding: 14px;
   margin-top: 10px;
   box-shadow: 3px 3px 0px var(--border-color);
@@ -2247,7 +1903,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   height: 48px;
   background-color: var(--color-crimson);
   top: 16px;
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   transform-origin: bottom center;
   box-shadow: 0 0 4px rgba(0,0,0,0.4);
   transition: transform 250ms var(--transition-spring);
@@ -2274,10 +1930,10 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   background-color: var(--border-color);
   color: #FFFFFF;
   font-family: var(--font-mono);
-  font-weight: 800;
+  font-weight: 600;
   font-size: 14px;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: var(--r-control);
   box-shadow: 2px 2px 0px var(--color-crimson);
 }
 
@@ -2288,7 +1944,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   font-weight: 700;
   font-size: 12px;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--r-control);
   border: 1px solid var(--border-color);
 }
 
@@ -2299,7 +1955,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   background-color: var(--bg-card);
   padding: 5px;
   border: 1.5px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--r-control);
   margin-bottom: 14px;
 }
 
@@ -2311,8 +1967,8 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   min-height: 38px;
   font-family: var(--font-heading);
   font-size: 12px;
-  font-weight: 800;
-  border-radius: 8px;
+  font-weight: 600;
+  border-radius: var(--r-control);
   cursor: pointer;
   color: var(--color-text-muted);
   transition: transform 150ms var(--transition-spring), opacity 150ms var(--transition-spring), background-color 150ms var(--transition-spring), border-color 150ms var(--transition-spring), color 150ms var(--transition-spring), box-shadow 150ms var(--transition-spring);
@@ -2342,10 +1998,10 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   background-color: #FEF08A;
   color: #854D0E;
   border: 2px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: var(--r-control);
   font-family: var(--font-heading);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
   transform: rotate(-3deg);
   box-shadow: 2px 2px 0px var(--border-color);
@@ -2370,12 +2026,12 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 
 /* ☕ Barista Mode & Precision UI Utilities */
-.font-mono { font-family: var(--font-mono, 'SF Mono', 'JetBrains Mono', Menlo, monospace); }
+.font-mono { font-family: var(--font-mono); }
 .text-7xl { font-size: 4.5rem; line-height: 1; }
 @media (min-width: 768px) {
   .md\:text-8xl { font-size: 6rem; line-height: 1; }
 }
-.font-black { font-weight: 900; }
+.font-black { font-weight: 700; }
 .text-white { color: #FFFFFF; }
 .tracking-tight { letter-spacing: -0.025em; }
 
@@ -2399,15 +2055,9 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   50% { opacity: 0.5; }
 }
 
-
 /* ===== UI/UX audit 2026-10-22 ===== */
 :root {
-  --fs-caption: 12px;
-  --z-base: 1;
-  --z-sticky: 100;
-  --z-nav: 1000;
-  --z-modal: 10000;
-  --z-toast: 12000;
+  --fs-caption: 12px; /* layer scale lives in styles/tokens.css */
 }
 
 /* Touch: expand hit area to 44x44 without changing layout */
@@ -2433,23 +2083,23 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 .bt-dialog {
   width: 100%; max-width: 420px;
-  background: var(--bg-card, var(--bg-surface, #fff));
-  color: var(--color-text, var(--text-primary, #09090B));
-  border: 1px solid var(--border-color, rgba(0,0,0,.08));
-  border-radius: 16px; padding: 20px;
+  background: var(--bg-card);
+  color: var(--color-text);
+  border: 1px solid var(--border-color);
+  border-radius: var(--r-tile); padding: 20px;
   box-shadow: 0 12px 40px rgba(0,0,0,.25);
-  font-family: var(--font-body, Inter, sans-serif);
+  font-family: var(--font-body);
 }
 .bt-dialog p { margin: 0 0 16px; font-size: 16px; line-height: 1.5; }
 .bt-dialog-actions { display: flex; gap: 8px; justify-content: flex-end; }
 .bt-dialog-actions button {
   min-height: 44px; min-width: 96px; padding: 0 16px;
-  border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;
-  border: 1px solid var(--border-color, rgba(0,0,0,.16));
+  border-radius: var(--r-control); font-size: 16px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--border-color);
   background: transparent; color: inherit;
 }
 .bt-dialog-actions .bt-dialog-ok {
-  background: var(--color-crimson, var(--accent-terracotta, #C2410C)); color: #fff; border-color: transparent;
+  background: var(--color-crimson); color: #fff; border-color: transparent;
 }
 @media (min-width: 600px) { .bt-dialog-overlay { align-items: center; } }
 

@@ -438,25 +438,13 @@ export function RenderScaChips({ notesStr, maxChips = 4 }) {
   if (notesList.length === 0) return null;
 
   return (
-    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginTop: '4px' }}>
+    <div className="bt-notes">
       {notesList.map((note, idx) => {
         const colors = getScaColorForNote(note);
         return (
-          <span key={idx} style={{
-            fontSize: '12px',
-            fontWeight: '800',
-            padding: '3px 7px',
-            borderRadius: '6px',
-            backgroundColor: colors.bg,
-            border: `1.5px solid ${colors.border}`,
-            color: colors.text,
-            textTransform: 'uppercase',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}>
-            {getScaIcon(note, 12, 2.5)}
-            {note}
+          <span key={idx} className="bt-note" style={{ '--note-icon': colors.border }}>
+            {getScaIcon(note, 13, 2)}
+            {note.charAt(0).toUpperCase() + note.slice(1).toLowerCase()}
           </span>
         );
       })}

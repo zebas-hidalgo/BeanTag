@@ -124,7 +124,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
       if (data.success && data.token) {
         localStorage.setItem('beantag-token', data.token);
         localStorage.setItem('beantag-user', JSON.stringify(data.user));
-        if (showToast) showToast(`¡Bienvenido, ${data.user.name}! ☕`, { type: 'success', duration: 3000 });
+        if (showToast) showToast(`¡Bienvenido, ${data.user.name}! `, { type: 'success', duration: 3000 });
         if (onSuccess) onSuccess(data.user, data.token);
         onClose();
       } else {
@@ -162,8 +162,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
         localStorage.setItem('beantag-token', data.token);
         localStorage.setItem('beantag-user', JSON.stringify(data.user));
         const toastMsg = data.linked
-          ? `¡Contraseña vinculada a tu cuenta con éxito! Sesión iniciada como ${data.user.name} ☕`
-          : (mode === 'login' ? `¡Sesión iniciada como ${data.user.name}! ☕` : '¡Cuenta creada con éxito! ☕');
+          ? `¡Contraseña vinculada a tu cuenta con éxito! Sesión iniciada como ${data.user.name} `
+          : (mode === 'login' ? `¡Sesión iniciada como ${data.user.name}! ` : '¡Cuenta creada con éxito! ');
         if (showToast) showToast(toastMsg, { type: 'success', duration: 3000 });
         if (onSuccess) onSuccess(data.user, data.token);
         onClose();
@@ -183,15 +183,15 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
   if (!isOpen) return null;
 
   return (
-    <div className="bento-modal-overlay" onClick={onClose} style={{ zIndex: 11000 }} role="dialog" aria-modal="true" aria-label="Iniciar sesión" onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }} tabIndex={-1} ref={(el) => el && el.focus()}>
-      <div className="candy-card animate-entrance" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', width: '100%', padding: '20px 18px', margin: 'auto', background: 'var(--color-surface, #FFFFFF)', boxSizing: 'border-box' }}>
+    <div className="bento-modal-overlay" onClick={onClose} style={{ zIndex: 'var(--z-modal)' }} role="dialog" aria-modal="true" aria-label="Iniciar sesión" onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }} tabIndex={-1} ref={(el) => el && el.focus()}>
+      <div className="candy-card animate-entrance" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', width: '100%', padding: '20px 18px', margin: 'auto', background: 'var(--color-surface)', boxSizing: 'border-box' }}>
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={24} color="var(--color-crimson, #E53E3E)" />
+            <Sparkles size={24} color="var(--color-crimson)" />
             <div>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', margin: 0, fontWeight: '900' }}>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', margin: 0, fontWeight: '700' }}>
                 Acceso a BeanTag
               </h3>
               <p style={{ fontSize: '12px', margin: '2px 0 0 0', color: 'var(--color-text-muted)' }}>
@@ -205,9 +205,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
         </div>
 
         {errorMsg && (
-          <div style={{ background: '#FEE2E2', color: '#991B1B', padding: '10px 12px', borderRadius: '10px', fontSize: '12px', marginBottom: '14px', fontWeight: '600', border: '1px solid #FECACA' }}>
+          <div style={{ background: 'var(--bad-bg)', color: 'var(--bad-text)', padding: '10px 12px', borderRadius: 'var(--r-control)', fontSize: '12px', marginBottom: '14px', fontWeight: '600', border: '1px solid #FECACA' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <AlertCircle size={15} color="#DC2626" style={{ flexShrink: 0 }} />
+              <AlertCircle size={15} color="var(--bad)" style={{ flexShrink: 0 }} />
               <span>{errorMsg}</span>
             </div>
             {isGoogleOnlyError && (
@@ -219,7 +219,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
                   setIsGoogleOnlyError(false);
                 }}
                 className="btn-candy secondary"
-                style={{ width: '100%', marginTop: '8px', fontSize: '12px', padding: '8px 10px', background: '#FFFFFF', color: '#991B1B', borderColor: '#FCA5A5', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                style={{ width: '100%', marginTop: '8px', fontSize: '12px', padding: '8px 10px', background: 'var(--surface)', color: 'var(--bad-text)', borderColor: 'var(--bad-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
                 <KeyRound size={14} />
                 <span>Asignar contraseña a este correo en "Crear Cuenta"</span>
@@ -229,7 +229,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
         )}
 
         {/* HERO: Google Sign-In Container */}
-        <div style={{ background: 'var(--color-bg, #F9FAFB)', border: '1.5px solid var(--color-border, #E5E7EB)', borderRadius: '16px', padding: '16px 14px', textAlign: 'center', marginBottom: '18px' }}>
+        <div style={{ background: 'var(--color-bg)', border: '1.5px solid var(--color-border)', borderRadius: 'var(--r-tile)', padding: '16px 14px', textAlign: 'center', marginBottom: '18px' }}>
           <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '12px', color: 'var(--color-text)' }}>
             Acceso Rápido con tu Cuenta de Google
           </div>
@@ -259,20 +259,20 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
 
         {/* Divider */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', color: 'var(--color-text-muted)', fontSize: '12px' }}>
-          <div style={{ flex: 1, height: '1px', background: 'var(--color-border, #E5E7EB)' }}></div>
+          <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
           <span style={{ padding: '0 10px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>o continuar con correo</span>
-          <div style={{ flex: 1, height: '1px', background: 'var(--color-border, #E5E7EB)' }}></div>
+          <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
         </div>
 
         {/* Tab Switcher for Email Auth */}
-        <div style={{ display: 'flex', background: 'var(--color-bg, #F3F4F6)', borderRadius: '12px', padding: '4px', marginBottom: '14px' }}>
+        <div style={{ display: 'flex', background: 'var(--color-bg)', borderRadius: 'var(--r-control)', padding: '4px', marginBottom: '14px' }}>
           <button
             type="button"
             onClick={() => { setMode('login'); setErrorMsg(''); setIsGoogleOnlyError(false); }}
             style={{
-              flex: 1, padding: '7px', borderRadius: '8px', border: 'none', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer',
-              background: mode === 'login' ? 'var(--color-surface, #FFF)' : 'transparent',
-              color: mode === 'login' ? 'var(--color-crimson, #E53E3E)' : 'var(--color-text-muted)',
+              flex: 1, padding: '7px', borderRadius: 'var(--r-control)', border: 'none', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer',
+              background: mode === 'login' ? 'var(--color-surface)' : 'transparent',
+              color: mode === 'login' ? 'var(--color-crimson)' : 'var(--color-text-muted)',
               boxShadow: mode === 'login' ? '0 2px 4px rgba(0,0,0,0.08)' : 'none'
             }}
           >
@@ -282,9 +282,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
             type="button"
             onClick={() => { setMode('register'); setErrorMsg(''); setIsGoogleOnlyError(false); }}
             style={{
-              flex: 1, padding: '7px', borderRadius: '8px', border: 'none', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer',
-              background: mode === 'register' ? 'var(--color-surface, #FFF)' : 'transparent',
-              color: mode === 'register' ? 'var(--color-crimson, #E53E3E)' : 'var(--color-text-muted)',
+              flex: 1, padding: '7px', borderRadius: 'var(--r-control)', border: 'none', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer',
+              background: mode === 'register' ? 'var(--color-surface)' : 'transparent',
+              color: mode === 'register' ? 'var(--color-crimson)' : 'var(--color-text-muted)',
               boxShadow: mode === 'register' ? '0 2px 4px rgba(0,0,0,0.08)' : 'none'
             }}
           >
@@ -296,10 +296,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {mode === 'register' && (
             <div className="form-group" style={{ margin: 0 }}>
-              <label style={{ fontSize: '12px' }}>Nombre Barista</label>
+              <label htmlFor="bt-authmodal-1" style={{ fontSize: '12px' }}>Nombre Barista</label>
               <div style={{ position: 'relative' }}>
                 <User size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                <input aria-label="Tu Nombre"
+                <input id="bt-authmodal-1" aria-label="Tu Nombre"
                   type="text" className="candy-input" placeholder="Tu Nombre"
                   style={{ paddingLeft: '34px', fontSize: '12px' }} value={name} onChange={(e) => setName(e.target.value)}
                 />
@@ -308,10 +308,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
           )}
 
           <div className="form-group" style={{ margin: 0 }}>
-            <label style={{ fontSize: '12px' }}>Correo Electrónico</label>
+            <label htmlFor="bt-authmodal-2" style={{ fontSize: '12px' }}>Correo Electrónico</label>
             <div style={{ position: 'relative' }}>
               <Mail size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-              <input
+              <input id="bt-authmodal-2"
                 type="email" aria-label="Correo Electrónico" autoComplete="email" className="candy-input" placeholder="barista@ejemplo.com" required
                 style={{ paddingLeft: '34px', fontSize: '12px' }} value={email} onChange={(e) => setEmail(e.target.value)}
               />
@@ -319,10 +319,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
           </div>
 
           <div className="form-group" style={{ margin: 0 }}>
-            <label style={{ fontSize: '12px' }}>Contraseña</label>
+            <label htmlFor="bt-authmodal-3" style={{ fontSize: '12px' }}>Contraseña</label>
             <div style={{ position: 'relative' }}>
               <Lock size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-              <input
+              <input id="bt-authmodal-3"
                 type="password" aria-label="Contraseña" autoComplete="current-password" className="candy-input" placeholder="••••••••" required
                 style={{ paddingLeft: '34px', fontSize: '12px' }} value={password} onChange={(e) => setPassword(e.target.value)}
               />

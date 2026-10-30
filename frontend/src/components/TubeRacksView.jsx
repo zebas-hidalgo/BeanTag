@@ -8,12 +8,12 @@ import SlotAssignModal from './SlotAssignModal';
 const getRoastDotColor = (roast) => {
   const r = String(roast || '').toLowerCase();
   if (r.includes('oscuro') || r.includes('dark') || r.includes('frances') || r.includes('italiano')) {
-    return '#475569';
+    return 'var(--ink-muted)';
   }
   if (r.includes('medio') || r.includes('medium')) {
-    return '#B45309';
+    return 'var(--accent-strong)';
   }
-  return '#D97706';
+  return 'var(--accent)';
 };
 
 export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches, showToast }) {
@@ -106,7 +106,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
       setSelectedRackId(data.rack.id);
       setNewRackName('');
       setShowCreateModal(false);
-      if (showToast) showToast(`Portatubos "${data.rack.name}" creado con éxito ✨`, { type: 'success' });
+      if (showToast) showToast(`Portatubos "${data.rack.name}" creado con éxito `, { type: 'success' });
     } catch (err) {
       if (showToast) showToast(err.message, { type: 'error' });
     }
@@ -264,7 +264,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
 
       if (showToast) {
         showToast(
-          `☕ Dosis consumida de "${data.consumed_batch.name}". Quedan ${data.consumed_batch.remaining_doses} tubos.`,
+          `Dosis consumida de "${data.consumed_batch.name}". Quedan ${data.consumed_batch.remaining_doses} tubos.`,
           { type: 'success', duration: 4000 }
         );
       }
@@ -295,10 +295,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
           flexWrap: 'wrap',
           gap: '12px',
           padding: '16px 20px',
-          backgroundColor: 'var(--barista-bg-surface, var(--bg-card, #FFFFFF))',
-          borderRadius: 'var(--barista-radius-lg, 16px)',
-          border: '1px solid var(--barista-border-hairline, var(--border-color))',
-          boxShadow: 'var(--barista-shadow-card, 0 2px 8px rgba(0,0,0,0.04))'
+          backgroundColor: 'var(--barista-bg-surface)',
+          borderRadius: 'var(--barista-radius-lg)',
+          border: '1px solid var(--barista-border-hairline)',
+          boxShadow: 'var(--barista-shadow-card)'
         }}
       >
         <div>
@@ -307,27 +307,27 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
               style={{
                 margin: 0,
                 fontSize: '18px',
-                fontWeight: '900',
+                fontWeight: '700',
                 fontFamily: 'var(--font-heading)',
-                color: 'var(--color-text, #0F172A)',
+                color: 'var(--color-text)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '7px'
               }}
             >
-              <FlaskConical size={18} color="var(--barista-accent-honey, #D97706)" strokeWidth={2.3} />
+              <FlaskConical size={18} color="var(--barista-accent-honey)" strokeWidth={2.3} />
               <span>Portatubos (2×3)</span>
             </h2>
             <span
               style={{
                 fontSize: '12px',
                 fontFamily: 'var(--font-mono)',
-                fontWeight: '800',
+                fontWeight: '600',
                 padding: '3px 8px',
-                borderRadius: '9999px',
-                backgroundColor: 'var(--barista-instr-bg, #FEF3C7)',
-                color: 'var(--barista-accent-honey, #D97706)',
-                border: '1px solid var(--barista-instr-border, #FDE68A)'
+                borderRadius: 'var(--r-pill)',
+                backgroundColor: 'var(--barista-instr-bg)',
+                color: 'var(--barista-accent-honey)',
+                border: '1px solid var(--barista-instr-border)'
               }}
             >
               {occupiedSlots} / {totalSlots} tubos ocupados en total
@@ -337,7 +337,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
             style={{
               margin: '4px 0 0 0',
               fontSize: '12px',
-              color: 'var(--barista-text-secondary, #64748B)'
+              color: 'var(--barista-text-secondary)'
             }}
           >
             Mapeo táctil de dosis individuales en soportes de 6 tubos. Toca un tubo para extraer o asignar.
@@ -353,10 +353,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
               alignItems: 'center',
               justifyContent: 'center',
               padding: '8px',
-              borderRadius: 'var(--barista-radius-md, 10px)',
-              backgroundColor: 'var(--barista-bg-elevated, #F1F5F9)',
-              border: '1px solid var(--barista-border-hairline, var(--border-color))',
-              color: 'var(--barista-text-secondary, #64748B)',
+              borderRadius: 'var(--barista-radius-md)',
+              backgroundColor: 'var(--barista-bg-elevated)',
+              border: '1px solid var(--barista-border-hairline)',
+              color: 'var(--barista-text-secondary)',
               cursor: 'pointer'
             }}
             title="Refrescar portatubos"
@@ -372,15 +372,15 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
               alignItems: 'center',
               gap: '6px',
               padding: '8px 14px',
-              borderRadius: 'var(--barista-radius-md, 12px)',
-              backgroundColor: 'var(--barista-accent-honey, #D97706)',
-              color: '#FFFFFF',
+              borderRadius: 'var(--barista-radius-md)',
+              backgroundColor: 'var(--barista-accent-honey)',
+              color: 'var(--on-accent)',
               border: 'none',
-              fontWeight: '800',
+              fontWeight: '600',
               fontSize: '13px',
               fontFamily: 'var(--font-heading)',
               cursor: 'pointer',
-              boxShadow: 'var(--barista-shadow-honey, 0 4px 12px rgba(217, 119, 6, 0.25))'
+              boxShadow: 'var(--barista-shadow-honey)'
             }}
           >
             <Plus size={16} strokeWidth={3} />
@@ -401,9 +401,9 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
         <div
           style={{
             padding: '16px',
-            borderRadius: '12px',
-            backgroundColor: 'var(--barista-accent-danger-bg, #FEE2E2)',
-            color: 'var(--barista-accent-danger-text, #991B1B)',
+            borderRadius: 'var(--r-control)',
+            backgroundColor: 'var(--barista-accent-danger-bg)',
+            color: 'var(--barista-accent-danger-text)',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
@@ -421,9 +421,9 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
           style={{
             textAlign: 'center',
             padding: '48px 24px',
-            backgroundColor: 'var(--barista-bg-surface, var(--bg-card, #FFFFFF))',
-            borderRadius: 'var(--barista-radius-lg, 20px)',
-            border: '2px dashed var(--barista-border-hairline, var(--border-color))'
+            backgroundColor: 'var(--barista-bg-surface)',
+            borderRadius: 'var(--barista-radius-lg)',
+            border: '2px dashed var(--barista-border-hairline)'
           }}
         >
           <div
@@ -431,23 +431,23 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
               width: '64px',
               height: '64px',
               borderRadius: '50%',
-              backgroundColor: 'var(--barista-bg-elevated, #F1F5F9)',
+              backgroundColor: 'var(--barista-bg-elevated)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 16px',
-              border: '2px solid var(--barista-border-hairline, var(--border-color))'
+              border: '2px solid var(--barista-border-hairline)'
             }}
           >
-            <Coffee size={32} color="var(--barista-accent-honey, #D97706)" />
+            <Coffee size={32} color="var(--barista-accent-honey)" />
           </div>
           <h3
             style={{
               margin: '0 0 8px 0',
               fontSize: '18px',
-              fontWeight: '900',
+              fontWeight: '700',
               fontFamily: 'var(--font-heading)',
-              color: 'var(--color-text, #0F172A)'
+              color: 'var(--color-text)'
             }}
           >
             Aún no tienes portatubos registrados
@@ -456,7 +456,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
             style={{
               margin: '0 0 20px 0',
               fontSize: '14px',
-              color: 'var(--barista-text-secondary, #64748B)',
+              color: 'var(--barista-text-secondary)',
               maxWidth: '380px',
               marginLeft: 'auto',
               marginRight: 'auto'
@@ -469,11 +469,11 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
             onClick={() => setShowCreateModal(true)}
             style={{
               padding: '12px 24px',
-              backgroundColor: 'var(--barista-accent-honey, #D97706)',
-              color: '#FFFFFF',
+              backgroundColor: 'var(--barista-accent-honey)',
+              color: 'var(--on-accent)',
               border: 'none',
-              borderRadius: 'var(--barista-radius-pill, 9999px)',
-              fontWeight: '800',
+              borderRadius: 'var(--barista-radius-pill)',
+              fontWeight: '600',
               fontSize: '14px',
               cursor: 'pointer',
               display: 'inline-flex',
@@ -529,41 +529,41 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                 alignItems: 'center',
                 gap: '8px',
                 padding: '8px 16px',
-                borderRadius: 'var(--barista-radius-pill, 9999px)',
+                borderRadius: 'var(--barista-radius-pill)',
                 border: selectedRackId === 'all'
-                  ? '1.5px solid var(--color-crimson, #E53E3E)'
-                  : '1px solid var(--barista-border-hairline, var(--border-color))',
+                  ? '1.5px solid var(--color-crimson)'
+                  : '1px solid var(--barista-border-hairline)',
                 backgroundColor: selectedRackId === 'all'
-                  ? 'var(--color-crimson, #E53E3E)'
-                  : 'var(--barista-bg-elevated, #F8FAFC)',
-                color: selectedRackId === 'all' ? '#FFFFFF' : 'var(--barista-text-secondary, #64748B)',
+                  ? 'var(--color-crimson)'
+                  : 'var(--barista-bg-elevated)',
+                color: selectedRackId === 'all' ? '#FFFFFF' : 'var(--barista-text-secondary)',
                 fontWeight: selectedRackId === 'all' ? '800' : '600',
                 fontSize: '13px',
                 fontFamily: 'var(--font-heading)',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 flexShrink: 0,
-                transition: 'all 0.15s ease',
+                transition: 'var(--transition-ui)',
                 boxShadow: selectedRackId === 'all'
                   ? '0 2px 10px rgba(229, 62, 62, 0.35)'
                   : 'none'
               }}
             >
-              <span>🗂️ Todos ({racks.length})</span>
+              <span>Todos ({racks.length})</span>
               <span
                 style={{
                   fontSize: '12px',
                   fontFamily: 'var(--font-mono)',
-                  fontWeight: '800',
+                  fontWeight: '600',
                   padding: '2px 7px',
-                  borderRadius: '9999px',
+                  borderRadius: 'var(--r-pill)',
                   backgroundColor: selectedRackId === 'all'
                     ? 'rgba(255, 255, 255, 0.25)'
-                    : 'var(--barista-bg-surface, #FFFFFF)',
-                  color: selectedRackId === 'all' ? '#FFFFFF' : 'var(--barista-text-secondary, #64748B)',
+                    : 'var(--barista-bg-surface)',
+                  color: selectedRackId === 'all' ? '#FFFFFF' : 'var(--barista-text-secondary)',
                   border: selectedRackId === 'all'
                     ? '1px solid rgba(255, 255, 255, 0.4)'
-                    : '1px solid var(--barista-border-hairline, var(--border-color))'
+                    : '1px solid var(--barista-border-hairline)'
                 }}
               >
                 {occupiedSlots}/{totalSlots}
@@ -590,41 +590,41 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                     alignItems: 'center',
                     gap: '8px',
                     padding: '8px 16px',
-                    borderRadius: 'var(--barista-radius-pill, 9999px)',
+                    borderRadius: 'var(--barista-radius-pill)',
                     border: isSelected
-                      ? '1.5px solid var(--color-crimson, #E53E3E)'
-                      : '1px solid var(--barista-border-hairline, var(--border-color))',
+                      ? '1.5px solid var(--color-crimson)'
+                      : '1px solid var(--barista-border-hairline)',
                     backgroundColor: isSelected
-                      ? 'var(--color-crimson, #E53E3E)'
-                      : 'var(--barista-bg-elevated, #F8FAFC)',
-                    color: isSelected ? '#FFFFFF' : 'var(--barista-text-secondary, #64748B)',
+                      ? 'var(--color-crimson)'
+                      : 'var(--barista-bg-elevated)',
+                    color: isSelected ? '#FFFFFF' : 'var(--barista-text-secondary)',
                     fontWeight: isSelected ? '800' : '600',
                     fontSize: '13px',
                     fontFamily: 'var(--font-heading)',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
                     flexShrink: 0,
-                    transition: 'all 0.15s ease',
+                    transition: 'var(--transition-ui)',
                     boxShadow: isSelected
                       ? '0 2px 10px rgba(229, 62, 62, 0.35)'
                       : 'none'
                   }}
                 >
-                  <span>☕ {rack.name}</span>
+                  <span>{rack.name}</span>
                   <span
                     style={{
                       fontSize: '12px',
                       fontFamily: 'var(--font-mono)',
-                      fontWeight: '800',
+                      fontWeight: '600',
                       padding: '2px 7px',
-                      borderRadius: '9999px',
+                      borderRadius: 'var(--r-pill)',
                       backgroundColor: isSelected
                         ? 'rgba(255, 255, 255, 0.25)'
-                        : 'var(--barista-bg-surface, #FFFFFF)',
-                      color: isSelected ? '#FFFFFF' : 'var(--barista-text-secondary, #64748B)',
+                        : 'var(--barista-bg-surface)',
+                      color: isSelected ? '#FFFFFF' : 'var(--barista-text-secondary)',
                       border: isSelected
                         ? '1px solid rgba(255, 255, 255, 0.4)'
-                        : '1px solid var(--barista-border-hairline, var(--border-color))'
+                        : '1px solid var(--barista-border-hairline)'
                     }}
                   >
                     {occupiedInThisRack}/6
@@ -643,16 +643,16 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
               alignItems: 'center',
               gap: '6px',
               padding: '8px 14px',
-              borderRadius: 'var(--barista-radius-pill, 9999px)',
-              border: '1px dashed var(--barista-border-hairline, var(--border-color))',
+              borderRadius: 'var(--barista-radius-pill)',
+              border: '1px dashed var(--barista-border-hairline)',
               backgroundColor: 'transparent',
-              color: 'var(--barista-text-secondary, #64748B)',
+              color: 'var(--barista-text-secondary)',
               fontWeight: '700',
               fontSize: '13px',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
               flexShrink: 0,
-              transition: 'all 0.15s ease'
+              transition: 'var(--transition-ui)'
             }}
           >
             <Plus size={15} />
@@ -675,10 +675,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
             <div
               key={rack.id}
               style={{
-                backgroundColor: 'var(--barista-bg-surface, var(--bg-card, #FFFFFF))',
-                borderRadius: 'var(--barista-radius-lg, 20px)',
-                border: '2px solid var(--barista-border-hairline, var(--border-color))',
-                boxShadow: 'var(--barista-shadow-elevated, 0 8px 24px rgba(0,0,0,0.06))',
+                backgroundColor: 'var(--barista-bg-surface)',
+                borderRadius: 'var(--barista-radius-lg)',
+                border: '2px solid var(--barista-border-hairline)',
+                boxShadow: 'var(--barista-shadow-elevated)',
                 overflow: 'hidden',
                 width: '100%',
                 maxWidth: '100%',
@@ -692,8 +692,8 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '12px 14px',
-                  backgroundColor: 'var(--barista-bg-elevated, var(--bg-header))',
-                  borderBottom: '2px solid var(--barista-border-hairline, var(--border-color))',
+                  backgroundColor: 'var(--barista-bg-elevated)',
+                  borderBottom: '2px solid var(--barista-border-hairline)',
                   position: 'relative',
                   width: '100%',
                   boxSizing: 'border-box'
@@ -708,19 +708,19 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                       flexShrink: 0,
                       backgroundColor:
                         occupiedInRack === 6
-                          ? 'var(--barista-accent-mint, #10B981)'
+                          ? 'var(--barista-accent-mint)'
                           : occupiedInRack > 0
-                          ? 'var(--barista-accent-honey, #D97706)'
-                          : 'var(--barista-text-muted, #94A3B8)'
+                          ? 'var(--barista-accent-honey)'
+                          : 'var(--barista-text-muted)'
                     }}
                   />
                   <h3
                     style={{
                       margin: 0,
                       fontSize: '15px',
-                      fontWeight: '800',
+                      fontWeight: '600',
                       fontFamily: 'var(--font-heading)',
-                      color: 'var(--color-text, #0F172A)',
+                      color: 'var(--color-text)',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis'
@@ -735,10 +735,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                       fontFamily: 'var(--font-mono)',
                       fontWeight: '700',
                       padding: '2px 6px',
-                      borderRadius: '9999px',
-                      backgroundColor: 'var(--barista-bg-surface, #FFFFFF)',
-                      border: '1px solid var(--barista-border-hairline, var(--border-color))',
-                      color: 'var(--barista-text-secondary, #64748B)',
+                      borderRadius: 'var(--r-pill)',
+                      backgroundColor: 'var(--barista-bg-surface)',
+                      border: '1px solid var(--barista-border-hairline)',
+                      color: 'var(--barista-text-secondary)',
                       flexShrink: 0
                     }}
                   >
@@ -755,9 +755,9 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                       background: 'transparent',
                       border: 'none',
                       padding: '4px',
-                      borderRadius: '6px',
+                      borderRadius: 'var(--r-control)',
                       cursor: 'pointer',
-                      color: 'var(--barista-text-secondary, #64748B)',
+                      color: 'var(--barista-text-secondary)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -786,10 +786,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                           zIndex: 50,
                           marginTop: '4px',
                           width: '200px',
-                          backgroundColor: 'var(--barista-bg-surface, #FFFFFF)',
-                          borderRadius: '12px',
-                          border: '1px solid var(--barista-border-hairline, var(--border-color))',
-                          boxShadow: 'var(--barista-shadow-elevated, 0 10px 25px rgba(0,0,0,0.15))',
+                          backgroundColor: 'var(--barista-bg-surface)',
+                          borderRadius: 'var(--r-control)',
+                          border: '1px solid var(--barista-border-hairline)',
+                          boxShadow: 'var(--barista-shadow-elevated)',
                           padding: '6px',
                           display: 'flex',
                           flexDirection: 'column',
@@ -809,10 +809,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                             padding: '8px 10px',
                             background: 'none',
                             border: 'none',
-                            borderRadius: '6px',
+                            borderRadius: 'var(--r-control)',
                             fontSize: '13px',
                             fontWeight: '600',
-                            color: 'var(--barista-text-primary, #0F172A)',
+                            color: 'var(--barista-text-primary)',
                             cursor: 'pointer',
                             textAlign: 'left'
                           }}
@@ -832,10 +832,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                               padding: '8px 10px',
                               background: 'none',
                               border: 'none',
-                              borderRadius: '6px',
+                              borderRadius: 'var(--r-control)',
                               fontSize: '13px',
                               fontWeight: '600',
-                              color: 'var(--barista-accent-danger, #EF4444)',
+                              color: 'var(--barista-accent-danger)',
                               cursor: 'pointer',
                               textAlign: 'left'
                             }}
@@ -855,10 +855,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                             padding: '8px 10px',
                             background: 'none',
                             border: 'none',
-                            borderRadius: '6px',
+                            borderRadius: 'var(--r-control)',
                             fontSize: '13px',
                             fontWeight: '600',
-                            color: 'var(--barista-accent-danger, #EF4444)',
+                            color: 'var(--barista-accent-danger)',
                             cursor: 'pointer',
                             textAlign: 'left'
                           }}
@@ -876,8 +876,8 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
               <div
                 style={{
                   padding: '8px 6px',
-                  backgroundColor: 'var(--barista-bg-surface, var(--bg-card, #FFFFFF))',
-                  backgroundImage: 'radial-gradient(var(--barista-border-hairline, rgba(0,0,0,0.06)) 1px, transparent 1px)',
+                  backgroundColor: 'var(--barista-bg-surface)',
+                  backgroundImage: 'radial-gradient(var(--barista-border-hairline) 1px, transparent 1px)',
                   backgroundSize: '16px 16px',
                   width: '100%',
                   maxWidth: '100%',
@@ -887,9 +887,9 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                 {/* Visual Stand Frame */}
                 <div
                   style={{
-                    backgroundColor: 'var(--barista-bg-elevated, #F8FAFC)',
-                    border: '1.5px solid var(--barista-border-hairline, var(--border-color))',
-                    borderRadius: 'var(--barista-radius-lg, 14px)',
+                    backgroundColor: 'var(--barista-bg-elevated)',
+                    border: '1.5px solid var(--barista-border-hairline)',
+                    borderRadius: 'var(--barista-radius-lg)',
                     padding: '8px 6px',
                     boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.04)',
                     width: '100%',
@@ -907,16 +907,16 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                       padding: '0 4px',
                       fontSize: '12px',
                       fontFamily: 'var(--font-mono)',
-                      fontWeight: '800',
+                      fontWeight: '600',
                       letterSpacing: '0.3px',
                       textTransform: 'uppercase'
                     }}
                   >
-                    <span style={{ color: 'var(--barista-text-muted, #94A3B8)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ color: 'var(--barista-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <span>▲</span>
                       <span>Fila Posterior (#04 - #06)</span>
                     </span>
-                    <span style={{ color: 'var(--barista-accent-honey, #D97706)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ color: 'var(--barista-accent-honey)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <span>▼</span>
                       <span>Fila Frontal (#01 - #03)</span>
                     </span>
@@ -984,12 +984,12 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                             width: '100%',
                             maxWidth: '100%',
                             backgroundColor: isFilled
-                              ? 'var(--barista-bg-surface, #FFFFFF)'
-                              : 'var(--barista-bg-subtle, rgba(241, 245, 249, 0.5))',
-                            borderRadius: '12px',
+                              ? 'var(--barista-bg-surface)'
+                              : 'var(--barista-bg-subtle)',
+                            borderRadius: 'var(--r-control)',
                             border: isFilled
-                              ? (isFrozen ? '2px solid #38BDF8' : '2px solid var(--barista-accent-honey, #D97706)')
-                              : '2px dashed var(--barista-border-hairline, var(--border-color))',
+                              ? (isFrozen ? '2px solid #38BDF8' : '2px solid var(--barista-accent-honey)')
+                              : '2px dashed var(--barista-border-hairline)',
                             boxShadow: isFilled
                               ? (isFrozen
                                   ? '0 3px 10px rgba(56, 189, 248, 0.18), inset 0 1px 0 rgba(255,255,255,0.8)'
@@ -1002,7 +1002,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                             justifyContent: 'center',
                             gap: '4px',
                             cursor: 'pointer',
-                            transition: 'all 0.15s ease',
+                            transition: 'var(--transition-ui)',
                             position: 'relative',
                             boxSizing: 'border-box',
                             overflow: 'hidden'
@@ -1014,7 +1014,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                               <span
                                 style={{
                                   fontSize: '12px',
-                                  fontWeight: '800',
+                                  fontWeight: '600',
                                   fontFamily: 'var(--font-mono)',
                                   color: 'var(--color-text-muted)',
                                   opacity: 0.85,
@@ -1031,7 +1031,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                                   position: 'relative',
                                   width: '30px',
                                   height: '48px',
-                                  border: '1.5px solid var(--color-text, #1E293B)',
+                                  border: '1.5px solid var(--color-text)',
                                   borderRadius: '0 0 12px 12px',
                                   background: 'rgba(0, 0, 0, 0.02)',
                                   display: 'flex',
@@ -1057,7 +1057,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                                       lineHeight: 1
                                     }}
                                   >
-                                    <Snowflake size={9} color="#0284C7" strokeWidth={2.5} />
+                                    <Snowflake size={9} color="var(--cryo)" strokeWidth={2.5} />
                                   </span>
                                 )}
 
@@ -1079,9 +1079,9 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                                 <span
                                   style={{
                                     fontSize: '12px',
-                                    fontWeight: '800',
+                                    fontWeight: '600',
                                     fontFamily: 'var(--font-mono)',
-                                    color: 'var(--color-text, #0F172A)',
+                                    color: 'var(--color-text)',
                                     lineHeight: 1,
                                     textAlign: 'center',
                                     whiteSpace: 'nowrap'
@@ -1108,12 +1108,12 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                                 <div
                                   style={{
                                     fontSize: '12px',
-                                    fontWeight: '800',
+                                    fontWeight: '600',
                                     lineHeight: 1.15,
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
-                                    color: 'var(--color-text, #0F172A)',
+                                    color: 'var(--color-text)',
                                     textAlign: 'center',
                                     width: '100%',
                                     minWidth: 0
@@ -1200,7 +1200,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 1100,
+            zIndex: 'var(--z-sticky-cta)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -1217,10 +1217,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
             style={{
               width: '100%',
               maxWidth: '440px',
-              backgroundColor: 'var(--barista-bg-surface, var(--bg-card, #FFFFFF))',
-              borderRadius: 'var(--barista-radius-lg, 20px)',
-              border: '2px solid var(--barista-border-hairline, var(--border-color))',
-              boxShadow: 'var(--barista-shadow-elevated, 0 20px 40px rgba(0,0,0,0.3))',
+              backgroundColor: 'var(--barista-bg-surface)',
+              borderRadius: 'var(--barista-radius-lg)',
+              border: '2px solid var(--barista-border-hairline)',
+              boxShadow: 'var(--barista-shadow-elevated)',
               overflow: 'hidden'
             }}
           >
@@ -1230,20 +1230,20 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '16px 20px',
-                borderBottom: '1px solid var(--barista-border-hairline, var(--border-color))',
-                backgroundColor: 'var(--barista-bg-elevated, var(--bg-header))'
+                borderBottom: '1px solid var(--barista-border-hairline)',
+                backgroundColor: 'var(--barista-bg-elevated)'
               }}
             >
               <h3
                 style={{
                   margin: 0,
                   fontSize: '16px',
-                  fontWeight: '800',
+                  fontWeight: '600',
                   fontFamily: 'var(--font-heading)',
-                  color: 'var(--color-text, #0F172A)'
+                  color: 'var(--color-text)'
                 }}
               >
-                🧪 Crear Nuevo Portatubos (2×3)
+                Crear Nuevo Portatubos (2×3)
               </h3>
               <button aria-label="Cerrar"
                 type="button"
@@ -1260,18 +1260,18 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
             </div>
 
             <form onSubmit={handleCreateRack} style={{ padding: '20px' }}>
-              <label
+              <label htmlFor="bt-tuberacksview-1"
                 style={{
                   display: 'block',
                   fontSize: '13px',
                   fontWeight: '700',
                   marginBottom: '8px',
-                  color: 'var(--color-text, #0F172A)'
+                  color: 'var(--color-text)'
                 }}
               >
                 Nombre o Ubicación del Portatubos:
               </label>
-              <input aria-label="Nombre o Ubicación del Portatubos:"
+              <input id="bt-tuberacksview-1" aria-label="Nombre o Ubicación del Portatubos:"
                 type="text"
                 autoFocus
                 placeholder="Ej. Rack Barra Espresso, Rack Congelador..."
@@ -1280,10 +1280,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                 style={{
                   width: '100%',
                   padding: '12px 14px',
-                  borderRadius: 'var(--barista-radius-md, 12px)',
-                  border: '2px solid var(--barista-border-hairline, var(--border-color))',
-                  backgroundColor: 'var(--barista-bg-elevated, #F8FAFC)',
-                  color: 'var(--color-text, #0F172A)',
+                  borderRadius: 'var(--barista-radius-md)',
+                  border: '2px solid var(--barista-border-hairline)',
+                  backgroundColor: 'var(--barista-bg-elevated)',
+                  color: 'var(--color-text)',
                   fontSize: '14px',
                   fontWeight: '600',
                   outline: 'none',
@@ -1295,7 +1295,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                 style={{
                   margin: '8px 0 20px 0',
                   fontSize: '12px',
-                  color: 'var(--barista-text-secondary, #64748B)'
+                  color: 'var(--barista-text-secondary)'
                 }}
               >
                 El portatubos se inicializará automáticamente con 6 ranuras numeradas del 1 al 6.
@@ -1307,10 +1307,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                   onClick={() => setShowCreateModal(false)}
                   style={{
                     padding: '10px 16px',
-                    borderRadius: 'var(--barista-radius-md, 12px)',
+                    borderRadius: 'var(--barista-radius-md)',
                     backgroundColor: 'transparent',
-                    border: '1px solid var(--barista-border-hairline, var(--border-color))',
-                    color: 'var(--barista-text-secondary, #64748B)',
+                    border: '1px solid var(--barista-border-hairline)',
+                    color: 'var(--barista-text-secondary)',
                     fontWeight: '700',
                     fontSize: '13px',
                     cursor: 'pointer'
@@ -1323,11 +1323,11 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                   disabled={!newRackName.trim()}
                   style={{
                     padding: '10px 20px',
-                    borderRadius: 'var(--barista-radius-md, 12px)',
-                    backgroundColor: 'var(--barista-accent-honey, #D97706)',
-                    color: '#FFFFFF',
+                    borderRadius: 'var(--barista-radius-md)',
+                    backgroundColor: 'var(--barista-accent-honey)',
+                    color: 'var(--on-accent)',
                     border: 'none',
-                    fontWeight: '800',
+                    fontWeight: '600',
                     fontSize: '13px',
                     cursor: 'pointer'
                   }}
@@ -1346,7 +1346,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 1100,
+            zIndex: 'var(--z-sticky-cta)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -1363,9 +1363,9 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
             style={{
               width: '100%',
               maxWidth: '440px',
-              backgroundColor: 'var(--barista-bg-surface, var(--bg-card, #FFFFFF))',
-              borderRadius: 'var(--barista-radius-lg, 20px)',
-              border: '2px solid var(--barista-border-hairline, var(--border-color))',
+              backgroundColor: 'var(--barista-bg-surface)',
+              borderRadius: 'var(--barista-radius-lg)',
+              border: '2px solid var(--barista-border-hairline)',
               padding: '20px'
             }}
           >
@@ -1373,9 +1373,9 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
               style={{
                 margin: '0 0 12px 0',
                 fontSize: '16px',
-                fontWeight: '800',
+                fontWeight: '600',
                 fontFamily: 'var(--font-heading)',
-                color: 'var(--color-text, #0F172A)'
+                color: 'var(--color-text)'
               }}
             >
               Renombrar Portatubos
@@ -1389,10 +1389,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                 style={{
                   width: '100%',
                   padding: '12px 14px',
-                  borderRadius: 'var(--barista-radius-md, 12px)',
-                  border: '2px solid var(--barista-border-hairline, var(--border-color))',
-                  backgroundColor: 'var(--barista-bg-elevated, #F8FAFC)',
-                  color: 'var(--color-text, #0F172A)',
+                  borderRadius: 'var(--barista-radius-md)',
+                  border: '2px solid var(--barista-border-hairline)',
+                  backgroundColor: 'var(--barista-bg-elevated)',
+                  color: 'var(--color-text)',
                   fontSize: '14px',
                   fontWeight: '600',
                   outline: 'none',
@@ -1405,7 +1405,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                   onClick={() => setEditingRack(null)}
                   style={{
                     padding: '8px 14px',
-                    borderRadius: '10px',
+                    borderRadius: 'var(--r-control)',
                     backgroundColor: 'transparent',
                     border: '1px solid var(--barista-border-hairline)',
                     color: 'var(--barista-text-secondary)'
@@ -1417,9 +1417,9 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                   type="submit"
                   style={{
                     padding: '8px 16px',
-                    borderRadius: '10px',
-                    backgroundColor: 'var(--barista-accent-honey, #D97706)',
-                    color: '#FFFFFF',
+                    borderRadius: 'var(--r-control)',
+                    backgroundColor: 'var(--barista-accent-honey)',
+                    color: 'var(--on-accent)',
                     border: 'none',
                     fontWeight: '700'
                   }}
@@ -1454,7 +1454,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 1100,
+            zIndex: 'var(--z-sticky-cta)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -1471,10 +1471,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
             style={{
               width: '100%',
               maxWidth: '460px',
-              backgroundColor: 'var(--barista-bg-surface, var(--bg-card, #FFFFFF))',
-              borderRadius: 'var(--barista-radius-lg, 20px)',
-              border: '2px solid var(--barista-border-hairline, var(--border-color))',
-              boxShadow: 'var(--barista-shadow-elevated, 0 20px 40px rgba(0,0,0,0.3))',
+              backgroundColor: 'var(--barista-bg-surface)',
+              borderRadius: 'var(--barista-radius-lg)',
+              border: '2px solid var(--barista-border-hairline)',
+              boxShadow: 'var(--barista-shadow-elevated)',
               overflow: 'hidden',
               animation: 'fadeInScale 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
             }}
@@ -1486,8 +1486,8 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '16px 20px',
-                borderBottom: '1px solid var(--barista-border-hairline, var(--border-color))',
-                backgroundColor: 'var(--barista-bg-elevated, var(--bg-header))'
+                borderBottom: '1px solid var(--barista-border-hairline)',
+                backgroundColor: 'var(--barista-bg-elevated)'
               }}
             >
               <div>
@@ -1496,7 +1496,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                     fontSize: '12px',
                     fontWeight: '700',
                     fontFamily: 'var(--font-mono)',
-                    color: 'var(--barista-accent-honey, #D97706)',
+                    color: 'var(--barista-accent-honey)',
                     textTransform: 'uppercase'
                   }}
                 >
@@ -1506,9 +1506,9 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                   style={{
                     margin: '2px 0 0 0',
                     fontSize: '18px',
-                    fontWeight: '900',
+                    fontWeight: '700',
                     fontFamily: 'var(--font-heading)',
-                    color: 'var(--color-text, #0F172A)'
+                    color: 'var(--color-text)'
                   }}
                 >
                   {actionTarget.slot.batch_name || (actionTarget.batch && actionTarget.batch.name)}
@@ -1537,10 +1537,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                   gridTemplateColumns: 'repeat(2, 1fr)',
                   gap: '10px',
                   padding: '12px',
-                  backgroundColor: 'var(--barista-bg-elevated, #F8FAFC)',
-                  borderRadius: 'var(--barista-radius-md, 12px)',
+                  backgroundColor: 'var(--barista-bg-elevated)',
+                  borderRadius: 'var(--barista-radius-md)',
                   marginBottom: '20px',
-                  border: '1px solid var(--barista-border-hairline, var(--border-color))'
+                  border: '1px solid var(--barista-border-hairline)'
                 }}
               >
                 <div>
@@ -1557,13 +1557,13 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                 </div>
                 <div>
                   <span style={{ fontSize: '12px', color: 'var(--barista-text-muted)', display: 'block' }}>Dosis tubo:</span>
-                  <span style={{ fontSize: '13px', fontWeight: '700', fontFamily: 'var(--font-mono)', color: 'var(--barista-accent-cryo, #0284C7)' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '700', fontFamily: 'var(--font-mono)', color: 'var(--barista-accent-cryo)' }}>
                     {actionTarget.slot.dose_weight || (actionTarget.batch && actionTarget.batch.dose_weight) || '20.0g'}
                   </span>
                 </div>
                 <div>
                   <span style={{ fontSize: '12px', color: 'var(--barista-text-muted)', display: 'block' }}>Stock en Lote:</span>
-                  <span style={{ fontSize: '13px', fontWeight: '700', fontFamily: 'var(--font-mono)', color: 'var(--barista-accent-honey, #D97706)' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '700', fontFamily: 'var(--font-mono)', color: 'var(--barista-accent-honey)' }}>
                     {actionTarget.slot.remaining_doses !== undefined ? actionTarget.slot.remaining_doses : (actionTarget.batch && actionTarget.batch.remaining_doses)} tubos
                   </span>
                 </div>
@@ -1580,19 +1580,19 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                     justifyContent: 'center',
                     gap: '8px',
                     padding: '14px',
-                    borderRadius: 'var(--barista-radius-md, 14px)',
-                    backgroundColor: 'var(--barista-accent-honey, #D97706)',
-                    color: '#FFFFFF',
+                    borderRadius: 'var(--barista-radius-md)',
+                    backgroundColor: 'var(--barista-accent-honey)',
+                    color: 'var(--on-accent)',
                     border: 'none',
-                    fontWeight: '900',
+                    fontWeight: '700',
                     fontSize: '15px',
                     fontFamily: 'var(--font-heading)',
                     cursor: 'pointer',
-                    boxShadow: 'var(--barista-shadow-honey, 0 4px 14px rgba(217, 119, 6, 0.3))'
+                    boxShadow: 'var(--barista-shadow-honey)'
                   }}
                 >
                   <Coffee size={18} strokeWidth={2.5} />
-                  <span>☕ Preparar / Consumir Café</span>
+                  <span>Preparar / Consumir Café</span>
                 </button>
 
                 <button
@@ -1608,10 +1608,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                     justifyContent: 'center',
                     gap: '6px',
                     padding: '12px',
-                    borderRadius: 'var(--barista-radius-md, 12px)',
-                    backgroundColor: 'var(--barista-bg-surface, #FFFFFF)',
-                    color: 'var(--barista-text-primary, #0F172A)',
-                    border: '1px solid var(--barista-border-hairline, var(--border-color))',
+                    borderRadius: 'var(--barista-radius-md)',
+                    backgroundColor: 'var(--barista-bg-surface)',
+                    color: 'var(--barista-text-primary)',
+                    border: '1px solid var(--barista-border-hairline)',
                     fontWeight: '700',
                     fontSize: '13px',
                     cursor: 'pointer'
@@ -1633,10 +1633,10 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
                     justifyContent: 'center',
                     gap: '6px',
                     padding: '10px',
-                    borderRadius: 'var(--barista-radius-md, 12px)',
+                    borderRadius: 'var(--barista-radius-md)',
                     backgroundColor: 'transparent',
-                    color: 'var(--barista-accent-danger, #EF4444)',
-                    border: '1px dashed var(--barista-accent-danger, #EF4444)',
+                    color: 'var(--barista-accent-danger)',
+                    border: '1px dashed var(--barista-accent-danger)',
                     fontWeight: '700',
                     fontSize: '12px',
                     cursor: 'pointer',

@@ -7,7 +7,7 @@ export default function DialInAssistant({ onApplyRecommendation }) {
   const tasteOptions = [
     {
       id: 'sour',
-      label: '🍋 Sub-extraído / Muy Ácido',
+      label: 'Sub-extraído / Muy Ácido',
       desc: 'Sabor agrio, acidez punzante, final corto y poco dulzor.',
       recommendation: {
         grindAction: 'Fino',
@@ -19,7 +19,7 @@ export default function DialInAssistant({ onApplyRecommendation }) {
     },
     {
       id: 'bitter',
-      label: '🫖 Sobre-extraído / Astringente',
+      label: 'Sobre-extraído / Astringente',
       desc: 'Secuedad en boca, amargor metálico o quemado.',
       recommendation: {
         grindAction: 'Grueso',
@@ -31,7 +31,7 @@ export default function DialInAssistant({ onApplyRecommendation }) {
     },
     {
       id: 'weak',
-      label: '⚡ Acuoso / Poco Cuerpo',
+      label: 'Acuoso / Poco Cuerpo',
       desc: 'Café débil, falto de intensidad o concentración.',
       recommendation: {
         grindAction: 'Fino leve',
@@ -43,7 +43,7 @@ export default function DialInAssistant({ onApplyRecommendation }) {
     },
     {
       id: 'balanced',
-      label: '✨ Balance Exquisito (Peak)',
+      label: 'Balance Exquisito (Peak)',
       desc: 'Dulzor alto, acidez brillante y final limpio memorable.',
       recommendation: {
         grindAction: 'Mantener',
@@ -59,9 +59,9 @@ export default function DialInAssistant({ onApplyRecommendation }) {
 
   return (
     <div style={{
-      background: 'var(--bg-card, #ECFDF5)',
-      border: '1.5px solid var(--border-color, #A7F3D0)',
-      borderRadius: '16px',
+      background: 'var(--bg-card)',
+      border: '1.5px solid var(--border-color)',
+      borderRadius: 'var(--r-tile)',
       padding: '14px 12px',
       margin: '14px 0',
       boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
@@ -71,16 +71,16 @@ export default function DialInAssistant({ onApplyRecommendation }) {
         alignItems: 'center',
         gap: '8px',
         fontSize: '13px',
-        fontWeight: '900',
-        color: 'var(--color-text, #064E3B)',
+        fontWeight: '700',
+        color: 'var(--color-text)',
         marginBottom: '6px',
         fontFamily: 'var(--font-heading)'
       }}>
-        <Sliders size={16} color="var(--color-crimson, #059669)" />
+        <Sliders size={16} color="var(--color-crimson)" />
         <span>ASISTENTE DE CALIBRACIÓN (DIAL-IN)</span>
       </div>
 
-      <p style={{ fontSize: '12px', color: 'var(--color-text-muted, #047857)', marginBottom: '12px', lineHeight: '1.3' }}>
+      <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '12px', lineHeight: '1.3' }}>
         ¿Cómo estuvo el resultado en taza? Selecciona el perfil para recibir el diagnóstico instantáneo.
       </p>
 
@@ -95,15 +95,15 @@ export default function DialInAssistant({ onApplyRecommendation }) {
               onClick={() => setSelectedTaste(opt.id)}
               style={{
                 padding: '8px 10px',
-                borderRadius: '12px',
+                borderRadius: 'var(--r-control)',
                 border: isSelected ? '2px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                backgroundColor: isSelected ? 'var(--bg-header)' : '#FFFFFF',
+                backgroundColor: isSelected ? 'var(--bg-header)' : 'var(--surface)',
                 color: 'var(--color-text)',
                 fontSize: '12px',
                 fontWeight: '700',
                 cursor: 'pointer',
                 textAlign: 'left',
-                transition: 'all 0.2s ease',
+                transition: 'var(--transition-ui)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '4px'
@@ -118,30 +118,30 @@ export default function DialInAssistant({ onApplyRecommendation }) {
       {/* Recommendation Panel */}
       {currentOption && (
         <div style={{
-          background: '#FFFFFF',
-          border: '1.5px solid var(--border-color, #A7F3D0)',
-          borderRadius: '14px',
+          background: 'var(--surface)',
+          border: '1.5px solid var(--border-color)',
+          borderRadius: 'var(--r-tile)',
           padding: '14px',
           marginTop: '10px'
         }}>
-          <div style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-crimson, #059669)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-crimson)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Sparkles size={14} />
             <span>Diagnóstico & Recomendación Barista:</span>
           </div>
 
-          <div style={{ fontSize: '12px', color: 'var(--color-text, #064E3B)', marginBottom: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Lightbulb size={14} color="var(--barista-accent-honey, #D97706)" style={{ flexShrink: 0 }} />
+          <div style={{ fontSize: '12px', color: 'var(--color-text)', marginBottom: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Lightbulb size={14} color="var(--barista-accent-honey)" style={{ flexShrink: 0 }} />
             <span>{currentOption.recommendation.tip}</span>
           </div>
 
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <div style={{ fontSize: '12px', background: 'var(--bg-header)', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '12px', background: 'var(--bg-header)', padding: '4px 8px', borderRadius: 'var(--r-control)', fontWeight: 'bold' }}>
               Molienda: {currentOption.recommendation.grindAction}
             </div>
-            <div style={{ fontSize: '12px', background: 'var(--bg-header)', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '12px', background: 'var(--bg-header)', padding: '4px 8px', borderRadius: 'var(--r-control)', fontWeight: 'bold' }}>
               Agua: {currentOption.recommendation.tempAction}
             </div>
-            <div style={{ fontSize: '12px', background: 'var(--bg-header)', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '12px', background: 'var(--bg-header)', padding: '4px 8px', borderRadius: 'var(--r-control)', fontWeight: 'bold' }}>
               Dosis: {currentOption.recommendation.ratioAction}
             </div>
           </div>

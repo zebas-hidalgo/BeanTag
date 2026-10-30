@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircle2, AlertTriangle, Loader2, Sparkles, Compass, Share2, ClipboardList, X, Eye, EyeOff, Coffee, Zap, Cpu, Palette, SlidersHorizontal } from 'lucide-react';
+import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircle2, AlertTriangle, Loader2, Sparkles, Compass, Share2, ClipboardList, X, Eye, EyeOff, Coffee, Zap, Cpu, Palette, SlidersHorizontal, SunMoon } from 'lucide-react';
+import { normalizeTheme } from '../utils/theme';
 import NfcToolsModal from './NfcToolsModal';
 import { apiUrl } from '../utils/api';
 import { GRINDERS } from '../utils/grinders';
@@ -11,7 +12,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   const [pendingImportData, setPendingImportData] = useState(null);
   const [importMode, setImportMode] = useState('merge');
   // App Theme State
-  const [appTheme, setAppTheme] = useState(() => localStorage.getItem('beantag-theme') || 'classic');
+  const [appTheme, setAppTheme] = useState(() => normalizeTheme(localStorage.getItem('beantag-theme')));
 
   useEffect(() => {
     if (theme && theme !== appTheme) {
@@ -30,7 +31,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       window.dispatchEvent(new Event('beantag-theme-changed'));
     } catch (e) {}
     if (showToast) {
-      showToast(theme === 'studio' ? '📐 Tema cambiado a Studio Minimal' : '☕ Tema cambiado a BeanTag Clásico', { type: 'success', duration: 2000 });
+      const names = { auto: 'Automático', light: 'Crema', dark: 'Tueste' };
+      showToast(`Apariencia: ${names[theme] || 'Automático'}`, { type: 'success', duration: 2000 });
     }
   };
 
@@ -111,10 +113,10 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
     const text = generateCoffeeMenuText(targetList);
     const success = await copyToClipboard(text);
     if (success) {
-      setMenuShareStatus('📋 ¡Carta de cafés copiada al portapapeles!');
-      if (showToast) showToast('📋 Carta de cafés copiada en formato texto.', { type: 'success' });
+      setMenuShareStatus('¡Carta de cafés copiada al portapapeles!');
+      if (showToast) showToast('Carta de cafés copiada en formato texto.', { type: 'success' });
     } else {
-      setMenuShareStatus('⚠️ No se pudo copiar automáticamente.');
+      setMenuShareStatus('No se pudo copiar automáticamente.');
     }
   };
 
@@ -133,7 +135,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
           text: `☕ Menú de Cafés congelados en cava (${targetList.length} variedades disponibles)`,
           files: [file]
         });
-        setMenuShareStatus('✅ Compartido con éxito');
+        setMenuShareStatus('Compartido con éxito');
         return;
       }
 
@@ -143,7 +145,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
           text: text,
           url: window.location.href
         });
-        setMenuShareStatus('✅ Carta compartida');
+        setMenuShareStatus('Carta compartida');
         return;
       }
 
@@ -151,14 +153,14 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       a.href = menuShareImage;
       a.download = `Carta_Cafes_BeanTag_${Date.now()}.png`;
       a.click();
-      setMenuShareStatus('📥 Imagen de la carta descargada');
+      setMenuShareStatus('Imagen de la carta descargada');
     } catch (err) {
       if (err.name !== 'AbortError') {
         const a = document.createElement('a');
         a.href = menuShareImage;
         a.download = `Carta_Cafes_BeanTag_${Date.now()}.png`;
         a.click();
-        setMenuShareStatus('📥 Imagen descargada');
+        setMenuShareStatus('Imagen descargada');
       }
     }
   };
@@ -212,9 +214,9 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       if (data.recommended_batch_id === null) {
         if (showToast) showToast('Sin dosis disponibles en inventario. Repón stock para sugerencias.', { type: 'info', duration: 3500 });
       } else if (data._source === 'barista_fallback') {
-        if (showToast) showToast('⚡ Sommelier Local listo (Modo Cero Desconexión)', { type: 'success', duration: 3000 });
+        if (showToast) showToast('Sommelier Local listo (Modo Cero Desconexión)', { type: 'success', duration: 3000 });
       } else {
-        if (showToast) showToast('¡Recomendación del Sommelier lista! ☕✨', { type: 'success', duration: 2500 });
+        if (showToast) showToast('¡Recomendación del Sommelier lista! ', { type: 'success', duration: 2500 });
       }
     } catch (err) {
       if (showToast) showToast('Error al conectar con el Sommelier IA.', { type: 'error', duration: 3000 });
@@ -241,9 +243,9 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       try { navigator.vibrate(8); } catch (err) {}
     }
     const names = {
-      editorial: '🏷️ Editorial (Nordic)',
-      list: '📋 Lista (Cupertino)',
-      archive: '📐 Archivo (Tokyo Lab)'
+      editorial: 'Editorial (Nordic)',
+      list: 'Lista (Cupertino)',
+      archive: 'Archivo (Tokyo Lab)'
     };
     if (showToast) {
       showToast(`Estilo de inventario: ${names[style] || style}`, { type: 'success', duration: 2000 });
@@ -304,9 +306,9 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       const data = await res.json();
       setTestGroqResult(data);
       if (data.success) {
-        if (showToast) showToast(`✅ Conexión con Groq exitosa (${data.model})`, { type: 'success', duration: 3000 });
+        if (showToast) showToast(`Conexión con Groq exitosa (${data.model})`, { type: 'success', duration: 3000 });
       } else {
-        if (showToast) showToast(`❌ Error: ${data.message || data.error}`, { type: 'error', duration: 4000 });
+        if (showToast) showToast(`Error: ${data.message || data.error}`, { type: 'error', duration: 4000 });
       }
     } catch (err) {
       const fail = { success: false, error: 'network_error', message: `Fallo de conexión con el servidor: ${err.message}` };
@@ -332,9 +334,9 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       const data = await res.json();
       setGeminiTestResult(data);
       if (data.success) {
-        if (showToast) showToast(`✅ Conexión con Gemini exitosa (${data.model})`, { type: 'success', duration: 3000 });
+        if (showToast) showToast(`Conexión con Gemini exitosa (${data.model})`, { type: 'success', duration: 3000 });
       } else {
-        if (showToast) showToast(`❌ Error: ${data.message || data.error}`, { type: 'error', duration: 4000 });
+        if (showToast) showToast(`Error: ${data.message || data.error}`, { type: 'error', duration: 4000 });
       }
     } catch (err) {
       const fail = { success: false, error: 'network_error', message: `Fallo de conexión con el servidor: ${err.message}` };
@@ -470,14 +472,14 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
 
   return (
     <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
-      <h2 style={{ fontFamily: 'var(--font-heading)', textTransform: 'uppercase', margin: '0 0 14px 0', fontSize: '16px' }}>
+      <h2 className="bt-page-title">
         Ajustes y Configuración
       </h2>
 
       {/* ✨ Herramientas de Barista (Sommelier IA & Carta de Cafés) */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
         <div>
-          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <h4 className="bt-section-title" style={{ margin: '0 0 4px 0' }}>
             <Sparkles size={15} />
             <span>Herramientas de Barista</span>
           </h4>
@@ -501,7 +503,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              background: 'var(--bg-card, #FFFFFF)',
+              background: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
               color: 'var(--color-crimson)',
               boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
@@ -524,7 +526,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              background: 'var(--bg-card, #FFFFFF)',
+              background: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
               color: 'var(--color-text)',
               boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
@@ -538,15 +540,15 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         {/* Sommelier Recommendation Card */}
         {sommelierResult && (
           <div className="candy-card animate-entrance" style={{ 
-            background: 'var(--bg-card, #FFFFFF)', 
+            background: 'var(--bg-card)', 
             border: '1px solid var(--color-crimson)', 
             padding: '14px', 
             marginTop: '12px',
-            borderRadius: '14px',
+            borderRadius: 'var(--r-tile)',
             boxShadow: '0 4px 16px rgba(188, 84, 73, 0.08)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '800', color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
                 <Compass size={14} />
                 <span>Recomendación Sommelier {sommelierResult._source === 'barista_fallback' ? '(Local)' : (sommelierResult._source === 'groq' ? '(Groq)' : '(Gemini)')}</span>
               </div>
@@ -554,12 +556,12 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 {sommelierResult._source === 'barista_fallback' && (
                   <span style={{ 
                     fontSize: '12px', 
-                    background: 'var(--barista-instr-bg, #FEF3C7)', 
-                    border: '1px solid var(--barista-instr-border, #FDE68A)', 
-                    color: 'var(--barista-accent-honey, #D97706)', 
+                    background: 'var(--barista-instr-bg)', 
+                    border: '1px solid var(--barista-instr-border)', 
+                    color: 'var(--barista-accent-honey)', 
                     padding: '3px 8px', 
-                    borderRadius: '12px', 
-                    fontWeight: '800',
+                    borderRadius: 'var(--r-control)', 
+                    fontWeight: '600',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '4px'
@@ -569,7 +571,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   </span>
                 )}
                 {sommelierResult.badge && (
-                  <span style={{ fontSize: '12px', background: 'rgba(188, 84, 73, 0.08)', border: '1px solid rgba(188, 84, 73, 0.2)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                  <span style={{ fontSize: '12px', background: 'rgba(188, 84, 73, 0.08)', border: '1px solid rgba(188, 84, 73, 0.2)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: 'var(--r-xs)', fontWeight: 'bold' }}>
                     {sommelierResult.badge}
                   </span>
                 )}
@@ -577,7 +579,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             </div>
 
             {sommelierResult.recommended_batch_id === null ? (
-              <div style={{ marginTop: '8px', padding: '10px', background: 'var(--bg-canvas, #F9FAFB)', borderRadius: '8px', border: '1px dashed var(--border-color, #E5E7EB)' }}>
+              <div style={{ marginTop: '8px', padding: '10px', background: 'var(--bg-canvas)', borderRadius: 'var(--r-control)', border: '1px dashed var(--border-color)' }}>
                 <h4 style={{ margin: '0 0 6px 0', fontSize: '13px', fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}>
                   Sin dosis disponibles en inventario
                 </h4>
@@ -595,7 +597,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   <span>{sommelierResult.recommended_batch_name}</span>
                 </h4>
 
-                <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 10px 0', lineHeight: 1.4 }}>
+                <p className="bt-section-desc" style={{ marginBottom: '12px' }}>
                   {sommelierResult.reason}
                 </p>
 
@@ -611,232 +613,44 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         )}
       </div>
 
-      {/* Tema de la Aplicación */}
-      <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
-        <div>
-          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Palette size={14} color="var(--color-crimson)" />
-            <span>Tema de la Aplicación</span>
+      {/* Tema de la Aplicación (V5: Automático / Crema / Tueste) */}
+      <section className="bt-section" aria-labelledby="bt-theme-title">
+        <div className="bt-section-head">
+          <h4 id="bt-theme-title" className="bt-section-title">
+            <Palette size={16} aria-hidden="true" />
+            <span>Apariencia</span>
           </h4>
-          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
-            Elige la estética global del sistema: tonos cálidos artesanales o un diseño nórdico minimalista
-          </p>
+          <p className="bt-section-desc">Crema para el día, Tueste para la noche. Las extracciones usan siempre el Modo Barra de alto contraste.</p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px', background: 'var(--segmented-bg)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-          <button
-            type="button"
-            onClick={() => handleThemeChange('classic')}
-            style={{
-              margin: 0,
-              padding: '10px 14px',
-              fontSize: '12px',
-              fontWeight: (appTheme === 'classic' || appTheme === 'default') ? '800' : '600',
-              border: (appTheme === 'classic' || appTheme === 'default') ? '1.5px solid var(--border-color)' : '1px solid transparent',
-              borderRadius: '9px',
-              background: (appTheme === 'classic' || appTheme === 'default') ? 'var(--segmented-active, #FFFFFF)' : 'transparent',
-              color: (appTheme === 'classic' || appTheme === 'default') ? 'var(--color-text)' : 'var(--color-text-muted)',
-              boxShadow: (appTheme === 'classic' || appTheme === 'default') ? 'var(--card-shadow, 0 1px 3px rgba(0,0,0,0.08))' : 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              transition: 'all 0.18s ease'
-            }}
-          >
-            <Coffee size={14} strokeWidth={2.2} />
-            <span>BeanTag Clásico (Terracotta)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleThemeChange('studio')}
-            style={{
-              margin: 0,
-              padding: '10px 14px',
-              fontSize: '12px',
-              fontWeight: appTheme === 'studio' ? '800' : '600',
-              border: appTheme === 'studio' ? '1.5px solid var(--border-color)' : '1px solid transparent',
-              borderRadius: '9px',
-              background: appTheme === 'studio' ? 'var(--segmented-active, #FFFFFF)' : 'transparent',
-              color: appTheme === 'studio' ? 'var(--color-text)' : 'var(--color-text-muted)',
-              boxShadow: appTheme === 'studio' ? 'var(--card-shadow, 0 1px 3px rgba(0,0,0,0.08))' : 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              transition: 'all 0.18s ease'
-            }}
-          >
-            <Compass size={14} strokeWidth={2.2} />
-            <span>Studio Minimal (Monocromo)</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Estilo Visual del Inventario */}
-      <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
-        <div>
-          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <SlidersHorizontal size={14} color="var(--color-crimson)" />
-            <span>Estilo Visual del Inventario</span>
-          </h4>
-          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
-            Elige cómo se presentan las tarjetas de café en tu congelador por defecto
-          </p>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
+        <div className="bt-seg" role="radiogroup" aria-label="Tema de la aplicación">
           {[
-            { 
-              id: 'editorial', 
-              name: 'Editorial', 
-              subtitle: 'Nordic Atelier', 
-              desc: 'Respiro nórdico, chips pastel, cápsula de stock y botón rápido.' 
-            },
-            { 
-              id: 'list', 
-              name: 'Lista', 
-              subtitle: 'Cupertino Table', 
-              desc: 'Filas compactas (~52px), pastilla de stock y flecha indicadora.' 
-            },
-            { 
-              id: 'archive', 
-              name: 'Archivo', 
-              subtitle: 'Tokyo Coffee Lab', 
-              desc: 'Ficha técnica monoespaciada, código #01 • LOT y matriz 2x2.' 
-            }
-          ].map((item) => {
-            const isActive = cardStyle === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => handleCardStyleChange(item.id)}
-                style={{
-                  margin: 0,
-                  fontSize: '12px',
-                  padding: '12px 10px',
-                  borderRadius: '14px',
-                  border: isActive ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
-                  backgroundColor: isActive ? 'var(--bg-header)' : 'var(--bg-card)',
-                  color: 'var(--color-text)',
-                  cursor: 'pointer',
-                  transition: 'all 0.18s ease',
-                  textAlign: 'left',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '5px',
-                  position: 'relative'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                  <span style={{ fontSize: '12px', fontWeight: '800' }}>{item.name}</span>
-                  {isActive && (
-                    <span style={{ 
-                      fontSize: '12px', 
-                      background: 'var(--color-crimson)', 
-                      color: '#FFFFFF', 
-                      padding: '2px 5px', 
-                      borderRadius: '4px', 
-                      fontWeight: '800' 
-                    }}>
-                      ACTIVO
-                    </span>
-                  )}
-                </div>
-                <span style={{ fontSize: '12px', color: 'var(--color-crimson)', fontWeight: '700' }}>
-                  {item.subtitle}
-                </span>
-                <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', lineHeight: 1.3 }}>
-                  {item.desc}
-                </span>
-              </button>
-            );
-          })}
+            { id: 'auto', label: 'Automático', Icon: SunMoon },
+            { id: 'light', label: 'Crema', Icon: Sun },
+            { id: 'dark', label: 'Tueste', Icon: Moon }
+          ].map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              role="radio"
+              aria-checked={appTheme === id}
+              className={`bt-seg-btn${appTheme === id ? ' is-active' : ''}`}
+              onClick={() => handleThemeChange(id)}
+            >
+              <Icon size={16} aria-hidden="true" />
+              <span>{label}</span>
+            </button>
+          ))}
         </div>
-      </div>
-
-      {/* Temas Visuales de Fantasía */}
-      <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
-        <div>
-          <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Palette size={14} color="var(--color-crimson)" />
-            <span>Temas Visuales de Fantasía</span>
-          </h4>
-          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
-            Elige una paleta Neobrutalista inspirada en el café de especialidad
-          </p>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
-          {[
-            { id: 'matcha', name: 'Organic Matcha', desc: 'Menta & Miel', colors: ['#FFFFFF', '#ECFDF5', '#059669', '#D97706'] },
-            { id: 'espresso', name: 'Espresso Terracotta', desc: 'Terracotta & Caramelo', colors: ['#FFFFFF', '#FFF5F5', '#E76F51', '#F4A261'] },
-            { id: 'cyber', name: 'Cyber Kinetic', desc: 'Azul Lab & Cinabrio', colors: ['#FFFFFF', '#EFF6FF', '#2563EB', '#FF5E36'] },
-            { id: 'sakura', name: 'Sakura Cold Brew', desc: 'Rosa Cryo & Floral', colors: ['#FFFFFF', '#FDF2F8', '#EC4899', '#D946EF'] },
-            { id: 'caramel', name: 'Amber Caramel', desc: 'Ámbar & Avellana', colors: ['#FFFFFF', '#FFFBEB', '#D97706', '#B45309'] },
-            { id: 'frost', name: 'Nordic Frost', desc: 'Hielo Ártico & Púrpura', colors: ['#FFFFFF', '#F0F9FF', '#0284C7', '#6366F1'] }
-          ].map((t) => {
-            const isActive = (appTheme || theme || 'matcha') === t.id;
-            return (
-              <button 
-                key={t.id}
-                type="button"
-                onClick={() => {
-                  setAppTheme(t.id);
-                  if (typeof setTheme === 'function') setTheme(t.id);
-                  localStorage.setItem('beantag-theme', t.id);
-                  document.documentElement.setAttribute('data-theme', t.id);
-                  try { window.dispatchEvent(new Event('beantag-theme-changed')); } catch (e) {}
-                  if (showToast) showToast(`Tema ${t.name} aplicado.`, { type: 'success', duration: 2000 });
-                }} 
-                style={{ 
-                  margin: 0, 
-                  fontSize: '12px', 
-                  padding: '10px 8px', 
-                  borderRadius: '14px',
-                  border: isActive ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
-                  backgroundColor: isActive ? 'var(--bg-header)' : 'var(--bg-card)',
-                  color: 'var(--color-text)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{t.name}</span>
-                <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>{t.desc}</span>
-                <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
-                  {t.colors.map((c, idx) => (
-                    <span 
-                      key={idx} 
-                      style={{ 
-                        width: '12px', 
-                        height: '12px', 
-                        borderRadius: '50%', 
-                        backgroundColor: c, 
-                        border: '1px solid var(--border-color)',
-                        display: 'inline-block'
-                      }} 
-                    />
-                  ))}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      </section>
 
       {/* Configuración de Inteligencia Artificial */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
-            <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '13px', textTransform: 'uppercase', margin: 0, color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+            <h4 className="bt-section-title" style={{ margin: 0 }}>
               Configuración de Inteligencia Artificial
             </h4>
-            <span style={{ fontSize: '12px', background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '3px 8px', borderRadius: '6px', fontWeight: '900', border: '1px solid var(--border-color)' }}>
+            <span style={{ fontSize: '12px', background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '3px 8px', borderRadius: 'var(--r-control)', fontWeight: '700', border: '1px solid var(--border-color)' }}>
               {aiProvider === 'groq' ? `GROQ • ${groqModel.replace('openai/', '').toUpperCase()}` : `GEMINI • ${selectedModel.toUpperCase()}`}
             </span>
           </div>
@@ -846,7 +660,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         </div>
 
         {/* Upper segmented pills control */}
-        <div style={{ display: 'flex', gap: '6px', background: 'var(--bg-canvas, #F1F5F9)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border-color)', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', gap: '6px', background: 'var(--bg-canvas)', padding: '4px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)', marginBottom: '16px' }}>
           <button
             type="button"
             onClick={() => handleProviderChange('groq')}
@@ -856,8 +670,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               fontSize: '12px',
               fontWeight: '700',
               border: 'none',
-              borderRadius: '8px',
-              background: aiProvider === 'groq' ? 'var(--bg-card, #FFFFFF)' : 'transparent',
+              borderRadius: 'var(--r-control)',
+              background: aiProvider === 'groq' ? 'var(--bg-card)' : 'transparent',
               color: aiProvider === 'groq' ? 'var(--color-crimson)' : 'var(--color-text-muted)',
               boxShadow: aiProvider === 'groq' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
               cursor: 'pointer',
@@ -865,7 +679,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              transition: 'all 0.15s ease'
+              transition: 'var(--transition-ui)'
             }}
           >
             <Zap size={14} strokeWidth={2.2} />
@@ -880,8 +694,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               fontSize: '12px',
               fontWeight: '700',
               border: 'none',
-              borderRadius: '8px',
-              background: aiProvider === 'gemini' ? 'var(--bg-card, #FFFFFF)' : 'transparent',
+              borderRadius: 'var(--r-control)',
+              background: aiProvider === 'gemini' ? 'var(--bg-card)' : 'transparent',
               color: aiProvider === 'gemini' ? 'var(--color-crimson)' : 'var(--color-text-muted)',
               boxShadow: aiProvider === 'gemini' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
               cursor: 'pointer',
@@ -889,7 +703,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              transition: 'all 0.15s ease'
+              transition: 'var(--transition-ui)'
             }}
           >
             <Cpu size={14} strokeWidth={2.2} />
@@ -901,10 +715,10 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {/* Groq API Key Input + Action Buttons */}
             <div>
-              <label className="barista-label" style={{ marginBottom: '6px' }}>Clave API de Groq Cloud</label>
+              <label htmlFor="bt-settings-1" className="barista-label" style={{ marginBottom: '6px' }}>Clave API de Groq Cloud</label>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch', flexWrap: 'wrap' }}>
                 <div style={{ position: 'relative', flex: 1, minWidth: '180px', display: 'flex', alignItems: 'center' }}>
-                  <input aria-label="Introduce tu clave API (gsk_...)" 
+                  <input id="bt-settings-1" aria-label="Introduce tu clave API (gsk_...)" 
                     type={showGroqKey ? 'text' : 'password'} 
                     className="candy-input" 
                     value={groqKey} 
@@ -966,31 +780,31 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               <div 
                 style={{
                   padding: '10px 14px',
-                  borderRadius: '8px',
+                  borderRadius: 'var(--r-control)',
                   fontSize: '12px',
                   display: 'flex',
                   alignItems: 'flex-start',
                   gap: '8px',
-                  backgroundColor: testGroqResult.success ? 'var(--barista-accent-mint-subtle, #ECFDF5)' : 'var(--barista-accent-danger-subtle, #FEF2F2)',
+                  backgroundColor: testGroqResult.success ? 'var(--barista-accent-mint-subtle)' : 'var(--barista-accent-danger-subtle)',
                   border: testGroqResult.success ? '1.5px solid #10B981' : '1.5px solid #EF4444',
-                  color: testGroqResult.success ? '#065F46' : '#991B1B'
+                  color: testGroqResult.success ? 'var(--ok-text)' : 'var(--bad-text)'
                 }}
               >
                 {testGroqResult.success ? (
-                  <CheckCircle2 size={18} style={{ flexShrink: 0, marginTop: '1px', color: '#10B981' }} />
+                  <CheckCircle2 size={18} style={{ flexShrink: 0, marginTop: '1px', color: 'var(--ok)' }} />
                 ) : (
-                  <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '1px', color: '#EF4444' }} />
+                  <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '1px', color: 'var(--bad)' }} />
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
-                  <span style={{ fontWeight: '800' }}>
-                    {testGroqResult.success ? 'Conexión Exitosa con Groq ⚡' : 'Error de Conexión'}
+                  <span style={{ fontWeight: '600' }}>
+                    {testGroqResult.success ? 'Conexión Exitosa con Groq ' : 'Error de Conexión'}
                   </span>
                   <span style={{ fontSize: '12px', lineHeight: 1.35 }}>
                     {testGroqResult.message || testGroqResult.error}
                   </span>
                   {testGroqResult.model && (
                     <span style={{ fontSize: '12px', fontWeight: 'bold', opacity: 0.85, marginTop: '2px' }}>
-                      ⚡ Modelo: {testGroqResult.model}
+                      Modelo: {testGroqResult.model}
                     </span>
                   )}
                 </div>
@@ -999,10 +813,10 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
 
             {/* Model Selector Dropdown for Groq */}
             <div>
-              <label className="barista-label" style={{ marginBottom: '6px' }}>
+              <label htmlFor="bt-settings-2" className="barista-label" style={{ marginBottom: '6px' }}>
                 Modelo de Inteligencia Artificial (Groq)
               </label>
-              <select aria-label="Modelo de Inteligencia Artificial (Groq)" 
+              <select id="bt-settings-2" aria-label="Modelo de Inteligencia Artificial (Groq)" 
                 className="candy-input" 
                 value={groqModel} 
                 onChange={(e) => handleGroqModelChange(e.target.value)}
@@ -1027,9 +841,9 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {/* API Key Input + Action Buttons */}
             <div>
-              <label className="barista-label" style={{ marginBottom: '6px' }}>Clave API de Google AI Studio</label>
+              <label htmlFor="bt-settings-3" className="barista-label" style={{ marginBottom: '6px' }}>Clave API de Google AI Studio</label>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch', flexWrap: 'wrap' }}>
-                <input aria-label="Introduce tu clave API (AIzaSy...)" 
+                <input id="bt-settings-3" aria-label="Introduce tu clave API (AIzaSy...)" 
                   type="password" 
                   className="candy-input" 
                   value={apiKey} 
@@ -1074,23 +888,23 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               <div 
                 style={{
                   padding: '10px 14px',
-                  borderRadius: '8px',
+                  borderRadius: 'var(--r-control)',
                   fontSize: '12px',
                   display: 'flex',
                   alignItems: 'flex-start',
                   gap: '8px',
-                  backgroundColor: geminiTestResult.success ? 'var(--barista-accent-mint-subtle, #ECFDF5)' : 'var(--barista-accent-danger-subtle, #FEF2F2)',
+                  backgroundColor: geminiTestResult.success ? 'var(--barista-accent-mint-subtle)' : 'var(--barista-accent-danger-subtle)',
                   border: geminiTestResult.success ? '1.5px solid #10B981' : '1.5px solid #EF4444',
-                  color: geminiTestResult.success ? '#065F46' : '#991B1B'
+                  color: geminiTestResult.success ? 'var(--ok-text)' : 'var(--bad-text)'
                 }}
               >
                 {geminiTestResult.success ? (
-                  <CheckCircle2 size={18} style={{ flexShrink: 0, marginTop: '1px', color: '#10B981' }} />
+                  <CheckCircle2 size={18} style={{ flexShrink: 0, marginTop: '1px', color: 'var(--ok)' }} />
                 ) : (
-                  <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '1px', color: '#EF4444' }} />
+                  <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '1px', color: 'var(--bad)' }} />
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
-                  <span style={{ fontWeight: '800' }}>
+                  <span style={{ fontWeight: '600' }}>
                     {geminiTestResult.success ? 'Conexión Exitosa con Gemini' : 'Error de Conexión'}
                   </span>
                   <span style={{ fontSize: '12px', lineHeight: 1.35 }}>
@@ -1108,10 +922,10 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             {/* Model Selector & Thinking Config */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
               <div>
-                <label className="barista-label" style={{ marginBottom: '6px' }}>
+                <label htmlFor="bt-settings-4" className="barista-label" style={{ marginBottom: '6px' }}>
                   Modelo de Inteligencia Artificial (Gemini)
                 </label>
-                <select aria-label="Modelo de Inteligencia Artificial (Gemini)" 
+                <select id="bt-settings-4" aria-label="Modelo de Inteligencia Artificial (Gemini)" 
                   className="candy-input" 
                   value={selectedModel} 
                   onChange={(e) => handleModelChange(e.target.value)}
@@ -1135,7 +949,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                     width: '100%',
                     minHeight: '44px',
                     padding: '10px 12px',
-                    borderRadius: '8px',
+                    borderRadius: 'var(--r-control)',
                     border: isThinkingEnabled ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
                     backgroundColor: isThinkingEnabled ? 'var(--bg-header)' : 'var(--bg-card)',
                     color: 'var(--color-text)',
@@ -1149,7 +963,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                     gap: '6px'
                   }}
                 >
-                  {isThinkingEnabled ? '🧠 Razonamiento: ACTIVO' : '⚡ Modo Rápido (Off)'}
+                  {isThinkingEnabled ? 'Razonamiento: ACTIVO' : 'Modo Rápido (Off)'}
                 </button>
               </div>
             </div>
@@ -1168,10 +982,10 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
 
       {/* Preferencia de Molino Predeterminado */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
-        <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+        <h4 className="bt-section-title" style={{ margin: '0 0 4px 0' }}>
           Molino Predeterminado
         </h4>
-        <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 12px 0' }}>
+        <p className="bt-section-desc" style={{ marginBottom: '12px' }}>
           Selecciona tu molino principal para precargar sus diales y física en cada nueva receta.
         </p>
 
@@ -1190,7 +1004,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 style={{
                   minHeight: '52px',
                   padding: '8px 6px',
-                  borderRadius: '10px',
+                  borderRadius: 'var(--r-control)',
                   border: isActive ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
                   backgroundColor: isActive ? 'var(--bg-header)' : 'var(--bg-card)',
                   color: 'var(--color-text)',
@@ -1200,7 +1014,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   flexDirection: 'column',
                   justifyContent: 'center',
                   gap: '3px',
-                  transition: 'all 0.15s ease'
+                  transition: 'var(--transition-ui)'
                 }}
               >
                 <strong style={{ fontSize: '12px' }}>{grinder.name}</strong>
@@ -1213,7 +1027,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
 
       {/* Backup and restore section */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
-        <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 8px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
+        <h4 className="bt-section-title" style={{ margin: '0 0 8px 0' }}>
           Copia de Seguridad
         </h4>
         <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 16px 0', lineHeight: 1.4 }}>
@@ -1256,7 +1070,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
 
       {/* Herramientas WebNFC */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
-        <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-text)', letterSpacing: '0.5px' }}>
+        <h4 className="bt-section-title" style={{ margin: '0 0 4px 0' }}>
           Gestión Avanzada WebNFC
         </h4>
         <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 14px 0', lineHeight: 1.4 }}>
@@ -1281,7 +1095,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 'var(--z-nav)', padding: '20px',
           overflowY: 'auto', WebkitOverflowScrolling: 'touch'
         }}>
           <div className="candy-card static" style={{ width: '100%', maxWidth: '350px', padding: '20px', cursor: 'default', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto', margin: 'auto' }}>
@@ -1344,7 +1158,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             backgroundColor: 'rgba(0, 0, 0, 0.85)',
             backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)',
-            zIndex: 11000, 
+            zIndex: 'var(--z-modal)', 
             display: 'flex', 
             justifyContent: 'center', 
             alignItems: 'flex-start',
@@ -1370,7 +1184,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: 0, fontWeight: '800', color: 'var(--color-text)' }}>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: 0, fontWeight: '600', color: 'var(--color-text)' }}>
                     Carta de Cafés • Menú en Cava
                   </h3>
                   <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
@@ -1387,8 +1201,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               </div>
 
               {/* Template Selector */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
                 {[
                   { id: 'stretch', label: 'Stretch' },
                   { id: 'squishy', label: 'Squishy' },
@@ -1409,7 +1223,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                       fontSize: '12px',
                       fontWeight: menuShareTemplate === t.id ? '800' : '600',
                       border: menuShareTemplate === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
-                      borderRadius: '6px',
+                      borderRadius: 'var(--r-control)',
                       background: menuShareTemplate === t.id ? 'var(--bg-card)' : 'transparent',
                       color: menuShareTemplate === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
                       boxShadow: menuShareTemplate === t.id ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
@@ -1425,8 +1239,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             {/* Live Image Preview */}
             <div style={{
               textAlign: 'center',
-              backgroundColor: 'var(--bg-canvas, #F1F5F9)',
-              borderRadius: '12px',
+              backgroundColor: 'var(--bg-canvas)',
+              borderRadius: 'var(--r-control)',
               padding: '8px',
               overflow: 'hidden',
               flex: '0 1 auto',
@@ -1444,7 +1258,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                     maxHeight: 'calc(45dvh - 50px)',
                     height: 'auto',
                     objectFit: 'contain',
-                    borderRadius: '6px', 
+                    borderRadius: 'var(--r-control)', 
                     display: 'block',
                     margin: '0 auto',
                     boxShadow: '0 8px 24px rgba(0,0,0,0.14)'
@@ -1461,7 +1275,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 color: 'var(--color-crimson)',
                 background: 'rgba(188, 84, 73, 0.08)',
                 padding: '6px',
-                borderRadius: '6px'
+                borderRadius: 'var(--r-control)'
               }}>
                 {menuShareStatus}
               </div>
@@ -1479,7 +1293,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--color-text)'
                 }}
               >
-                <span>📋 Copiar Texto</span>
+                <span>Copiar Texto</span>
               </button>
 
               <button
@@ -1487,9 +1301,9 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 className="btn-candy"
                 onClick={handleNativeMenuShare}
                 style={{
-                  flex: 1.3, margin: 0, padding: '10px 8px', fontSize: '12px', fontWeight: '800',
+                  flex: 1.3, margin: 0, padding: '10px 8px', fontSize: '12px', fontWeight: '600',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                  background: 'var(--color-crimson)', color: '#FFFFFF', border: 'none'
+                  background: 'var(--color-crimson)', color: 'var(--on-accent)', border: 'none'
                 }}
               >
                 <Share2 size={14} />

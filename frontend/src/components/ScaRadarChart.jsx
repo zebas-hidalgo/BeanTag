@@ -50,9 +50,9 @@ export default function ScaRadarChart({
       flexDirection: 'column',
       alignItems: 'center',
       padding: '12px 10px',
-      background: 'var(--bg-card, #ECFDF5)',
-      borderRadius: '16px',
-      border: '1.5px solid var(--border-color, #A7F3D0)',
+      background: 'var(--bg-card)',
+      borderRadius: 'var(--r-tile)',
+      border: '1.5px solid var(--border-color)',
       boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
       margin: '14px 0',
       width: '100%',
@@ -62,14 +62,14 @@ export default function ScaRadarChart({
     }}>
       <div style={{
         fontSize: '12px',
-        fontWeight: '900',
-        color: 'var(--color-text, #064E3B)',
+        fontWeight: '700',
+        color: 'var(--color-text)',
         marginBottom: '6px',
         fontFamily: 'var(--font-heading)',
         letterSpacing: '0.5px',
         textTransform: 'uppercase'
       }}>
-        📊 Perfil Sensorial SCA
+        Perfil Sensorial SCA
       </div>
 
       <svg 
@@ -88,7 +88,7 @@ export default function ScaRadarChart({
             key={idx}
             points={points}
             fill="none"
-            stroke="var(--border-color, #A7F3D0)"
+            stroke="var(--border-color)"
             strokeWidth="1"
             strokeDasharray={idx === levels.length - 1 ? 'none' : '2,2'}
             opacity={0.7}
@@ -105,7 +105,7 @@ export default function ScaRadarChart({
               y1={center}
               x2={x}
               y2={y}
-              stroke="var(--border-color, #A7F3D0)"
+              stroke="var(--border-color)"
               strokeWidth="1"
             />
           );
@@ -114,9 +114,9 @@ export default function ScaRadarChart({
         {/* Data Polygon Fill */}
         <polygon
           points={dataPoints}
-          fill="var(--color-crimson, #059669)"
+          fill="var(--color-crimson)"
           fillOpacity="0.25"
-          stroke="var(--color-crimson, #059669)"
+          stroke="var(--color-crimson)"
           strokeWidth="2.5"
           strokeLinejoin="round"
         />
@@ -130,8 +130,8 @@ export default function ScaRadarChart({
               cx={x}
               cy={y}
               r="4.5"
-              fill="var(--color-honey, #E9C46A)"
-              stroke="var(--color-crimson, #059669)"
+              fill="var(--color-honey)"
+              stroke="var(--color-crimson)"
               strokeWidth="2"
             />
           );
@@ -149,8 +149,8 @@ export default function ScaRadarChart({
               dominantBaseline="middle"
               style={{
                 fontSize: '12px',
-                fontWeight: '800',
-                fill: 'var(--color-text, #064E3B)',
+                fontWeight: '600',
+                fill: 'var(--color-text)',
                 fontFamily: 'var(--font-heading)'
               }}
             >

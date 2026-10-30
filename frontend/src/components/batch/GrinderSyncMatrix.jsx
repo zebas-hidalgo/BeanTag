@@ -40,7 +40,7 @@ export default function GrinderSyncMatrix({
           <h3 style={{
             margin: 0,
             fontSize: 'var(--text-sm)',
-            fontWeight: '800',
+            fontWeight: '600',
             fontFamily: 'var(--font-display)',
             textTransform: 'uppercase',
             letterSpacing: '0.02em',
@@ -55,7 +55,7 @@ export default function GrinderSyncMatrix({
           borderColor: 'var(--accent-terracotta)',
           color: 'var(--accent-terracotta)',
           backgroundColor: 'var(--bg-elevated)',
-          fontWeight: '800',
+          fontWeight: '600',
           fontFamily: 'var(--font-metric)'
         }}>
           ~{currentMicrons} µm D₅₀
@@ -97,7 +97,7 @@ export default function GrinderSyncMatrix({
                 fontFamily: 'var(--font-display)',
                 cursor: 'pointer',
                 boxShadow: isSelected ? 'var(--shadow-sm)' : 'none',
-                transition: 'all var(--transition-fast)'
+                transition: 'var(--transition-ui)'
               }}
             >
               {g.shortName}
@@ -110,7 +110,7 @@ export default function GrinderSyncMatrix({
       <div className="barista-card-subtle" style={{ padding: '14px', marginBottom: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
           <div>
-            <div style={{ fontWeight: '800', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+            <div style={{ fontWeight: '600', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
               {activeGrinderMeta.name}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>

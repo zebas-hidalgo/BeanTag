@@ -877,17 +877,21 @@ export default function BrewGuideModal({
 
   return (
     <div
+      className="mode-barra"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Guía de extracción"
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'var(--bg-canvas, #F2F2F7)',
-        color: 'var(--color-text, #000000)',
-        zIndex: 11000,
+        backgroundColor: 'var(--bg-canvas)',
+        color: 'var(--color-text)',
+        zIndex: 'var(--z-modal)',
         display: 'flex',
         flexDirection: 'column',
         overflowY: 'auto',
         WebkitOverflowScrolling: 'touch',
-        fontFamily: 'var(--font-body, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif)'
+        fontFamily: 'var(--font-body)'
       }}
     >
       {/* 🧭 Top Bar / Header */}
@@ -897,8 +901,8 @@ export default function BrewGuideModal({
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '16px 20px',
-          borderBottom: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
-          backgroundColor: 'var(--bg-header, rgba(242, 242, 247, 0.85))',
+          borderBottom: '1px solid var(--border-color)',
+          backgroundColor: 'var(--bg-header)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
           position: 'sticky',
@@ -911,12 +915,12 @@ export default function BrewGuideModal({
             style={{
               width: '34px',
               height: '34px',
-              borderRadius: '10px',
-              backgroundColor: 'var(--color-crimson, #BC5449)',
+              borderRadius: 'var(--r-control)',
+              backgroundColor: 'var(--color-crimson)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#FFFFFF',
+              color: 'var(--on-accent)',
               boxShadow: '0 2px 8px rgba(188, 84, 73, 0.35)',
               flexShrink: 0
             }}
@@ -929,7 +933,7 @@ export default function BrewGuideModal({
                 margin: 0,
                 fontSize: '15px',
                 fontWeight: 700,
-                color: 'var(--color-text, #000000)',
+                color: 'var(--color-text)',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -941,7 +945,7 @@ export default function BrewGuideModal({
             <div
               style={{
                 fontSize: '12px',
-                color: 'var(--color-text-muted, #8E8E93)',
+                color: 'var(--color-text-muted)',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis'
@@ -961,10 +965,10 @@ export default function BrewGuideModal({
             aria-label={isVoiceEnabled ? 'Desactivar voz del barista' : 'Activar voz del barista'}
             title={isVoiceEnabled ? 'Guía de voz en tiempo real: Activada' : 'Guía de voz en tiempo real: Silenciada'}
             style={{
-              background: isVoiceEnabled ? 'var(--barista-accent-mint-bg, #D1FAE5)' : 'var(--barista-bg-subtle, rgba(118, 118, 128, 0.12))',
-              border: isVoiceEnabled ? '1px solid var(--barista-accent-mint-text, #059669)' : '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
-              color: isVoiceEnabled ? 'var(--barista-accent-mint-text, #065F46)' : 'var(--color-text-muted, #8E8E93)',
-              borderRadius: '8px',
+              background: isVoiceEnabled ? 'var(--barista-accent-mint-bg)' : 'var(--barista-bg-subtle)',
+              border: isVoiceEnabled ? '1px solid var(--barista-accent-mint-text)' : '1px solid var(--border-color)',
+              color: isVoiceEnabled ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)',
+              borderRadius: 'var(--r-control)',
               padding: '8px 10px',
               cursor: 'pointer',
               display: 'flex',
@@ -973,7 +977,7 @@ export default function BrewGuideModal({
               fontSize: '12px',
               fontWeight: 700,
               minHeight: '36px',
-              transition: 'all 150ms ease'
+              transition: 'var(--transition-ui)'
             }}
           >
             {isVoiceEnabled ? <Mic size={16} /> : <MicOff size={16} />}
@@ -987,10 +991,10 @@ export default function BrewGuideModal({
             aria-label={isMuted ? 'Activar sonido' : 'Silenciar'}
             title={isMuted ? 'Activar alertas sonoras' : 'Silenciar alertas'}
             style={{
-              background: isMuted ? 'var(--barista-accent-danger-bg, #FEE2E2)' : 'var(--barista-bg-subtle, rgba(118, 118, 128, 0.12))',
-              border: isMuted ? '1px solid var(--barista-accent-danger, #EF4444)' : '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
-              color: isMuted ? 'var(--barista-accent-danger-text, #991B1B)' : 'var(--color-text, #000000)',
-              borderRadius: '8px',
+              background: isMuted ? 'var(--barista-accent-danger-bg)' : 'var(--barista-bg-subtle)',
+              border: isMuted ? '1px solid var(--barista-accent-danger)' : '1px solid var(--border-color)',
+              color: isMuted ? 'var(--barista-accent-danger-text)' : 'var(--color-text)',
+              borderRadius: 'var(--r-control)',
               padding: '8px 10px',
               cursor: 'pointer',
               display: 'flex',
@@ -999,7 +1003,7 @@ export default function BrewGuideModal({
               fontSize: '12px',
               fontWeight: 600,
               minHeight: '36px',
-              transition: 'all 150ms ease'
+              transition: 'var(--transition-ui)'
             }}
           >
             {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
@@ -1012,10 +1016,10 @@ export default function BrewGuideModal({
             onClick={handleCloseModal}
             aria-label="Cerrar Asistente"
             style={{
-              background: 'var(--barista-bg-subtle, rgba(118, 118, 128, 0.12))',
-              border: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
-              color: 'var(--color-text-muted, #8E8E93)',
-              borderRadius: '8px',
+              background: 'var(--barista-bg-subtle)',
+              border: '1px solid var(--border-color)',
+              color: 'var(--color-text-muted)',
+              borderRadius: 'var(--r-control)',
               padding: '8px',
               cursor: 'pointer',
               display: 'flex',
@@ -1023,7 +1027,7 @@ export default function BrewGuideModal({
               justifyContent: 'center',
               minWidth: '36px',
               minHeight: '36px',
-              transition: 'all 150ms ease'
+              transition: 'var(--transition-ui)'
             }}
           >
             <X size={18} />
@@ -1036,7 +1040,7 @@ export default function BrewGuideModal({
         style={{
           width: '100%',
           height: '4px',
-          backgroundColor: 'var(--segmented-bg, rgba(118, 118, 128, 0.15))',
+          backgroundColor: 'var(--segmented-bg)',
           position: 'relative'
         }}
       >
@@ -1044,7 +1048,7 @@ export default function BrewGuideModal({
           style={{
             height: '100%',
             width: `${globalProgress}%`,
-            backgroundColor: 'var(--color-crimson, #BC5449)',
+            backgroundColor: 'var(--color-crimson)',
             boxShadow: '0 0 10px rgba(188, 84, 73, 0.5)',
             transition: 'width 250ms linear'
           }}
@@ -1076,13 +1080,13 @@ export default function BrewGuideModal({
               <div
                 className="barista-timer font-mono text-7xl md:text-8xl font-black tracking-tight"
                 style={{
-                  fontFamily: 'var(--font-metric, var(--font-mono, monospace))',
+                  fontFamily: 'var(--font-metric)',
                   fontSize: 'clamp(4.2rem, 15vw, 6.5rem)',
-                  fontWeight: 900,
+                  fontWeight: '700',
                   letterSpacing: '-0.04em',
                   lineHeight: 1,
                   fontVariantNumeric: 'tabular-nums',
-                  color: 'var(--text-primary, var(--color-text, #000000))'
+                  color: 'var(--text-primary)'
                 }}
               >
                 {formatTime(elapsedSeconds)}
@@ -1090,13 +1094,13 @@ export default function BrewGuideModal({
               <div
                 style={{
                   fontSize: '13px',
-                  color: 'var(--text-secondary, var(--color-text-muted, #8E8E93))',
+                  color: 'var(--text-secondary)',
                   marginTop: '8px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '6px',
-                  fontFamily: 'var(--font-display, sans-serif)'
+                  fontFamily: 'var(--font-display)'
                 }}
               >
                 <Clock size={14} />
@@ -1111,22 +1115,22 @@ export default function BrewGuideModal({
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
-                backgroundColor: isVoiceEnabled ? 'var(--barista-accent-mint-bg, rgba(16, 185, 129, 0.12))' : 'var(--barista-bg-subtle, rgba(118, 118, 128, 0.08))',
-                border: isVoiceEnabled ? '1.5px solid var(--barista-accent-mint-text, #10B981)' : '1px dashed var(--border-color, rgba(60, 60, 67, 0.18))',
-                borderRadius: '14px',
+                backgroundColor: isVoiceEnabled ? 'var(--barista-accent-mint-bg)' : 'var(--barista-bg-subtle)',
+                border: isVoiceEnabled ? '1.5px solid var(--barista-accent-mint-text)' : '1px dashed var(--border-color)',
+                borderRadius: 'var(--r-tile)',
                 padding: '12px 16px',
                 marginBottom: '16px',
                 boxSizing: 'border-box',
-                transition: 'all 200ms ease',
+                transition: 'var(--transition-ui)',
                 boxShadow: isVoiceEnabled ? '0 2px 8px rgba(16, 185, 129, 0.12)' : 'none'
               }}
             >
               <div style={{
                 width: '34px',
                 height: '34px',
-                borderRadius: '10px',
-                backgroundColor: isVoiceEnabled ? 'var(--barista-accent-mint-text, #059669)' : 'var(--barista-bg-subtle, rgba(118, 118, 128, 0.2))',
-                color: '#FFFFFF',
+                borderRadius: 'var(--r-control)',
+                backgroundColor: isVoiceEnabled ? 'var(--barista-accent-mint-text)' : 'var(--barista-bg-subtle)',
+                color: 'var(--on-accent)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1138,9 +1142,9 @@ export default function BrewGuideModal({
                 <div style={{
                   fontSize: '12px',
                   textTransform: 'uppercase',
-                  fontWeight: 800,
+                  fontWeight: '600',
                   letterSpacing: '0.06em',
-                  color: isVoiceEnabled ? 'var(--barista-accent-mint-text, #065F46)' : 'var(--color-text-muted)'
+                  color: isVoiceEnabled ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)'
                 }}>
                   {isVoiceEnabled ? 'Asistente de Voz del Barista' : 'Voz Silenciada (Pulsa el botón superior para activar)'}
                 </div>
@@ -1154,12 +1158,12 @@ export default function BrewGuideModal({
             <div
               style={{
                 width: '100%',
-                backgroundColor: 'var(--bg-card, #FFFFFF)',
-                borderRadius: '16px',
-                border: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
+                backgroundColor: 'var(--bg-card)',
+                borderRadius: 'var(--r-tile)',
+                border: '1px solid var(--border-color)',
                 padding: '20px',
                 boxSizing: 'border-box',
-                boxShadow: 'var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.05))',
+                boxShadow: 'var(--card-shadow)',
                 marginBottom: '16px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -1170,10 +1174,10 @@ export default function BrewGuideModal({
               <div
                 style={{
                   fontSize: '12px',
-                  fontWeight: 800,
+                  fontWeight: '600',
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
-                  color: 'var(--color-crimson, #BC5449)',
+                  color: 'var(--color-crimson)',
                   marginBottom: '4px'
                 }}
               >
@@ -1190,13 +1194,13 @@ export default function BrewGuideModal({
                         alignItems: 'center',
                         gap: '6px',
                         padding: '6px 14px',
-                        borderRadius: '9999px',
+                        borderRadius: 'var(--r-pill)',
                         fontSize: '12px',
-                        fontWeight: 800,
+                        fontWeight: '600',
                         letterSpacing: '0.04em',
-                        backgroundColor: 'var(--valve-closed-bg, rgba(239, 68, 68, 0.15))',
-                        color: 'var(--valve-closed, #EF4444)',
-                        border: '1.5px solid var(--valve-closed, #EF4444)',
+                        backgroundColor: 'var(--valve-closed-bg)',
+                        color: 'var(--valve-closed)',
+                        border: '1.5px solid var(--valve-closed)',
                         boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)'
                       }}
                     >
@@ -1211,13 +1215,13 @@ export default function BrewGuideModal({
                         alignItems: 'center',
                         gap: '6px',
                         padding: '6px 14px',
-                        borderRadius: '9999px',
+                        borderRadius: 'var(--r-pill)',
                         fontSize: '12px',
-                        fontWeight: 800,
+                        fontWeight: '600',
                         letterSpacing: '0.04em',
-                        backgroundColor: 'var(--valve-half-bg, rgba(217, 119, 6, 0.15))',
-                        color: 'var(--valve-half, #D97706)',
-                        border: '1.5px solid var(--valve-half, #D97706)',
+                        backgroundColor: 'var(--valve-half-bg)',
+                        color: 'var(--valve-half)',
+                        border: '1.5px solid var(--valve-half)',
                         boxShadow: '0 2px 8px rgba(217, 119, 6, 0.2)'
                       }}
                     >
@@ -1232,13 +1236,13 @@ export default function BrewGuideModal({
                         alignItems: 'center',
                         gap: '6px',
                         padding: '6px 14px',
-                        borderRadius: '9999px',
+                        borderRadius: 'var(--r-pill)',
                         fontSize: '12px',
-                        fontWeight: 800,
+                        fontWeight: '600',
                         letterSpacing: '0.04em',
-                        backgroundColor: 'var(--valve-open-bg, rgba(16, 185, 129, 0.15))',
-                        color: 'var(--valve-open, #10B981)',
-                        border: '1.5px solid var(--valve-open, #10B981)',
+                        backgroundColor: 'var(--valve-open-bg)',
+                        color: 'var(--valve-open)',
+                        border: '1.5px solid var(--valve-open)',
                         boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)'
                       }}
                     >
@@ -1254,7 +1258,7 @@ export default function BrewGuideModal({
                 <p
                   style={{
                     fontSize: '13px',
-                    color: 'var(--barista-text-secondary, var(--color-text-muted, #475569))',
+                    color: 'var(--barista-text-secondary)',
                     textAlign: 'center',
                     margin: '4px 0 14px',
                     lineHeight: '1.45',
@@ -1275,19 +1279,19 @@ export default function BrewGuideModal({
                   margin: '6px 0 12px'
                 }}
               >
-                <div style={{ fontSize: '12px', color: 'var(--color-text-muted, #8E8E93)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
                   Objetivo de Agua
                 </div>
                 <div
                   style={{
                     fontSize: '26px',
-                    fontWeight: 800,
-                    color: 'var(--color-text, #000000)',
-                    fontFamily: 'var(--font-mono, monospace)'
+                    fontWeight: '600',
+                    color: 'var(--color-text)',
+                    fontFamily: 'var(--font-mono)'
                   }}
                 >
                   Verter hasta {currentStage.total_water_g}g{' '}
-                  <span style={{ fontSize: '18px', color: 'var(--color-crimson, #BC5449)', fontWeight: 700 }}>
+                  <span style={{ fontSize: '18px', color: 'var(--color-crimson)', fontWeight: 700 }}>
                     (+{currentStage.water_g}g)
                   </span>
                 </div>
@@ -1295,7 +1299,7 @@ export default function BrewGuideModal({
                   <div
                     style={{
                       fontSize: '12px',
-                      color: 'var(--barista-accent-honey-text, #92400E)',
+                      color: 'var(--barista-accent-honey-text)',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '5px',
@@ -1306,23 +1310,23 @@ export default function BrewGuideModal({
                     <span>Caudal sugerido:</span>
                     <span
                       style={{
-                        fontFamily: 'var(--font-mono, monospace)',
-                        background: 'var(--barista-accent-honey-bg, #FEF3C7)',
-                        border: '1px solid var(--barista-instr-border, #FDE68A)',
-                        color: 'var(--barista-accent-honey-text, #92400E)',
+                        fontFamily: 'var(--font-mono)',
+                        background: 'var(--barista-accent-honey-bg)',
+                        border: '1px solid var(--barista-instr-border)',
+                        color: 'var(--barista-accent-honey-text)',
                         padding: '1px 7px',
-                        borderRadius: '4px',
+                        borderRadius: 'var(--r-xs)',
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '3px'
                       }}
                     >
-                      <Droplet size={11} color="var(--barista-accent-honey, #D97706)" />
+                      <Droplet size={11} color="var(--barista-accent-honey)" />
                       ~{suggestedFlowRate} ml/s
                     </span>
                   </div>
                 ) : (
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-muted, #8E8E93)', fontStyle: 'italic', marginTop: '2px' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontStyle: 'italic', marginTop: '2px' }}>
                     Drenaje libre hacia lecho plano
                   </div>
                 )}
@@ -1340,13 +1344,13 @@ export default function BrewGuideModal({
                     marginBottom: '6px'
                   }}
                 >
-                  <span style={{ color: 'var(--color-text-muted, #8E8E93)' }}>Paso {currentStageIndex + 1}/{stages.length}</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Paso {currentStageIndex + 1}/{stages.length}</span>
                   <span
                     style={{
-                      fontFamily: 'var(--font-mono, monospace)',
-                      color: stageRemainingSec <= 3 && isActive ? 'var(--barista-accent-danger, #EF4444)' : 'var(--color-text, #000000)',
+                      fontFamily: 'var(--font-mono)',
+                      color: stageRemainingSec <= 3 && isActive ? 'var(--barista-accent-danger)' : 'var(--color-text)',
                       fontSize: '13px',
-                      fontWeight: 800
+                      fontWeight: '600'
                     }}
                   >
                     Quedan {stageRemainingSec}s
@@ -1356,8 +1360,8 @@ export default function BrewGuideModal({
                   style={{
                     width: '100%',
                     height: '6px',
-                    borderRadius: '3px',
-                    backgroundColor: 'var(--segmented-bg, rgba(118, 118, 128, 0.15))',
+                    borderRadius: 'var(--r-xs)',
+                    backgroundColor: 'var(--segmented-bg)',
                     overflow: 'hidden'
                   }}
                 >
@@ -1365,7 +1369,7 @@ export default function BrewGuideModal({
                     style={{
                       height: '100%',
                       width: `${stageProgress}%`,
-                      backgroundColor: stageRemainingSec <= 3 && isActive ? 'var(--barista-accent-danger, #EF4444)' : 'var(--color-crimson, #BC5449)',
+                      backgroundColor: stageRemainingSec <= 3 && isActive ? 'var(--barista-accent-danger)' : 'var(--color-crimson)',
                       transition: 'width 250ms linear, background-color 200ms ease'
                     }}
                   />
@@ -1395,26 +1399,26 @@ export default function BrewGuideModal({
                       flex: '1 1 0',
                       minWidth: '95px',
                       padding: '8px',
-                      borderRadius: '8px',
-                      backgroundColor: isCurrent ? 'var(--barista-instr-bg, #FFFBEB)' : (isPast ? 'var(--barista-accent-mint-bg, #D1FAE5)' : 'var(--bg-card, #FFFFFF)'),
-                      border: isCurrent ? '1.5px solid var(--color-crimson, #BC5449)' : (isPast ? '1px solid var(--barista-accent-mint, #10B981)' : '1px solid var(--border-color, rgba(60, 60, 67, 0.12))'),
+                      borderRadius: 'var(--r-control)',
+                      backgroundColor: isCurrent ? 'var(--barista-instr-bg)' : (isPast ? 'var(--barista-accent-mint-bg)' : 'var(--bg-card)'),
+                      border: isCurrent ? '1.5px solid var(--color-crimson)' : (isPast ? '1px solid var(--barista-accent-mint)' : '1px solid var(--border-color)'),
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '2px',
-                      transition: 'all 200ms ease'
+                      transition: 'var(--transition-ui)'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 800, color: isCurrent ? 'var(--color-crimson, #BC5449)' : (isPast ? 'var(--barista-accent-mint-text, #065F46)' : 'var(--color-text-muted, #8E8E93)') }}>
+                      <span style={{ fontSize: '12px', fontWeight: '600', color: isCurrent ? 'var(--color-crimson)' : (isPast ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)') }}>
                         #{idx + 1}
                       </span>
-                      {isPast && <CheckCircle2 size={12} color="var(--barista-accent-mint, #10B981)" />}
+                      {isPast && <CheckCircle2 size={12} color="var(--barista-accent-mint)" />}
                     </div>
                     <div
                       style={{
                         fontSize: '12px',
                         fontWeight: 600,
-                        color: isCurrent ? 'var(--color-text, #000000)' : (isPast ? 'var(--barista-accent-mint-text, #065F46)' : 'var(--color-text-muted, #8E8E93)'),
+                        color: isCurrent ? 'var(--color-text)' : (isPast ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)'),
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis'
@@ -1422,7 +1426,7 @@ export default function BrewGuideModal({
                     >
                       {stg.label}
                     </div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-text-muted, #8E8E93)', fontFamily: 'var(--font-mono, monospace)' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
                       +{stg.water_g}g ({formatTime(stg.duration)})
                     </div>
                   </div>
@@ -1452,19 +1456,19 @@ export default function BrewGuideModal({
                     justifyContent: 'center',
                     gap: '10px',
                     padding: '14px 20px',
-                    borderRadius: 'var(--radius-lg, 14px)',
-                    backgroundColor: isActive ? 'var(--valve-closed, #EF4444)' : 'var(--accent-terracotta, #BC5449)',
-                    color: '#FFFFFF',
+                    borderRadius: 'var(--radius-lg)',
+                    backgroundColor: isActive ? 'var(--valve-closed)' : 'var(--accent-terracotta)',
+                    color: 'var(--on-accent)',
                     fontSize: '16px',
-                    fontWeight: 800,
-                    fontFamily: 'var(--font-display, sans-serif)',
+                    fontWeight: '600',
+                    fontFamily: 'var(--font-display)',
                     letterSpacing: '0.02em',
                     border: 'none',
                     cursor: 'pointer',
                     minHeight: '56px',
                     height: '56px',
                     boxShadow: isActive ? '0 4px 16px rgba(239, 68, 68, 0.35)' : '0 4px 16px rgba(188, 84, 73, 0.35)',
-                    transition: 'all 180ms ease'
+                    transition: 'var(--transition-ui)'
                   }}
                 >
                   {isActive ? (
@@ -1474,7 +1478,7 @@ export default function BrewGuideModal({
                     </>
                   ) : (
                     <>
-                      <Play size={22} fill="#FFFFFF" />
+                      <Play size={22} fill="currentColor" />
                       <span>{elapsedSeconds > 0 ? 'Reanudar' : 'Iniciar Extracción'}</span>
                     </>
                   )}
@@ -1491,18 +1495,18 @@ export default function BrewGuideModal({
                     justifyContent: 'center',
                     gap: '8px',
                     padding: '14px 16px',
-                    borderRadius: 'var(--radius-lg, 14px)',
-                    backgroundColor: 'var(--bg-surface, var(--bg-card, #FFFFFF))',
-                    border: '1.5px solid var(--border-subtle, rgba(60, 60, 67, 0.12))',
-                    color: 'var(--text-primary, #000000)',
+                    borderRadius: 'var(--radius-lg)',
+                    backgroundColor: 'var(--bg-surface)',
+                    border: '1.5px solid var(--border-subtle)',
+                    color: 'var(--text-primary)',
                     fontSize: '14px',
-                    fontWeight: 800,
-                    fontFamily: 'var(--font-display, sans-serif)',
+                    fontWeight: '600',
+                    fontFamily: 'var(--font-display)',
                     cursor: 'pointer',
                     minHeight: '56px',
                     height: '56px',
-                    boxShadow: 'var(--shadow-sm, 0 2px 6px rgba(0, 0, 0, 0.04))',
-                    transition: 'all 180ms ease'
+                    boxShadow: 'var(--shadow-sm)',
+                    transition: 'var(--transition-ui)'
                   }}
                 >
                   <SkipForward size={18} />
@@ -1523,10 +1527,10 @@ export default function BrewGuideModal({
                     justifyContent: 'center',
                     gap: '6px',
                     padding: '12px 14px',
-                    borderRadius: 'var(--radius-md, 10px)',
-                    backgroundColor: 'var(--bg-elevated, rgba(118, 118, 128, 0.12))',
-                    border: '1px solid var(--border-subtle, rgba(60, 60, 67, 0.12))',
-                    color: elapsedSeconds === 0 ? 'var(--text-muted, #8E8E93)' : 'var(--text-primary, #000000)',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--bg-elevated)',
+                    border: '1px solid var(--border-subtle)',
+                    color: elapsedSeconds === 0 ? 'var(--text-muted)' : 'var(--text-primary)',
                     fontSize: '13px',
                     fontWeight: 700,
                     minHeight: '48px',
@@ -1549,16 +1553,16 @@ export default function BrewGuideModal({
                     justifyContent: 'center',
                     gap: '6px',
                     padding: '12px 16px',
-                    borderRadius: 'var(--radius-md, 10px)',
-                    backgroundColor: 'var(--barista-accent-mint-bg, rgba(16, 185, 129, 0.15))',
-                    border: '1.5px solid var(--valve-open, #10B981)',
-                    color: 'var(--valve-open, #065F46)',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--barista-accent-mint-bg)',
+                    border: '1.5px solid var(--valve-open)',
+                    color: 'var(--valve-open)',
                     fontSize: '13px',
-                    fontWeight: 800,
+                    fontWeight: '600',
                     minHeight: '48px',
                     height: '48px',
                     cursor: 'pointer',
-                    transition: 'all 180ms ease'
+                    transition: 'var(--transition-ui)'
                   }}
                 >
                   <CheckCircle2 size={16} />
@@ -1580,10 +1584,10 @@ export default function BrewGuideModal({
                   alignItems: 'center',
                   gap: '6px',
                   padding: '4px 12px',
-                  borderRadius: '9999px',
-                  backgroundColor: 'var(--barista-accent-honey-bg, #FEF3C7)',
-                  border: '1px solid var(--barista-instr-border, #FDE68A)',
-                  color: 'var(--barista-accent-honey-text, #92400E)',
+                  borderRadius: 'var(--r-pill)',
+                  backgroundColor: 'var(--barista-accent-honey-bg)',
+                  border: '1px solid var(--barista-instr-border)',
+                  color: 'var(--barista-accent-honey-text)',
                   fontSize: '12px',
                   fontWeight: 700,
                   marginBottom: '6px'
@@ -1592,11 +1596,11 @@ export default function BrewGuideModal({
                 <Sparkles size={14} />
                 <span>Extracción Finalizada</span>
               </div>
-              <h2 style={{ fontSize: '22px', fontWeight: 800, margin: '2px 0 6px', color: 'var(--color-text, #000000)', fontFamily: 'var(--font-heading)' }}>
+              <h2 style={{ fontSize: '22px', fontWeight: '600', margin: '2px 0 6px', color: 'var(--color-text)', fontFamily: 'var(--font-heading)' }}>
                 <Coffee size={22} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} />
                 Diagnóstico Barista & Calibración Fina
               </h2>
-              <div style={{ fontSize: '13px', color: 'var(--color-text-muted, #8E8E93)' }}>
+              <div style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
                 {batch?.origin || batch?.name || 'Origen'} • {recipe?.method || 'Filtro'}
               </div>
 
@@ -1612,53 +1616,53 @@ export default function BrewGuideModal({
               >
                 <span
                   style={{
-                    backgroundColor: 'var(--bg-card, #FFFFFF)',
-                    border: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
-                    borderRadius: '8px',
+                    backgroundColor: 'var(--bg-card)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--r-control)',
                     padding: '6px 12px',
                     fontSize: '12px',
-                    color: 'var(--color-text, #000000)',
-                    fontFamily: 'var(--font-mono, monospace)',
+                    color: 'var(--color-text)',
+                    fontFamily: 'var(--font-mono)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '4px'
                   }}
                 >
-                  <Timer size={13} color="var(--barista-accent-honey, #D97706)" />
+                  <Timer size={13} color="var(--barista-accent-honey)" />
                   Tiempo Medido: <strong>{formatTime(elapsedSeconds)}</strong>
                 </span>
                 <span
                   style={{
-                    backgroundColor: 'var(--bg-card, #FFFFFF)',
-                    border: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
-                    borderRadius: '8px',
+                    backgroundColor: 'var(--bg-card)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--r-control)',
                     padding: '6px 12px',
                     fontSize: '12px',
-                    color: 'var(--color-text, #000000)',
-                    fontFamily: 'var(--font-mono, monospace)',
+                    color: 'var(--color-text)',
+                    fontFamily: 'var(--font-mono)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '4px'
                   }}
                 >
-                  <Droplet size={13} color="var(--color-crimson, #BC5449)" />
+                  <Droplet size={13} color="var(--color-crimson)" />
                   Agua: <strong>{stages[stages.length - 1]?.total_water_g || recipe?.water_total_g || 250}g</strong>
                 </span>
                 <span
                   style={{
-                    backgroundColor: 'var(--bg-card, #FFFFFF)',
-                    border: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
-                    borderRadius: '8px',
+                    backgroundColor: 'var(--bg-card)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--r-control)',
                     padding: '6px 12px',
                     fontSize: '12px',
-                    color: 'var(--color-text, #000000)',
-                    fontFamily: 'var(--font-mono, monospace)',
+                    color: 'var(--color-text)',
+                    fontFamily: 'var(--font-mono)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '4px'
                   }}
                 >
-                  <Scale size={13} color="var(--barista-accent-honey, #D97706)" />
+                  <Scale size={13} color="var(--barista-accent-honey)" />
                   Dosis: <strong>{recipe?.dose_in_g || 15}g</strong>
                 </span>
               </div>
@@ -1667,26 +1671,26 @@ export default function BrewGuideModal({
             {/* 3-Tap Sensory Evaluation Form */}
             <div
               style={{
-                backgroundColor: 'var(--bg-card, #FFFFFF)',
-                borderRadius: '16px',
-                border: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
+                backgroundColor: 'var(--bg-card)',
+                borderRadius: 'var(--r-tile)',
+                border: '1px solid var(--border-color)',
                 padding: '18px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '16px',
-                boxShadow: 'var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.05))'
+                boxShadow: 'var(--card-shadow)'
               }}
             >
               {/* 1. Sabor */}
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-text, #000000)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-text)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   1. Sabor Dominante en Taza
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                   {[
-                    { key: 'sour', label: 'Agrio / Punzante', desc: 'Sub-extraído', icon: Flame, iconColor: '#EF4444' },
-                    { key: 'balanced', label: 'Dulce / Balanceado', desc: 'Punto Dulce', icon: Trophy, iconColor: '#10B981' },
-                    { key: 'bitter', label: 'Amargo / Seco', desc: 'Sobre-extraído', icon: Coffee, iconColor: '#D97706' }
+                    { key: 'sour', label: 'Agrio / Punzante', desc: 'Sub-extraído', icon: Flame, iconColor: 'var(--bad)' },
+                    { key: 'balanced', label: 'Dulce / Balanceado', desc: 'Punto Dulce', icon: Trophy, iconColor: 'var(--ok)' },
+                    { key: 'bitter', label: 'Amargo / Seco', desc: 'Sobre-extraído', icon: Coffee, iconColor: 'var(--accent)' }
                   ].map(item => {
                     const isSelected = feedback.taste === item.key;
                     const ItemIcon = item.icon;
@@ -1697,30 +1701,30 @@ export default function BrewGuideModal({
                         onClick={() => setFeedback(prev => ({ ...prev, taste: item.key }))}
                         style={{
                           padding: '12px 6px',
-                          borderRadius: '10px',
+                          borderRadius: 'var(--r-control)',
                           border: isSelected
-                            ? (item.key === 'balanced' ? '2px solid var(--barista-accent-mint, #10B981)' : '2px solid var(--barista-accent-honey, #D97706)')
-                            : '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
+                            ? (item.key === 'balanced' ? '2px solid var(--barista-accent-mint)' : '2px solid var(--barista-accent-honey)')
+                            : '1px solid var(--border-color)',
                           backgroundColor: isSelected
-                            ? (item.key === 'balanced' ? 'var(--barista-accent-mint-bg, #D1FAE5)' : 'var(--barista-accent-honey-bg, #FEF3C7)')
-                            : 'var(--barista-bg-subtle, rgba(118, 118, 128, 0.06))',
+                            ? (item.key === 'balanced' ? 'var(--barista-accent-mint-bg)' : 'var(--barista-accent-honey-bg)')
+                            : 'var(--barista-bg-subtle)',
                           color: isSelected
-                            ? (item.key === 'balanced' ? 'var(--barista-accent-mint-text, #065F46)' : 'var(--barista-accent-honey-text, #92400E)')
-                            : 'var(--color-text, #000000)',
+                            ? (item.key === 'balanced' ? 'var(--barista-accent-mint-text)' : 'var(--barista-accent-honey-text)')
+                            : 'var(--color-text)',
                           cursor: 'pointer',
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
                           gap: '3px',
                           minHeight: '64px',
-                          transition: 'all 150ms ease'
+                          transition: 'var(--transition-ui)'
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <ItemIcon size={14} color={item.iconColor} />
                           <span style={{ fontSize: '12px', fontWeight: 700 }}>{item.label}</span>
                         </div>
-                        <span style={{ fontSize: '12px', color: isSelected ? 'inherit' : 'var(--color-text-muted, #8E8E93)' }}>{item.desc}</span>
+                        <span style={{ fontSize: '12px', color: isSelected ? 'inherit' : 'var(--color-text-muted)' }}>{item.desc}</span>
                       </button>
                     );
                   })}
@@ -1729,14 +1733,14 @@ export default function BrewGuideModal({
 
               {/* 2. Caudal */}
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-text, #000000)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-text)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   2. Caudal y Tiempo de Drenaje
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                   {[
                     { key: 'fast', label: 'Drenó muy rápido', desc: '< Tiempo meta', icon: FastForward, iconColor: '#3B82F6' },
-                    { key: 'on_time', label: 'A tiempo (±15s)', desc: 'Tiempo previsto', icon: Target, iconColor: '#10B981' },
-                    { key: 'slow', label: 'Lento o atascado', desc: '> +30s meta', icon: Clock, iconColor: '#EF4444' }
+                    { key: 'on_time', label: 'A tiempo (±15s)', desc: 'Tiempo previsto', icon: Target, iconColor: 'var(--ok)' },
+                    { key: 'slow', label: 'Lento o atascado', desc: '> +30s meta', icon: Clock, iconColor: 'var(--bad)' }
                   ].map(item => {
                     const isSelected = feedback.flow === item.key;
                     const ItemIcon = item.icon;
@@ -1747,30 +1751,30 @@ export default function BrewGuideModal({
                         onClick={() => setFeedback(prev => ({ ...prev, flow: item.key }))}
                         style={{
                           padding: '12px 6px',
-                          borderRadius: '10px',
+                          borderRadius: 'var(--r-control)',
                           border: isSelected
-                            ? (item.key === 'on_time' ? '2px solid var(--barista-accent-mint, #10B981)' : '2px solid var(--barista-accent-honey, #D97706)')
-                            : '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
+                            ? (item.key === 'on_time' ? '2px solid var(--barista-accent-mint)' : '2px solid var(--barista-accent-honey)')
+                            : '1px solid var(--border-color)',
                           backgroundColor: isSelected
-                            ? (item.key === 'on_time' ? 'var(--barista-accent-mint-bg, #D1FAE5)' : 'var(--barista-accent-honey-bg, #FEF3C7)')
-                            : 'var(--barista-bg-subtle, rgba(118, 118, 128, 0.06))',
+                            ? (item.key === 'on_time' ? 'var(--barista-accent-mint-bg)' : 'var(--barista-accent-honey-bg)')
+                            : 'var(--barista-bg-subtle)',
                           color: isSelected
-                            ? (item.key === 'on_time' ? 'var(--barista-accent-mint-text, #065F46)' : 'var(--barista-accent-honey-text, #92400E)')
-                            : 'var(--color-text, #000000)',
+                            ? (item.key === 'on_time' ? 'var(--barista-accent-mint-text)' : 'var(--barista-accent-honey-text)')
+                            : 'var(--color-text)',
                           cursor: 'pointer',
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
                           gap: '3px',
                           minHeight: '64px',
-                          transition: 'all 150ms ease'
+                          transition: 'var(--transition-ui)'
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <ItemIcon size={14} color={item.iconColor} />
                           <span style={{ fontSize: '12px', fontWeight: 700 }}>{item.label}</span>
                         </div>
-                        <span style={{ fontSize: '12px', color: isSelected ? 'inherit' : 'var(--color-text-muted, #8E8E93)' }}>{item.desc}</span>
+                        <span style={{ fontSize: '12px', color: isSelected ? 'inherit' : 'var(--color-text-muted)' }}>{item.desc}</span>
                       </button>
                     );
                   })}
@@ -1779,14 +1783,14 @@ export default function BrewGuideModal({
 
               {/* 3. Cuerpo */}
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-text, #000000)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-text)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   3. Textura y Cuerpo en Boca
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                   {[
                     { key: 'thin', label: 'Aguado / Hueco', desc: 'Falta solubilidad', icon: Droplet, iconColor: '#06B6D4' },
-                    { key: 'balanced', label: 'Sedoso / Balanceado', desc: 'Densidad ideal', icon: Sparkles, iconColor: '#10B981' },
-                    { key: 'astringent', label: 'Áspero / Astringente', desc: 'Seco al paladar', icon: Scale, iconColor: '#D97706' }
+                    { key: 'balanced', label: 'Sedoso / Balanceado', desc: 'Densidad ideal', icon: Sparkles, iconColor: 'var(--ok)' },
+                    { key: 'astringent', label: 'Áspero / Astringente', desc: 'Seco al paladar', icon: Scale, iconColor: 'var(--accent)' }
                   ].map(item => {
                     const isSelected = feedback.body === item.key;
                     const ItemIcon = item.icon;
@@ -1797,30 +1801,30 @@ export default function BrewGuideModal({
                         onClick={() => setFeedback(prev => ({ ...prev, body: item.key }))}
                         style={{
                           padding: '12px 6px',
-                          borderRadius: '10px',
+                          borderRadius: 'var(--r-control)',
                           border: isSelected
-                            ? (item.key === 'balanced' ? '2px solid var(--barista-accent-mint, #10B981)' : '2px solid var(--barista-accent-honey, #D97706)')
-                            : '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
+                            ? (item.key === 'balanced' ? '2px solid var(--barista-accent-mint)' : '2px solid var(--barista-accent-honey)')
+                            : '1px solid var(--border-color)',
                           backgroundColor: isSelected
-                            ? (item.key === 'balanced' ? 'var(--barista-accent-mint-bg, #D1FAE5)' : 'var(--barista-accent-honey-bg, #FEF3C7)')
-                            : 'var(--barista-bg-subtle, rgba(118, 118, 128, 0.06))',
+                            ? (item.key === 'balanced' ? 'var(--barista-accent-mint-bg)' : 'var(--barista-accent-honey-bg)')
+                            : 'var(--barista-bg-subtle)',
                           color: isSelected
-                            ? (item.key === 'balanced' ? 'var(--barista-accent-mint-text, #065F46)' : 'var(--barista-accent-honey-text, #92400E)')
-                            : 'var(--color-text, #000000)',
+                            ? (item.key === 'balanced' ? 'var(--barista-accent-mint-text)' : 'var(--barista-accent-honey-text)')
+                            : 'var(--color-text)',
                           cursor: 'pointer',
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
                           gap: '3px',
                           minHeight: '64px',
-                          transition: 'all 150ms ease'
+                          transition: 'var(--transition-ui)'
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <ItemIcon size={14} color={item.iconColor} />
                           <span style={{ fontSize: '12px', fontWeight: 700 }}>{item.label}</span>
                         </div>
-                        <span style={{ fontSize: '12px', color: isSelected ? 'inherit' : 'var(--color-text-muted, #8E8E93)' }}>{item.desc}</span>
+                        <span style={{ fontSize: '12px', color: isSelected ? 'inherit' : 'var(--color-text-muted)' }}>{item.desc}</span>
                       </button>
                     );
                   })}
@@ -1831,15 +1835,15 @@ export default function BrewGuideModal({
             {/* 🎯 Real-Time Recommendation Banner */}
             <div
               style={{
-                backgroundColor: 'var(--bg-card, #FFFFFF)',
-                borderRadius: '16px',
-                border: '1.5px solid var(--color-crimson, #BC5449)',
+                backgroundColor: 'var(--bg-card)',
+                borderRadius: 'var(--r-tile)',
+                border: '1.5px solid var(--color-crimson)',
                 padding: '18px',
-                boxShadow: 'var(--card-shadow, 0 4px 20px -2px rgba(0, 0, 0, 0.05))'
+                boxShadow: 'var(--card-shadow)'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-crimson, #BC5449)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Sparkles size={16} />
                   Recomendación para tu siguiente taza:
                 </span>
@@ -1848,16 +1852,16 @@ export default function BrewGuideModal({
                     fontSize: '12px',
                     fontWeight: 700,
                     padding: '2px 8px',
-                    borderRadius: '6px',
+                    borderRadius: 'var(--r-control)',
                     backgroundColor: sensoryCorrection.diagnosis === 'balanced'
-                      ? 'var(--barista-accent-mint-bg, #D1FAE5)'
-                      : 'var(--barista-accent-danger-bg, #FEE2E2)',
+                      ? 'var(--barista-accent-mint-bg)'
+                      : 'var(--barista-accent-danger-bg)',
                     color: sensoryCorrection.diagnosis === 'balanced'
-                      ? 'var(--barista-accent-mint-text, #065F46)'
-                      : 'var(--barista-accent-danger-text, #991B1B)',
+                      ? 'var(--barista-accent-mint-text)'
+                      : 'var(--barista-accent-danger-text)',
                     border: sensoryCorrection.diagnosis === 'balanced'
-                      ? '1px solid var(--barista-accent-mint, #10B981)'
-                      : '1px solid var(--barista-accent-danger, #EF4444)'
+                      ? '1px solid var(--barista-accent-mint)'
+                      : '1px solid var(--barista-accent-danger)'
                   }}
                 >
                   {sensoryCorrection.diagnosis === 'balanced' ? 'Extracción En Punto' : (sensoryCorrection.diagnosis === 'sub-extracted' ? 'Sub-extracción' : 'Sobre-extracción')}
@@ -1869,20 +1873,20 @@ export default function BrewGuideModal({
                 {/* Dial Tuning Card */}
                 <div
                   style={{
-                    backgroundColor: 'var(--barista-bg-subtle, rgba(118, 118, 128, 0.06))',
-                    borderRadius: '10px',
+                    backgroundColor: 'var(--barista-bg-subtle)',
+                    borderRadius: 'var(--r-control)',
                     padding: '12px',
-                    border: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))'
+                    border: '1px solid var(--border-color)'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--color-text-muted, #8E8E93)', fontWeight: 600 }}>
-                    <Sliders size={14} color="var(--color-crimson, #BC5449)" />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                    <Sliders size={14} color="var(--color-crimson)" />
                     <span>Molino ({activeGrinderConfig?.name || 'Dial'})</span>
                   </div>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-text, #000000)', marginTop: '4px', wordBreak: 'break-word' }}>
+                  <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)', marginTop: '4px', wordBreak: 'break-word' }}>
                     {sensoryCorrection.newGrindText}
                   </div>
-                  <div style={{ fontSize: '12px', marginTop: '2px', fontWeight: 700, color: sensoryCorrection.clickDelta > 0 ? 'var(--barista-accent-mint-text, #065F46)' : (sensoryCorrection.clickDelta < 0 ? 'var(--barista-accent-honey-text, #92400E)' : 'var(--color-text-muted, #8E8E93)') }}>
+                  <div style={{ fontSize: '12px', marginTop: '2px', fontWeight: 700, color: sensoryCorrection.clickDelta > 0 ? 'var(--barista-accent-mint-text)' : (sensoryCorrection.clickDelta < 0 ? 'var(--barista-accent-honey-text)' : 'var(--color-text-muted)') }}>
                     {sensoryCorrection.clickDelta > 0
                       ? `+${sensoryCorrection.clickDelta} clics (Más gruesa)`
                       : (sensoryCorrection.clickDelta < 0
@@ -1894,20 +1898,20 @@ export default function BrewGuideModal({
                 {/* Temperature Tuning Card */}
                 <div
                   style={{
-                    backgroundColor: 'var(--barista-bg-subtle, rgba(118, 118, 128, 0.06))',
-                    borderRadius: '10px',
+                    backgroundColor: 'var(--barista-bg-subtle)',
+                    borderRadius: 'var(--r-control)',
                     padding: '12px',
-                    border: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))'
+                    border: '1px solid var(--border-color)'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--color-text-muted, #8E8E93)', fontWeight: 600 }}>
-                    <Thermometer size={14} color="var(--color-crimson, #BC5449)" />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                    <Thermometer size={14} color="var(--color-crimson)" />
                     <span>Temperatura de Agua</span>
                   </div>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-text, #000000)', marginTop: '4px' }}>
+                  <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)', marginTop: '4px' }}>
                     {sensoryCorrection.newTemp}°C
                   </div>
-                  <div style={{ fontSize: '12px', marginTop: '2px', fontWeight: 700, color: sensoryCorrection.tempDelta > 0 ? 'var(--barista-accent-honey-text, #92400E)' : (sensoryCorrection.tempDelta < 0 ? 'var(--barista-accent-cryo, #0284C7)' : 'var(--color-text-muted, #8E8E93)') }}>
+                  <div style={{ fontSize: '12px', marginTop: '2px', fontWeight: 700, color: sensoryCorrection.tempDelta > 0 ? 'var(--barista-accent-honey-text)' : (sensoryCorrection.tempDelta < 0 ? 'var(--barista-accent-cryo)' : 'var(--color-text-muted)') }}>
                     {sensoryCorrection.tempDelta > 0
                       ? `+${sensoryCorrection.tempDelta}°C (Mayor extracción)`
                       : (sensoryCorrection.tempDelta < 0
@@ -1920,13 +1924,13 @@ export default function BrewGuideModal({
               {/* Barista Explanation Box */}
               <div
                 style={{
-                  backgroundColor: 'var(--barista-instr-bg, #FFFBEB)',
-                  border: '1px solid var(--barista-instr-border, #FDE68A)',
-                  borderRadius: '10px',
+                  backgroundColor: 'var(--barista-instr-bg)',
+                  border: '1px solid var(--barista-instr-border)',
+                  borderRadius: 'var(--r-control)',
                   padding: '12px',
                   fontSize: '12.5px',
                   lineHeight: '1.45',
-                  color: 'var(--barista-instr-text, #92400E)'
+                  color: 'var(--barista-instr-text)'
                 }}
               >
                 {sensoryCorrection.explanation}
@@ -1946,21 +1950,21 @@ export default function BrewGuideModal({
                   justifyContent: 'center',
                   gap: '8px',
                   padding: '16px',
-                  borderRadius: '12px',
-                  backgroundColor: saveSuccess ? 'var(--barista-accent-mint, #10B981)' : 'var(--color-crimson, #BC5449)',
-                  color: '#FFFFFF',
+                  borderRadius: 'var(--r-control)',
+                  backgroundColor: saveSuccess ? 'var(--barista-accent-mint)' : 'var(--color-crimson)',
+                  color: 'var(--on-accent)',
                   fontSize: '15px',
-                  fontWeight: 800,
+                  fontWeight: '600',
                   border: 'none',
                   cursor: isSaving || saveSuccess ? 'default' : 'pointer',
                   minHeight: '50px',
                   boxShadow: '0 4px 16px rgba(188, 84, 73, 0.35)',
-                  transition: 'all 200ms ease'
+                  transition: 'var(--transition-ui)'
                 }}
               >
                 <Sparkles size={18} />
                 <span>
-                  {saveSuccess ? '✓ ¡Receta Afinada Guardada!' : (isSaving ? 'Guardando calibración...' : 'Guardar como Receta Afinada')}
+                  {saveSuccess ? '¡Receta Afinada Guardada!' : (isSaving ? 'Guardando calibración...' : 'Guardar como Receta Afinada')}
                 </span>
               </button>
 
@@ -1971,10 +1975,10 @@ export default function BrewGuideModal({
                   style={{
                     flex: 1,
                     padding: '12px',
-                    borderRadius: '10px',
-                    backgroundColor: 'var(--bg-card, #FFFFFF)',
-                    border: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
-                    color: 'var(--color-text, #000000)',
+                    borderRadius: 'var(--r-control)',
+                    backgroundColor: 'var(--bg-card)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--color-text)',
                     fontSize: '13px',
                     fontWeight: 600,
                     minHeight: '44px',
@@ -1990,10 +1994,10 @@ export default function BrewGuideModal({
                   style={{
                     flex: 1,
                     padding: '12px',
-                    borderRadius: '10px',
+                    borderRadius: 'var(--r-control)',
                     backgroundColor: 'transparent',
-                    border: '1px solid var(--border-color, rgba(60, 60, 67, 0.12))',
-                    color: 'var(--color-text-muted, #8E8E93)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--color-text-muted)',
                     fontSize: '13px',
                     fontWeight: 600,
                     minHeight: '44px',

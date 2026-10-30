@@ -3,6 +3,7 @@ import { Nfc, LogOut } from 'lucide-react';
 import Inventory from './components/Inventory';
 import BottomNav from './components/BottomNav';
 import { apiUrl } from './utils/api';
+import { normalizeTheme } from './utils/theme';
 
 const BatchDetail = lazy(() => import('./components/BatchDetail'));
 const BatchCreator = lazy(() => import('./components/BatchCreator'));
@@ -58,14 +59,14 @@ export default function App() {
   });
   const [token, setToken] = useState(() => localStorage.getItem('beantag-token') || '');
 
-  const [theme, setTheme] = useState(() => localStorage.getItem('beantag-theme') || 'classic');
+  const [theme, setTheme] = useState(() => normalizeTheme(localStorage.getItem('beantag-theme')));
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('beantag-theme') || 'classic';
+    const savedTheme = normalizeTheme(localStorage.getItem('beantag-theme'));
     document.documentElement.setAttribute('data-theme', savedTheme);
 
     const handleThemeChange = () => {
-      const updatedTheme = localStorage.getItem('beantag-theme') || 'classic';
+      const updatedTheme = normalizeTheme(localStorage.getItem('beantag-theme'));
       setTheme(updatedTheme);
       document.documentElement.setAttribute('data-theme', updatedTheme);
     };
@@ -134,7 +135,7 @@ export default function App() {
     }
 
     setShowAuthModal(false);
-    showToast(`¡Bienvenido, ${userData?.name || 'Barista'}! ☕`, { type: 'success', duration: 3000 });
+    showToast(`¡Bienvenido, ${userData?.name || 'Barista'}! `, { type: 'success', duration: 3000 });
     fetchBatches(authToken);
   };
 
@@ -339,7 +340,7 @@ export default function App() {
     })
     .then(data => {
       if (data.success) {
-        showToast('Receta guardada. -1 tubo descontado del inventario. ☕', { type: 'success', duration: 2500 });
+        showToast('Receta guardada. -1 tubo descontado del inventario. ', { type: 'success', duration: 2500 });
         fetchBatches();
         setTimeout(() => {
           handleBack();
@@ -414,7 +415,7 @@ export default function App() {
   // Toast color based on type
   const toastStyles = {
     success: { backgroundColor: 'var(--bg-header)', color: 'var(--color-text)', border: '1.5px solid var(--border-color)' },
-    error: { backgroundColor: '#FEE2E2', color: '#991B1B', border: '1.5px solid #FECACA' },
+    error: { backgroundColor: 'var(--bad-bg)', color: 'var(--bad-text)', border: '1.5px solid #FECACA' },
     info: { backgroundColor: 'var(--bg-card)', color: 'var(--color-text)', border: '1.5px solid var(--border-color)' },
   };
 
@@ -432,8 +433,8 @@ export default function App() {
           <div style={{
             width: '34px',
             height: '34px',
-            borderRadius: '10px',
-            backgroundColor: 'var(--barista-bg-surface, var(--bg-card))',
+            borderRadius: 'var(--r-control)',
+            backgroundColor: 'var(--barista-bg-surface)',
             border: '1px solid var(--border-color)',
             boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
             display: 'flex',
@@ -452,7 +453,7 @@ export default function App() {
             <span style={{
               fontFamily: 'var(--font-heading)',
               fontSize: '16px',
-              fontWeight: '800',
+              fontWeight: '600',
               letterSpacing: '-0.02em',
               color: 'var(--color-header-text)',
               lineHeight: 1
@@ -473,9 +474,9 @@ export default function App() {
               display: 'flex',
               alignItems: 'center',
               gap: '7px',
-              background: 'var(--barista-bg-surface, var(--bg-card))',
+              background: 'var(--barista-bg-surface)',
               border: '1px solid var(--border-color)',
-              borderRadius: '9999px',
+              borderRadius: 'var(--r-pill)',
               padding: '4px 10px 4px 5px',
               minHeight: '34px',
               boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
@@ -483,14 +484,14 @@ export default function App() {
               {currentUser.picture ? (
                 <img src={currentUser.picture} alt="Avatar" style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
-                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--color-crimson, #BC5449)', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '800' }}>
+                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--color-crimson)', color: 'var(--on-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600' }}>
                   {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
                 </div>
               )}
               <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-text)', maxWidth: '84px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {currentUser.name}
               </span>
-              <button onClick={handleLogout} title="Cerrar Sesión" aria-label="Cerrar sesión" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)' }}>
+              <button onClick={handleLogout} title="Cerrar Sesión" aria-label="Cerrar sesión" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', minWidth: '28px', minHeight: '28px', justifyContent: 'center', display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)' }}>
                 <LogOut size={13} />
               </button>
             </div>
@@ -498,7 +499,7 @@ export default function App() {
             <button 
               className="btn-candy primary"
               onClick={() => setShowAuthModal(true)}
-              style={{ padding: '6px 12px', minHeight: '34px', borderRadius: '9999px', fontSize: '12px', fontWeight: '800', margin: 0 }}
+              style={{ padding: '6px 12px', minHeight: '34px', borderRadius: 'var(--r-pill)', fontSize: '12px', fontWeight: '600', margin: 0 }}
             >
               Iniciar Sesión
             </button>
@@ -512,17 +513,17 @@ export default function App() {
             style={{
               width: '34px',
               height: '34px',
-              borderRadius: '10px',
+              borderRadius: 'var(--r-control)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'var(--barista-bg-surface, var(--bg-card))',
+              background: 'var(--barista-bg-surface)',
               border: '1px solid var(--border-color)',
               color: 'var(--color-text)',
               cursor: 'pointer',
               padding: 0,
               boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
-              transition: 'all 150ms ease'
+              transition: 'var(--transition-ui)'
             }}
           >
             <Nfc size={15} strokeWidth={2} />
@@ -628,13 +629,13 @@ export default function App() {
               type="button"
               onClick={handleUndo}
               style={{
-                background: 'var(--color-crimson, #059669)',
-                color: '#FFFFFF',
+                background: 'var(--color-crimson)',
+                color: 'var(--on-accent)',
                 border: 'none',
                 padding: '4px 10px',
-                borderRadius: '6px',
+                borderRadius: 'var(--r-control)',
                 fontSize: '12px',
-                fontWeight: '900',
+                fontWeight: '700',
                 cursor: 'pointer',
                 letterSpacing: '0.5px',
                 boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
@@ -647,7 +648,7 @@ export default function App() {
       )}
 
       {deleteModal.visible && (
-        <div className="bento-modal-overlay" style={{ zIndex: 11000 }} role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" onKeyDown={(e) => { if (e.key === 'Escape') setDeleteModal({ visible: false, batchId: null, batchName: '' }); }} tabIndex={-1} ref={(el) => el && el.focus()}>
+        <div className="bento-modal-overlay" style={{ zIndex: 'var(--z-modal)' }} role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" onKeyDown={(e) => { if (e.key === 'Escape') setDeleteModal({ visible: false, batchId: null, batchName: '' }); }} tabIndex={-1} ref={(el) => el && el.focus()}>
           <div className="candy-card animate-entrance" style={{ maxWidth: '340px', padding: '20px', margin: 'auto', textAlign: 'center' }}>
             <h4 id="delete-modal-title" style={{ margin: '0 0 8px 0', fontFamily: 'var(--font-heading)' }}>¿Eliminar este Lote?</h4>
             <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>

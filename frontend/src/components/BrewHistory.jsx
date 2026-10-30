@@ -111,15 +111,15 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
       let dataUrl;
       if (currentFormat === 'sticker') {
         dataUrl = await generateCoffeeStickerImage(recipe, { template: currentTpl, transparent: isTransparent, orientation: currentOrientation, includeRecipe: incRecipe });
-        setShareStatus('✅ Sticker Story generado con éxito');
+        setShareStatus('Sticker Story generado con éxito');
       } else {
         dataUrl = await generateRecipeCardImage(recipe, currentTpl, incRecipe);
-        setShareStatus('✅ Tarjeta generada con éxito');
+        setShareStatus('Tarjeta generada con éxito');
       }
       setShareImage(dataUrl);
     } catch (err) {
       console.error("Canvas export error:", err);
-      setShareStatus('❌ Error al generar imagen: ' + err.message);
+      setShareStatus('Error al generar imagen: ' + err.message);
     }
   };
 
@@ -148,7 +148,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             title: `Receta de ${selectedRecipe.batch_name}`,
             text: `Calibración de café: ${selectedRecipe.method}`
           });
-          setShareStatus('✅ Compartido con éxito');
+          setShareStatus('Compartido con éxito');
           return;
         } catch (shareErr) {
           if (shareErr.name === 'AbortError') {
@@ -167,7 +167,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             title: `Receta de ${selectedRecipe.batch_name}`,
             text: `☕ Bitácora de Café: ${selectedRecipe.batch_name} - Método: ${selectedRecipe.method}\nMolienda: ${selectedRecipe.grind || 'N/A'}\nRatio: ${selectedRecipe.ratio || 'N/A'}`
           });
-          setShareStatus('✅ Compartido enlace/texto con éxito');
+          setShareStatus('Compartido enlace/texto con éxito');
           return;
         } catch (shareTextErr) {
           if (shareTextErr.name === 'AbortError') {
@@ -187,7 +187,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               [blob.type]: blob
             })
           ]);
-          setShareStatus('📋 ¡Imagen copiada al portapapeles! Puedes pegarla directamente.');
+          setShareStatus('¡Imagen copiada al portapapeles! Puedes pegarla directamente.');
           return;
         } catch (clipImgErr) {
           console.warn("[BeanTag] Copiar imagen al portapapeles (directo) falló, intentando con Promise...", clipImgErr);
@@ -198,7 +198,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 [blob.type]: Promise.resolve(blob)
               })
             ]);
-            setShareStatus('📋 ¡Imagen copiada al portapapeles! Puedes pegarla directamente.');
+            setShareStatus('¡Imagen copiada al portapapeles! Puedes pegarla directamente.');
             return;
           } catch (clipImgErrPromise) {
             console.warn("[BeanTag] Copiar imagen al portapapeles (con Promise) falló:", clipImgErrPromise);
@@ -218,7 +218,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             `Tiempo: ${selectedRecipe.brew_time || 'N/A'}\n` +
             `Notas: ${selectedRecipe.notes || ''}`;
           await navigator.clipboard.writeText(recipeText);
-          setShareStatus('📋 ¡Datos de la receta copiados como texto!');
+          setShareStatus('¡Datos de la receta copiados como texto!');
           return;
         } catch (clipTextErr) {
           console.warn("[BeanTag] Copiar texto al portapapeles falló:", clipTextErr);
@@ -235,13 +235,13 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
       document.body.removeChild(link);
 
       if (isIOS && isStandalone) {
-        setShareStatus('📱 Safari PWA: Mantén presionada la imagen para guardarla.');
+        setShareStatus('Safari PWA: Mantén presionada la imagen para guardarla.');
       } else {
-        setShareStatus('📥 Descarga iniciada.');
+        setShareStatus('Descarga iniciada.');
       }
     } catch (e) {
       console.error("[BeanTag] All share and download attempts failed", e);
-      setShareStatus('❌ Error al compartir. Mantén presionada la imagen para guardarla.');
+      setShareStatus('Error al compartir. Mantén presionada la imagen para guardarla.');
     }
   };
 
@@ -417,12 +417,12 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   onClick={() => setSearchTerm(m === 'Todos' ? '' : m)}
                   style={{
                     padding: '4px 10px',
-                    borderRadius: '12px',
+                    borderRadius: 'var(--r-control)',
                     border: isSelected ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                     background: isSelected ? 'var(--bg-header)' : 'var(--bg-card)',
                     color: 'var(--color-text)',
                     fontSize: '12px',
-                    fontWeight: '800',
+                    fontWeight: '600',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap'
                   }}
@@ -438,7 +438,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
       {safeHistory.length === 0 ? (
         /* R8: Empty state CTA with guidance */
         <div className="candy-card static" style={{ textAlign: 'center', padding: '30px' }}>
-          <div style={{ fontSize: '32px', marginBottom: '12px' }}>☕</div>
+          <div style={{ marginBottom: '12px', color: 'var(--ink-muted)', display: 'flex', justifyContent: 'center' }}><Coffee size={32} strokeWidth={1.75} aria-hidden="true" /></div>
           <p style={{ fontWeight: 'bold', margin: '0 0 6px 0' }}>Aún no has registrado ninguna receta.</p>
           <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 16px 0' }}>
             Selecciona un café del congelador y registra tu primera preparación.
@@ -467,7 +467,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               <div className="card-header-flex">
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '4px', border: '1.5px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-canvas)' }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: 'var(--r-xs)', border: '1.5px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-canvas)' }}>
                       {getMethodLucideIcon(item.method, 16)}
                     </div>
                     <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: 0, textTransform: 'uppercase' }}>{item.method}</h3>
@@ -502,13 +502,13 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 {(item.sensory_balance || item.sensory_body || item.sensory_extraction) && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', margin: '6px 0' }}>
                     {item.sensory_balance && (
-                      <span style={{ fontSize: '12px', fontWeight: 'bold', background: 'var(--barista-accent-mint-bg)', color: 'var(--barista-accent-mint-text)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-                        ⚖️ {item.sensory_balance}
+                      <span style={{ fontSize: '12px', fontWeight: 'bold', background: 'var(--barista-accent-mint-bg)', color: 'var(--barista-accent-mint-text)', padding: '2px 6px', borderRadius: 'var(--r-xs)', border: '1px solid var(--border-color)' }}>
+                        {item.sensory_balance}
                       </span>
                     )}
                     {item.sensory_body && (
-                      <span style={{ fontSize: '12px', fontWeight: 'bold', background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-                        🍯 {item.sensory_body}
+                      <span style={{ fontSize: '12px', fontWeight: 'bold', background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', padding: '2px 6px', borderRadius: 'var(--r-xs)', border: '1px solid var(--border-color)' }}>
+                        {item.sensory_body}
                       </span>
                     )}
                     {item.sensory_extraction && (
@@ -516,10 +516,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                         fontSize: '12px', fontWeight: 'bold',
                         background: item.sensory_extraction === 'En Punto' ? 'var(--barista-accent-mint-bg)' : 'var(--barista-accent-danger-bg)',
                         color: item.sensory_extraction === 'En Punto' ? 'var(--barista-accent-mint-text)' : 'var(--barista-accent-danger-text)',
-                        padding: '2px 6px', borderRadius: '4px',
+                        padding: '2px 6px', borderRadius: 'var(--r-xs)',
                         border: '1px solid var(--border-color)'
                       }}>
-                        🧪 {item.sensory_extraction === 'Sub' ? 'Sub-ext' : item.sensory_extraction === 'Sobre' ? 'Sobre-ext' : 'En Punto'}
+                        {item.sensory_extraction === 'Sub' ? 'Sub-ext' : item.sensory_extraction === 'Sobre' ? 'Sobre-ext' : 'En Punto'}
                       </span>
                     )}
                   </div>
@@ -552,7 +552,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '4px', border: '1.5px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-canvas)' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: 'var(--r-xs)', border: '1.5px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-canvas)' }}>
                     {getMethodLucideIcon(selectedRecipe.method, 18)}
                   </div>
                   <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', margin: 0, textTransform: 'uppercase' }}>
@@ -566,7 +566,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   }}
                   style={{ 
                     fontSize: '12px', 
-                    fontWeight: 900, 
+                    fontWeight: '700', 
                     color: 'var(--color-crimson)', 
                     textTransform: 'uppercase',
                     cursor: 'pointer',
@@ -576,7 +576,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   {selectedRecipe.batch_name}
                 </span>
               </div>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)', background: 'var(--segmented-bg)', padding: '3px 8px', borderRadius: '4px', border: '2px solid var(--border-color)' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)', background: 'var(--segmented-bg)', padding: '3px 8px', borderRadius: 'var(--r-xs)', border: '2px solid var(--border-color)' }}>
                 {new Date(selectedRecipe.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
               </span>
             </div>
@@ -611,13 +611,13 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 </h4>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {selectedRecipe.sensory_balance && (
-                    <span style={{ fontSize: '12px', fontWeight: 'bold', background: 'var(--barista-accent-mint-bg)', color: 'var(--barista-accent-mint-text)', padding: '4px 8px', borderRadius: '4px', border: '2px solid var(--border-color)' }}>
-                      ⚖️ {selectedRecipe.sensory_balance}
+                    <span style={{ fontSize: '12px', fontWeight: 'bold', background: 'var(--barista-accent-mint-bg)', color: 'var(--barista-accent-mint-text)', padding: '4px 8px', borderRadius: 'var(--r-xs)', border: '2px solid var(--border-color)' }}>
+                      {selectedRecipe.sensory_balance}
                     </span>
                   )}
                   {selectedRecipe.sensory_body && (
-                    <span style={{ fontSize: '12px', fontWeight: 'bold', background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', padding: '4px 8px', borderRadius: '4px', border: '2px solid var(--border-color)' }}>
-                      🍯 {selectedRecipe.sensory_body}
+                    <span style={{ fontSize: '12px', fontWeight: 'bold', background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', padding: '4px 8px', borderRadius: 'var(--r-xs)', border: '2px solid var(--border-color)' }}>
+                      {selectedRecipe.sensory_body}
                     </span>
                   )}
                   {selectedRecipe.sensory_extraction && (
@@ -625,10 +625,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       fontSize: '12px', fontWeight: 'bold',
                       background: selectedRecipe.sensory_extraction === 'En Punto' ? 'var(--barista-accent-mint-bg)' : 'var(--barista-accent-danger-bg)',
                       color: selectedRecipe.sensory_extraction === 'En Punto' ? 'var(--barista-accent-mint-text)' : 'var(--barista-accent-danger-text)',
-                      padding: '4px 8px', borderRadius: '4px',
+                      padding: '4px 8px', borderRadius: 'var(--r-xs)',
                       border: '2px solid var(--border-color)'
                     }}>
-                      🧪 {selectedRecipe.sensory_extraction === 'Sub' ? 'Sub-ext' : selectedRecipe.sensory_extraction === 'Sobre' ? 'Sobre-ext' : 'En Punto'}
+                      {selectedRecipe.sensory_extraction === 'Sub' ? 'Sub-ext' : selectedRecipe.sensory_extraction === 'Sobre' ? 'Sobre-ext' : 'En Punto'}
                     </span>
                   )}
                 </div>
@@ -669,7 +669,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               marginTop: '16px', 
               padding: '12px', 
               border: '2px solid var(--border-color)', 
-              borderRadius: '6px', 
+              borderRadius: 'var(--r-control)', 
               backgroundColor: 'var(--bg-canvas)',
               display: 'flex',
               flexDirection: 'column',
@@ -677,7 +677,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             }}>
               {/* Opciones del Ticket POS */}
               <div style={{ marginTop: '12px' }}>
-                <span style={{ fontSize: '12px', fontWeight: '900', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>
+                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>
                   Contenido del Ticket POS:
                 </span>
                 <div className="canvas-tab-selector">
@@ -689,7 +689,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       exportRecipeAsImage(selectedRecipe, shareTemplate, true);
                     }}
                   >
-                    🧾 Con Receta (Extracción)
+                    Con Receta (Extracción)
                   </button>
                   <button
                     type="button"
@@ -699,7 +699,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       exportRecipeAsImage(selectedRecipe, shareTemplate, false);
                     }}
                   >
-                    🌾 Solo Grano (Ficha Café)
+                    Solo Grano (Ficha Café)
                   </button>
                 </div>
               </div>
@@ -750,7 +750,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
           }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', margin: 0, textTransform: 'uppercase' }}>
-                ✏️ Editar Bitácora
+                Editar Bitácora
               </h3>
               <button aria-label="Cerrar" type="button" onClick={() => setEditingRecipe(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
                 <X size={18} />
@@ -759,8 +759,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
             <form onSubmit={handleSaveEdit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Método</label>
-                <input aria-label="Método"
+                <label htmlFor="bt-brewhistory-1" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Método</label>
+                <input id="bt-brewhistory-1" aria-label="Método"
                   type="text"
                   list="edit-method-list"
                   className="candy-input"
@@ -786,7 +786,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       onClick={() => setEditForm({ ...editForm, method: m })}
                       style={{
                         padding: '2px 8px',
-                        borderRadius: '6px',
+                        borderRadius: 'var(--r-control)',
                         border: editForm.method === m ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         background: editForm.method === m ? 'var(--bg-header)' : 'var(--bg-card)',
                         color: 'var(--color-text)',
@@ -803,8 +803,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Molienda</label>
-                  <input aria-label="Molienda"
+                  <label htmlFor="bt-brewhistory-2" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Molienda</label>
+                  <input id="bt-brewhistory-2" aria-label="Molienda"
                     type="text"
                     className="candy-input"
                     placeholder="Ej: J-Max 2.4.0"
@@ -814,8 +814,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Ratio</label>
-                  <input aria-label="Ratio"
+                  <label htmlFor="bt-brewhistory-3" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Ratio</label>
+                  <input id="bt-brewhistory-3" aria-label="Ratio"
                     type="text"
                     className="candy-input"
                     placeholder="Ej: 1:16"
@@ -828,8 +828,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Tiempo</label>
-                  <input aria-label="Tiempo"
+                  <label htmlFor="bt-brewhistory-4" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Tiempo</label>
+                  <input id="bt-brewhistory-4" aria-label="Tiempo"
                     type="text"
                     className="candy-input"
                     placeholder="Ej: 2:45"
@@ -839,8 +839,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Temperatura</label>
-                  <input aria-label="Temperatura"
+                  <label htmlFor="bt-brewhistory-5" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Temperatura</label>
+                  <input id="bt-brewhistory-5" aria-label="Temperatura"
                     type="text"
                     className="candy-input"
                     placeholder="Ej: 93°C"
@@ -853,8 +853,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Dosis In (g)</label>
-                  <input aria-label="Dosis In (g)"
+                  <label htmlFor="bt-brewhistory-6" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Dosis In (g)</label>
+                  <input id="bt-brewhistory-6" aria-label="Dosis In (g)"
                     type="text"
                     className="candy-input"
                     placeholder="Ej: 15.0"
@@ -864,8 +864,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Dosis Out (g)</label>
-                  <input aria-label="Dosis Out (g)"
+                  <label htmlFor="bt-brewhistory-7" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Dosis Out (g)</label>
+                  <input id="bt-brewhistory-7" aria-label="Dosis Out (g)"
                     type="text"
                     className="candy-input"
                     placeholder="Ej: 240.0"
@@ -878,7 +878,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
               {/* Sensory Evaluation Selection */}
               <div>
-                <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Extracción</label>
+                <label style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Extracción</label>
                 <div style={{ display: 'flex', gap: '6px' }}>
                   {['Sub', 'En Punto', 'Sobre'].map(ext => (
                     <button
@@ -886,22 +886,22 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       type="button"
                       onClick={() => setEditForm({ ...editForm, sensory_extraction: editForm.sensory_extraction === ext ? '' : ext })}
                       style={{
-                        flex: 1, padding: '6px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px',
+                        flex: 1, padding: '6px', fontSize: '12px', fontWeight: 'bold', borderRadius: 'var(--r-control)',
                         border: editForm.sensory_extraction === ext ? '2px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                        background: editForm.sensory_extraction === ext ? 'var(--bg-header)' : 'var(--bg-card, #FFF)',
+                        background: editForm.sensory_extraction === ext ? 'var(--bg-header)' : 'var(--bg-card)',
                         color: 'var(--color-text)',
                         cursor: 'pointer'
                       }}
                     >
-                      {ext === 'Sub' ? 'Sub-ext' : ext === 'Sobre' ? 'Sobre-ext' : '🧪 En Punto'}
+                      {ext === 'Sub' ? 'Sub-ext' : ext === 'Sobre' ? 'Sobre-ext' : 'En Punto'}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Balance Sensorial</label>
-                <input aria-label="Balance Sensorial"
+                <label htmlFor="bt-brewhistory-8" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Balance Sensorial</label>
+                <input id="bt-brewhistory-8" aria-label="Balance Sensorial"
                   type="text"
                   className="candy-input"
                   placeholder="Ej: Acidez brillante, Equilibrado, Dulzor predominante"
@@ -912,8 +912,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Cuerpo</label>
-                <input aria-label="Cuerpo"
+                <label htmlFor="bt-brewhistory-9" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Cuerpo</label>
+                <input id="bt-brewhistory-9" aria-label="Cuerpo"
                   type="text"
                   className="candy-input"
                   placeholder="Ej: Sedoso, Jugoso, Ligero, Cremoso"
@@ -924,8 +924,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Notas de Cata / Observaciones</label>
-                <textarea aria-label="Notas de Cata / Observaciones"
+                <label htmlFor="bt-brewhistory-10" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Notas de Cata / Observaciones</label>
+                <textarea id="bt-brewhistory-10" aria-label="Notas de Cata / Observaciones"
                   className="candy-input"
                   rows="3"
                   placeholder="Observaciones de la extracción y notas de sabor..."
@@ -965,7 +965,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
           backgroundColor: 'rgba(0, 0, 0, 0.85)',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
-          zIndex: 11000, 
+          zIndex: 'var(--z-modal)', 
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'flex-start',
@@ -988,7 +988,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               {/* Row 1: Header + Format Selector */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '12.5px', textTransform: 'uppercase', margin: 0, color: 'var(--color-text)' }}>
-                  {shareFormat === 'sticker' ? '🏷️ Sticker Story' : '🧾 Ticket Barista'} • {selectedRecipe?.batch_name}
+                  {shareFormat === 'sticker' ? 'Sticker Story' : 'Ticket Barista'} • {selectedRecipe?.batch_name}
                 </h3>
                 {/* Format Toggle */}
                 <div style={{ display: 'flex', gap: '4px' }}>
@@ -1001,7 +1001,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                     style={{
                       padding: '3px 8px',
                       fontSize: '12px',
-                      borderRadius: '4px',
+                      borderRadius: 'var(--r-xs)',
                       border: shareFormat === 'card' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                       backgroundColor: shareFormat === 'card' ? 'var(--bg-header)' : 'var(--bg-card)',
                       fontWeight: 'bold',
@@ -1009,7 +1009,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       color: shareFormat === 'card' ? 'var(--color-crimson)' : 'var(--color-text)'
                     }}
                   >
-                    🧾 Ficha
+                    Ficha
                   </button>
                   <button 
                     type="button" 
@@ -1020,7 +1020,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                     style={{
                       padding: '3px 8px',
                       fontSize: '12px',
-                      borderRadius: '4px',
+                      borderRadius: 'var(--r-xs)',
                       border: shareFormat === 'sticker' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                       backgroundColor: shareFormat === 'sticker' ? 'var(--bg-header)' : 'var(--bg-card)',
                       fontWeight: 'bold',
@@ -1028,7 +1028,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       color: shareFormat === 'sticker' ? 'var(--color-crimson)' : 'var(--color-text)'
                     }}
                   >
-                    🏷️ Sticker Story
+                    Sticker Story
                   </button>
                 </div>
               </div>
@@ -1051,7 +1051,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       style={{
                         padding: '3px 7px',
                         fontSize: '12px',
-                        borderRadius: '4px',
+                        borderRadius: 'var(--r-xs)',
                         border: cardFormat === f.id ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: cardFormat === f.id ? 'var(--bg-header)' : 'var(--bg-card)',
                         fontWeight: 'bold',
@@ -1077,7 +1077,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                         style={{
                           padding: '3px 7px',
                           fontSize: '12px',
-                          borderRadius: '4px',
+                          borderRadius: 'var(--r-xs)',
                           border: stickerOrientation === 'horizontal' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                           backgroundColor: stickerOrientation === 'horizontal' ? 'var(--bg-header)' : 'var(--bg-card)',
                           fontWeight: 'bold',
@@ -1085,7 +1085,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                           color: stickerOrientation === 'horizontal' ? 'var(--color-crimson)' : 'var(--color-text)'
                         }}
                       >
-                        🏷️ Horizontal
+                        Horizontal
                       </button>
                       <button
                         type="button"
@@ -1096,7 +1096,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                         style={{
                           padding: '3px 7px',
                           fontSize: '12px',
-                          borderRadius: '4px',
+                          borderRadius: 'var(--r-xs)',
                           border: stickerOrientation === 'vertical' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                           backgroundColor: stickerOrientation === 'vertical' ? 'var(--bg-header)' : 'var(--bg-card)',
                           fontWeight: 'bold',
@@ -1104,7 +1104,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                           color: stickerOrientation === 'vertical' ? 'var(--color-crimson)' : 'var(--color-text)'
                         }}
                       >
-                        📱 Vertical
+                        Vertical
                       </button>
                     </div>
 
@@ -1119,7 +1119,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                         style={{
                           padding: '3px 7px',
                           fontSize: '12px',
-                          borderRadius: '4px',
+                          borderRadius: 'var(--r-xs)',
                           border: !stickerTransparent ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                           backgroundColor: !stickerTransparent ? 'var(--bg-header)' : 'var(--bg-card)',
                           fontWeight: 'bold',
@@ -1138,7 +1138,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                         style={{
                           padding: '3px 7px',
                           fontSize: '12px',
-                          borderRadius: '4px',
+                          borderRadius: 'var(--r-xs)',
                           border: stickerTransparent ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                           backgroundColor: stickerTransparent ? 'var(--bg-header)' : 'var(--bg-card)',
                           fontWeight: 'bold',
@@ -1146,7 +1146,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                           color: stickerTransparent ? 'var(--color-crimson)' : 'var(--color-text)'
                         }}
                       >
-                        🏁 Transp.
+                        Transp.
                       </button>
                     </div>
                   </div>
@@ -1166,7 +1166,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       style={{
                         padding: '3px 8px',
                         fontSize: '12px',
-                        borderRadius: '4px',
+                        borderRadius: 'var(--r-xs)',
                         border: shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: shareIncludeRecipe ? 'var(--bg-header)' : 'var(--bg-card)',
                         fontWeight: 'bold',
@@ -1174,7 +1174,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                         color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)'
                       }}
                     >
-                      🧾 Telemetría / Receta
+                      Telemetría / Receta
                     </button>
                     <button 
                       type="button" 
@@ -1185,7 +1185,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       style={{
                         padding: '3px 8px',
                         fontSize: '12px',
-                        borderRadius: '4px',
+                        borderRadius: 'var(--r-xs)',
                         border: !shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
                         backgroundColor: !shareIncludeRecipe ? 'var(--bg-header)' : 'var(--bg-card)',
                         fontWeight: 'bold',
@@ -1193,15 +1193,15 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                         color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)'
                       }}
                     >
-                      🌾 Perfil & Notas
+                      Perfil & Notas
                     </button>
                   </div>
                 </div>
               </div>
 
               {/* Row 3: Aesthetic Template Selector */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
+                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
                 {[
                   { id: 'stretch', label: 'Stretch' },
                   { id: 'squishy', label: 'Squishy' },
@@ -1221,7 +1221,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       flex: '1 1 auto',
                       padding: '5px 8px',
                       fontSize: '12px',
-                      borderRadius: '6px',
+                      borderRadius: 'var(--r-control)',
                       border: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
                       backgroundColor: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? 'var(--bg-card)' : 'transparent',
                       fontWeight: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? '800' : '600',
@@ -1237,8 +1237,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
             <div style={{
               textAlign: 'center',
-              backgroundColor: 'var(--bg-canvas, #F1F5F9)',
-              borderRadius: '12px',
+              backgroundColor: 'var(--bg-canvas)',
+              borderRadius: 'var(--r-control)',
               padding: '8px',
               overflow: 'hidden',
               flex: '0 1 auto',
@@ -1255,7 +1255,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   maxHeight: 'calc(45dvh - 50px)',
                   height: 'auto',
                   objectFit: 'contain',
-                  borderRadius: '6px', 
+                  borderRadius: 'var(--r-control)', 
                   display: 'block',
                   margin: '0 auto',
                   boxShadow: '0 8px 24px rgba(0,0,0,0.14)'
@@ -1265,10 +1265,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             
             {shareStatus && (
               <div style={{
-                background: shareStatus.includes('❌') ? 'var(--barista-accent-danger-bg)' : (shareStatus.includes('✅') || shareStatus.includes('📋') || shareStatus.includes('📥')) ? 'var(--barista-accent-mint-bg)' : 'var(--barista-accent-honey-bg)',
-                color: shareStatus.includes('❌') ? 'var(--barista-accent-danger-text)' : (shareStatus.includes('✅') || shareStatus.includes('📋') || shareStatus.includes('📥')) ? 'var(--barista-accent-mint-text)' : 'var(--barista-accent-honey-text)',
+                background: /error/i.test(shareStatus) ? 'var(--barista-accent-danger-bg)' : /éxito|copiad|descarga/i.test(shareStatus) ? 'var(--barista-accent-mint-bg)' : 'var(--barista-accent-honey-bg)',
+                color: /error/i.test(shareStatus) ? 'var(--barista-accent-danger-text)' : /éxito|copiad|descarga/i.test(shareStatus) ? 'var(--barista-accent-mint-text)' : 'var(--barista-accent-honey-text)',
                 border: '1.5px solid var(--border-color)',
-                borderRadius: '6px',
+                borderRadius: 'var(--r-control)',
                 padding: '6px 10px',
                 fontSize: '12px',
                 fontWeight: 'bold',

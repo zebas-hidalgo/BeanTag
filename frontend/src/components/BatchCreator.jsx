@@ -349,7 +349,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
         setSelectedFlavorTags(data.sca_flavor_tags);
       }
 
-      if (showToast) showToast('¡Bolsa escaneada y datos extraídos con éxito! ☕📸', { type: 'success', duration: 3500 });
+      if (showToast) showToast('¡Bolsa escaneada y datos extraídos con éxito! ', { type: 'success', duration: 3500 });
     } catch (err) {
       console.error('OCR Error:', err);
       if (showToast) showToast(`Error al procesar: ${err.message || 'Error de conexión'}`, { type: 'error', duration: 3500 });
@@ -435,7 +435,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
       </h2>
 
       {/* Step Navigation */}
-      <div style={{ display: 'flex', gap: '4px', marginBottom: '16px', background: 'var(--segmented-bg, rgba(120, 120, 128, 0.12))', borderRadius: '10px', padding: '3px' }}>
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '16px', background: 'var(--segmented-bg)', borderRadius: 'var(--r-control)', padding: '3px' }}>
         {[{ id: 1, label: '1. Identidad' }, { id: 2, label: '2. Tueste' }, { id: 3, label: '3. Cata & Dosis' }].map(step => (
           <button
             key={step.id}
@@ -450,12 +450,12 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
               fontWeight: creatorStep === step.id ? '800' : '600',
               fontFamily: 'var(--font-heading)',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: 'var(--r-control)',
               cursor: 'pointer',
-              background: creatorStep === step.id ? 'var(--segmented-active, #FFFFFF)' : 'transparent',
+              background: creatorStep === step.id ? 'var(--segmented-active)' : 'transparent',
               color: creatorStep === step.id ? 'var(--color-crimson)' : 'var(--color-text-muted)',
               boxShadow: creatorStep === step.id ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-              transition: 'all 0.15s ease'
+              transition: 'var(--transition-ui)'
             }}
           >
             {step.label}
@@ -476,34 +476,34 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
               </span>
             </div>
             <div className="form-group">
-              <label className="barista-label">Nombre del Café</label>
-              <input aria-label="Nombre del Café" className="candy-input" value={name} onChange={(e) => setName(e.target.value)} type="text" required placeholder="Ej. Pink Bourbon" style={{ minHeight: '44px', fontSize: '13px' }} />
+              <label htmlFor="bt-batchcreator-1" className="barista-label">Nombre del Café</label>
+              <input id="bt-batchcreator-1" aria-label="Nombre del Café" className="candy-input" value={name} onChange={(e) => setName(e.target.value)} type="text" required placeholder="Ej. Pink Bourbon" style={{ minHeight: '44px', fontSize: '13px' }} />
             </div>
             
             <div className="form-group">
-              <label className="barista-label">Productor / Finca</label>
-              <input aria-label="Productor / Finca" className="candy-input" value={producer} onChange={(e) => setProducer(e.target.value)} type="text" required placeholder="Ej. Nestor Lasso / El Diviso" style={{ minHeight: '44px', fontSize: '13px' }} />
+              <label htmlFor="bt-batchcreator-2" className="barista-label">Productor / Finca</label>
+              <input id="bt-batchcreator-2" aria-label="Productor / Finca" className="candy-input" value={producer} onChange={(e) => setProducer(e.target.value)} type="text" required placeholder="Ej. Nestor Lasso / El Diviso" style={{ minHeight: '44px', fontSize: '13px' }} />
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label className="barista-label">Origen</label>
-                <input aria-label="Origen" className="candy-input" value={origin} onChange={(e) => setOrigin(e.target.value)} type="text" placeholder="Ej. Colombia" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <label htmlFor="bt-batchcreator-3" className="barista-label">Origen</label>
+                <input id="bt-batchcreator-3" aria-label="Origen" className="candy-input" value={origin} onChange={(e) => setOrigin(e.target.value)} type="text" placeholder="Ej. Colombia" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
               <div className="form-group">
-                <label className="barista-label">Varietal</label>
-                <input aria-label="Varietal" className="candy-input" value={variety} onChange={(e) => setVariety(e.target.value)} type="text" placeholder="Ej. Bourbon" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <label htmlFor="bt-batchcreator-4" className="barista-label">Varietal</label>
+                <input id="bt-batchcreator-4" aria-label="Varietal" className="candy-input" value={variety} onChange={(e) => setVariety(e.target.value)} type="text" placeholder="Ej. Bourbon" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label className="barista-label">Altitud</label>
-                <input aria-label="Altitud" className="candy-input" value={altitude} onChange={(e) => setAltitude(e.target.value)} type="text" placeholder="Ej. 1800 msnm" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <label htmlFor="bt-batchcreator-5" className="barista-label">Altitud</label>
+                <input id="bt-batchcreator-5" aria-label="Altitud" className="candy-input" value={altitude} onChange={(e) => setAltitude(e.target.value)} type="text" placeholder="Ej. 1800 msnm" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
               <div className="form-group">
-                <label className="barista-label">Proceso</label>
-                <input aria-label="Proceso" className="candy-input" value={process} onChange={(e) => setProcess(e.target.value)} type="text" placeholder="Ej. Anaeróbico" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <label htmlFor="bt-batchcreator-6" className="barista-label">Proceso</label>
+                <input id="bt-batchcreator-6" aria-label="Proceso" className="candy-input" value={process} onChange={(e) => setProcess(e.target.value)} type="text" placeholder="Ej. Anaeróbico" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
             </div>
           </div>
@@ -517,12 +517,12 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
             </h4>
             <div className="form-row">
               <div className="form-group">
-                <label className="barista-label">Tostador</label>
-                <input aria-label="Tostador" className="candy-input" value={roaster} onChange={(e) => setRoaster(e.target.value)} type="text" placeholder="Ej. Coffee Circular" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <label htmlFor="bt-batchcreator-7" className="barista-label">Tostador</label>
+                <input id="bt-batchcreator-7" aria-label="Tostador" className="candy-input" value={roaster} onChange={(e) => setRoaster(e.target.value)} type="text" placeholder="Ej. Coffee Circular" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
               <div className="form-group">
-                <label className="barista-label">Tueste</label>
-                <select aria-label="Tueste" className="candy-input" value={roastLevel} onChange={(e) => setRoastLevel(e.target.value)} style={{ minHeight: '44px', fontSize: '13px' }}>
+                <label htmlFor="bt-batchcreator-8" className="barista-label">Tueste</label>
+                <select id="bt-batchcreator-8" aria-label="Tueste" className="candy-input" value={roastLevel} onChange={(e) => setRoastLevel(e.target.value)} style={{ minHeight: '44px', fontSize: '13px' }}>
                   <option value="Claro">Claro</option>
                   <option value="Medio">Medio</option>
                   <option value="Oscuro">Oscuro</option>
@@ -532,26 +532,26 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
 
             <div className="form-row">
               <div className="form-group">
-                <label className="barista-label">Fecha de Tueste</label>
-                <input aria-label="Fecha de Tueste" className="candy-input" value={roastDate} onChange={(e) => setRoastDate(e.target.value)} type="date" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <label htmlFor="bt-batchcreator-9" className="barista-label">Fecha de Tueste</label>
+                <input id="bt-batchcreator-9" aria-label="Fecha de Tueste" className="candy-input" value={roastDate} onChange={(e) => setRoastDate(e.target.value)} type="date" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
               <div className="form-group">
-                <label className="barista-label">Fecha de Congelado</label>
-                <input aria-label="Fecha de Congelado" className="candy-input" value={freezeDate} onChange={(e) => setFreezeDate(e.target.value)} type="date" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <label htmlFor="bt-batchcreator-10" className="barista-label">Fecha de Congelado</label>
+                <input id="bt-batchcreator-10" aria-label="Fecha de Congelado" className="candy-input" value={freezeDate} onChange={(e) => setFreezeDate(e.target.value)} type="date" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
             </div>
 
             <div className="form-row">
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="barista-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label htmlFor="bt-batchcreator-11" className="barista-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span>Puntuación SCA / Catación</span>
                   {scaScore && parseFloat(scaScore) >= 80 && (
                     <span style={{ color: 'var(--color-crimson)', fontWeight: '700', fontSize: '12px', letterSpacing: '0.3px' }}>
-                      ★ {parseFloat(scaScore) >= 90 ? 'Excepcional (90+)' : (parseFloat(scaScore) >= 85 ? 'Excelente (85-89)' : 'Especialidad (80-84)')}
+                      {parseFloat(scaScore) >= 90 ? 'Excepcional (90+)' : (parseFloat(scaScore) >= 85 ? 'Excelente (85-89)' : 'Especialidad (80-84)')}
                     </span>
                   )}
                 </label>
-                <input aria-label="Puntuación SCA / Catación"
+                <input id="bt-batchcreator-11" aria-label="Puntuación SCA / Catación"
                   className="candy-input"
                   value={scaScore}
                   onChange={(e) => setScaScore(e.target.value)}
@@ -581,7 +581,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                 
                 {/* Selection Summary */}
                 {selectedFlavorTags.length > 0 && (
-                  <div style={{ marginBottom: '14px', padding: '12px', backgroundColor: 'var(--barista-bg-surface, var(--bg-card))', border: '1.5px solid var(--barista-border-hairline, var(--border-color))', borderRadius: '10px', boxShadow: 'var(--barista-shadow-card)' }}>
+                  <div style={{ marginBottom: '14px', padding: '12px', backgroundColor: 'var(--barista-bg-surface)', border: '1.5px solid var(--barista-border-hairline)', borderRadius: 'var(--r-control)', boxShadow: 'var(--barista-shadow-card)' }}>
                     <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 'bold', textTransform: 'uppercase', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>
                       Seleccionados ({selectedFlavorTags.length}):
                     </span>
@@ -597,9 +597,9 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                             backgroundColor: colors.bg,
                             color: colors.text,
                             border: `1.5px solid ${colors.border}`,
-                            borderRadius: '8px',
+                            borderRadius: 'var(--r-control)',
                             fontSize: '12px',
-                            fontWeight: '800'
+                            fontWeight: '600'
                           }}>
                             {getScaIcon(tag, 13, 2.5)}
                             {stripEmojis(tag)}
@@ -607,7 +607,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                               type="button" 
                               aria-label={`Quitar nota ${stripEmojis(tag)}`}
                               onClick={() => toggleFlavorTag(tag)}
-                              style={{ background: 'none', border: 'none', color: colors.text, cursor: 'pointer', padding: '0 0 0 4px', fontWeight: '900', fontSize: '14px', display: 'flex', alignItems: 'center', minWidth: '24px', minHeight: '24px', justifyContent: 'center' }}
+                              style={{ background: 'none', border: 'none', color: colors.text, cursor: 'pointer', padding: '0 0 0 4px', fontWeight: '700', fontSize: '14px', display: 'flex', alignItems: 'center', minWidth: '24px', minHeight: '24px', justifyContent: 'center' }}
                             >
                               ×
                             </button>
@@ -646,12 +646,12 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                           fontSize: '12px',
                           fontWeight: 'bold',
                           border: isActive ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
-                          borderRadius: '10px',
+                          borderRadius: 'var(--r-control)',
                           whiteSpace: 'nowrap',
                           backgroundColor: isActive ? 'var(--bg-header)' : 'var(--bg-card)',
                           color: 'var(--color-text)',
                           cursor: 'pointer',
-                          transition: 'all 0.15s ease',
+                          transition: 'var(--transition-ui)',
                           display: 'flex',
                           alignItems: 'center',
                           gap: '6px'
@@ -671,9 +671,9 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                   return (
                     <div style={{
                       padding: '14px',
-                      backgroundColor: 'var(--barista-bg-surface, var(--bg-card))',
-                      border: '1.5px solid var(--barista-border-hairline, var(--border-color))',
-                      borderRadius: '12px'
+                      backgroundColor: 'var(--barista-bg-surface)',
+                      border: '1.5px solid var(--barista-border-hairline)',
+                      borderRadius: 'var(--r-control)'
                     }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {activeCatGroup.subcategories.map((sub, sIdx) => (
@@ -701,12 +701,12 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                                       fontFamily: 'var(--font-heading)',
                                       fontSize: '12px',
                                       border: isSelected ? `2px solid ${colors.border}` : '1.5px solid var(--border-color)',
-                                      borderRadius: '8px',
+                                      borderRadius: 'var(--r-control)',
                                       cursor: 'pointer',
                                       backgroundColor: isSelected ? colors.bg : 'var(--bg-card)',
                                       color: isSelected ? colors.text : 'var(--color-text)',
-                                      transition: 'all 0.15s ease',
-                                      fontWeight: '800',
+                                      transition: 'var(--transition-ui)',
+                                      fontWeight: '600',
                                       display: 'flex',
                                       alignItems: 'center',
                                       gap: '6px'
@@ -728,8 +728,8 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
               </div>
 
               <div className="form-group">
-                <label className="barista-label">Notas de Cata Adicionales</label>
-                <input aria-label="Notas de Cata Adicionales" className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Fresa, chocolate, cuerpo sedoso" style={{ minHeight: '44px', fontSize: '13px' }} />
+                <label htmlFor="bt-batchcreator-12" className="barista-label">Notas de Cata Adicionales</label>
+                <input id="bt-batchcreator-12" aria-label="Notas de Cata Adicionales" className="candy-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Fresa, chocolate, cuerpo sedoso" style={{ minHeight: '44px', fontSize: '13px' }} />
               </div>
             </div>
 
@@ -747,8 +747,8 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                   </div>
                 </div>
                 <div className="form-group">
-                  <label className="barista-label">Gramos por Tubo</label>
-                  <input aria-label="Gramos por Tubo" className="candy-input" value={doseWeight} onChange={(e) => setDoseWeight(e.target.value)} type="text" inputMode="decimal" style={{ minHeight: '44px', fontSize: '13px' }} />
+                  <label htmlFor="bt-batchcreator-13" className="barista-label">Gramos por Tubo</label>
+                  <input id="bt-batchcreator-13" aria-label="Gramos por Tubo" className="candy-input" value={doseWeight} onChange={(e) => setDoseWeight(e.target.value)} type="text" inputMode="decimal" style={{ minHeight: '44px', fontSize: '13px' }} />
                 </div>
               </div>
               <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-crimson)', marginTop: '10px', textAlign: 'center' }}>
@@ -805,7 +805,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 9999,
+            zIndex: 'var(--z-sheet)',
             padding: '16px'
           }}>
             <div className="candy-card static" style={{
@@ -819,7 +819,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                 <div style={{
-                  width: '36px', height: '36px', borderRadius: '10px',
+                  width: '36px', height: '36px', borderRadius: 'var(--r-control)',
                   background: 'var(--bg-header)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   border: '1.5px solid var(--border-color)'
                 }}>
@@ -840,10 +840,10 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
               </p>
 
               <div style={{ marginBottom: '14px' }}>
-                <label className="barista-label" style={{ marginBottom: '6px' }}>
+                <label htmlFor="bt-batchcreator-14" className="barista-label" style={{ marginBottom: '6px' }}>
                   {aiProvider === 'groq' ? 'Clave API de Groq (gsk_...)' : 'Clave API de Gemini (AIzaSy...)'}
                 </label>
-                <input 
+                <input id="bt-batchcreator-14" 
                   type="password"
                   className="candy-input"
                   autoFocus
