@@ -23,9 +23,14 @@ export default function BatchHeaderCard({
     if (match) scaTags = match[1].split(',').map(s => s.trim()).filter(Boolean);
   }
 
+  const isBag = batch.storage_type === 'bag';
   const remainingDoses = batch.remaining_doses ?? 0;
   const totalDoses = batch.total_doses ?? 0;
-  const remainingGrams = batch.remaining_weight_g ?? 0;
+  const doseWeightNum = parseFloat(batch.dose_weight) || (isBag ? 18.0 : 20.0);
+  const totalGrams = batch.total_weight_g ?? (doseWeightNum * totalDoses);
+  const remainingGrams = batch.remaining_weight_g !== null && batch.remaining_weight_g !== undefined
+    ? batch.remaining_weight_g
+    : (doseWeightNum * remainingDoses);
   const roast = getRoast(batch.roast_level);
 
   const isBatchFrozen = isFrozen !== undefined
@@ -59,6 +64,7 @@ export default function BatchHeaderCard({
           )}
         </div>
         <div className="bt-hero-chips">
+          {isBag && <span className="bt-hero-chip">☕ Bolsa {Math.round(totalGrams)}g</span>}
           {batch.origin && <span className="bt-hero-chip"><MapPin size={13} aria-hidden="true" />{batch.origin}</span>}
           {batch.variety && <span className="bt-hero-chip"><Sprout size={13} aria-hidden="true" />{batch.variety}</span>}
           {batch.process && <span className="bt-hero-chip"><Cog size={13} aria-hidden="true" />{batch.process}</span>}
@@ -71,7 +77,7 @@ export default function BatchHeaderCard({
         <div className="bt-tile" style={roastStyle(batch.roast_level)}>
           <span className="bt-tile-k">Tueste</span>
           <span className="bt-tile-v">{roast.label}</span>
-          <span className="bt-tile-s">Agtron aprox. {roast.agtron}</span>
+          <span className="bt-tile-s">Perfil de tueste</span>
           <div className="bt-roast-ramp" aria-hidden="true"><i style={{ left: `${roast.pos}%` }} /></div>
         </div>
 
@@ -84,10 +90,16 @@ export default function BatchHeaderCard({
         <div className="bt-tile span-2">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <span className="bt-tile-k">Portatubos</span>
-              <span className="bt-tile-v">{remainingDoses}<small> / {totalDoses} tubos · {remainingGrams} g</small></span>
+              <span className="bt-tile-k">{isBag ? 'Bolsa de Café' : 'Portatubos'}</span>
+              <span className="bt-tile-v">
+                {isBag ? (
+                  <>{Math.round(remainingGrams)}<small> g / {Math.round(totalGrams)} g · ~{remainingDoses} {remainingDoses === 1 ? 'taza' : 'tazas'}</small></>
+                ) : (
+                  <>{remainingDoses}<small> / {totalDoses} tubos · {Math.round(remainingGrams)} g</small></>
+                )}
+              </span>
             </div>
-            {isOwner && remainingDoses > 0 && (
+            {isOwner && (isBag ? remainingGrams > 0 : remainingDoses > 0) && (
               <button
                 type="button"
                 className="barista-btn barista-btn-secondary"
@@ -97,14 +109,34 @@ export default function BatchHeaderCard({
                 }}
               >
                 <MinusCircle size={16} aria-hidden="true" />
-                <span>Restar 1 tubo</span>
+                <span>{isBag ? `Restar dosis (~${Math.round(doseWeightNum)}g)` : 'Restar 1 tubo'}</span>
               </button>
             )}
           </div>
-          {tubeSlots > 0 && (
-            <div className="bt-tubes" style={roastStyle(batch.roast_level)} aria-hidden="true">
-              {Array.from({ length: tubeSlots }, (_, i) => <i key={i} className={i < remainingDoses ? 'is-full' : ''} />)}
+          {isBag ? (
+            <div style={{ marginTop: '12px' }}>
+              <div style={{ height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '999px', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${Math.min(100, Math.max(0, totalGrams > 0 ? (remainingGrams / totalGrams) * 100 : 0))}%`,
+                    background: 'var(--roast-color, var(--color-crimson))',
+                    borderRadius: '999px',
+                    transition: 'width 0.3s ease'
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--muted, #888)', marginTop: '4px' }}>
+                <span>Quedan {Math.round(remainingGrams)} g en bolsa</span>
+                <span>{totalGrams > 0 ? Math.round((remainingGrams / totalGrams) * 100) : 0}%</span>
+              </div>
             </div>
+          ) : (
+            tubeSlots > 0 && (
+              <div className="bt-tubes" style={roastStyle(batch.roast_level)} aria-hidden="true">
+                {Array.from({ length: tubeSlots }, (_, i) => <i key={i} className={i < remainingDoses ? 'is-full' : ''} />)}
+              </div>
+            )
           )}
         </div>
 

@@ -39,6 +39,8 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
   const [notes, setNotes] = useState(getInitialNotes());
   const [totalDoses, setTotalDoses] = useState(batchToEdit ? batchToEdit.total_doses : 12);
   const [doseWeight, setDoseWeight] = useState(batchToEdit ? batchToEdit.dose_weight || '20.0g' : '20.0g');
+  const [storageType, setStorageType] = useState(batchToEdit ? (batchToEdit.storage_type || 'tubes') : 'tubes');
+  const [bagWeight, setBagWeight] = useState(batchToEdit ? (batchToEdit.total_weight_g || 250) : 250);
   const [generatedUrl, setGeneratedUrl] = useState('');
   
   const [origin, setOrigin] = useState(batchToEdit ? batchToEdit.origin || '' : '');
@@ -218,8 +220,16 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
       notes
     ].filter(Boolean).join(' | ');
 
+    const doseWeightNum = parseFloat(doseWeight) || (storageType === 'bag' ? 18.0 : 20.0);
+    const totalWeightNum = storageType === 'bag' ? (parseFloat(bagWeight) || 250.0) : (parseInt(totalDoses, 10) * doseWeightNum);
+    const calculatedDoses = storageType === 'bag' ? Math.max(1, Math.round(totalWeightNum / doseWeightNum)) : parseInt(totalDoses, 10);
+
     const payload = {
-      name, producer, altitude, variety, process, roaster, roaster_notes: combinedNotes, dose_weight: doseWeight, total_doses: totalDoses,
+      name, producer, altitude, variety, process, roaster, roaster_notes: combinedNotes,
+      dose_weight: `${doseWeightNum.toFixed(1)}g`,
+      total_doses: calculatedDoses,
+      total_weight_g: totalWeightNum,
+      storage_type: storageType,
       origin, roast_level: roastLevel, roast_date: roastDate, freeze_date: freezeDate,
       sca_score: scaScore ? parseFloat(scaScore) : null
     };
@@ -734,26 +744,103 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
             </div>
 
             <div className="candy-card static" style={{ cursor: 'default', marginBottom: '14px' }}>
-              <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 14px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
-                Dosificación
+              <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 10px 0', color: 'var(--color-crimson)', letterSpacing: '0.5px' }}>
+                Formato de Almacenamiento
               </h4>
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="barista-label">Cantidad de Tubos</label>
-                  <div className="mono-stepper compact" style={{ minHeight: '44px' }}>
-                    <button type="button" className="stepper-btn" aria-label="Reducir cantidad de tubos" style={{ minHeight: '44px', minWidth: '44px', fontSize: '18px' }} onClick={() => setTotalDoses(d => Math.max(1, d - 1))}>-</button>
-                    <div className="stepper-value" style={{ fontSize: '15px', fontWeight: 'bold' }}>{totalDoses}</div>
-                    <button type="button" className="stepper-btn" aria-label="Añadir tubo" style={{ minHeight: '44px', minWidth: '44px', fontSize: '18px' }} onClick={() => setTotalDoses(d => d + 1)}>+</button>
+
+              {/* Segmented Selector: Tubos vs Bolsa */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
+                <button
+                  type="button"
+                  onClick={() => setStorageType('tubes')}
+                  className={`btn-candy ${storageType === 'tubes' ? 'primary' : ''}`}
+                  style={{ minHeight: '40px', padding: '8px', fontSize: '13px', fontWeight: 'bold' }}
+                >
+                  🧪 Tubos / Cava
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStorageType('bag')}
+                  className={`btn-candy ${storageType === 'bag' ? 'primary' : ''}`}
+                  style={{ minHeight: '40px', padding: '8px', fontSize: '13px', fontWeight: 'bold' }}
+                >
+                  ☕ Bolsa de Café
+                </button>
+              </div>
+
+              {storageType === 'tubes' ? (
+                <>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="barista-label">Cantidad de Tubos</label>
+                      <div className="mono-stepper compact" style={{ minHeight: '44px' }}>
+                        <button type="button" className="stepper-btn" aria-label="Reducir cantidad de tubos" style={{ minHeight: '44px', minWidth: '44px', fontSize: '18px' }} onClick={() => setTotalDoses(d => Math.max(1, d - 1))}>-</button>
+                        <div className="stepper-value" style={{ fontSize: '15px', fontWeight: 'bold' }}>{totalDoses}</div>
+                        <button type="button" className="stepper-btn" aria-label="Añadir tubo" style={{ minHeight: '44px', minWidth: '44px', fontSize: '18px' }} onClick={() => setTotalDoses(d => d + 1)}>+</button>
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="bt-batchcreator-13" className="barista-label">Gramos por Tubo</label>
+                      <input id="bt-batchcreator-13" aria-label="Gramos por Tubo" className="candy-input" value={doseWeight} onChange={(e) => setDoseWeight(e.target.value)} type="text" inputMode="decimal" style={{ minHeight: '44px', fontSize: '13px' }} />
+                    </div>
                   </div>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="bt-batchcreator-13" className="barista-label">Gramos por Tubo</label>
-                  <input id="bt-batchcreator-13" aria-label="Gramos por Tubo" className="candy-input" value={doseWeight} onChange={(e) => setDoseWeight(e.target.value)} type="text" inputMode="decimal" style={{ minHeight: '44px', fontSize: '13px' }} />
-                </div>
-              </div>
-              <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-crimson)', marginTop: '10px', textAlign: 'center' }}>
-                Inventario Inicial Calculado: {(totalDoses * (parseFloat(doseWeight) || 20.0)).toFixed(0)}g
-              </div>
+                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-crimson)', marginTop: '10px', textAlign: 'center' }}>
+                    Inventario Inicial: {(totalDoses * (parseFloat(doseWeight) || 20.0)).toFixed(0)}g en {totalDoses} tubos
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="form-group" style={{ marginBottom: '10px' }}>
+                    <label htmlFor="bt-batchcreator-bag" className="barista-label">Peso de la Bolsa (g)</label>
+                    <input
+                      id="bt-batchcreator-bag"
+                      aria-label="Peso de la Bolsa (g)"
+                      className="candy-input"
+                      value={bagWeight}
+                      onChange={(e) => setBagWeight(e.target.value)}
+                      type="number"
+                      inputMode="decimal"
+                      style={{ minHeight: '44px', fontSize: '15px', fontWeight: 'bold' }}
+                    />
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
+                      {[100, 250, 500, 1000].map(preset => (
+                        <button
+                          key={preset}
+                          type="button"
+                          className="btn-candy"
+                          onClick={() => setBagWeight(preset)}
+                          style={{
+                            padding: '4px 10px',
+                            minHeight: '30px',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            borderColor: Number(bagWeight) === preset ? 'var(--color-crimson)' : undefined
+                          }}
+                        >
+                          {preset >= 1000 ? `${preset / 1000} kg` : `${preset}g`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '6px' }}>
+                    <label htmlFor="bt-batchcreator-dose" className="barista-label">Dosis Habitual por Extracción (g)</label>
+                    <input
+                      id="bt-batchcreator-dose"
+                      aria-label="Dosis Habitual (g)"
+                      className="candy-input"
+                      value={doseWeight}
+                      onChange={(e) => setDoseWeight(e.target.value)}
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="18.0g"
+                      style={{ minHeight: '44px', fontSize: '13px' }}
+                    />
+                  </div>
+                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-crimson)', marginTop: '10px', textAlign: 'center' }}>
+                    Inventario Inicial: {bagWeight}g (~{Math.floor((parseFloat(bagWeight) || 0) / (parseFloat(doseWeight) || 18.0))} extracciones estimadas)
+                  </div>
+                </>
+              )}
             </div>
           </>
         )}

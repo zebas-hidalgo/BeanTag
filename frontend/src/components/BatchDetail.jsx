@@ -760,10 +760,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
 
   const handleDoseDeduction = () => {
-    onSubtractDose(batch.id, () => {
+    onSubtractDose(batch.id, (data) => {
       setBatch(prev => ({
         ...prev,
-        remaining_doses: Math.max(0, prev.remaining_doses - 1)
+        remaining_doses: data && data.remaining_doses !== undefined ? data.remaining_doses : Math.max(0, prev.remaining_doses - 1),
+        remaining_weight_g: data && data.remaining_weight_g !== undefined ? data.remaining_weight_g : prev.remaining_weight_g
       }));
     });
   };
@@ -774,33 +775,32 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const handleRepeatLastRecipe = () => {
     if (!batch.recipes || batch.recipes.length === 0) return;
     const last = batch.recipes[0];
+    const doseInVal = last.dose_in_g !== null && last.dose_in_g !== undefined ? last.dose_in_g : (parseFloat(batch.dose_weight) || 20.0);
     
-    // Deduct dose and save recipe
-    onSubtractDose(batch.id, () => {
-      onSaveRecipe({
-        batch_id: batch.id,
-        method: last.method,
-        ratio: last.ratio,
-        grind: last.grind,
-        temperature: last.temperature,
-        brew_time: last.brew_time,
-        notes: `${last.notes || ''} (Repetición rápida)`.trim(),
-        sensory_balance: last.sensory_balance || 'Dulce',
-        sensory_body: last.sensory_body || 'Medio',
-        sensory_extraction: last.sensory_extraction || 'En Punto',
-        dose_in_g: last.dose_in_g !== null && last.dose_in_g !== undefined ? last.dose_in_g : parseFloat(batch.dose_weight) || 20.0,
-        dose_out_g: last.dose_out_g !== null && last.dose_out_g !== undefined ? last.dose_out_g : null,
-        espresso_pressure: last.espresso_pressure !== null && last.espresso_pressure !== undefined ? last.espresso_pressure : null,
-        espresso_preinfusion: last.espresso_preinfusion !== null && last.espresso_preinfusion !== undefined ? last.espresso_preinfusion : null
-      });
-      
-      // Update UI remaining weight locally
-      const doseInVal = last.dose_in_g !== null && last.dose_in_g !== undefined ? last.dose_in_g : parseFloat(batch.dose_weight) || 20.0;
-      setBatch(prev => ({
-        ...prev,
-        remaining_weight_g: Math.max(0.0, prev.remaining_weight_g - doseInVal)
-      }));
+    // Save recipe (POST /api/recipes updates batch doses and weight automatically)
+    onSaveRecipe({
+      batch_id: batch.id,
+      method: last.method,
+      ratio: last.ratio,
+      grind: last.grind,
+      temperature: last.temperature,
+      brew_time: last.brew_time,
+      notes: `${last.notes || ''} (Repetición rápida)`.trim(),
+      sensory_balance: last.sensory_balance || 'Dulce',
+      sensory_body: last.sensory_body || 'Medio',
+      sensory_extraction: last.sensory_extraction || 'En Punto',
+      dose_in_g: doseInVal,
+      dose_out_g: last.dose_out_g !== null && last.dose_out_g !== undefined ? last.dose_out_g : null,
+      espresso_pressure: last.espresso_pressure !== null && last.espresso_pressure !== undefined ? last.espresso_pressure : null,
+      espresso_preinfusion: last.espresso_preinfusion !== null && last.espresso_preinfusion !== undefined ? last.espresso_preinfusion : null
     });
+    
+    // Update UI remaining stock locally
+    setBatch(prev => ({
+      ...prev,
+      remaining_doses: Math.max(0, prev.remaining_doses - 1),
+      remaining_weight_g: Math.max(0.0, (prev.remaining_weight_g || 0) - doseInVal)
+    }));
   };
 
   const handleLoadRecipeToForm = (rec) => {
@@ -1725,11 +1725,6 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     <option value="Sobre">Sobre (Amargo)</option>
                   </select>
                 </div>
-              </div>
-
-              <div className="form-group" style={{ margin: 0 }}>
-                <label htmlFor="bt-batchdetail-4" className="barista-label">Notas de Cata de Extracción</label>
-                <input id="bt-batchdetail-4" aria-label="Notas de Cata de Extracción" className="barista-input" value={notes} onChange={(e) => setNotes(e.target.value)} type="text" placeholder="Ej. Muy dulzón, acidez limpia..." />
               </div>
             </div>
 

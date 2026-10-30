@@ -262,7 +262,8 @@ export default function App() {
     })
     .then(data => {
       if (data.success) {
-        if (callback) callback();
+        if (callback) callback(data);
+        fetchBatches();
         setLastSubtractedBatch(id);
         showToast('Dosis restada con éxito.', { type: 'success', duration: 5000, showUndo: true });
         
@@ -340,7 +341,7 @@ export default function App() {
     })
     .then(data => {
       if (data.success) {
-        showToast('Receta guardada. -1 tubo descontado del inventario. ', { type: 'success', duration: 2500 });
+        showToast('Receta guardada y stock descontado del inventario.', { type: 'success', duration: 2500 });
         fetchBatches();
         setTimeout(() => {
           handleBack();

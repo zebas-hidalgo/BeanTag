@@ -1,11 +1,10 @@
 // Roast & degassing helpers — the batch's own data drives its color.
-// BeanTag stores roast_level as Claro / Medio / Oscuro (no Agtron reading),
-// so Agtron here is a reference value for the level, labeled as approximate in the UI.
+// BeanTag stores roast_level as Claro / Medio / Oscuro.
 
 const ROASTS = {
-  claro:  { label: 'Claro',  agtron: 75, color: 'var(--roast-light)',  ink: '#1F1206', pos: 30 },
-  medio:  { label: 'Medio',  agtron: 60, color: 'var(--roast-medium)', ink: '#FFFFFF', pos: 55 },
-  oscuro: { label: 'Oscuro', agtron: 45, color: 'var(--roast-dark)',   ink: '#FFFFFF', pos: 82 },
+  claro:  { label: 'Claro',  color: 'var(--roast-light)',  ink: '#1F1206', pos: 30 },
+  medio:  { label: 'Medio',  color: 'var(--roast-medium)', ink: '#FFFFFF', pos: 55 },
+  oscuro: { label: 'Oscuro', color: 'var(--roast-dark)',   ink: '#FFFFFF', pos: 82 },
 };
 
 export function getRoast(level) {

@@ -247,10 +247,12 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                     type="button"
                     className="bt-batch-main"
                     onClick={() => onSelectBatch(batch.id)}
-                    aria-label={`${batch.name}, tueste ${roast.label.toLowerCase()}, ${batch.remaining_doses} ${batch.remaining_doses === 1 ? 'tubo' : 'tubos'}`}
+                    aria-label={batch.storage_type === 'bag' 
+                      ? `${batch.name}, tueste ${roast.label.toLowerCase()}, bolsa con ${Math.round(currentWeight)}g`
+                      : `${batch.name}, tueste ${roast.label.toLowerCase()}, ${batch.remaining_doses} ${batch.remaining_doses === 1 ? 'tubo' : 'tubos'}`}
                   >
-                    <span className="bt-swatch" title={`Tueste ${roast.label} · Agtron aprox. ${roast.agtron}`} aria-hidden="true">
-                      {roast.agtron}
+                    <span className="bt-swatch" title={`Tueste ${roast.label}`} aria-hidden="true">
+                      <Flame size={18} strokeWidth={2.4} />
                     </span>
                     <span className="bt-batch-text">
                       <span className="bt-batch-name">{batch.name}</span>
@@ -261,10 +263,17 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                         </span>
                       </span>
                     </span>
-                    <span className="bt-doses" aria-hidden="true">
-                      <b>{batch.remaining_doses}</b>
-                      <small>{batch.remaining_doses === 1 ? 'tubo' : 'tubos'}{currentWeight > 0 ? ` · ${currentWeight} g` : ''}</small>
-                    </span>
+                    {batch.storage_type === 'bag' ? (
+                      <span className="bt-doses" aria-hidden="true">
+                        <b>{Math.round(currentWeight)}<small style={{ fontSize: '11px', fontWeight: 600, marginLeft: '1px' }}>g</small></b>
+                        <small>Bolsa · ~{batch.remaining_doses} {batch.remaining_doses === 1 ? 'taza' : 'tazas'}</small>
+                      </span>
+                    ) : (
+                      <span className="bt-doses" aria-hidden="true">
+                        <b>{batch.remaining_doses}</b>
+                        <small>{batch.remaining_doses === 1 ? 'tubo' : 'tubos'}{currentWeight > 0 ? ` · ${currentWeight} g` : ''}</small>
+                      </span>
+                    )}
                   </button>
 
                   {degas && (
@@ -286,7 +295,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                     ) : (
                       <span className="bt-batch-meta" style={{ color: isLowStock ? 'var(--warn-text)' : undefined }}>
                         {isLowStock && <AlertTriangle size={12} aria-hidden="true" />}
-                        {isLowStock ? 'Quedan pocos tubos' : (batch.roaster || '')}
+                        {isLowStock ? (batch.storage_type === 'bag' ? 'Poco café en bolsa' : 'Quedan pocos tubos') : (batch.roaster || '')}
                       </span>
                     )}
                     <div style={{ display: 'flex', gap: '6px', marginLeft: 'auto' }}>
@@ -340,7 +349,9 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                 {contextBatch.name}
               </div>
               <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                {contextBatch.remaining_doses} tubos restantes ({contextBatch.remaining_weight_g || 0}g)
+                {contextBatch.storage_type === 'bag'
+                  ? `Bolsa: ${Math.round(contextBatch.remaining_weight_g || 0)}g restantes (~${contextBatch.remaining_doses} tazas)`
+                  : `${contextBatch.remaining_doses} tubos restantes (${Math.round(contextBatch.remaining_weight_g || 0)}g)`}
               </div>
             </div>
 

@@ -351,21 +351,40 @@ app.get('/api/batches/:id', async (req, res) => {
 
 // Create new batch
 app.post('/api/batches', async (req, res) => {
-  const { id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, origin, roast_level, roast_date, freeze_date, sca_score } = req.body;
-  if (!id || !name || !producer || !total_doses) {
+  const { id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, origin, roast_level, roast_date, freeze_date, sca_score, storage_type, total_weight_g } = req.body;
+  if (!id || !name || !producer) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
+  const storageType = storage_type === 'bag' ? 'bag' : 'tubes';
+  const doseWeightNum = parseFloat(dose_weight) || (storageType === 'bag' ? 18.0 : 20.0);
+  let totalDosesNum = parseInt(total_doses, 10);
+  let totalWeightGNum = parseFloat(total_weight_g);
+
+  if (storageType === 'bag') {
+    if (!totalWeightGNum || totalWeightGNum <= 0) {
+      totalWeightGNum = 250.0; // Standard specialty bag default
+    }
+    if (isNaN(totalDosesNum) || totalDosesNum <= 0) {
+      totalDosesNum = Math.max(1, Math.round(totalWeightGNum / doseWeightNum));
+    }
+  } else {
+    if (isNaN(totalDosesNum) || totalDosesNum <= 0) {
+      totalDosesNum = 12;
+    }
+    if (isNaN(totalWeightGNum) || totalWeightGNum <= 0) {
+      totalWeightGNum = doseWeightNum * totalDosesNum;
+    }
+  }
+
   try {
     const db = await getDb();
-    const doseWeightNum = parseFloat(dose_weight) || 20.0;
-    const totalWeightG = doseWeightNum * parseInt(total_doses);
     const userId = req.user ? req.user.id : null;
     const scaScoreNum = (sca_score !== undefined && sca_score !== null && sca_score !== '' && !isNaN(parseFloat(sca_score))) ? parseFloat(sca_score) : null;
 
     await db.run(
-      `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, user_id, sca_score)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, total_doses, origin, roast_level, roast_date, freeze_date, totalWeightG, totalWeightG, userId, scaScoreNum]
+      `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, user_id, sca_score, storage_type)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, name, producer, altitude, variety, process, roaster, roaster_notes, `${doseWeightNum.toFixed(1)}g`, totalDosesNum, totalDosesNum, origin, roast_level, roast_date, freeze_date, totalWeightGNum, totalWeightGNum, userId, scaScoreNum, storageType]
     );
     res.status(201).json({ success: true, id });
   } catch (err) {
@@ -373,30 +392,47 @@ app.post('/api/batches', async (req, res) => {
   }
 });
 
-// Update doses remaining (Subtract or Add/Undo)
+// Update doses or weight remaining (Subtract or Add/Undo)
 app.patch('/api/batches/:id/doses', async (req, res) => {
-  const { change } = req.body; // expected: -1 (subtract) or +1 (undo)
-  if (change !== -1 && change !== 1) {
+  const { change, weight_change } = req.body; // change: -1 / 1, or weight_change: e.g. -18.0
+  if (change !== -1 && change !== 1 && (weight_change === undefined || isNaN(parseFloat(weight_change)))) {
     return res.status(400).json({ error: 'Cambio inválido' });
   }
   try {
     const db = await getDb();
-    const batch = await db.get('SELECT user_id, remaining_doses, total_doses FROM batches WHERE id = ?', req.params.id);
+    const batch = await db.get('SELECT * FROM batches WHERE id = ?', req.params.id);
     if (!batch) {
       return res.status(404).json({ error: 'Lote no encontrado' });
     }
 
     if (!isResourceOwner(req.user, batch.user_id)) {
-      return res.status(403).json({ error: 'Solo el propietario de este café puede modificar las dosis.' });
-    }
-    
-    const newDoses = batch.remaining_doses + change;
-    if (newDoses < 0 || newDoses > batch.total_doses) {
-      return res.status(400).json({ error: 'Cantidad de dosis fuera de los límites' });
+      return res.status(403).json({ error: 'Solo el propietario de este café puede modificar el inventario.' });
     }
 
-    await db.run('UPDATE batches SET remaining_doses = ? WHERE id = ?', [newDoses, req.params.id]);
-    res.json({ success: true, remaining_doses: newDoses });
+    const doseWeightNum = parseFloat(batch.dose_weight) || 18.0;
+    const isBag = batch.storage_type === 'bag';
+    let newWeight = batch.remaining_weight_g !== null && batch.remaining_weight_g !== undefined
+      ? batch.remaining_weight_g
+      : (doseWeightNum * (batch.remaining_doses || 0));
+    let newDoses = batch.remaining_doses || 0;
+
+    if (weight_change !== undefined && !isNaN(parseFloat(weight_change))) {
+      const deltaW = parseFloat(weight_change);
+      newWeight = Math.max(0, Math.round((newWeight + deltaW) * 10) / 10);
+      newDoses = Math.max(0, Math.round(newWeight / doseWeightNum));
+    } else if (change === -1 || change === 1) {
+      if (isBag) {
+        const deltaW = change * doseWeightNum;
+        newWeight = Math.max(0, Math.round((newWeight + deltaW) * 10) / 10);
+        newDoses = Math.max(0, Math.round(newWeight / doseWeightNum));
+      } else {
+        newDoses = Math.max(0, Math.min(batch.total_doses || 99, newDoses + change));
+        newWeight = Math.max(0, Math.round((newDoses * doseWeightNum) * 10) / 10);
+      }
+    }
+
+    await db.run('UPDATE batches SET remaining_doses = ?, remaining_weight_g = ? WHERE id = ?', [newDoses, newWeight, req.params.id]);
+    res.json({ success: true, remaining_doses: newDoses, remaining_weight_g: newWeight });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -415,8 +451,8 @@ app.post('/api/recipes', async (req, res) => {
   try {
     const db = await getDb();
     
-    // Fetch batch to get user_id and default dose weight if needed
-    const batch = await db.get('SELECT user_id, dose_weight FROM batches WHERE id = ?', batch_id);
+    // Fetch batch to get user_id, storage_type, and default dose weight if needed
+    const batch = await db.get('SELECT * FROM batches WHERE id = ?', batch_id);
     if (!batch) {
       return res.status(404).json({ error: 'Lote no encontrado' });
     }
@@ -425,9 +461,18 @@ app.post('/api/recipes', async (req, res) => {
       return res.status(403).json({ error: 'Solo el propietario de este café puede registrar extracciones.' });
     }
 
-    const defaultDose = parseFloat(batch.dose_weight) || 20.0;
+    const isBag = batch.storage_type === 'bag';
+    const defaultDose = parseFloat(batch.dose_weight) || (isBag ? 18.0 : 20.0);
     const doseInVal = dose_in_g !== undefined ? parseFloat(dose_in_g) : defaultDose;
     const userId = req.user ? req.user.id : (batch.user_id || null);
+
+    const currentWeight = batch.remaining_weight_g !== null && batch.remaining_weight_g !== undefined 
+      ? batch.remaining_weight_g 
+      : (defaultDose * (batch.remaining_doses || 0));
+    const newWeight = Math.max(0, Math.round((currentWeight - doseInVal) * 10) / 10);
+    const newDoses = isBag
+      ? Math.max(0, Math.round(newWeight / defaultDose))
+      : Math.max(0, (batch.remaining_doses || 0) - 1);
 
     await db.run('BEGIN TRANSACTION;');
     try {
@@ -437,10 +482,10 @@ app.post('/api/recipes', async (req, res) => {
         [batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, doseInVal, dose_out_g, espresso_pressure, espresso_preinfusion, userId]
       );
 
-      // Subtract 1 tube (dose) and grams from batch remaining stock
+      // Subtract grams and doses from batch remaining stock
       await db.run(
-        'UPDATE batches SET remaining_doses = MAX(0, remaining_doses - 1), remaining_weight_g = MAX(0.0, remaining_weight_g - ?) WHERE id = ?',
-        [doseInVal, batch_id]
+        'UPDATE batches SET remaining_doses = ?, remaining_weight_g = ? WHERE id = ?',
+        [newDoses, newWeight, batch_id]
       );
 
       await db.run('COMMIT;');
@@ -488,13 +533,13 @@ app.get('/api/recipes', async (req, res) => {
 
 // Update batch details
 app.put('/api/batches/:id', async (req, res) => {
-  const { name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, sca_score } = req.body;
-  if (!name || !producer || total_doses === undefined) {
+  const { name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, sca_score, storage_type, total_weight_g, remaining_weight_g } = req.body;
+  if (!name || !producer) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
   try {
     const db = await getDb();
-    const current = await db.get('SELECT user_id, total_doses, remaining_doses FROM batches WHERE id = ?', req.params.id);
+    const current = await db.get('SELECT * FROM batches WHERE id = ?', req.params.id);
     if (!current) {
       return res.status(404).json({ error: 'Lote no encontrado' });
     }
@@ -503,27 +548,43 @@ app.put('/api/batches/:id', async (req, res) => {
       return res.status(403).json({ error: 'Solo el propietario puede editar este lote.' });
     }
     
-    // Adjust remaining doses if total_doses changed and remaining_doses is not explicitly provided
-    let newRemaining = remaining_doses !== undefined ? remaining_doses : current.remaining_doses;
-    if (total_doses !== current.total_doses && remaining_doses === undefined) {
-      const diff = total_doses - current.total_doses;
-      newRemaining = Math.max(0, current.remaining_doses + diff);
+    const storageType = storage_type || current.storage_type || 'tubes';
+    const doseWeightNum = parseFloat(dose_weight) || (storageType === 'bag' ? 18.0 : 20.0);
+
+    let newTotalWeight = total_weight_g !== undefined && total_weight_g !== null
+      ? parseFloat(total_weight_g)
+      : (current.total_weight_g || (doseWeightNum * (total_doses || current.total_doses || 12)));
+
+    let newRemainingWeight = remaining_weight_g !== undefined && remaining_weight_g !== null
+      ? parseFloat(remaining_weight_g)
+      : (current.remaining_weight_g !== null ? current.remaining_weight_g : newTotalWeight);
+
+    let newTotalDoses = total_doses !== undefined ? parseInt(total_doses, 10) : (current.total_doses || Math.max(1, Math.round(newTotalWeight / doseWeightNum)));
+    let newRemaining = remaining_doses !== undefined ? parseInt(remaining_doses, 10) : current.remaining_doses;
+
+    if (storageType === 'bag') {
+      newTotalDoses = Math.max(1, Math.round(newTotalWeight / doseWeightNum));
+      newRemaining = Math.max(0, Math.round(newRemainingWeight / doseWeightNum));
+    } else {
+      if (total_doses !== undefined && current.total_doses !== undefined && total_doses !== current.total_doses && remaining_doses === undefined) {
+        const diff = (parseInt(total_doses) || 0) - (current.total_doses || 0);
+        newRemaining = Math.max(0, (current.remaining_doses || 0) + diff);
+      }
+      newTotalWeight = doseWeightNum * newTotalDoses;
+      newRemainingWeight = doseWeightNum * newRemaining;
     }
 
-    const doseWeightNum = parseFloat(dose_weight) || 20.0;
-    const newTotalWeight = doseWeightNum * total_doses;
-    const newRemainingWeight = doseWeightNum * newRemaining;
     const scaScoreNum = (sca_score !== undefined && sca_score !== null && sca_score !== '' && !isNaN(parseFloat(sca_score))) ? parseFloat(sca_score) : null;
 
     await db.run(
       `UPDATE batches 
        SET name = ?, producer = ?, altitude = ?, variety = ?, process = ?, roaster = ?, roaster_notes = ?, 
            dose_weight = ?, total_doses = ?, remaining_doses = ?, origin = ?, roast_level = ?, roast_date = ?, freeze_date = ?,
-           total_weight_g = ?, remaining_weight_g = ?, sca_score = ?
+           total_weight_g = ?, remaining_weight_g = ?, sca_score = ?, storage_type = ?
        WHERE id = ?`,
-      [name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, newRemaining, origin, roast_level, roast_date, freeze_date, newTotalWeight, newRemainingWeight, scaScoreNum, req.params.id]
+      [name, producer, altitude, variety, process, roaster, roaster_notes, `${doseWeightNum.toFixed(1)}g`, newTotalDoses, newRemaining, origin, roast_level, roast_date, freeze_date, newTotalWeight, newRemainingWeight, scaScoreNum, storageType, req.params.id]
     );
-    res.json({ success: true, remaining_doses: newRemaining });
+    res.json({ success: true, remaining_doses: newRemaining, remaining_weight_g: newRemainingWeight });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

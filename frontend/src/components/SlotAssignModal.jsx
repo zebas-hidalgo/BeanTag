@@ -354,6 +354,21 @@ export default function SlotAssignModal({
                       >
                         {batch.name}
                       </span>
+                      {batch.storage_type === 'bag' && (
+                        <span
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            padding: '2px 6px',
+                            borderRadius: 'var(--r-xs)',
+                            backgroundColor: 'rgba(194, 65, 12, 0.12)',
+                            color: 'var(--brand)',
+                            textTransform: 'uppercase'
+                          }}
+                        >
+                          Bolsa
+                        </span>
+                      )}
                       {batch.process && (
                         <span
                           style={{
@@ -414,7 +429,7 @@ export default function SlotAssignModal({
                     >
                       {isOutOfStockForAssignment
                         ? `(${assignedInRacks} en racks)`
-                        : `de ${batch.remaining_doses || 0} en bolsa`}
+                        : `de ${batch.remaining_doses || 0} en stock`}
                     </span>
                   </div>
                 </div>

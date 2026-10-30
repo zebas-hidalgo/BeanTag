@@ -57,6 +57,9 @@ async function initDb() {
   try {
     await db.exec('ALTER TABLE batches ADD COLUMN sca_score REAL;');
   } catch (e) {}
+  try {
+    await db.exec("ALTER TABLE batches ADD COLUMN storage_type TEXT DEFAULT 'tubes';");
+  } catch (e) {}
 
   // Create recipes table
   await db.exec(`
