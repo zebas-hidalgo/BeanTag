@@ -7,6 +7,7 @@ import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { parseGrindToMicrons } from '../utils/grinders';
 import CardStylePicker from './CardStylePicker';
+import { copyImageToClipboard } from '../utils/clipboard';
 
 const getMethodLucideIcon = (methodName, size = 18) => {
   const m = (methodName || '').toLowerCase();
@@ -40,7 +41,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   const [shareImage, setShareImage] = useState(null);
   const [shareStatus, setShareStatus] = useState('');
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(true);
-  const [shareFormat, setShareFormat] = useState('card'); // 'card' | 'sticker'
+  const [shareFormat, setShareFormat] = useState('sticker'); // sticker over a photo (default) | 'card'
   const [cardFormat, setCardFormat] = useState(() => getPreferredCardFormat()); // 'feed' (4:5) | 'story' (9:16)
   const [stickerTransparent, setStickerTransparent] = useState(false);
   const [stickerOrientation, setStickerOrientation] = useState('horizontal'); // 'horizontal' | 'vertical'
@@ -989,14 +990,19 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               {/* Row 1: Header + Format Selector */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '12.5px', textTransform: 'uppercase', margin: 0, color: 'var(--color-text)' }}>
-                  Tarjeta · {selectedRecipe?.batch_name}
+                  Sticker · {selectedRecipe?.batch_name}
                 </h3>
               </div>
               <CardStylePicker
                 value={shareTemplate || DEFAULT_CARD_STYLE}
                 onChange={(id) => {
                   setShareTemplate(id);
-                  exportRecipeAsImage(selectedRecipe, id, shareIncludeRecipe);
+                  exportRecipeAsImage(selectedRecipe, id, shareIncludeRecipe, 'sticker', true, stickerOrientation);
+                }}
+                orientation={stickerOrientation}
+                onOrientationChange={(o) => {
+                  setStickerOrientation(o);
+                  exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'sticker', true, o);
                 }}
               />
 
@@ -1019,7 +1025,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             }}>
               <img 
                 src={shareImage} 
-                alt="Ticket de café POS" 
+                alt="Vista previa del sticker (fondo transparente)" 
                 style={{
                   maxWidth: '100%',
                   maxHeight: 'calc(45dvh - 50px)',
@@ -1028,7 +1034,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   borderRadius: 'var(--r-control)', 
                   display: 'block',
                   margin: '0 auto',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.14)'
+                  background: 'repeating-conic-gradient(#D9D3CA 0% 25%, #F1EDE6 0% 50%) 50% / 24px 24px'
                 }} 
               />
             </div>
@@ -1059,6 +1065,21 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               >
                 <Share2 size={15} strokeWidth={2.5} />
                 Compartir / Guardar PNG
+              </button>
+              <button
+                type="button"
+                className="btn-candy"
+                style={{ flex: 1, minHeight: '44px', padding: '9px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                onClick={async () => {
+                  try {
+                    await copyImageToClipboard(shareImage);
+                    setShareStatus('Sticker copiado. En la story de Instagram, mantén presionado y pega.');
+                  } catch (err) {
+                    setShareStatus('Error al copiar: ' + (err.message || err));
+                  }
+                }}
+              >
+                Copiar sticker
               </button>
               <button 
                 type="button" 

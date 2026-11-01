@@ -12,6 +12,7 @@ import { cleanNotesString } from './scaIcons';
 import { GRINDERS } from './grinders';
 import { TREND_STYLES, TREND_THEMES, drawTrendCard, drawTrendMenu, trendMenuSize, drawTrendSticker } from './trendCards';
 import { STORY_STYLES, drawStoryCard } from './storyCards';
+import { STICKER_SIZES, drawSticker } from './stickerCards';
 
 export { cleanNotesString } from './scaIcons';
 export { parseGrindToMicrons } from './grinders';
@@ -370,18 +371,20 @@ export function generateCoffeeMenuText(batches) {
 /**
  * Stickers for stories: horizontal 1280x680 or vertical 880x1160, optional transparent die-cut.
  */
+/**
+ * Sticker: a transparent PNG card to paste OVER a coffee photo in an Instagram story.
+ * Horizontal 1280×720 (lower part of the story) or vertical 960×1280 (one side).
+ */
 export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
-  const style = skinStyle(normalizeCardStyle(options.template));
-  const vertical = String(options.orientation || '').toLowerCase() === 'vertical';
+  const style = normalizeCardStyle(options.template);
+  const orientation = String(options.orientation || '').toLowerCase() === 'vertical' ? 'vertical' : 'horizontal';
   const includeRecipe = Boolean(options.includeRecipe);
-  const w = vertical ? 880 : 1280;
-  const h = vertical ? 1160 : 680;
+  const { w, h } = STICKER_SIZES[orientation];
   await ensureFontsLoaded();
   const canvas = createCanvas(w, h);
-  const ctx = canvas.getContext('2d');
   const item = batchOrRecipe || {};
   const d = buildCardData(item.recipe ? { ...item.recipe, ...item } : item, includeRecipe);
-  drawTrendSticker(ctx, style, d, { vertical, transparent: Boolean(options.transparent), includeRecipe }, w, h);
+  drawSticker(canvas.getContext('2d'), style, d, includeRecipe, orientation, w, h);
   return canvas.toDataURL('image/png', 1.0);
 }
 

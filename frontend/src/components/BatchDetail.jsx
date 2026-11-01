@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
 import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers, SlidersHorizontal, Cylinder, Compass, Target, Trophy, Sliders, Lightbulb, Check, Eye } from 'lucide-react';
-import { copyToClipboard } from '../utils/clipboard';
+import { copyToClipboard, copyImageToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { FAMOUS_RECIPES } from '../utils/famousRecipes';
@@ -132,7 +132,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   // Share / Export Card States
   const [shareImage, setShareImage] = useState(null);
-  const [shareScope, setShareScope] = useState('single'); // 'single' | 'sticker' | 'menu'
+  const [shareScope, setShareScope] = useState('sticker'); // sticker over a photo (default) | 'single' | 'menu'
   const [stickerTransparent, setStickerTransparent] = useState(false);
   const [cardFormat, setCardFormat] = useState('story'); // KISS: one size
   const [stickerOrientation, setStickerOrientation] = useState('horizontal'); // 'horizontal' | 'vertical'
@@ -1622,7 +1622,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               value={shareTemplate || DEFAULT_CARD_STYLE}
               onChange={(id) => {
                 setShareTemplate(id);
-                handleShareBatchCard(shareIncludeRecipe, id, shareScope, stickerTransparent, stickerOrientation);
+                handleShareBatchCard(shareIncludeRecipe, id, 'sticker', true, stickerOrientation);
+              }}
+              orientation={stickerOrientation}
+              onOrientationChange={(o) => {
+                setStickerOrientation(o);
+                handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', true, o);
               }}
             />
 
@@ -1640,7 +1645,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             }}>
               <img 
                 src={shareImage} 
-                alt="Ticket de café POS o Carta" 
+                alt="Vista previa del sticker (fondo transparente)" 
                 style={{
                   maxWidth: '100%',
                   maxHeight: 'calc(45dvh - 50px)',
@@ -1649,7 +1654,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   borderRadius: 'var(--r-control)', 
                   display: 'block',
                   margin: '0 auto',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.14)'
+                  background: 'repeating-conic-gradient(#D9D3CA 0% 25%, #F1EDE6 0% 50%) 50% / 24px 24px'
                 }} 
               />
             </div>
@@ -1671,24 +1676,38 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             )}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: 'auto', flexShrink: 0, paddingTop: '4px' }}>
-              <button 
-                type="button" 
-                className="btn-candy" 
-                style={{ minHeight: '44px', padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '12px', fontWeight: '700' }} 
-                onClick={handleCopyShareText}
+              <button
+                type="button"
+                className="barista-btn barista-btn-primary"
+                style={{ margin: 0 }}
+                onClick={async () => {
+                  try {
+                    await copyImageToClipboard(shareImage);
+                    setShareStatus('Sticker copiado. En la story de Instagram, mantén presionado y pega.');
+                  } catch (err) {
+                    setShareStatus('Error al copiar: ' + (err.message || err));
+                  }
+                }}
               >
-                <ClipboardCopy size={16} strokeWidth={2.2} />
-                Copiar Texto (WhatsApp)
+                <ClipboardCopy size={16} strokeWidth={2.2} aria-hidden="true" />
+                Copiar sticker
               </button>
-
-              <button 
-                type="button" 
-                className="btn-candy primary" 
-                style={{ minHeight: '44px', padding: '10px 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '12px', fontWeight: '700' }} 
+              <button
+                type="button"
+                className="barista-btn barista-btn-secondary"
+                style={{ margin: 0 }}
                 onClick={handleNativeShare}
               >
-                <Share2 size={16} strokeWidth={2.2} />
-                Compartir PNG (2x)
+                <Share2 size={16} strokeWidth={2.2} aria-hidden="true" />
+                Compartir
+              </button>
+              <button
+                type="button"
+                className="barista-btn barista-btn-ghost"
+                style={{ gridColumn: '1 / -1', margin: 0 }}
+                onClick={handleCopyShareText}
+              >
+                Copiar como texto (WhatsApp)
               </button>
             </div>
           </div>

@@ -51,3 +51,21 @@ export async function copyToClipboard(text) {
     return false;
   }
 }
+
+/**
+ * Copies a PNG data URL as an image (to paste as a sticker in an Instagram story).
+ * Safari needs the ClipboardItem built synchronously inside the tap, with a Promise for the blob.
+ */
+export async function copyImageToClipboard(dataUrl) {
+  if (!dataUrl || typeof navigator === 'undefined' || !navigator.clipboard || typeof window === 'undefined' || !window.ClipboardItem) {
+    throw new Error('Este navegador no permite copiar imágenes');
+  }
+  const blobPromise = fetch(dataUrl).then((r) => r.blob());
+  try {
+    await navigator.clipboard.write([new window.ClipboardItem({ 'image/png': blobPromise })]);
+  } catch (e) {
+    const blob = await blobPromise;
+    await navigator.clipboard.write([new window.ClipboardItem({ [blob.type || 'image/png']: blob })]);
+  }
+  return true;
+}
