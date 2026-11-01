@@ -1563,68 +1563,6 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         </div>
       )}
 
-      {/* Historial */}
-      <h3 className="bt-block-title">Historial</h3>
-      {(
-        <div className="animate-entrance">
-          {/* Banner Última Configuración Exitosa */}
-          {lastRecipe && (
-            <div className="recipe-target-banner" style={{ marginBottom: '14px' }}>
-              <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--barista-accent-honey)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px', fontFamily: 'var(--font-heading)' }}>
-                Última Configuración Exitosa
-              </div>
-              <div style={{ fontSize: '14px', fontWeight: '700', fontFamily: 'var(--font-mono)' }}>
-                {lastRecipe.method} | {lastRecipe.grind} | {lastRecipe.ratio}
-              </div>
-              {isOwner ? (
-                <button className="barista-btn-primary" onClick={handleRepeatLastRecipe} style={{ width: '100%', marginTop: '10px', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                  <Zap size={14} />
-                  Repetir y Guardar esta Receta (-1 Tubo)
-                </button>
-              ) : (
-                <button className="barista-btn-secondary" onClick={() => handleLoadRecipeToForm(lastRecipe)} style={{ width: '100%', marginTop: '10px', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                  <Zap size={15} />
-                  <span>Cargar Parámetros al Preparador</span>
-                </button>
-              )}
-            </div>
-          )}
-
-          {(
-            Array.isArray(batch?.recipes) && batch.recipes.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {batch.recipes.map((r, i) => (
-                  <div key={r.id ?? i} className="candy-card static" style={{ padding: '12px', fontSize: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold' }}>
-                      <span>{r.method} ({r.ratio})</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span>{r.temperature} • {r.brew_time}</span>
-                        <button 
-                          type="button"
-                          className="btn-candy" 
-                          onClick={() => handleStartBrewGuide(r)}
-                          style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '12px', margin: 0 }}
-                        > 
-                          <Play size={12} fill="currentColor" /> Preparar 
-                        </button>
-                      </div>
-                    </div>
-                    <div style={{ color: 'var(--color-crimson)', fontWeight: 'bold', marginTop: '2px' }}>
-                      Molienda: {r.grind}
-                    </div>
-                    {r.notes && <div style={{ fontStyle: 'italic', marginTop: '4px', color: 'var(--color-text-muted)', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>"{r.notes}"</div>}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-text-muted)', fontSize: '12px' }}>
-                No hay preparaciones registradas aún para este lote.
-              </div>
-            )
-          )}
-        </div>
-      )}
-
       {/* Enlace / NFC (plegado) */}
       <details className="bt-more" style={{ marginBottom: '24px' }}>
         <summary><Nfc size={16} aria-hidden="true" /> Enlace y etiqueta NFC</summary>
