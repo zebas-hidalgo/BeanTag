@@ -59,7 +59,6 @@ export default function RecipeParamsGrid({
               type="button"
               key={m.id}
               onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(6);
                 setMethod(m.id);
                 if (m.id === 'NextLevel Pulsar Mini') {
                   if (!doseInG || doseInG === 20.0 || doseInG === 15.0) setDoseInG(18.0);
@@ -123,7 +122,6 @@ export default function RecipeParamsGrid({
                   type="button"
                   key={fam.id}
                   onClick={() => {
-                    if (navigator.vibrate) navigator.vibrate(8);
                     onApplyFamousRecipe(fam);
                   }}
                   className="barista-btn barista-btn-secondary"
@@ -170,7 +168,6 @@ export default function RecipeParamsGrid({
               type="button"
               className="barista-stepper-btn"
               onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(6);
                 const cur = parseFloat(doseInG) || 20;
                 setDoseInG(Math.max(5, parseFloat((cur - 0.5).toFixed(1))));
               }}
@@ -194,7 +191,6 @@ export default function RecipeParamsGrid({
               type="button"
               className="barista-stepper-btn"
               onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(6);
                 const cur = parseFloat(doseInG) || 20;
                 setDoseInG(Math.min(50, parseFloat((cur + 0.5).toFixed(1))));
               }}
@@ -222,7 +218,6 @@ export default function RecipeParamsGrid({
                 type="button"
                 className="barista-stepper-btn"
                 onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(6);
                   const cur = parseFloat(doseOutG) || 36;
                   setDoseOutG(Math.max(10, parseFloat((cur - 1).toFixed(1))));
                 }}
@@ -245,7 +240,6 @@ export default function RecipeParamsGrid({
                 type="button"
                 className="barista-stepper-btn"
                 onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(6);
                   const cur = parseFloat(doseOutG) || 36;
                   setDoseOutG(Math.min(100, parseFloat((cur + 1).toFixed(1))));
                 }}
@@ -269,7 +263,6 @@ export default function RecipeParamsGrid({
                 type="button"
                 className="barista-stepper-btn"
                 onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(6);
                   const cur = parseFloat(ratioVal) || 15;
                   setRatioVal(Math.max(8, parseFloat((cur - 0.5).toFixed(1))));
                 }}
@@ -292,7 +285,6 @@ export default function RecipeParamsGrid({
                 type="button"
                 className="barista-stepper-btn"
                 onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(6);
                   const cur = parseFloat(ratioVal) || 15;
                   setRatioVal(Math.min(25, parseFloat((cur + 0.5).toFixed(1))));
                 }}
@@ -318,7 +310,6 @@ export default function RecipeParamsGrid({
               type="button"
               className="barista-stepper-btn"
               onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(6);
                 const cur = parseInt(waterTemp) || 93;
                 setWaterTemp(Math.max(70, cur - 1));
               }}
@@ -341,7 +332,6 @@ export default function RecipeParamsGrid({
               type="button"
               className="barista-stepper-btn"
               onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(6);
                 const cur = parseInt(waterTemp) || 93;
                 setWaterTemp(Math.min(100, cur + 1));
               }}

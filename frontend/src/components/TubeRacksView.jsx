@@ -125,7 +125,6 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
       if (!res.ok) throw new Error('No se pudo renombrar el portatubos');
       setRacks(prev => prev.map(r => r.id === editingRack.id ? { ...r, name: editingRack.name.trim() } : r));
       setEditingRack(null);
-      if (showToast) showToast('Nombre actualizado', { type: 'success' });
     } catch (err) {
       if (showToast) showToast(err.message, { type: 'error' });
     }
@@ -198,7 +197,6 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
         slots: r.slots.map(s => s.position === position ? data.slot : s)
       };
     }));
-    if (showToast) showToast(`Tubo #${position} asignado`, { type: 'success' });
   };
 
   // Handle filling all empty slots in rack
@@ -213,7 +211,6 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
     if (!res.ok) throw new Error('Error al llenar rack');
     const data = await res.json();
     setRacks(prev => prev.map(r => r.id === rack.id ? { ...r, slots: data.slots } : r));
-    if (showToast) showToast(`Ranuras de "${rack.name}" completadas`, { type: 'success' });
   };
 
   // Handle clearing single slot

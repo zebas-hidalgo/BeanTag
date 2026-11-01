@@ -6,12 +6,10 @@ import { copyToClipboard } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { FAMOUS_RECIPES } from '../utils/famousRecipes';
-import ScaRadarChart from './ScaRadarChart';
-import DialInAssistant from './DialInAssistant';
-import DialInTimeline from './DialInTimeline';
 import { GRINDERS, getGrinderConfig, scaleGrinderSettingForDose, calculateDoseDeltaMicrons } from '../utils/grinders';
 
 import BatchHeaderCard from './batch/BatchHeaderCard';
+import CardStylePicker from './CardStylePicker';
 import RecipeParamsGrid from './batch/RecipeParamsGrid';
 import GrinderSyncMatrix from './batch/GrinderSyncMatrix';
 
@@ -127,23 +125,16 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [activeBrewRecipe, setActiveBrewRecipe] = useState(null);
 
   // Main Tab Navigation State ('brew' | 'history' | 'tools')
-  const [activeTab, setActiveTab] = useState('brew');
-  const [aiSubTab, setAiSubTab] = useState('pours');
+  
 
   // Recipe History View Mode ('timeline' | 'cards')
-  const [recipeViewMode, setRecipeViewMode] = useState('timeline');
 
-  // Interactive Calculator State
-  const [calcVisible, setCalcVisible] = useState(false);
-  const [calcDose, setCalcDose] = useState(15.0);
-  const [calcRatio, setCalcRatio] = useState(16.0);
-  const [calcWater, setCalcWater] = useState(240);
 
   // Share / Export Card States
   const [shareImage, setShareImage] = useState(null);
   const [shareScope, setShareScope] = useState('single'); // 'single' | 'sticker' | 'menu'
   const [stickerTransparent, setStickerTransparent] = useState(false);
-  const [cardFormat, setCardFormat] = useState(() => getPreferredCardFormat()); // 'feed' (4:5) | 'story' (9:16)
+  const [cardFormat, setCardFormat] = useState('story'); // KISS: one size
   const [stickerOrientation, setStickerOrientation] = useState('horizontal'); // 'horizontal' | 'vertical'
   const [shareIncludeRecipe, setShareIncludeRecipe] = useState(false); // Default to bean-only for batch detail
   const [shareTemplate, setShareTemplate] = useState(() => {
@@ -356,12 +347,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       setAiRecommendation(data);
       if (data._source === 'barista_fallback') {
         if (showToast) {
-          showToast('Receta calculada con Motor Barista Físico (sin depender de internet)', { type: 'success', duration: 4500 });
         }
       } else if (data._source === 'groq') {
-        if (showToast) showToast('¡Recomendación multivariable generada por Groq AI! ', { type: 'success', duration: 3000 });
       } else {
-        if (showToast) showToast('¡Recomendación multivariable generada por Gemini AI! ', { type: 'success', duration: 2500 });
       }
     })
     .catch(err => {
@@ -502,7 +490,6 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     };
     setDoseAdjustmentFeedback(null);
 
-    if (showToast) showToast('Receta sugerida por IA aplicada al formulario.', { type: 'success', duration: 3000 });
     setAiRecommendation(null);
   };
 
@@ -611,7 +598,6 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     });
 
     setSelectedFamousRecipe(famous.id);
-    if (showToast) showToast(`Receta "${famous.name}" aplicada al formulario.`, { type: 'success', duration: 3000 });
   };
 
   useEffect(() => {
@@ -921,7 +907,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       baratza: loadedBaratza
     };
     setDoseAdjustmentFeedback(null);
-    setActiveTab('brew');
+    // (KISS) el formulario siempre está visible
     if (showToast) showToast('Parámetros cargados en el preparador.', { type: 'info', duration: 2000 });
   };
 
@@ -1132,35 +1118,6 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   let restingDays = 0;
   let restingDaysText = 'Sin datos';
   let freezeTime = 'Sin datos';
-  let degasStatus = { label: 'Degas Desconocido', color: '#718096', description: 'Sin información de fechas.' };
-  
-  if (batch.roast_date && batch.freeze_date) {
-    const roast = new Date(batch.roast_date);
-    const freeze = new Date(batch.freeze_date);
-    const diffTime = Math.abs(freeze - roast);
-    restingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    restingDaysText = `${restingDays} días de reposo`;
-
-    if (restingDays <= 5) {
-      degasStatus = {
-        label: 'Degas Insuficiente',
-        color: 'var(--bad)',
-        description: 'Poco reposo. El CO₂ atrapado puede producir sabores metálicos o agrios.'
-      };
-    } else if (restingDays >= 6 && restingDays <= 20) {
-      degasStatus = {
-        label: 'Degas Perfecto',
-        color: '#38A169',
-        description: 'Reposo ideal. Máxima expresión aromática y estabilidad en congelación.'
-      };
-    } else {
-      degasStatus = {
-        label: 'Degas Alto',
-        color: '#D69E2E',
-        description: 'Reposo prolongado. Los aromáticos volátiles pueden estar suavizados.'
-      };
-    }
-  }
   
   if (batch.freeze_date) {
     const freeze = new Date(batch.freeze_date);
@@ -1311,13 +1268,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         </button>
 
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-          {batch.altitude && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-header)', border: '1px solid var(--border-color)', padding: '4px 10px', borderRadius: 'var(--r-control)', fontSize: '12px', fontWeight: '600', color: 'var(--color-crimson)' }}>
-              <Mountain size={12} />
-              <span>{batch.altitude}</span>
-            </div>
-          )}
-          {isLowStock && <span className="mono-lbl-tag" style={{ background: 'var(--bad)', fontSize: '12px', padding: '3px 8px' }}>¡ÚLTIMOS!</span>}
+          {isLowStock && <span className="mono-lbl-tag" style={{ background: 'var(--bad)', fontSize: '12px', padding: '3px 8px' }}>Quedan pocos</span>}
         </div>
       </div>
 
@@ -1373,45 +1324,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         lastRecipe={lastRecipe}
       />
 
-      {/* PESTAÑAS PRINCIPALES (Cupertino Segmented) */}
-      <div className="cupertino-segmented" style={{ marginBottom: '16px' }}>
-        <button
-          type="button"
-          className={`cupertino-segmented-btn ${activeTab === 'brew' ? 'active' : ''}`}
-          onClick={() => {
-            if (navigator.vibrate) navigator.vibrate(8);
-            setActiveTab('brew');
-          }}
-        >
-          <Coffee size={14} strokeWidth={2.2} />
-          <span>Preparar</span>
-        </button>
-        <button
-          type="button"
-          className={`cupertino-segmented-btn ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => {
-            if (navigator.vibrate) navigator.vibrate(8);
-            setActiveTab('history');
-          }}
-        >
-          <BookOpen size={14} strokeWidth={2.2} />
-          <span>Historial ({batch.recipes?.length || 0})</span>
-        </button>
-        <button
-          type="button"
-          className={`cupertino-segmented-btn ${activeTab === 'tools' ? 'active' : ''}`}
-          onClick={() => {
-            if (navigator.vibrate) navigator.vibrate(8);
-            setActiveTab('tools');
-          }}
-        >
-          <Calculator size={14} strokeWidth={2.2} />
-          <span>Ajustes & NFC</span>
-        </button>
-      </div>
-
-      {/* PESTAÑA 1: PREPARAR CAFÉ */}
-      {activeTab === 'brew' && (
+      {/* Preparar (KISS: una sola pantalla, sin pestañas) */}
+      {(
         <div ref={brewFormRef} className="animate-entrance">
           <form onSubmit={handleRecipeSubmit}>
             {/* V4 Modular Recipe Parameters Grid */}
@@ -1485,156 +1399,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     )}
                   </div>
 
-                  {/* Sub-pestañas para organizar Vertidos, Molinos, Física y Pasos */}
-                  <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
-                    <button type="button" className={`filter-chip ${aiSubTab === 'pours' ? 'active' : ''}`} onClick={() => setAiSubTab('pours')} style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Droplet size={12} /> Vertidos
-                    </button>
-                    <button type="button" className={`filter-chip ${aiSubTab === 'grinders' ? 'active' : ''}`} onClick={() => setAiSubTab('grinders')} style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Settings2 size={12} /> Molinos
-                    </button>
-                    <button type="button" className={`filter-chip ${aiSubTab === 'physics' ? 'active' : ''}`} onClick={() => setAiSubTab('physics')} style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Sparkles size={12} /> Física
-                    </button>
-                    <button type="button" className={`filter-chip ${aiSubTab === 'steps' ? 'active' : ''}`} onClick={() => setAiSubTab('steps')} style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <ListOrdered size={12} /> Pasos
-                    </button>
-                  </div>
-
-                  {/* Sub-Contenido: Vertidos */}
-                  {aiSubTab === 'pours' && aiRecommendation.pours && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {(() => {
-                        let runningInteractive = 0;
-                        return aiRecommendation.pours.map((p, idx) => {
-                          const stepW = parseFloat(p.water_g || p.water) || 0;
-                          const totalW = p.total_water_g !== undefined ? parseFloat(p.total_water_g) : (runningInteractive + stepW);
-                          runningInteractive = totalW;
-                          return (
-                            <div key={idx} style={{ padding: '8px 10px', background: 'var(--bg-card)', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)', fontSize: '12px' }}>
-                              {p.valve === 'closed' && (
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: 'var(--r-xs)', fontSize: '12px', fontWeight: '600', background: 'var(--barista-accent-danger-bg)', color: 'var(--barista-accent-danger-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>VÁLVULA CERRADA (Bloom + Inmersión)</div>
-                              )}
-                              {p.valve === 'open' && (
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: 'var(--r-xs)', fontSize: '12px', fontWeight: '600', background: 'var(--barista-accent-mint-bg)', color: 'var(--barista-accent-mint-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>VÁLVULA ABIERTA (Percolación)</div>
-                              )}
-                              {p.valve === 'half' && (
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: 'var(--r-xs)', fontSize: '12px', fontWeight: '600', background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', border: '1px solid var(--border-color)', marginBottom: '4px' }}>VÁLVULA MEDIA (Flujo Regulado 50%)</div>
-                              )}
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-                                <span style={{ fontWeight: '600', color: 'var(--color-crimson)', fontSize: '12px', wordBreak: 'break-word', flex: '1 1 180px' }}>
-                                  {p.step || idx + 1}. {p.label}
-                                </span>
-                                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                  <Timer size={11} /> {p.time}
-                                </span>
-                              </div>
-                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                                  Paso: <strong style={{ color: 'var(--color-text)' }}>+{stepW}g</strong>
-                                </span>
-                                <span style={{
-                                  fontSize: '12px',
-                                  fontWeight: '700',
-                                  color: 'var(--barista-accent-honey)',
-                                  background: 'var(--barista-bg-elevated)',
-                                  padding: '2px 8px',
-                                  borderRadius: 'var(--r-xs)',
-                                  border: '1px solid var(--barista-border-hairline)',
-                                  fontFamily: 'var(--font-mono)',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px'
-                                }}>
-                                  <Target size={11} /> Acumulado: {totalW}g
-                                </span>
-                              </div>
-                              {p.description && <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '4px', lineHeight: '1.3' }}>{p.description}</div>}
-                            </div>
-                          );
-                        });
-                      })()}
-                    </div>
-                  )}
-
-                  {/* Sub-Contenido: Molinos */}
-                  {aiSubTab === 'grinders' && (
-                    <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-card)', padding: '10px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
-                      {aiRecommendation.active_grinder_dial && (
-                        <div style={{ background: 'var(--bg-header)', border: '1.5px solid var(--color-crimson)', borderRadius: 'var(--r-control)', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div>
-                            <div style={{ fontSize: '12px', textTransform: 'uppercase', fontWeight: '600', color: 'var(--color-crimson)' }}>
-                              Tu Molino: {aiRecommendation.active_grinder_dial.grinder_name}
-                            </div>
-                            <div style={{ fontSize: '13px', fontWeight: '700', fontFamily: 'var(--font-mono)', color: 'var(--color-text)' }}>
-                              {aiRecommendation.active_grinder_dial.dial}
-                            </div>
-                            <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                              {aiRecommendation.active_grinder_dial.burr_type} • {aiRecommendation.active_grinder_dial.microns}
-                            </div>
-                          </div>
-                          <span style={{ fontSize: '12px', fontWeight: 'bold', background: 'var(--color-crimson)', color: 'var(--on-accent)', padding: '3px 8px', borderRadius: 'var(--r-xs)' }}>
-                            Calibrado 
-                          </span>
-                        </div>
-                      )}
-
-                      {aiRecommendation.grinders && (
-                        <div>
-                          <div style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
-                            Matriz Multimolino Completa:
-                          </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px', fontSize: '12px', borderTop: '1px dashed var(--border-color)', paddingTop: '6px' }}>
-                            {aiRecommendation.grinders.jmax && <div><strong>J-Max:</strong> {String(aiRecommendation.grinders.jmax).split('(')[0]}</div>}
-                            {aiRecommendation.grinders.k_ultra && <div><strong>K-Ultra:</strong> {aiRecommendation.grinders.k_ultra}</div>}
-                            {aiRecommendation.grinders.ode_gen2 && <div><strong>Fellow Ode:</strong> {aiRecommendation.grinders.ode_gen2}</div>}
-                            {aiRecommendation.grinders.comandante && <div><strong>Comandante:</strong> {aiRecommendation.grinders.comandante}</div>}
-                            {(aiRecommendation.grinders.femobook_a2 || aiRecommendation.grinders.femobook) && (
-                              <div><strong>Femobook:</strong> {aiRecommendation.grinders.femobook_a2 || aiRecommendation.grinders.femobook}</div>
-                            )}
-                            {(aiRecommendation.grinders.kingrinder_k6 || aiRecommendation.grinders.kingrinder) && (
-                              <div><strong>Kingrinder:</strong> {aiRecommendation.grinders.kingrinder_k6 || aiRecommendation.grinders.kingrinder}</div>
-                            )}
-                            {aiRecommendation.grinders.timemore && <div><strong>Timemore:</strong> {aiRecommendation.grinders.timemore}</div>}
-                            {aiRecommendation.grinders.baratza && <div><strong>Baratza:</strong> {aiRecommendation.grinders.baratza}</div>}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Sub-Contenido: Física */}
-                  {aiSubTab === 'physics' && aiRecommendation.physics_analysis && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '6px', fontSize: '12px' }}>
-                      {aiRecommendation.physics_analysis.roast_and_density && (
-                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
-                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '12px' }}>Densidad & Tueste:</strong>
-                          <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.roast_and_density}</span>
-                        </div>
-                      )}
-                      {aiRecommendation.physics_analysis.degas_and_rest && (
-                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
-                          <strong style={{ color: 'var(--color-crimson)', display: 'block', fontSize: '12px' }}>⏳ Desgasificación (CO₂):</strong>
-                          <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.degas_and_rest}</span>
-                        </div>
-                      )}
-                      {aiRecommendation.physics_analysis.burr_and_fines && (
-                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
-                          <strong style={{ color: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}><SlidersHorizontal size={11} /> Muelas & Finos:</strong>
-                          <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.burr_and_fines}</span>
-                        </div>
-                      )}
-                      {aiRecommendation.physics_analysis.extraction_strategy && (
-                        <div style={{ background: 'var(--bg-card)', padding: '8px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
-                          <strong style={{ color: 'var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}><Target size={11} /> Estrategia Hidrodinámica:</strong>
-                          <span style={{ color: 'var(--color-text-muted)', lineHeight: '1.3' }}>{aiRecommendation.physics_analysis.extraction_strategy}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
                   {/* Sub-Contenido: Pasos */}
-                  {aiSubTab === 'steps' && aiRecommendation.steps && (
+                  {aiRecommendation.steps && (
                     <ol style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: 'var(--color-text-muted)', lineHeight: '1.4' }}>
                       {aiRecommendation.steps.map((st, i) => <li key={i} style={{ marginBottom: '4px' }}>{st}</li>)}
                     </ol>
@@ -1672,7 +1438,6 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             <GrinderSyncMatrix
               grinderType={grinderType}
               setGrinderType={handleSelectGrinder}
-              currentMicrons={currentMicrons}
               jmaxRot={jmaxRot}
               setJmaxRot={(v) => { setJmaxRot(v); updateManualGrinder('jmax', { rot: v, num: jmaxNum, click: jmaxClick }); }}
               jmaxNum={jmaxNum}
@@ -1697,34 +1462,27 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               getGrindString={getGrindString}
             />
 
-            {/* Evaluacion Sensorial */}
-            <div className="candy-card static" style={{ marginTop: '14px', padding: '14px 12px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>Evaluación Sensorial</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginBottom: '10px' }}>
-                <div>
-                  <label htmlFor="bt-batchdetail-1" className="barista-label">Balance</label>
-                  <select id="bt-batchdetail-1" aria-label="Balance" className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryBalance} onChange={e => setSensoryBalance(e.target.value)}>
-                    <option value="Dulce">Dulce</option>
-                    <option value="Ácido">Ácido</option>
-                    <option value="Amargo">Amargo</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="bt-batchdetail-2" className="barista-label">Cuerpo</label>
-                  <select id="bt-batchdetail-2" aria-label="Cuerpo" className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryBody} onChange={e => setSensoryBody(e.target.value)}>
-                    <option value="Ligero">Ligero</option>
-                    <option value="Medio">Medio</option>
-                    <option value="Sedoso">Sedoso</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="bt-batchdetail-3" className="barista-label">Extracción</label>
-                  <select id="bt-batchdetail-3" aria-label="Extracción" className="candy-input" style={{ padding: '6px 8px', fontSize: '12px', minHeight: '38px' }} value={sensoryExtraction} onChange={e => setSensoryExtraction(e.target.value)}>
-                    <option value="En Punto">En Punto</option>
-                    <option value="Sub">Sub (Agrio)</option>
-                    <option value="Sobre">Sobre (Amargo)</option>
-                  </select>
-                </div>
+            {/* ¿Cómo salió? (un toque) */}
+            <div style={{ marginTop: '16px' }}>
+              <div className="bt-tile-k" id="bt-taste-label" style={{ marginBottom: '8px' }}>¿Cómo salió?</div>
+              <div className="bt-taste" role="radiogroup" aria-labelledby="bt-taste-label">
+                {[
+                  { id: 'Sub', label: 'Ácido', hint: 'Muele más fino', balance: 'Ácido' },
+                  { id: 'En Punto', label: 'Bien', hint: 'Repetir así', balance: 'Dulce' },
+                  { id: 'Sobre', label: 'Amargo', hint: 'Muele más grueso', balance: 'Amargo' }
+                ].map(t => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={sensoryExtraction === t.id}
+                    className={`bt-taste-btn${sensoryExtraction === t.id ? ' is-active' : ''}`}
+                    onClick={() => { setSensoryExtraction(t.id); setSensoryBalance(t.balance); }}
+                  >
+                    {t.label}
+                    <small>{t.hint}</small>
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -1733,7 +1491,6 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               <button
                 type="button"
                 onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(10);
                   handleStartBrewGuide({
                     method,
                     dose_in_g: doseInG,
@@ -1803,13 +1560,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             </div>
           </form>
 
-          {/* Dial-in Calibration Assistant */}
-          <DialInAssistant />
         </div>
       )}
 
-      {/* PESTAÑA 2: HISTORIAL DE RECETAS */}
-      {activeTab === 'history' && (
+      {/* Historial */}
+      <h3 className="bt-block-title">Historial</h3>
+      {(
         <div className="animate-entrance">
           {/* Banner Última Configuración Exitosa */}
           {lastRecipe && (
@@ -1834,46 +1590,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             </div>
           )}
 
-          {/* Sub-selector de vista: Linaje Dial-in vs Lista de Recetas */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', padding: '4px', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
-            <button
-              type="button"
-              className={`cupertino-segmented-btn ${recipeViewMode === 'timeline' ? 'active' : ''}`}
-              style={{ flex: 1, padding: '8px 12px', minHeight: '38px', fontSize: '12px', fontWeight: '700', borderRadius: 'var(--r-control)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', border: 'none', cursor: 'pointer', transition: 'var(--transition-ui)', background: recipeViewMode === 'timeline' ? 'var(--color-crimson)' : 'transparent', color: recipeViewMode === 'timeline' ? '#fff' : 'var(--color-text-muted)' }}
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(6);
-                setRecipeViewMode('timeline');
-              }}
-            >
-              <Target size={14} />
-              <span>Linaje Dial-in</span>
-            </button>
-            <button
-              type="button"
-              className={`cupertino-segmented-btn ${recipeViewMode === 'cards' ? 'active' : ''}`}
-              style={{ flex: 1, padding: '8px 12px', minHeight: '38px', fontSize: '12px', fontWeight: '700', borderRadius: 'var(--r-control)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', border: 'none', cursor: 'pointer', transition: 'var(--transition-ui)', background: recipeViewMode === 'cards' ? 'var(--color-crimson)' : 'transparent', color: recipeViewMode === 'cards' ? '#fff' : 'var(--color-text-muted)' }}
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(6);
-                setRecipeViewMode('cards');
-              }}
-            >
-              <ListOrdered size={14} />
-              <span>Lista de Recetas</span>
-            </button>
-          </div>
-
-          {recipeViewMode === 'timeline' ? (
-            <DialInTimeline
-              recipes={batch?.recipes || []}
-              activeGrinderId={grinderType}
-              onSelectRecipe={(rec) => handleLoadRecipeToForm(rec)}
-              onBrewRecipe={(rec) => handleStartBrewGuide(rec)}
-            />
-          ) : (
+          {(
             Array.isArray(batch?.recipes) && batch.recipes.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {batch.recipes.map(r => (
-                  <div key={r.id} className="candy-card static" style={{ padding: '12px', fontSize: '12px' }}>
+                {batch.recipes.map((r, i) => (
+                  <div key={r.id ?? i} className="candy-card static" style={{ padding: '12px', fontSize: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold' }}>
                       <span>{r.method} ({r.ratio})</span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1904,102 +1625,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         </div>
       )}
 
-      {/* PESTAÑA 3: HERRAMIENTAS BARISTA & NFC */}
-      {activeTab === 'tools' && (
-        <div className="animate-entrance" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {/* Calculadora de Ratio */}
-          <div className="candy-card static" style={{ padding: '18px' }}>
-            <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Calculator size={16} color="var(--color-crimson)" />
-              Calculadora de Ratio & Agua
-            </div>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-              <div className="form-group" style={{ flex: 1, margin: 0 }}>
-                <label htmlFor="bt-batchdetail-5" style={{ fontSize: '12px' }}>Café (g)</label>
-                <input id="bt-batchdetail-5" aria-label="Café (g)" type="number" inputMode="decimal" step="0.5" className="candy-input" value={calcDose} onChange={(e) => { const d = parseFloat(e.target.value) || 0; setCalcDose(d); setCalcWater(Math.round(d * calcRatio)); }} />
-              </div>
-              <div style={{ fontSize: '16px', fontWeight: 'bold', paddingBottom: '8px' }}>×</div>
-              <div className="form-group" style={{ flex: 1, margin: 0 }}>
-                <label htmlFor="bt-batchdetail-6" style={{ fontSize: '12px' }}>Ratio 1:</label>
-                <input id="bt-batchdetail-6" aria-label="Ratio 1:" type="number" inputMode="decimal" step="0.5" className="candy-input" value={calcRatio} onChange={(e) => { const r = parseFloat(e.target.value) || 0; setCalcRatio(r); setCalcWater(Math.round(calcDose * r)); }} />
-              </div>
-              <div style={{ fontSize: '16px', fontWeight: 'bold', paddingBottom: '8px' }}>=</div>
-              <div className="form-group" style={{ flex: 1, margin: 0 }}>
-                <label htmlFor="bt-batchdetail-7" style={{ fontSize: '12px' }}>Agua (g)</label>
-                <input id="bt-batchdetail-7" aria-label="Agua (g)" type="number" inputMode="decimal" className="candy-input" value={calcWater} onChange={(e) => { const w = parseFloat(e.target.value) || 0; setCalcWater(w); if (calcDose > 0) setCalcRatio(parseFloat((w / calcDose).toFixed(1))); }} />
-              </div>
-            </div>
-            <button type="button" className="btn-candy accent" style={{ width: '100%', marginTop: '10px', padding: '6px', fontSize: '12px' }} onClick={() => { setDoseInG(calcDose); setRatioVal(calcRatio); setActiveTab('brew'); if (showToast) showToast('Valores transferidos a la pestaña de preparación.', { type: 'success' }); }}>
-              Transferir a mi receta
-            </button>
-          </div>
-
-          <div className="candy-card static" style={{ padding: '14px' }}>
-            <div style={{ fontWeight: 'bold', fontSize: '12px', marginBottom: '8px', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <SlidersHorizontal size={14} />
-              <span>Equivalencias de Molienda</span>
-            </div>
-            <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 10px 0' }}>
-              Comparativa física entre molinos manuales y eléctricos de precisión:
-            </p>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse', textAlign: 'left' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--color-text-muted)' }}>
-                    <th style={{ padding: '4px 6px' }}>Método</th>
-                    <th style={{ padding: '4px 6px' }}>1Zpresso J-Max<br/><span style={{ fontWeight: 'normal', fontSize: '12px' }}>(8.8µm)</span></th>
-                    <th style={{ padding: '4px 6px' }}>Femobook A2<br/><span style={{ fontWeight: 'normal', fontSize: '12px' }}>(18µm • 40c/r)</span></th>
-                    <th style={{ padding: '4px 6px' }}>Comandante C40<br/><span style={{ fontWeight: 'normal', fontSize: '12px' }}>(30µm)</span></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr style={{ borderBottom: '1px dashed var(--border-color)' }}>
-                    <td style={{ padding: '6px', fontWeight: 'bold' }}>Espresso</td>
-                    <td style={{ padding: '6px' }}>1.2.5 – 1.4.2</td>
-                    <td style={{ padding: '6px', color: 'var(--color-crimson)', fontWeight: 'bold' }}>3 – 10 clics</td>
-                    <td style={{ padding: '6px' }}>8 – 12 clics</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px dashed var(--border-color)' }}>
-                    <td style={{ padding: '6px', fontWeight: 'bold' }}>Moka / AeroPress</td>
-                    <td style={{ padding: '6px' }}>1.8.0 – 2.1.0</td>
-                    <td style={{ padding: '6px', color: 'var(--color-crimson)', fontWeight: 'bold' }}>18 – 45 clics</td>
-                    <td style={{ padding: '6px' }}>14 – 18 clics</td>
-                  </tr>
-                  <tr style={{ borderBottom: '1px dashed var(--border-color)' }}>
-                    <td style={{ padding: '6px', fontWeight: 'bold' }}>V60 / Filtrado</td>
-                    <td style={{ padding: '6px' }}>2.3.0 – 2.7.0</td>
-                    <td style={{ padding: '6px', color: 'var(--color-crimson)', fontWeight: 'bold' }}>50 – 75 clics (1.5R)</td>
-                    <td style={{ padding: '6px' }}>22 – 26 clics</td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '6px', fontWeight: 'bold' }}>Prensa / Cupping</td>
-                    <td style={{ padding: '6px' }}>3.0.0 – 3.5.0</td>
-                    <td style={{ padding: '6px', color: 'var(--color-crimson)', fontWeight: 'bold' }}>85 – 110 clics</td>
-                    <td style={{ padding: '6px' }}>28 – 34 clics</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Semáforo Desgasificación */}
-          {batch.roast_date && batch.freeze_date && (
-            <div className="candy-card static" style={{ padding: '12px', borderLeft: `4px solid ${degasStatus.color}` }}>
-              <div style={{ fontWeight: 'bold', fontSize: '12px', color: degasStatus.color }}>
-                {degasStatus.label} ({restingDays} Días de Reposo)
-              </div>
-              <p style={{ fontSize: '12px', margin: '4px 0 0 0', color: 'var(--color-text-muted)' }}>
-                {degasStatus.description}
-              </p>
-            </div>
-          )}
-
-          {/* Tarjeta Vincular NFC & Copiar URL */}
-          <div className="candy-card static" style={{ padding: '14px' }}>
-            <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Nfc size={16} color="var(--color-crimson)" />
-              Vinculación NFC & URL Directa
-            </div>
+      {/* Enlace / NFC (plegado) */}
+      <details className="bt-more" style={{ marginBottom: '24px' }}>
+        <summary><Nfc size={16} aria-hidden="true" /> Enlace y etiqueta NFC</summary>
+        <div style={{ paddingTop: '8px' }}>
             <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 10px 0' }}>
               URL directa de <strong>{batch.name}</strong> para Atajos de iOS o etiquetas NFC:
             </p>
@@ -2007,6 +1636,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               <input 
                 type="text" 
                 readOnly 
+                aria-label="Enlace directo del lote"
                 className="candy-input" 
                 style={{ flex: 1, fontSize: '12px', margin: 0, padding: '6px' }}
                 value={`${window.location.origin}/beantag/?batch=${encodeURIComponent(batch.id)}&action=new_brew`}
@@ -2021,9 +1651,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 Copiar URL
               </button>
             </div>
-          </div>
-        </div>
-      )}
+                  </div>
+      </details>
 
       {/* Modal de Compartir Ticket POS & Carta de Cafés */}
       {shareImage && (
@@ -2051,264 +1680,13 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             overflowY: 'auto',
             WebkitOverflowScrolling: 'touch'
           }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
-              
-              {/* Row 1: Scope Selector (Ficha de este café vs Sticker Story vs Carta Completa) */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
-                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShareScope('single');
-                      handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'single', stickerTransparent);
-                    }}
-                    style={{
-                      padding: '5px 8px',
-                      fontSize: '12px',
-                      borderRadius: 'var(--r-control)',
-                      border: shareScope === 'single' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                      backgroundColor: shareScope === 'single' ? 'var(--bg-card)' : 'var(--bg-canvas)',
-                      fontWeight: shareScope === 'single' ? '800' : '500',
-                      color: shareScope === 'single' ? 'var(--color-crimson)' : 'var(--color-text)',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <Share2 size={12} /> Ficha
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShareScope('sticker');
-                      handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', stickerTransparent);
-                    }}
-                    style={{
-                      padding: '5px 8px',
-                      fontSize: '12px',
-                      borderRadius: 'var(--r-control)',
-                      border: shareScope === 'sticker' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                      backgroundColor: shareScope === 'sticker' ? 'var(--bg-card)' : 'var(--bg-canvas)',
-                      fontWeight: shareScope === 'sticker' ? '800' : '500',
-                      color: shareScope === 'sticker' ? 'var(--color-crimson)' : 'var(--color-text)',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <ImageIcon size={12} /> Sticker Story
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShareScope('menu');
-                      handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'menu', stickerTransparent);
-                    }}
-                    style={{
-                      padding: '5px 8px',
-                      fontSize: '12px',
-                      borderRadius: 'var(--r-control)',
-                      border: shareScope === 'menu' ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                      backgroundColor: shareScope === 'menu' ? 'var(--bg-card)' : 'var(--bg-canvas)',
-                      fontWeight: shareScope === 'menu' ? '800' : '500',
-                      color: shareScope === 'menu' ? 'var(--color-crimson)' : 'var(--color-text)',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <Coffee size={12} /> Carta ({batches && batches.length > 0 ? batches.length : 1})
-                    </span>
-                  </button>
-                </div>
-
-                <button aria-label="Cerrar" 
-                  type="button" 
-                  onClick={() => setShareImage(null)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--color-text-muted)' }}
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Size: Instagram feed 4:5 or story 9:16 (single card only) */}
-              {shareScope === 'single' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '100%', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>TAMAÑO:</span>
-                  {[{ id: 'feed', label: 'Feed 4:5' }, { id: 'story', label: 'Story 9:16' }].map(f => (
-                    <button
-                      key={f.id}
-                      type="button"
-                      aria-pressed={cardFormat === f.id}
-                      onClick={() => {
-                        setPreferredCardFormat(f.id);
-                        setCardFormat(f.id);
-                        handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'single', stickerTransparent);
-                      }}
-                      style={{
-                        padding: '3px 7px',
-                        fontSize: '12px',
-                        borderRadius: 'var(--r-xs)',
-                        border: cardFormat === f.id ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                        backgroundColor: cardFormat === f.id ? 'var(--bg-header)' : 'var(--bg-card)',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        color: cardFormat === f.id ? 'var(--color-crimson)' : 'var(--color-text)'
-                      }}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Row 2: Sub-options (Only when scope is single or sticker) */}
-              {shareScope === 'sticker' && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '6px', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>FORMATO:</span>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        setStickerOrientation('horizontal');
-                        handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', stickerTransparent, 'horizontal');
-                      }}
-                      style={{
-                        padding: '3px 7px',
-                        fontSize: '12px',
-                        borderRadius: 'var(--r-xs)',
-                        border: stickerOrientation === 'horizontal' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                        backgroundColor: stickerOrientation === 'horizontal' ? 'var(--bg-header)' : 'var(--bg-card)',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        color: stickerOrientation === 'horizontal' ? 'var(--color-crimson)' : 'var(--color-text)'
-                      }}
-                    >
-                      Horizontal
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        setStickerOrientation('vertical');
-                        handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', stickerTransparent, 'vertical');
-                      }}
-                      style={{
-                        padding: '3px 7px',
-                        fontSize: '12px',
-                        borderRadius: 'var(--r-xs)',
-                        border: stickerOrientation === 'vertical' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                        backgroundColor: stickerOrientation === 'vertical' ? 'var(--bg-header)' : 'var(--bg-card)',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        color: stickerOrientation === 'vertical' ? 'var(--color-crimson)' : 'var(--color-text)'
-                      }}
-                    >
-                      Vertical
-                    </button>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>FONDO:</span>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        setStickerTransparent(false);
-                        handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', false, stickerOrientation);
-                      }}
-                      style={{
-                        padding: '3px 7px',
-                        fontSize: '12px',
-                        borderRadius: 'var(--r-xs)',
-                        border: !stickerTransparent ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                        backgroundColor: !stickerTransparent ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)',
-                        color: !stickerTransparent ? 'var(--color-crimson)' : 'var(--color-text)',
-                        fontWeight: 'bold',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      ⬛ Sólido
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        setStickerTransparent(true);
-                        handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', true, stickerOrientation);
-                      }}
-                      style={{
-                        padding: '3px 7px',
-                        fontSize: '12px',
-                        borderRadius: 'var(--r-xs)',
-                        border: stickerTransparent ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                        backgroundColor: stickerTransparent ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)',
-                        color: stickerTransparent ? 'var(--color-crimson)' : 'var(--color-text)',
-                        fontWeight: 'bold',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Transp.
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {(shareScope === 'single' || shareScope === 'sticker') && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-text)' }}>
-                    {shareScope === 'sticker' ? 'CONTENIDO DEL STICKER:' : batch?.name}
-                  </span>
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <button 
-                      type="button" 
-                      onClick={() => { setShareIncludeRecipe(false); handleShareBatchCard(false, shareTemplate, shareScope, stickerTransparent, stickerOrientation); }}
-                      style={{ padding: '3px 8px', fontSize: '12px', borderRadius: 'var(--r-xs)', border: !shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: !shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
-                    >
-                      Perfil & Notas
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => { setShareIncludeRecipe(true); handleShareBatchCard(true, shareTemplate, shareScope, stickerTransparent, stickerOrientation); }}
-                      style={{ padding: '3px 8px', fontSize: '12px', borderRadius: 'var(--r-xs)', border: shareIncludeRecipe ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)', backgroundColor: shareIncludeRecipe ? 'rgba(188, 84, 73, 0.08)' : 'var(--bg-card)', color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)', fontWeight: 'bold', cursor: 'pointer' }}
-                    >
-                      Telemetría / Receta
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Aesthetic Template Selector */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
-                {[
-                  { id: 'stretch', label: 'Stretch' },
-                  { id: 'squishy', label: 'Squishy' },
-                  { id: 'zine', label: 'Zine' },
-                  { id: 'vhs', label: 'VHS' },
-                  { id: 'lata', label: 'Lata' }
-                ].map(t => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => {
-                      setShareTemplate(t.id);
-                      try { localStorage.setItem('beantag-share-style', t.id); } catch (e) {}
-                      handleShareBatchCard(shareIncludeRecipe, t.id, shareScope, stickerTransparent, stickerOrientation);
-                    }}
-                    style={{
-                      flex: '1 1 auto',
-                      padding: '5px 8px',
-                      fontSize: '12px',
-                      borderRadius: 'var(--r-control)',
-                      border: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
-                      backgroundColor: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? 'var(--bg-card)' : 'transparent',
-                      fontWeight: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? '800' : '600',
-                      color: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <CardStylePicker
+              value={shareTemplate || DEFAULT_CARD_STYLE}
+              onChange={(id) => {
+                setShareTemplate(id);
+                handleShareBatchCard(shareIncludeRecipe, id, shareScope, stickerTransparent, stickerOrientation);
+              }}
+            />
 
             <div style={{
               textAlign: 'center',

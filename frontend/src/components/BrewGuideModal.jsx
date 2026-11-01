@@ -440,9 +440,9 @@ export default function BrewGuideModal({
   const [isMuted, setIsMuted] = useState(false);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(() => {
     try {
-      return typeof localStorage !== 'undefined' ? localStorage.getItem('beantag-voice-enabled') !== 'false' : true;
+      return typeof localStorage !== 'undefined' ? localStorage.getItem('beantag-voice-enabled') === 'true' : false; // KISS: voz apagada salvo que el usuario la active
     } catch (_) {
-      return true;
+      return false;
     }
   });
 

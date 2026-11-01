@@ -9,12 +9,6 @@ const NAV_ITEMS = [
   { id: 'settings', label: 'Perfil', icon: User },
 ];
 
-const tap = () => {
-  if (navigator.vibrate) {
-    try { navigator.vibrate(6); } catch (e) {}
-  }
-};
-
 export default function BottomNav({ currentView, setCurrentView }) {
   const showFab = currentView === 'inventory';
 
@@ -25,7 +19,7 @@ export default function BottomNav({ currentView, setCurrentView }) {
           type="button"
           className="bt-fab"
           aria-label="Registrar nuevo café"
-          onClick={() => { tap(); setCurrentView('creator'); }}
+          onClick={() => setCurrentView('creator')}
         >
           <Plus size={24} strokeWidth={2.2} aria-hidden="true" />
         </button>
@@ -39,7 +33,7 @@ export default function BottomNav({ currentView, setCurrentView }) {
               type="button"
               className={`bt-nav-btn${isActive ? ' is-active' : ''}`}
               aria-current={isActive ? 'page' : undefined}
-              onClick={() => { tap(); setCurrentView(id); }}
+              onClick={() => setCurrentView(id)}
             >
               <Icon size={20} strokeWidth={isActive ? 2.2 : 1.9} aria-hidden="true" />
               <span className="bt-nav-label">{label}</span>

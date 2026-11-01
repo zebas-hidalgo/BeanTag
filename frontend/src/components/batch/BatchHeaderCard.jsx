@@ -1,6 +1,6 @@
 import React from 'react';
 import { Snowflake, Mountain, MinusCircle, Edit, Trash2, Share2, MapPin, Sprout, Cog } from 'lucide-react';
-import { getScaColorForNote, getScaIcon, stripEmojis } from '../../utils/scaIcons';
+import { stripEmojis } from '../../utils/scaIcons';
 import { getRoast, getDegassing, roastStyle } from '../../utils/roast';
 
 // V5 «Tueste»: hero tinted by the batch's roast + bento tiles for the key numbers.
@@ -37,16 +37,8 @@ export default function BatchHeaderCard({
     ? isFrozen
     : Boolean(batch.freeze_date && String(batch.freeze_date).trim() !== '');
 
-  const degas = getDegassing({ ...batch, freeze_date: isBatchFrozen ? batch.freeze_date : null });
-  const restDays = degas ? degas.day : null; // same source as the inventory card
-  const degasTone = degas ? (isBatchFrozen ? 'is-cryo' : degas.status === 'late' ? 'is-warn' : degas.status === 'ideal' ? 'is-ok' : '') : '';
-  const degasNote = !degas ? 'Sin fecha de tueste'
-    : isBatchFrozen ? 'Pausado en cava a −18 °C'
-    : degas.status === 'resting' ? 'Aún desgasificando'
-    : degas.status === 'late' ? 'Pasó la ventana ideal'
-    : 'En ventana ideal';
+  const rest = getDegassing({ ...batch, freeze_date: isBatchFrozen ? batch.freeze_date : null });
 
-  const tubeSlots = Math.min(Math.max(totalDoses, remainingDoses), 24);
 
   return (
     <div style={{ marginBottom: '16px' }}>
@@ -68,104 +60,45 @@ export default function BatchHeaderCard({
           {batch.origin && <span className="bt-hero-chip"><MapPin size={13} aria-hidden="true" />{batch.origin}</span>}
           {batch.variety && <span className="bt-hero-chip"><Sprout size={13} aria-hidden="true" />{batch.variety}</span>}
           {batch.process && <span className="bt-hero-chip"><Cog size={13} aria-hidden="true" />{batch.process}</span>}
-          {batch.altitude && <span className="bt-hero-chip"><Mountain size={13} aria-hidden="true" />{batch.altitude}</span>}
-          {isBatchFrozen && <span className="bt-hero-chip"><Snowflake size={13} aria-hidden="true" />Cava −18 °C</span>}
         </div>
       </header>
 
       <div className="bt-bento">
         <div className="bt-tile" style={roastStyle(batch.roast_level)}>
           <span className="bt-tile-k">Tueste</span>
-          <span className="bt-tile-v">{roast.label}</span>
-          <span className="bt-tile-s">Perfil de tueste</span>
-          <div className="bt-roast-ramp" aria-hidden="true"><i style={{ left: `${roast.pos}%` }} /></div>
+          <span className="bt-tile-v bt-tile-word"><span className="bt-roast-dot" aria-hidden="true" />{roast.label}</span>
         </div>
 
         <div className="bt-tile">
           <span className="bt-tile-k">Reposo</span>
-          <span className="bt-tile-v">{restDays !== null ? <>{restDays}<small> días</small></> : '—'}</span>
-          <span className={`bt-tile-s ${degasTone}`}>{degasNote}</span>
+          <span className={`bt-tile-v bt-tile-word${rest?.tone ? ` is-${rest.tone}` : ''}`}>{rest ? rest.word : '—'}</span>
+          {rest && <span className="bt-tile-s">{rest.frozen ? `congelado al día ${rest.day}` : `día ${rest.day}`}</span>}
         </div>
 
         <div className="bt-tile span-2">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <span className="bt-tile-k">{isBag ? 'Bolsa de Café' : 'Portatubos'}</span>
+              <span className="bt-tile-k">Quedan</span>
               <span className="bt-tile-v">
-                {isBag ? (
-                  <>{Math.round(remainingGrams)}<small> g / {Math.round(totalGrams)} g · ~{remainingDoses} {remainingDoses === 1 ? 'taza' : 'tazas'}</small></>
-                ) : (
-                  <>{remainingDoses}<small> / {totalDoses} tubos · {Math.round(remainingGrams)} g</small></>
-                )}
+                {isBag
+                  ? <>{Math.round(remainingGrams)} g<small> de {Math.round(totalGrams)} g</small></>
+                  : <>{remainingDoses}<small> de {totalDoses} tubos</small></>}
               </span>
             </div>
             {isOwner && (isBag ? remainingGrams > 0 : remainingDoses > 0) && (
-              <button
-                type="button"
-                className="barista-btn barista-btn-secondary"
-                onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(8);
-                  onSubtractDose();
-                }}
-              >
+              <button type="button" className="barista-btn barista-btn-secondary" onClick={onSubtractDose}>
                 <MinusCircle size={16} aria-hidden="true" />
-                <span>{isBag ? `Restar dosis (~${Math.round(doseWeightNum)}g)` : 'Restar 1 tubo'}</span>
+                <span>{isBag ? 'Usé una dosis' : 'Usé un tubo'}</span>
               </button>
             )}
           </div>
-          {isBag ? (
-            <div style={{ marginTop: '12px' }}>
-              <div style={{ height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '999px', overflow: 'hidden' }}>
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${Math.min(100, Math.max(0, totalGrams > 0 ? (remainingGrams / totalGrams) * 100 : 0))}%`,
-                    background: 'var(--roast-color, var(--color-crimson))',
-                    borderRadius: '999px',
-                    transition: 'width 0.3s ease'
-                  }}
-                />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--muted, #888)', marginTop: '4px' }}>
-                <span>Quedan {Math.round(remainingGrams)} g en bolsa</span>
-                <span>{totalGrams > 0 ? Math.round((remainingGrams / totalGrams) * 100) : 0}%</span>
-              </div>
-            </div>
-          ) : (
-            tubeSlots > 0 && (
-              <div className="bt-tubes" style={roastStyle(batch.roast_level)} aria-hidden="true">
-                {Array.from({ length: tubeSlots }, (_, i) => <i key={i} className={i < remainingDoses ? 'is-full' : ''} />)}
-              </div>
-            )
-          )}
         </div>
 
         {scaTags.length > 0 && (
           <div className="bt-tile span-2">
-            <span className="bt-tile-k">Notas de cata</span>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {scaTags.map((tag, i) => {
-                const colors = getScaColorForNote(tag);
-                return (
-                  <span
-                    key={i}
-                    style={{
-                      padding: '5px 10px',
-                      backgroundColor: colors.bg,
-                      border: `1px solid ${colors.border}`,
-                      color: colors.text,
-                      borderRadius: 'var(--r-pill)',
-                      fontSize: 'var(--fs-12)',
-                      fontWeight: 500,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px'
-                    }}
-                  >
-                    {getScaIcon(tag, 13, 2)} {stripEmojis(tag)}
-                  </span>
-                );
-              })}
+            <span className="bt-tile-k">Notas</span>
+            <div className="bt-notes">
+              {scaTags.map((tag, i) => <span key={i} className="bt-note">{stripEmojis(tag)}</span>)}
             </div>
           </div>
         )}
@@ -175,10 +108,7 @@ export default function BatchHeaderCard({
         <button
           type="button"
           className="barista-btn barista-btn-secondary"
-          onClick={() => {
-            if (navigator.vibrate) navigator.vibrate(6);
-            onOpenCardModal();
-          }}
+          onClick={onOpenCardModal}
         >
           <Share2 size={16} aria-hidden="true" />
           <span>Tarjeta</span>
@@ -188,10 +118,7 @@ export default function BatchHeaderCard({
             <button
               type="button"
               className="barista-btn barista-btn-secondary"
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(6);
-                onEditBatch();
-              }}
+              onClick={onEditBatch}
             >
               <Edit size={16} aria-hidden="true" />
               <span>Editar</span>
@@ -201,10 +128,7 @@ export default function BatchHeaderCard({
               className="barista-btn barista-btn-ghost"
               aria-label="Eliminar lote"
               title="Eliminar lote"
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(8);
-                onDeleteBatch();
-              }}
+              onClick={onDeleteBatch}
               style={{ flex: '0 0 auto', color: 'var(--bad)' }}
             >
               <Trash2 size={16} aria-hidden="true" />

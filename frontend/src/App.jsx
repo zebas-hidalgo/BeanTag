@@ -135,7 +135,6 @@ export default function App() {
     }
 
     setShowAuthModal(false);
-    showToast(`¡Bienvenido, ${userData?.name || 'Barista'}! `, { type: 'success', duration: 3000 });
     fetchBatches(authToken);
   };
 
@@ -267,10 +266,6 @@ export default function App() {
         setLastSubtractedBatch(id);
         showToast('Dosis restada con éxito.', { type: 'success', duration: 5000, showUndo: true });
         
-        if (navigator.vibrate) {
-          navigator.vibrate([70, 50, 100]);
-        }
-
         const badge = document.getElementById('doses-detail-badge');
         if (badge) {
           badge.classList.remove('bounce-pop');

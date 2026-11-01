@@ -32,7 +32,6 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
     } catch (e) {}
     if (showToast) {
       const names = { auto: 'Automático', light: 'Crema', dark: 'Tueste' };
-      showToast(`Apariencia: ${names[theme] || 'Automático'}`, { type: 'success', duration: 2000 });
     }
   };
 
@@ -214,9 +213,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       if (data.recommended_batch_id === null) {
         if (showToast) showToast('Sin dosis disponibles en inventario. Repón stock para sugerencias.', { type: 'info', duration: 3500 });
       } else if (data._source === 'barista_fallback') {
-        if (showToast) showToast('Sommelier Local listo (Modo Cero Desconexión)', { type: 'success', duration: 3000 });
       } else {
-        if (showToast) showToast('¡Recomendación del Sommelier lista! ', { type: 'success', duration: 2500 });
       }
     } catch (err) {
       if (showToast) showToast('Error al conectar con el Sommelier IA.', { type: 'error', duration: 3000 });
@@ -239,16 +236,12 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       localStorage.setItem('beantag-inventory-style', style);
       window.dispatchEvent(new Event('beantag-inventory-style-changed'));
     } catch (e) {}
-    if (navigator.vibrate) {
-      try { navigator.vibrate(8); } catch (err) {}
-    }
     const names = {
       editorial: 'Editorial (Nordic)',
       list: 'Lista (Cupertino)',
       archive: 'Archivo (Tokyo Lab)'
     };
     if (showToast) {
-      showToast(`Estilo de inventario: ${names[style] || style}`, { type: 'success', duration: 2000 });
     }
   };
 
@@ -476,15 +469,132 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         Ajustes y Configuración
       </h2>
 
+      {/* Tema de la Aplicación (V5: Automático / Crema / Tueste) */}
+      <section className="bt-section" aria-labelledby="bt-theme-title">
+        <div className="bt-section-head">
+          <h4 id="bt-theme-title" className="bt-section-title">
+            <Palette size={16} aria-hidden="true" />
+            <span>Apariencia</span>
+          </h4>
+          <p className="bt-section-desc">Crema para el día, Tueste para la noche. Las extracciones usan siempre el Modo Barra de alto contraste.</p>
+        </div>
+        <div className="bt-seg" role="radiogroup" aria-label="Tema de la aplicación">
+          {[
+            { id: 'auto', label: 'Automático', Icon: SunMoon },
+            { id: 'light', label: 'Crema', Icon: Sun },
+            { id: 'dark', label: 'Tueste', Icon: Moon }
+          ].map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              role="radio"
+              aria-checked={appTheme === id}
+              className={`bt-seg-btn${appTheme === id ? ' is-active' : ''}`}
+              onClick={() => handleThemeChange(id)}
+            >
+              <Icon size={16} aria-hidden="true" />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Preferencia de Molino Predeterminado */}
+      <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
+        <h4 className="bt-section-title" style={{ margin: '0 0 4px 0' }}>
+          Molino Predeterminado
+        </h4>
+        <p className="bt-section-desc" style={{ marginBottom: '12px' }}>
+          Selecciona tu molino principal para precargar sus diales y física en cada nueva receta.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '8px' }}>
+          {GRINDERS.map((grinder) => {
+            const isActive = defaultGrinder === grinder.id;
+            return (
+              <button
+                key={grinder.id}
+                type="button"
+                onClick={() => { 
+                  setDefaultGrinder(grinder.id); 
+                  localStorage.setItem('default-grinder', grinder.id); 
+                  if (showToast) showToast(`Molino predeterminado: ${grinder.name}`, { type: 'info', duration: 2000 }); 
+                }}
+                style={{
+                  minHeight: '52px',
+                  padding: '8px 6px',
+                  borderRadius: 'var(--r-control)',
+                  border: isActive ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
+                  backgroundColor: isActive ? 'var(--bg-header)' : 'var(--bg-card)',
+                  color: 'var(--color-text)',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  gap: '3px',
+                  transition: 'var(--transition-ui)'
+                }}
+              >
+                <strong style={{ fontSize: '12px' }}>{grinder.name}</strong>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Backup and restore section */}
+      <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
+        <h4 className="bt-section-title" style={{ margin: '0 0 8px 0' }}>
+          Copia de Seguridad
+        </h4>
+        <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 16px 0', lineHeight: 1.4 }}>
+          Exporta tu bitácora o restaura un respaldo en cualquier dispositivo.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button 
+              className="btn-candy" 
+              style={{ margin: 0, fontSize: '12px', padding: '10px 14px', minHeight: '44px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
+              onClick={handleExportBackup}
+            >
+              <Download size={16} strokeWidth={2.5} />
+              JSON Backup
+            </button>
+            <button 
+              className="btn-candy" 
+              style={{ margin: 0, fontSize: '12px', padding: '10px 14px', minHeight: '44px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
+              onClick={handleExportCsv}
+            >
+              <FileSpreadsheet size={16} strokeWidth={2.5} />
+              Exportar CSV
+            </button>
+          </div>
+          <label 
+            className="btn-candy primary" 
+            style={{ margin: 0, fontSize: '12px', padding: '12px 14px', minHeight: '44px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', boxSizing: 'border-box', fontWeight: 'bold' }}
+          >
+            <Upload size={18} strokeWidth={2.5} />
+            Cargar Respaldo JSON
+            <input 
+              type="file" 
+              accept=".json" 
+              onChange={handleImportBackup} 
+              style={{ display: 'none' }} 
+            />
+          </label>
+        </div>
+      </div>
+
       {/* ✨ Herramientas de Barista (Sommelier IA & Carta de Cafés) */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
         <div>
           <h4 className="bt-section-title" style={{ margin: '0 0 4px 0' }}>
             <Sparkles size={15} />
-            <span>Herramientas de Barista</span>
+            <span>Carta de cafés</span>
           </h4>
           <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 14px 0' }}>
-            Asistente inteligente y opciones para compartir tu carta de cafés
+            Comparte lo que tienes en la cava o pide una sugerencia.
           </p>
         </div>
 
@@ -613,36 +723,10 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         )}
       </div>
 
-      {/* Tema de la Aplicación (V5: Automático / Crema / Tueste) */}
-      <section className="bt-section" aria-labelledby="bt-theme-title">
-        <div className="bt-section-head">
-          <h4 id="bt-theme-title" className="bt-section-title">
-            <Palette size={16} aria-hidden="true" />
-            <span>Apariencia</span>
-          </h4>
-          <p className="bt-section-desc">Crema para el día, Tueste para la noche. Las extracciones usan siempre el Modo Barra de alto contraste.</p>
-        </div>
-        <div className="bt-seg" role="radiogroup" aria-label="Tema de la aplicación">
-          {[
-            { id: 'auto', label: 'Automático', Icon: SunMoon },
-            { id: 'light', label: 'Crema', Icon: Sun },
-            { id: 'dark', label: 'Tueste', Icon: Moon }
-          ].map(({ id, label, Icon }) => (
-            <button
-              key={id}
-              type="button"
-              role="radio"
-              aria-checked={appTheme === id}
-              className={`bt-seg-btn${appTheme === id ? ' is-active' : ''}`}
-              onClick={() => handleThemeChange(id)}
-            >
-              <Icon size={16} aria-hidden="true" />
-              <span>{label}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-
+      {/* Avanzado (plegado): IA y NFC */}
+      <details className="bt-more bt-section">
+        <summary>Avanzado: inteligencia artificial y NFC</summary>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', paddingTop: '8px' }}>
       {/* Configuración de Inteligencia Artificial */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
         <div>
@@ -651,7 +735,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               Configuración de Inteligencia Artificial
             </h4>
             <span style={{ fontSize: '12px', background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '3px 8px', borderRadius: 'var(--r-control)', fontWeight: '700', border: '1px solid var(--border-color)' }}>
-              {aiProvider === 'groq' ? `GROQ • ${groqModel.replace('openai/', '').toUpperCase()}` : `GEMINI • ${selectedModel.toUpperCase()}`}
+              {aiProvider === 'groq' ? 'Groq' : `GEMINI • ${selectedModel.toUpperCase()}`}
             </span>
           </div>
           <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 14px 0', lineHeight: 1.4 }}>
@@ -659,59 +743,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
           </p>
         </div>
 
-        {/* Upper segmented pills control */}
-        <div style={{ display: 'flex', gap: '6px', background: 'var(--bg-canvas)', padding: '4px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)', marginBottom: '16px' }}>
-          <button
-            type="button"
-            onClick={() => handleProviderChange('groq')}
-            style={{
-              flex: 1,
-              padding: '8px 12px',
-              fontSize: '12px',
-              fontWeight: '700',
-              border: 'none',
-              borderRadius: 'var(--r-control)',
-              background: aiProvider === 'groq' ? 'var(--bg-card)' : 'transparent',
-              color: aiProvider === 'groq' ? 'var(--color-crimson)' : 'var(--color-text-muted)',
-              boxShadow: aiProvider === 'groq' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              transition: 'var(--transition-ui)'
-            }}
-          >
-            <Zap size={14} strokeWidth={2.2} />
-            <span>Groq (LPU Ultra-Rápido)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleProviderChange('gemini')}
-            style={{
-              flex: 1,
-              padding: '8px 12px',
-              fontSize: '12px',
-              fontWeight: '700',
-              border: 'none',
-              borderRadius: 'var(--r-control)',
-              background: aiProvider === 'gemini' ? 'var(--bg-card)' : 'transparent',
-              color: aiProvider === 'gemini' ? 'var(--color-crimson)' : 'var(--color-text-muted)',
-              boxShadow: aiProvider === 'gemini' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              transition: 'var(--transition-ui)'
-            }}
-          >
-            <Cpu size={14} strokeWidth={2.2} />
-            <span>Google Gemini</span>
-          </button>
-        </div>
-
-        {aiProvider === 'groq' ? (
+        {/* KISS: un solo proveedor (Groq); sin clave funciona el motor offline */}
+        {(
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {/* Groq API Key Input + Action Buttons */}
             <div>
@@ -810,262 +843,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 </div>
               </div>
             )}
-
-            {/* Model Selector Dropdown for Groq */}
-            <div>
-              <label htmlFor="bt-settings-2" className="barista-label" style={{ marginBottom: '6px' }}>
-                Modelo de Inteligencia Artificial (Groq)
-              </label>
-              <select id="bt-settings-2" aria-label="Modelo de Inteligencia Artificial (Groq)" 
-                className="candy-input" 
-                value={groqModel} 
-                onChange={(e) => handleGroqModelChange(e.target.value)}
-                style={{ fontSize: '12px', padding: '10px 12px', minHeight: '44px', width: '100%' }}
-              >
-                <option value="openai/gpt-oss-120b">GPT OSS 120B • Razonamiento Avanzado & Barista (Recomendado)</option>
-                <option value="openai/gpt-oss-20b">GPT OSS 20B • Ultrarrápido (~140ms)</option>
-                <option value="qwen/qwen3.8-27b">Qwen 3.8 27B • Multimodal Visión & Texto (~45ms)</option>
-              </select>
-            </div>
-
-            <a 
-              href="https://console.groq.com/keys" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              style={{ fontSize: '12px', color: 'var(--color-crimson)', textDecoration: 'underline', fontWeight: 'bold' }}
-            >
-              Consigue tu clave gratuita sin tarjeta en console.groq.com →
-            </a>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {/* API Key Input + Action Buttons */}
-            <div>
-              <label htmlFor="bt-settings-3" className="barista-label" style={{ marginBottom: '6px' }}>Clave API de Google AI Studio</label>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch', flexWrap: 'wrap' }}>
-                <input id="bt-settings-3" aria-label="Introduce tu clave API (AIzaSy...)" 
-                  type="password" 
-                  className="candy-input" 
-                  value={apiKey} 
-                  onChange={(e) => {
-                    setApiKey(e.target.value);
-                    localStorage.setItem('gemini-api-key', e.target.value);
-                  }} 
-                  placeholder="Introduce tu clave API (AIzaSy...)"
-                  style={{ flex: 1, boxSizing: 'border-box', fontFamily: 'var(--font-mono)', minWidth: '180px', minHeight: '44px', fontSize: '13px' }}
-                />
-                <button 
-                  onClick={handleSaveKey} 
-                  className="btn-candy primary"
-                  style={{ margin: 0, padding: '10px 18px', fontSize: '13px', whiteSpace: 'nowrap', minHeight: '44px', fontWeight: 'bold' }}
-                >
-                  Guardar
-                </button>
-                <button 
-                  onClick={handleTestGemini} 
-                  disabled={testingGemini}
-                  className="btn-candy"
-                  style={{ 
-                    margin: 0, 
-                    padding: '10px 16px', 
-                    fontSize: '13px', 
-                    whiteSpace: 'nowrap', 
-                    minHeight: '44px', 
-                    fontWeight: 'bold',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  {testingGemini ? <Loader2 size={16} className="spin" /> : <Activity size={16} color="var(--color-crimson)" />}
-                  <span>{testingGemini ? 'Probando...' : 'Probar Conexión con Gemini'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Test Status Feedback Pill */}
-            {geminiTestResult && (
-              <div 
-                style={{
-                  padding: '10px 14px',
-                  borderRadius: 'var(--r-control)',
-                  fontSize: '12px',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '8px',
-                  backgroundColor: geminiTestResult.success ? 'var(--barista-accent-mint-subtle)' : 'var(--barista-accent-danger-subtle)',
-                  border: geminiTestResult.success ? '1.5px solid #10B981' : '1.5px solid #EF4444',
-                  color: geminiTestResult.success ? 'var(--ok-text)' : 'var(--bad-text)'
-                }}
-              >
-                {geminiTestResult.success ? (
-                  <CheckCircle2 size={18} style={{ flexShrink: 0, marginTop: '1px', color: 'var(--ok)' }} />
-                ) : (
-                  <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '1px', color: 'var(--bad)' }} />
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
-                  <span style={{ fontWeight: '600' }}>
-                    {geminiTestResult.success ? 'Conexión Exitosa con Gemini' : 'Error de Conexión'}
-                  </span>
-                  <span style={{ fontSize: '12px', lineHeight: 1.35 }}>
-                    {geminiTestResult.message || geminiTestResult.error}
-                  </span>
-                  {geminiTestResult.latency_ms && (
-                    <span style={{ fontSize: '12px', fontWeight: 'bold', opacity: 0.85, marginTop: '2px' }}>
-                      ⏱️ Latencia: {geminiTestResult.latency_ms}ms • Modelo: {geminiTestResult.model}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Model Selector & Thinking Config */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-              <div>
-                <label htmlFor="bt-settings-4" className="barista-label" style={{ marginBottom: '6px' }}>
-                  Modelo de Inteligencia Artificial (Gemini)
-                </label>
-                <select id="bt-settings-4" aria-label="Modelo de Inteligencia Artificial (Gemini)" 
-                  className="candy-input" 
-                  value={selectedModel} 
-                  onChange={(e) => handleModelChange(e.target.value)}
-                  style={{ fontSize: '12px', padding: '10px 12px', minHeight: '44px', width: '100%' }}
-                >
-                  <option value="gemini-3.8-flash">Gemini 3.8 Flash (Recomendado - Multimodal de Alta Precisión)</option>
-                  <option value="gemini-3.8-flash-lite">Gemini 3.8 Flash Lite (Ultra Rápido & Ligero)</option>
-                  <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview (Máximo Razonamiento)</option>
-                  <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite (Eficiente)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="barista-label" style={{ marginBottom: '6px' }}>
-                  Modo Pensamiento (Thinking)
-                </label>
-                <button
-                  type="button"
-                  onClick={handleToggleThinking}
-                  style={{
-                    width: '100%',
-                    minHeight: '44px',
-                    padding: '10px 12px',
-                    borderRadius: 'var(--r-control)',
-                    border: isThinkingEnabled ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
-                    backgroundColor: isThinkingEnabled ? 'var(--bg-header)' : 'var(--bg-card)',
-                    color: 'var(--color-text)',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  {isThinkingEnabled ? 'Razonamiento: ACTIVO' : 'Modo Rápido (Off)'}
-                </button>
-              </div>
-            </div>
-
-            <a 
-              href="https://aistudio.google.com/app/apikey" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              style={{ fontSize: '12px', color: 'var(--color-crimson)', textDecoration: 'underline', fontWeight: 'bold' }}
-            >
-              Obtener clave API gratuita en Google AI Studio →
-            </a>
           </div>
         )}
-      </div>
-
-      {/* Preferencia de Molino Predeterminado */}
-      <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
-        <h4 className="bt-section-title" style={{ margin: '0 0 4px 0' }}>
-          Molino Predeterminado
-        </h4>
-        <p className="bt-section-desc" style={{ marginBottom: '12px' }}>
-          Selecciona tu molino principal para precargar sus diales y física en cada nueva receta.
-        </p>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '8px' }}>
-          {GRINDERS.map((grinder) => {
-            const isActive = defaultGrinder === grinder.id;
-            return (
-              <button
-                key={grinder.id}
-                type="button"
-                onClick={() => { 
-                  setDefaultGrinder(grinder.id); 
-                  localStorage.setItem('default-grinder', grinder.id); 
-                  if (showToast) showToast(`Molino predeterminado: ${grinder.name}`, { type: 'info', duration: 2000 }); 
-                }}
-                style={{
-                  minHeight: '52px',
-                  padding: '8px 6px',
-                  borderRadius: 'var(--r-control)',
-                  border: isActive ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
-                  backgroundColor: isActive ? 'var(--bg-header)' : 'var(--bg-card)',
-                  color: 'var(--color-text)',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  gap: '3px',
-                  transition: 'var(--transition-ui)'
-                }}
-              >
-                <strong style={{ fontSize: '12px' }}>{grinder.name}</strong>
-                <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{grinder.stepDesc || grinder.desc}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Backup and restore section */}
-      <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
-        <h4 className="bt-section-title" style={{ margin: '0 0 8px 0' }}>
-          Copia de Seguridad
-        </h4>
-        <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 16px 0', lineHeight: 1.4 }}>
-          Exporta tu bitácora o restaura un respaldo en cualquier dispositivo.
-        </p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <button 
-              className="btn-candy" 
-              style={{ margin: 0, fontSize: '12px', padding: '10px 14px', minHeight: '44px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
-              onClick={handleExportBackup}
-            >
-              <Download size={16} strokeWidth={2.5} />
-              JSON Backup
-            </button>
-            <button 
-              className="btn-candy" 
-              style={{ margin: 0, fontSize: '12px', padding: '10px 14px', minHeight: '44px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
-              onClick={handleExportCsv}
-            >
-              <FileSpreadsheet size={16} strokeWidth={2.5} />
-              Exportar CSV
-            </button>
-          </div>
-          <label 
-            className="btn-candy primary" 
-            style={{ margin: 0, fontSize: '12px', padding: '12px 14px', minHeight: '44px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', boxSizing: 'border-box', fontWeight: 'bold' }}
-          >
-            <Upload size={18} strokeWidth={2.5} />
-            Cargar Respaldo JSON
-            <input 
-              type="file" 
-              accept=".json" 
-              onChange={handleImportBackup} 
-              style={{ display: 'none' }} 
-            />
-          </label>
-        </div>
       </div>
 
       {/* Herramientas WebNFC */}
@@ -1086,6 +865,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
           Abrir Herramientas WebNFC
         </button>
       </div>
+        </div>
+      </details>
 
       {showNfcModal && (
         <NfcToolsModal batches={batches} onClose={() => setShowNfcModal(false)} showToast={showToast} />

@@ -124,7 +124,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
       if (data.success && data.token) {
         localStorage.setItem('beantag-token', data.token);
         localStorage.setItem('beantag-user', JSON.stringify(data.user));
-        if (showToast) showToast(`¡Bienvenido, ${data.user.name}! `, { type: 'success', duration: 3000 });
         if (onSuccess) onSuccess(data.user, data.token);
         onClose();
       } else {

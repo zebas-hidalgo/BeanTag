@@ -204,7 +204,6 @@ export const FAMOUS_RECIPES = [
     id: 'tetsu-4-6',
     name: 'Tetsu Kasuya 4:6',
     author: 'Tetsu Kasuya (Campeón Mundial WBrC 2016)',
-    badge: '🏆 WBrC Champion',
     method: 'V60 (Filtrado)',
     description: 'El 40% del agua ajusta el balance acidez/dulzor y el 60% la intensidad.',
     ratio: '1:15',
@@ -240,136 +239,9 @@ export const FAMOUS_RECIPES = [
     notes: 'Taza con claridad cristalina, acidez brillante y dulzura residual sedosa.'
   },
   {
-    id: 'hoffmann-v60',
-    name: 'James Hoffmann Ultimate V60',
-    author: 'James Hoffmann (Campeón Mundial WBC & Autor)',
-    badge: '☕ Técnica Hoffmann',
-    method: 'V60 (Filtrado)',
-    description: 'Técnica de alta retención térmica, remolino suave y extracción uniforme con cama plana.',
-    ratio: '1:16.6',
-    ratioVal: 16.6,
-    defaultDose: 20,
-    temperature: 96,
-    brewTime: '3:15 min',
-    grind: 'Medio-Fina (Hoffmann)',
-    grindMicrons: 700,
-    grinderSettings: {
-      ...get8GrinderSettingsForMicrons(700),
-      jmax: { rot: 2, num: 2, click: 0, text: '2.2.0 (~700 µm)' },
-      femobook: { clicks: 59, text: '59 clics (~1.5 Rot.)' },
-      comandante: { clicks: 22, text: '22 clics' }
-    },
-    calculatePours: (dose) => {
-      const totalWater = Math.round(dose * 16.6); // ~330g para 20g
-      const bloomWater = Math.round(dose * 3);    // ~60g
-      const pour60 = Math.round(totalWater * 0.6); // ~200g
-      return [
-        { step: 1, label: 'Bloom + Swirl (Remolino)', water_g: bloomWater, total_water_g: bloomWater, time: '0:00 - 0:45', description: `Verter ${bloomWater}g (3x dosis) y hacer un remolino suave para mojar todo el café.` },
-        { step: 2, label: 'Vertido Rápido al 60%', water_g: pour60 - bloomWater, total_water_g: pour60, time: '0:45 - 1:15', description: `Verter en espirales continuas hasta alcanzar ${pour60}g en 30 segundos.` },
-        { step: 3, label: 'Vertido Suave al 100%', water_g: totalWater - pour60, total_water_g: totalWater, time: '1:15 - 1:45', description: `Verter suavemente en el centro hasta ${totalWater}g.` },
-        { step: 4, label: 'Remolino Final & Asentado', water_g: 0, total_water_g: totalWater, time: '1:45 - 3:15', description: 'Remover suavemente con cuchara 1 vuelta, dar un leve remolino al dripper y dejar drenar cama plana.' }
-      ];
-    },
-    steps: [
-      'Agua recién hervida (95-98°C para tuestes claros de especialidad).',
-      'Bloom con 3x peso del café y remolino inmediato para saturación total.',
-      'Verter el 60% del agua antes del 1:15 para mantener alta temperatura.',
-      'Remolino final para lograr una cama de café completamente plana.'
-    ],
-    notes: 'Máxima extracción con acidez integrada, gran cuerpo y sin canalizaciones.'
-  },
-  {
-    id: 'ten-pours',
-    name: '10 Vertidos (Micro-Extracción)',
-    author: 'Técnica Osmótica de Extracción de Alta Densidad',
-    badge: '💧 10 Vertidos Micro',
-    method: 'V60 (Filtrado)',
-    description: '10 pulsos pequeños y continuos para una dulzura acaramelada y cuerpo envolvente.',
-    ratio: '1:15',
-    ratioVal: 15,
-    defaultDose: 20,
-    temperature: 90,
-    brewTime: '2:45 min',
-    grind: 'Media (Osmotic Sweetness)',
-    grindMicrons: 740,
-    grinderSettings: {
-      ...get8GrinderSettingsForMicrons(740),
-      jmax: { rot: 2, num: 3, click: 0, text: '2.3.0 (~740 µm)' },
-      femobook: { clicks: 64, text: '64 clics (~1.6 Rot.)' },
-      comandante: { clicks: 23, text: '23 clics' }
-    },
-    calculatePours: (dose) => {
-      const totalWater = Math.round(dose * 15);
-      const stepWater = Math.round(totalWater / 10);
-      const pours = [];
-      for (let i = 1; i <= 10; i++) {
-        const cumWater = i === 10 ? totalWater : stepWater * i;
-        const currentPour = i === 10 ? totalWater - (stepWater * 9) : stepWater;
-        const startSec = (i - 1) * 15;
-        const endSec = i * 15;
-        const formatTime = (s) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
-        pours.push({
-          step: i,
-          label: `Pulso #${i} (+${currentPour}g)`,
-          water_g: currentPour,
-          total_water_g: cumWater,
-          time: `${formatTime(startSec)} - ${formatTime(endSec)}`,
-          description: i === 1 ? 'Bloom inicial en el centro.' : `Pulso concéntrico rápido de ${currentPour}g.`
-        });
-      }
-      return pours;
-    },
-    steps: [
-      'Molienda media uniforme a temperatura controlada (90°C).',
-      'Realizar 10 micro-vertidos cada 15 segundos sin dejar que la cama se seque.',
-      'Mantener un flujo constante y central para generar flujo osmótico.',
-      'Extracción suave que resalta notas de caramelo, miel y frutos maduros.'
-    ],
-    notes: 'Dulzura excepcional, textura densa y balance aterciopelado.'
-  },
-  {
-    id: 'lance-hedrick-v60',
-    name: 'Lance Hedrick 1-2 Pour',
-    author: 'Lance Hedrick (Entrenador & WBC Judge)',
-    badge: '🔥 Alta Claridad',
-    method: 'V60 (Filtrado)',
-    description: 'Bloom prolongado de 1 minuto + 1 o 2 vertidos de alta agitación para máxima separación de notas.',
-    ratio: '1:16',
-    ratioVal: 16,
-    defaultDose: 20,
-    temperature: 94,
-    brewTime: '2:50 min',
-    grind: 'Media (Lance Agitation)',
-    grindMicrons: 720,
-    grinderSettings: {
-      ...get8GrinderSettingsForMicrons(720),
-      jmax: { rot: 2, num: 2, click: 5, text: '2.2.5 (~720 µm)' },
-      femobook: { clicks: 61, text: '61 clics (~1.5 Rot.)' },
-      comandante: { clicks: 22, text: '22 clics' }
-    },
-    calculatePours: (dose) => {
-      const totalWater = Math.round(dose * 16);
-      const bloom = Math.round(dose * 3); // 60g
-      const pour1 = Math.round((totalWater - bloom) / 2);
-      return [
-        { step: 1, label: 'Bloom Prolongado (60s)', water_g: bloom, total_water_g: bloom, time: '0:00 - 1:00', description: 'Bloom profundo de 1 minuto completo para desgasificación absoluta.' },
-        { step: 2, label: 'Vertido Central de Alta Agitación', water_g: pour1, total_water_g: bloom + pour1, time: '1:00 - 1:45', description: 'Vertido rápido desde buena altura generando turbulencia controlada.' },
-        { step: 3, label: 'Vertido Suave Final', water_g: totalWater - (bloom + pour1), total_water_g: totalWater, time: '1:45 - 2:50', description: 'Vertido bajo cerca de la superficie para calmar la cama y drenar.' }
-      ];
-    },
-    steps: [
-      'Dejar que el bloom actúe 1 minuto completo para eliminar todo el CO₂.',
-      'Verter con agitación alta para suspender las partículas de café.',
-      'Finalizar con vertido bajo para no arrastrar finos al papel.',
-      'Excelente para cafés geishas, lavados etíopes y procesos experimentales.'
-    ],
-    notes: 'Claridad floral exquisita, separación nítida de notas y postgusto largo.'
-  },
-  {
     id: 'turbo-shot',
     name: 'Turbo Shot Espresso (6 Bar)',
     author: 'Prof. Christopher Hendon & Lance Hedrick',
-    badge: '⚡ Turbo 6 Bar',
     method: 'Espresso',
     description: 'Extracción rápida a baja presión (6 bar) con molienda gruesa para mayor rendimiento y cero astringencia.',
     ratio: '1:3',
@@ -404,7 +276,6 @@ export const FAMOUS_RECIPES = [
     id: 'aeropress-champion',
     name: 'AeroPress Campeón Mundial',
     author: 'Wendelien van Bunnik (World AeroPress Champion)',
-    badge: '🥇 Campeón AeroPress',
     method: 'AeroPress',
     description: 'Método invertido con dosis alta (concentrado) y dilución bypass en taza.',
     ratio: '1:8.6 + Bypass',
@@ -439,7 +310,6 @@ export const FAMOUS_RECIPES = [
     id: 'aeropress-go-travel',
     name: 'AeroPress Go Travel Compact',
     author: 'Alan Adler & Especialidad Barista',
-    badge: '✈️ AeroPress Go',
     method: 'AeroPress Go',
     description: 'Receta optimizada para la cámara compacta (máx 220ml) de la AeroPress Go. Taza sedosa, dulce y sin amargor.',
     ratio: '1:14.3',
@@ -477,7 +347,6 @@ export const FAMOUS_RECIPES = [
     id: 'scott-rao-pulsar-mini',
     name: 'Scott Rao Pulsar Mini',
     author: 'Scott Rao (Consultor & Autor)',
-    badge: '🏆 Protocolo No-Bypass',
     method: 'NextLevel Pulsar Mini',
     description: 'Inmersión inicial con válvula cerrada y WWDT suave, seguida de percolación continua con tapa de dispersión.',
     ratio: '1:16.67',
@@ -536,122 +405,5 @@ export const FAMOUS_RECIPES = [
       'A los 2:00 verter los últimos 120g hasta 300g y esperar a que el lecho drene completamente con lecho plano.'
     ],
     notes: 'Protocolo estándar Rao sin bypass: taza limpia, balance acidez-dulzor sobresaliente y reproducibilidad perfecta.'
-  },
-  {
-    id: 'gagne-high-extraction-mini',
-    name: 'Jonathan Gagné High Extraction',
-    author: 'Jonathan Gagné (The Physics of Filter Coffee)',
-    badge: '🔬 Max Extraction (23%+)',
-    method: 'NextLevel Pulsar Mini',
-    description: 'Bloom prolongado de 1 minuto en inmersión total y percolación regulada a medio flujo para tuestes nórdicos ultra-claros.',
-    ratio: '1:17',
-    ratioVal: 17,
-    defaultDose: 18,
-    temperature: 96,
-    brewTime: '4:15 - 4:30 min',
-    grind: 'Media-Fina No-Bypass (Gagné)',
-    grindMicrons: 790,
-    grinderSettings: {
-      ...get8GrinderSettingsForMicrons(790, false, true),
-      jmax: { rot: 2, num: 4, click: 2, text: '2.4.2 (~790 µm)' },
-      femobook: { clicks: 69, text: '69 clics (~1.7 Rot.)' },
-      comandante: { clicks: 25, text: '25 clics' }
-    },
-    calculatePours: (dose) => {
-      const totalWater = Math.round(dose * 17);
-      const bloom = Math.round(dose * (70 / 18));
-      const pour1 = Math.round(dose * (120 / 18));
-      const pour2 = totalWater - bloom - pour1;
-      return [
-        {
-          step: 1,
-          label: 'Bloom Prolongado (Válvula Cerrada)',
-          water_g: bloom,
-          total_water_g: bloom,
-          time: '0:00 - 1:00',
-          valve: 'closed',
-          description: `Con válvula cerrada, verter ${bloom}g a 96°C para una inmersión completa de 1 minuto.`
-        },
-        {
-          step: 2,
-          label: 'Percolación Lenta (Válvula 50%)',
-          water_g: pour1,
-          total_water_g: bloom + pour1,
-          time: '1:00 - 2:30',
-          valve: 'half',
-          description: `Abrir la válvula al 50% para restringir el caudal y verter ${pour1}g lentamente sobre la tapa de dispersión.`
-        },
-        {
-          step: 3,
-          label: 'Vertido Final (Válvula Abierta)',
-          water_g: pour2,
-          total_water_g: totalWater,
-          time: '2:30 - 4:30',
-          valve: 'open',
-          description: `Abrir la válvula completamente y verter los últimos ${pour2}g hasta ${totalWater}g; dejar drenar hasta secar.`
-        }
-      ];
-    },
-    steps: [
-      'Válvula cerrada. Poner filtro mojado y añadir 18g de café molienda media-fina (~790 µm).',
-      'Bloom de 70g de agua casi hirviendo (96°C) durante 1 minuto entero en inmersión total.',
-      'Ajustar la válvula a media apertura (50%) para regular la velocidad de percolación y evitar canalización.',
-      'Verter 120g manteniendo una columna de agua baja sobre el dispersor (hasta 190g).',
-      'Abrir válvula al 100% para el vertido final de 116g (hasta 306g) y dejar drenar hasta secar.'
-    ],
-    notes: 'Extracción extrema superando el 23% EY, brillantez cristalina y acidez muy refinada para tuestes ligeros.'
-  },
-  {
-    id: 'pulsar-mini-concentrate',
-    name: 'Pulsar Mini Concentrado',
-    author: 'Extracción Corta de Alta Densidad',
-    badge: '🍯 Dulzor & Textura Sedosa',
-    method: 'NextLevel Pulsar Mini',
-    description: 'Ratio corto 1:14 con mayor tiempo de contacto para resaltar mieles, cuerpo denso y notas dulces profundas.',
-    ratio: '1:14',
-    ratioVal: 14,
-    defaultDose: 18,
-    temperature: 92,
-    brewTime: '3:15 min',
-    grind: 'Media-Gruesa (Concentrado)',
-    grindMicrons: 840,
-    grinderSettings: {
-      ...get8GrinderSettingsForMicrons(840, false, true),
-      jmax: { rot: 2, num: 5, click: 5, text: '2.5.5 (~840 µm)' },
-      femobook: { clicks: 72, text: '72 clics (~1.8 Rot.)' },
-      comandante: { clicks: 26, text: '26 clics' }
-    },
-    calculatePours: (dose) => {
-      const totalWater = Math.round(dose * 14);
-      const bloom = Math.round(dose * (60 / 18));
-      const pour1 = totalWater - bloom;
-      return [
-        {
-          step: 1,
-          label: 'Inmersión Saturada (Válvula Cerrada)',
-          water_g: bloom,
-          total_water_g: bloom,
-          time: '0:00 - 0:45',
-          valve: 'closed',
-          description: `Válvula cerrada: verter ${bloom}g a 92°C saturando todo el lecho para una inmersión densa.`
-        },
-        {
-          step: 2,
-          label: 'Vertido Continuo (Válvula Abierta)',
-          water_g: pour1,
-          total_water_g: totalWater,
-          time: '0:45 - 3:15',
-          valve: 'open',
-          description: `Abrir válvula completamente y verter ${pour1}g de manera continua hasta alcanzar ${totalWater}g.`
-        }
-      ];
-    },
-    steps: [
-      'Moler 18g en punto medio-grueso para permitir flujo sostenido.',
-      'Válvula cerrada. Verter 60g de agua a 92°C y esperar 45 segundos de saturación.',
-      'Abrir válvula al 100% y verter gradualmente los 192g restantes sobre el dispersor (hasta 252g).',
-      'Drenaje constante para una extracción concentrada y melosa.'
-    ],
-    notes: 'Cuerpo denso, textura sedosa y notas acarameladas de alta concentración.'
   }
 ];

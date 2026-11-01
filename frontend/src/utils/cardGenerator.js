@@ -11,6 +11,7 @@
 import { cleanNotesString } from './scaIcons';
 import { GRINDERS } from './grinders';
 import { TREND_STYLES, TREND_THEMES, drawTrendCard, drawTrendMenu, trendMenuSize, drawTrendSticker } from './trendCards';
+import { STORY_STYLES, drawStoryCard } from './storyCards';
 
 export { cleanNotesString } from './scaIcons';
 export { parseGrindToMicrons } from './grinders';
@@ -22,27 +23,42 @@ export const CARD_STYLES = TREND_STYLES;
 export const TREND_CARD_STYLES = TREND_STYLES;
 export const DEFAULT_CARD_STYLE = 'stretch';
 
-// Old style ids (saved preferences, old links) map to their closest 2027 style
+// The five card styles, in picker order (one tap, no other options)
+export const CARD_STYLE_OPTIONS = [
+  { id: 'stretch', label: 'Tipográfica' },
+  { id: 'zine', label: 'Collage' },
+  { id: 'lata', label: 'Lata' },
+  { id: 'etiqueta', label: 'Etiqueta' },
+  { id: 'origen', label: 'Origen' }
+];
+
+// Menus and stickers still use the trend skins: new story styles borrow the closest one
+const SKIN_FOR = { etiqueta: 'stretch', origen: 'zine' };
+function skinStyle(style) { return SKIN_FOR[style] || (TREND_STYLES.includes(style) ? style : DEFAULT_CARD_STYLE); }
+
+// Old style ids (saved preferences, old links) map to their closest current style
 const LEGACY_STYLE_MAP = {
+  squishy: 'etiqueta',
+  vhs: 'origen',
   studio: 'stretch',
-  blueprint: 'vhs',
-  neobrutalist: 'squishy',
+  blueprint: 'origen',
+  neobrutalist: 'etiqueta',
   kissaten: 'zine',
   diner: 'lata',
-  aurora: 'squishy',
-  hangtag: 'zine'
+  aurora: 'etiqueta',
+  hangtag: 'etiqueta'
 };
 
 export function normalizeCardStyle(tpl) {
   if (!tpl) return DEFAULT_CARD_STYLE;
   const lower = String(tpl).toLowerCase().trim();
-  if (TREND_STYLES.includes(lower)) return lower;
+  if (STORY_STYLES.includes(lower)) return lower;
   if (LEGACY_STYLE_MAP[lower]) return LEGACY_STYLE_MAP[lower];
   if (/swiss|mono|grid|minimal/.test(lower)) return 'stretch';
-  if (/lab|tech|cyan|blue|retro|80/.test(lower)) return 'vhs';
-  if (/brutal|pop|bold|nomad|sticker/.test(lower)) return 'squishy';
+  if (/lab|tech|map|topo|terroir|altitud/.test(lower)) return 'origen';
+  if (/tag|label|brutal|pop|sticker/.test(lower)) return 'etiqueta';
   if (/kissa|washi|tokyo|paper|vintage|collage/.test(lower)) return 'zine';
-  if (/botanic|terroir|can|craft/.test(lower)) return 'lata';
+  if (/botanic|can|craft/.test(lower)) return 'lata';
   return DEFAULT_CARD_STYLE;
 }
 
@@ -51,7 +67,7 @@ export function normalizeCardStyle(tpl) {
 // ---------------------------------------------------------------------------
 export const CARD_FORMATS = ['feed', 'story'];
 export function getPreferredCardFormat() {
-  try { return localStorage.getItem('beantag-card-format') === 'story' ? 'story' : 'feed'; } catch (e) { return 'feed'; }
+  return 'story'; // KISS: one size (Instagram story 9:16)
 }
 export function setPreferredCardFormat(format) {
   try { localStorage.setItem('beantag-card-format', format === 'story' ? 'story' : 'feed'); } catch (e) {}
@@ -62,7 +78,8 @@ export function setPreferredCardFormat(format) {
 // ---------------------------------------------------------------------------
 const CARD_FONTS_HREF = 'https://fonts.googleapis.com/css2'
   + '?family=Inter:ital,wght@0,300;0,500;0,600;0,700;0,800;0,900;1,800;1,900'
-  + '&family=JetBrains+Mono:wght@500;700'
+  + '&family=JetBrains+Mono:wght@500;600;700'
+  + '&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800'
   + '&family=Playfair+Display:wght@700'
   + '&family=Caveat:wght@600'
   + '&display=swap';
@@ -90,7 +107,10 @@ export async function ensureFontsLoaded() {
       document.fonts.load('italic 900 40px "Inter"'),
       document.fonts.load('500 20px "JetBrains Mono"'),
       document.fonts.load('700 40px "Playfair Display"'),
-      document.fonts.load('600 40px "Caveat"')
+      document.fonts.load('600 40px "Caveat"'),
+      document.fonts.load('700 40px "Bricolage Grotesque"'),
+      document.fonts.load('800 40px "Bricolage Grotesque"'),
+      document.fonts.load('italic 400 40px "Inter"')
     ].map(p => p.catch(() => null)));
     await document.fonts.ready;
   } catch (e) {
@@ -260,13 +280,15 @@ function composeStoryCanvas(feedCanvas, style, footerText) {
 export async function generateRecipeCardImage(recipe, template = DEFAULT_CARD_STYLE, incRecipe = true, format = getPreferredCardFormat()) {
   const style = normalizeCardStyle(template);
   await ensureFontsLoaded();
-  const canvas = createCanvas(1080, 1350);
-  const ctx = canvas.getContext('2d');
   const d = buildCardData(recipe, incRecipe);
-  drawTrendCard(ctx, style, d, incRecipe, 1);
   if (format === 'story') {
-    return composeStoryCanvas(canvas, style, d.roaster ? `${d.roaster.toUpperCase()} • BEANTAG` : 'BEANTAG').toDataURL('image/png', 1.0);
+    // Native 9:16: the layout uses the whole story inside Instagram's safe zone
+    const story = createCanvas(1080, 1920);
+    drawStoryCard(story.getContext('2d'), style, d, incRecipe);
+    return story.toDataURL('image/png', 1.0);
   }
+  const canvas = createCanvas(1080, 1350);
+  drawTrendCard(canvas.getContext('2d'), skinStyle(style), d, incRecipe, 1);
   return canvas.toDataURL('image/png', 1.0);
 }
 
@@ -274,7 +296,7 @@ export async function generateRecipeCardImage(recipe, template = DEFAULT_CARD_ST
  * Cellar menu: every coffee with stock, height adapts to the list.
  */
 export async function generateCoffeeMenuCardImage(batches, template = DEFAULT_CARD_STYLE) {
-  const style = normalizeCardStyle(template);
+  const style = skinStyle(normalizeCardStyle(template));
   await ensureFontsLoaded();
   const all = Array.isArray(batches) ? batches : [];
   const withStock = all.filter(b => (b.remaining_doses || b.weight_current_g || 0) > 0);
@@ -349,7 +371,7 @@ export function generateCoffeeMenuText(batches) {
  * Stickers for stories: horizontal 1280x680 or vertical 880x1160, optional transparent die-cut.
  */
 export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
-  const style = normalizeCardStyle(options.template);
+  const style = skinStyle(normalizeCardStyle(options.template));
   const vertical = String(options.orientation || '').toLowerCase() === 'vertical';
   const includeRecipe = Boolean(options.includeRecipe);
   const w = vertical ? 880 : 1280;

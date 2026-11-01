@@ -1,20 +1,8 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { Plus, Zap, Snowflake, CheckCircle2, Mountain, X, MoreHorizontal, MapPin, Flag, ClipboardList, Coffee, Flame, Search as SearchIcon, Package, Share2, AlertTriangle } from 'lucide-react';
-import { RenderScaChips } from '../utils/scaIcons';
 import { getRoast, getDegassing, roastStyle } from '../utils/roast';
 
 const TubeRacksView = lazy(() => import('./TubeRacksView'));
-
-const getRoastDotColor = (roast) => {
-  const r = String(roast || '').toLowerCase();
-  if (r.includes('oscuro') || r.includes('dark') || r.includes('frances') || r.includes('italiano')) {
-    return 'var(--ink-muted)';
-  }
-  if (r.includes('medio') || r.includes('medium')) {
-    return 'var(--accent-strong)';
-  }
-  return 'var(--accent)';
-};
 
 export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onSubtractDose, onRefreshBatches, showToast }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -174,9 +162,6 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                 aria-selected={!showFinished}
                 className={`inventory-view-btn ${!showFinished ? 'active' : ''}`}
                 onClick={() => {
-                  if (navigator.vibrate) {
-                    try { navigator.vibrate(8); } catch (e) {}
-                  }
                   setShowFinished(false);
                 }}
               >
@@ -189,9 +174,6 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                 aria-selected={showFinished}
                 className={`inventory-view-btn ${showFinished ? 'active' : ''}`}
                 onClick={() => {
-                  if (navigator.vibrate) {
-                    try { navigator.vibrate(8); } catch (e) {}
-                  }
                   setShowFinished(true);
                 }}
               >
@@ -223,14 +205,16 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
           ) : (
             /* 🏷️ ESTILO EDITORIAL (Nordic Atelier & Precision Lab) */
             filteredBatches.map(batch => {
+              const isBag = batch.storage_type === 'bag';
               const isLowStock = batch.remaining_doses <= 2 && batch.remaining_doses > 0;
-              const currentWeight = parseFloat(batch.remaining_weight_g || 0);
-              const hasRecipes = batch.recipes && batch.recipes.length > 0;
-              const firstRecipe = hasRecipes ? batch.recipes[0] : null;
+              const grams = Math.round(parseFloat(batch.remaining_weight_g || 0));
+              const firstRecipe = batch.recipes && batch.recipes.length > 0 ? batch.recipes[0] : null;
               const roast = getRoast(batch.roast_level);
-              const degas = getDegassing(batch);
-              const degasTone = degas ? (degas.frozen ? 'cryo' : degas.status === 'late' ? 'warn' : degas.status === 'ideal' ? 'ok' : '') : '';
-              const metaParts = [batch.origin, batch.process].filter(Boolean);
+              const rest = getDegassing(batch);
+              const place = batch.origin || batch.producer || batch.roaster || '';
+              const stockLabel = isBag
+                ? `bolsa con ${grams} g`
+                : `${batch.remaining_doses} ${batch.remaining_doses === 1 ? 'tubo' : 'tubos'}`;
 
               return (
                 <article
@@ -247,57 +231,27 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                     type="button"
                     className="bt-batch-main"
                     onClick={() => onSelectBatch(batch.id)}
-                    aria-label={batch.storage_type === 'bag' 
-                      ? `${batch.name}, tueste ${roast.label.toLowerCase()}, bolsa con ${Math.round(currentWeight)}g`
-                      : `${batch.name}, tueste ${roast.label.toLowerCase()}, ${batch.remaining_doses} ${batch.remaining_doses === 1 ? 'tubo' : 'tubos'}`}
+                    aria-label={`${batch.name}, tueste ${roast.label.toLowerCase()}, ${stockLabel}`}
                   >
-                    <span className="bt-swatch" title={`Tueste ${roast.label}`} aria-hidden="true">
-                      <Flame size={18} strokeWidth={2.4} />
-                    </span>
                     <span className="bt-batch-text">
                       <span className="bt-batch-name">{batch.name}</span>
                       <span className="bt-batch-meta">
-                        {metaParts.length > 0 && <MapPin size={12} strokeWidth={2} aria-hidden="true" />}
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {metaParts.length ? metaParts.join(' · ') : (batch.producer || batch.roaster || 'Sin origen')}
-                        </span>
+                        <span className="bt-roast-dot" aria-hidden="true" />
+                        <span>{roast.label}{place ? ` · ${place}` : ''}</span>
                       </span>
                     </span>
-                    {batch.storage_type === 'bag' ? (
-                      <span className="bt-doses" aria-hidden="true">
-                        <b>{Math.round(currentWeight)}<small style={{ fontSize: '11px', fontWeight: 600, marginLeft: '1px' }}>g</small></b>
-                        <small>Bolsa · ~{batch.remaining_doses} {batch.remaining_doses === 1 ? 'taza' : 'tazas'}</small>
-                      </span>
-                    ) : (
-                      <span className="bt-doses" aria-hidden="true">
-                        <b>{batch.remaining_doses}</b>
-                        <small>{batch.remaining_doses === 1 ? 'tubo' : 'tubos'}{currentWeight > 0 ? ` · ${currentWeight} g` : ''}</small>
-                      </span>
-                    )}
+                    <span className="bt-doses" aria-hidden="true">
+                      {isBag ? <b>{grams}<small> g</small></b> : <b>{batch.remaining_doses}</b>}
+                      <small>{isBag ? 'en bolsa' : (batch.remaining_doses === 1 ? 'tubo' : 'tubos')}</small>
+                    </span>
                   </button>
 
-                  {degas && (
-                    <div className="bt-degas">
-                      <div className="bt-degas-label">
-                        <span className={degasTone ? `is-${degasTone}` : undefined}>{degas.label}</span>
-                        <span>ventana 7–21 d</span>
-                      </div>
-                      <div className="bt-track" aria-hidden="true">
-                        <span className="bt-track-win" style={{ left: `${degas.winFrom}%`, width: `${degas.winTo - degas.winFrom}%` }} />
-                        <span className={`bt-track-dot${degasTone === 'warn' ? ' is-warn' : degasTone === 'cryo' ? ' is-cryo' : ''}`} style={{ left: `${degas.pos}%` }} />
-                      </div>
-                    </div>
-                  )}
-
                   <div className="bt-batch-foot">
-                    {batch.roaster_notes ? (
-                      <RenderScaChips notesStr={batch.roaster_notes} maxChips={3} />
-                    ) : (
-                      <span className="bt-batch-meta" style={{ color: isLowStock ? 'var(--warn-text)' : undefined }}>
-                        {isLowStock && <AlertTriangle size={12} aria-hidden="true" />}
-                        {isLowStock ? (batch.storage_type === 'bag' ? 'Poco café en bolsa' : 'Quedan pocos tubos') : (batch.roaster || '')}
-                      </span>
-                    )}
+                    {isLowStock ? (
+                      <span className="bt-status is-warn">{isBag ? 'Queda poco' : 'Quedan pocos'}</span>
+                    ) : rest ? (
+                      <span className={`bt-status${rest.tone ? ` is-${rest.tone}` : ''}`}>{rest.word}</span>
+                    ) : <span />}
                     <div style={{ display: 'flex', gap: '6px', marginLeft: 'auto' }}>
                       {firstRecipe && (
                         <button
@@ -317,9 +271,6 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                         className="bt-icon-btn"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (navigator.vibrate) {
-                            try { navigator.vibrate(8); } catch (err) {}
-                          }
                           setContextBatch(batch);
                         }}
                         title="Opciones rápidas"

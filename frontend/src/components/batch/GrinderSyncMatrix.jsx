@@ -5,7 +5,6 @@ import { GRINDERS, getGrinderConfig } from '../../utils/grinders';
 export default function GrinderSyncMatrix({
   grinderType,
   setGrinderType,
-  currentMicrons,
   jmaxRot,
   setJmaxRot,
   jmaxNum,
@@ -33,78 +32,10 @@ export default function GrinderSyncMatrix({
 
   return (
     <div className="barista-card" style={{ marginBottom: '16px' }}>
-      {/* Header: Title and Active Micron Display */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Sliders size={16} color="var(--accent-terracotta)" />
-          <h3 style={{
-            margin: 0,
-            fontSize: 'var(--text-sm)',
-            fontWeight: '600',
-            fontFamily: 'var(--font-display)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.02em',
-            color: 'var(--text-primary)'
-          }}>
-            Calibración de Molienda
-          </h3>
-        </div>
-
-        {/* Physical Microns D50 Pill */}
-        <div className="barista-chip" style={{
-          borderColor: 'var(--accent-terracotta)',
-          color: 'var(--accent-terracotta)',
-          backgroundColor: 'var(--bg-elevated)',
-          fontWeight: '600',
-          fontFamily: 'var(--font-metric)'
-        }}>
-          ~{currentMicrons} µm D₅₀
-        </div>
-      </div>
-
-      {/* Selector de Molino Activo */}
-      <div style={{
-        display: 'flex',
-        overflowX: 'auto',
-        gap: '6px',
-        padding: '3px',
-        backgroundColor: 'var(--bg-elevated)',
-        borderRadius: 'var(--radius-pill)',
-        border: '1px solid var(--border-subtle)',
-        marginBottom: '14px',
-        scrollbarWidth: 'none'
-      }}>
-        {GRINDERS.map(g => {
-          const isSelected = grinderType === g.id;
-          return (
-            <button
-              type="button"
-              key={g.id}
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(6);
-                setGrinderType(g.id);
-              }}
-              style={{
-                flex: '0 0 auto',
-                minHeight: '44px',
-                padding: '6px 14px',
-                borderRadius: 'var(--radius-pill)',
-                border: isSelected ? '1px solid var(--border-subtle)' : '1px solid transparent',
-                backgroundColor: isSelected ? 'var(--bg-surface)' : 'transparent',
-                color: isSelected ? 'var(--accent-terracotta)' : 'var(--text-secondary)',
-                fontWeight: isSelected ? '800' : '600',
-                fontSize: 'var(--text-xs)',
-                fontFamily: 'var(--font-display)',
-                cursor: 'pointer',
-                boxShadow: isSelected ? 'var(--shadow-sm)' : 'none',
-                transition: 'var(--transition-ui)'
-              }}
-            >
-              {g.shortName}
-            </button>
-          );
-        })}
-      </div>
+      <h3 className="bt-section-title" style={{ margin: '0 0 12px' }}>
+        <Sliders size={16} aria-hidden="true" />
+        <span>Molienda</span>
+      </h3>
 
       {/* Controles Específicos para el Molino Activo */}
       <div className="barista-card-subtle" style={{ padding: '14px', marginBottom: '12px' }}>
@@ -112,9 +43,6 @@ export default function GrinderSyncMatrix({
           <div>
             <div style={{ fontWeight: '600', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
               {activeGrinderMeta.name}
-            </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              {activeGrinderMeta.burrs} • {activeGrinderMeta.stepDesc}
             </div>
           </div>
         </div>
@@ -233,15 +161,48 @@ export default function GrinderSyncMatrix({
         )}
       </div>
 
-      {/* Dial Formateado Resumen */}
-      <div style={{
-        fontSize: 'var(--text-xs)',
-        color: 'var(--text-secondary)',
-        fontFamily: 'var(--font-metric)',
-        textAlign: 'center'
-      }}>
-        Lectura activa: <strong>{getGrindString()}</strong>
-      </div>
+      <details className="bt-more">
+        <summary>Cambiar molino</summary>
+        <div style={{
+          display: 'flex',
+          overflowX: 'auto',
+          gap: '6px',
+          padding: '3px',
+          backgroundColor: 'var(--bg-elevated)',
+          borderRadius: 'var(--radius-pill)',
+          border: '1px solid var(--border-subtle)',
+          marginTop: '8px',
+          scrollbarWidth: 'none'
+        }}>
+          {GRINDERS.map(g => {
+            const isSelected = grinderType === g.id;
+            return (
+              <button
+                type="button"
+                key={g.id}
+                onClick={() => setGrinderType(g.id)}
+                style={{
+                  flex: '0 0 auto',
+                  minHeight: '44px',
+                  padding: '6px 14px',
+                  borderRadius: 'var(--radius-pill)',
+                  border: isSelected ? '1px solid var(--border-subtle)' : '1px solid transparent',
+                  backgroundColor: isSelected ? 'var(--bg-surface)' : 'transparent',
+                  color: isSelected ? 'var(--accent-terracotta)' : 'var(--text-secondary)',
+                  fontWeight: isSelected ? '800' : '600',
+                  fontSize: 'var(--text-xs)',
+                  fontFamily: 'var(--font-display)',
+                  cursor: 'pointer',
+                  boxShadow: isSelected ? 'var(--shadow-sm)' : 'none',
+                  transition: 'var(--transition-ui)'
+                }}
+              >
+                {g.shortName}
+              </button>
+            );
+          })}
+        </div>
+      </details>
     </div>
   );
 }

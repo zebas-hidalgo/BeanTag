@@ -6,6 +6,7 @@ import { stripEmojis, RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { parseGrindToMicrons } from '../utils/grinders';
+import CardStylePicker from './CardStylePicker';
 
 const getMethodLucideIcon = (methodName, size = 18) => {
   const m = (methodName || '').toLowerCase();
@@ -988,251 +989,20 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               {/* Row 1: Header + Format Selector */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '12.5px', textTransform: 'uppercase', margin: 0, color: 'var(--color-text)' }}>
-                  {shareFormat === 'sticker' ? 'Sticker Story' : 'Ticket Barista'} • {selectedRecipe?.batch_name}
+                  Tarjeta · {selectedRecipe?.batch_name}
                 </h3>
-                {/* Format Toggle */}
-                <div style={{ display: 'flex', gap: '4px' }}>
-                  <button 
-                    type="button" 
-                    onClick={() => {
-                      setShareFormat('card');
-                      exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'card', stickerTransparent);
-                    }}
-                    style={{
-                      padding: '3px 8px',
-                      fontSize: '12px',
-                      borderRadius: 'var(--r-xs)',
-                      border: shareFormat === 'card' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                      backgroundColor: shareFormat === 'card' ? 'var(--bg-header)' : 'var(--bg-card)',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      color: shareFormat === 'card' ? 'var(--color-crimson)' : 'var(--color-text)'
-                    }}
-                  >
-                    Ficha
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={() => {
-                      setShareFormat('sticker');
-                      exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'sticker', stickerTransparent);
-                    }}
-                    style={{
-                      padding: '3px 8px',
-                      fontSize: '12px',
-                      borderRadius: 'var(--r-xs)',
-                      border: shareFormat === 'sticker' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                      backgroundColor: shareFormat === 'sticker' ? 'var(--bg-header)' : 'var(--bg-card)',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      color: shareFormat === 'sticker' ? 'var(--color-crimson)' : 'var(--color-text)'
-                    }}
-                  >
-                    Sticker Story
-                  </button>
-                </div>
               </div>
+              <CardStylePicker
+                value={shareTemplate || DEFAULT_CARD_STYLE}
+                onChange={(id) => {
+                  setShareTemplate(id);
+                  exportRecipeAsImage(selectedRecipe, id, shareIncludeRecipe);
+                }}
+              />
 
-              {/* Row 2: Sub-options (Orientation & background if sticker, plus Content toggle for both) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {shareFormat === 'card' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '100%', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>TAMAÑO:</span>
-                  {[{ id: 'feed', label: 'Feed 4:5' }, { id: 'story', label: 'Story 9:16' }].map(f => (
-                    <button
-                      key={f.id}
-                      type="button"
-                      aria-pressed={cardFormat === f.id}
-                      onClick={() => {
-                        setPreferredCardFormat(f.id);
-                        setCardFormat(f.id);
-                        exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'card', stickerTransparent);
-                      }}
-                      style={{
-                        padding: '3px 7px',
-                        fontSize: '12px',
-                        borderRadius: 'var(--r-xs)',
-                        border: cardFormat === f.id ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                        backgroundColor: cardFormat === f.id ? 'var(--bg-header)' : 'var(--bg-card)',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        color: cardFormat === f.id ? 'var(--color-crimson)' : 'var(--color-text)'
-                      }}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
-                )}
-                {shareFormat === 'sticker' && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '6px', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>FORMATO:</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setStickerOrientation('horizontal');
-                          exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'sticker', stickerTransparent, 'horizontal');
-                        }}
-                        style={{
-                          padding: '3px 7px',
-                          fontSize: '12px',
-                          borderRadius: 'var(--r-xs)',
-                          border: stickerOrientation === 'horizontal' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                          backgroundColor: stickerOrientation === 'horizontal' ? 'var(--bg-header)' : 'var(--bg-card)',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          color: stickerOrientation === 'horizontal' ? 'var(--color-crimson)' : 'var(--color-text)'
-                        }}
-                      >
-                        Horizontal
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setStickerOrientation('vertical');
-                          exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'sticker', stickerTransparent, 'vertical');
-                        }}
-                        style={{
-                          padding: '3px 7px',
-                          fontSize: '12px',
-                          borderRadius: 'var(--r-xs)',
-                          border: stickerOrientation === 'vertical' ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                          backgroundColor: stickerOrientation === 'vertical' ? 'var(--bg-header)' : 'var(--bg-card)',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          color: stickerOrientation === 'vertical' ? 'var(--color-crimson)' : 'var(--color-text)'
-                        }}
-                      >
-                        Vertical
-                      </button>
-                    </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>FONDO:</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setStickerTransparent(false);
-                          exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'sticker', false, stickerOrientation);
-                        }}
-                        style={{
-                          padding: '3px 7px',
-                          fontSize: '12px',
-                          borderRadius: 'var(--r-xs)',
-                          border: !stickerTransparent ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                          backgroundColor: !stickerTransparent ? 'var(--bg-header)' : 'var(--bg-card)',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          color: !stickerTransparent ? 'var(--color-crimson)' : 'var(--color-text)'
-                        }}
-                      >
-                        ⬛ Sólido
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setStickerTransparent(true);
-                          exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'sticker', true, stickerOrientation);
-                        }}
-                        style={{
-                          padding: '3px 7px',
-                          fontSize: '12px',
-                          borderRadius: 'var(--r-xs)',
-                          border: stickerTransparent ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                          backgroundColor: stickerTransparent ? 'var(--bg-header)' : 'var(--bg-card)',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          color: stickerTransparent ? 'var(--color-crimson)' : 'var(--color-text)'
-                        }}
-                      >
-                        Transp.
-                      </button>
-                    </div>
-                  </div>
-                )}
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>
-                    CONTENIDO:
-                  </span>
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        setShareIncludeRecipe(true);
-                        exportRecipeAsImage(selectedRecipe, shareTemplate || DEFAULT_CARD_STYLE, true, shareFormat, stickerTransparent, stickerOrientation);
-                      }}
-                      style={{
-                        padding: '3px 8px',
-                        fontSize: '12px',
-                        borderRadius: 'var(--r-xs)',
-                        border: shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                        backgroundColor: shareIncludeRecipe ? 'var(--bg-header)' : 'var(--bg-card)',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        color: shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)'
-                      }}
-                    >
-                      Telemetría / Receta
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        setShareIncludeRecipe(false);
-                        exportRecipeAsImage(selectedRecipe, shareTemplate || DEFAULT_CARD_STYLE, false, shareFormat, stickerTransparent, stickerOrientation);
-                      }}
-                      style={{
-                        padding: '3px 8px',
-                        fontSize: '12px',
-                        borderRadius: 'var(--r-xs)',
-                        border: !shareIncludeRecipe ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                        backgroundColor: !shareIncludeRecipe ? 'var(--bg-header)' : 'var(--bg-card)',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        color: !shareIncludeRecipe ? 'var(--color-crimson)' : 'var(--color-text)'
-                      }}
-                    >
-                      Perfil & Notas
-                    </button>
-                  </div>
-                </div>
-              </div>
 
-              {/* Row 3: Aesthetic Template Selector */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
-                {[
-                  { id: 'stretch', label: 'Stretch' },
-                  { id: 'squishy', label: 'Squishy' },
-                  { id: 'zine', label: 'Zine' },
-                  { id: 'vhs', label: 'VHS' },
-                  { id: 'lata', label: 'Lata' }
-                ].map(t => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => {
-                      setShareTemplate(t.id);
-                      try { localStorage.setItem('beantag-share-style', t.id); } catch (e) {}
-                      exportRecipeAsImage(selectedRecipe, t.id, shareIncludeRecipe, shareFormat, stickerTransparent, stickerOrientation);
-                    }}
-                    style={{
-                      flex: '1 1 auto',
-                      padding: '5px 8px',
-                      fontSize: '12px',
-                      borderRadius: 'var(--r-control)',
-                      border: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
-                      backgroundColor: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? 'var(--bg-card)' : 'transparent',
-                      fontWeight: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? '800' : '600',
-                      color: (shareTemplate || DEFAULT_CARD_STYLE) === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
             </div>
 
             <div style={{

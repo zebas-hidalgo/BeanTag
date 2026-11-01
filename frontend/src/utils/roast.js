@@ -1,30 +1,29 @@
-// Roast & degassing helpers — the batch's own data drives its color.
-// BeanTag stores roast_level as Claro / Medio / Oscuro.
+// KISS: roast is a word (Claro / Medio / Oscuro) and rest is a word.
+// No Agtron numbers, no scales: the app doesn't measure them.
 
 const ROASTS = {
-  claro:  { label: 'Claro',  color: 'var(--roast-light)',  ink: '#1F1206', pos: 30 },
-  medio:  { label: 'Medio',  color: 'var(--roast-medium)', ink: '#FFFFFF', pos: 55 },
-  oscuro: { label: 'Oscuro', color: 'var(--roast-dark)',   ink: '#FFFFFF', pos: 82 },
+  claro:  { label: 'Claro',  color: 'var(--roast-light)',  ink: '#1F1206' },
+  medio:  { label: 'Medio',  color: 'var(--roast-medium)', ink: '#FFFFFF' },
+  oscuro: { label: 'Oscuro', color: 'var(--roast-dark)',   ink: '#FFFFFF' },
 };
 
 export function getRoast(level) {
   const r = String(level || '').toLowerCase();
   if (/oscuro|dark|franc|italian/.test(r)) return ROASTS.oscuro;
-  if (/claro|light|nordic|n[oó]rdico|filtr/.test(r)) return ROASTS.claro;
+  if (/claro|light|n[oó]rdico|nordic|filtr/.test(r)) return ROASTS.claro;
   return ROASTS.medio;
 }
 
-// CSS custom properties for an element tinted by its roast
 export function roastStyle(level) {
   const r = getRoast(level);
   return { '--roast': r.color, '--roast-ink': r.ink };
 }
 
 const DAY = 86400000;
+const READY_FROM = 7;   // days after roast
+const READY_UNTIL = 30; // after this, "Pasado"
 
-// Rest window for filter brewing (days after roast). Freezing pauses degassing.
-export const REST_WINDOW = { from: 7, to: 21, scaleMax: 30 };
-
+// Rest status in one word. Freezing pauses it.
 export function getDegassing(batch, now = new Date()) {
   if (!batch || !batch.roast_date) return null;
   const roast = new Date(batch.roast_date);
@@ -33,16 +32,8 @@ export function getDegassing(batch, now = new Date()) {
   const freeze = frozen ? new Date(batch.freeze_date) : null;
   const end = frozen && !Number.isNaN(freeze?.getTime()) ? freeze : now;
   const day = Math.max(0, Math.floor((end - roast) / DAY));
-  let status = 'ideal';
-  if (day < REST_WINDOW.from) status = 'resting';
-  else if (day > REST_WINDOW.to) status = 'late';
-  const label = frozen
-    ? `Congelado al día ${day}`
-    : status === 'resting' ? `Reposo · día ${day}` : status === 'late' ? `Día ${day} · pasó la ventana` : `Día ${day} · en ventana`;
-  return {
-    day, frozen, status, label,
-    pos: Math.min(100, (day / REST_WINDOW.scaleMax) * 100),
-    winFrom: (REST_WINDOW.from / REST_WINDOW.scaleMax) * 100,
-    winTo: (REST_WINDOW.to / REST_WINDOW.scaleMax) * 100,
-  };
+  if (frozen) return { day, frozen, tone: 'cryo', word: 'Congelado' };
+  if (day < READY_FROM) return { day, frozen, tone: '', word: 'Descansando' };
+  if (day > READY_UNTIL) return { day, frozen, tone: 'warn', word: 'Pasado' };
+  return { day, frozen, tone: 'ok', word: 'Listo' };
 }

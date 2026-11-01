@@ -4,10 +4,7 @@ import assert from 'node:assert';
 
 console.log('🧪 [TEST] Verifying NextLevel Pulsar Mini Recipes & Valve Properties...');
 
-// 1. Verify existence of the 3 Pulsar Mini recipes
-const pulsarRecipes = FAMOUS_RECIPES.filter(r => r.method === 'NextLevel Pulsar Mini' || r.id.includes('pulsar'));
-assert.strictEqual(pulsarRecipes.length >= 3, true, `Expected >= 3 Pulsar recipes, got ${pulsarRecipes.length}`);
-
+// 1. Verify existence of Scott Rao Pulsar Mini recipe
 const rao = FAMOUS_RECIPES.find(r => r.id === 'scott-rao-pulsar-mini');
 assert(rao, 'Scott Rao recipe must exist');
 assert.strictEqual(rao.method, 'NextLevel Pulsar Mini');
@@ -21,31 +18,6 @@ assert.strictEqual(raoPours[2].valve, 'open');
 assert.strictEqual(raoPours[2].water_g, 120);
 assert.strictEqual(raoPours[2].total_water_g, 300);
 console.log('✅ Scott Rao Pulsar Mini 18g recipe and valve stages verified.');
-
-const gagne = FAMOUS_RECIPES.find(r => r.id === 'gagne-high-extraction-mini');
-assert(gagne, 'Jonathan Gagné recipe must exist');
-assert.strictEqual(gagne.method, 'NextLevel Pulsar Mini');
-assert.strictEqual(gagne.defaultDose, 18);
-const gagnePours = gagne.calculatePours(18);
-assert.strictEqual(gagnePours[0].valve, 'closed');
-assert.strictEqual(gagnePours[0].water_g, 70);
-assert.strictEqual(gagnePours[1].valve, 'half');
-assert.strictEqual(gagnePours[1].water_g, 120);
-assert.strictEqual(gagnePours[2].valve, 'open');
-assert.strictEqual(gagnePours[2].water_g, 116);
-assert.strictEqual(gagnePours[2].total_water_g, 306);
-console.log('✅ Jonathan Gagné 50% flow 18g recipe and valve stages verified.');
-
-const concentrate = FAMOUS_RECIPES.find(r => r.id === 'pulsar-mini-concentrate');
-assert(concentrate, 'Pulsar Mini Concentrado recipe must exist');
-assert.strictEqual(concentrate.defaultDose, 18);
-const concPours = concentrate.calculatePours(18);
-assert.strictEqual(concPours[0].valve, 'closed');
-assert.strictEqual(concPours[0].water_g, 60);
-assert.strictEqual(concPours[1].valve, 'open');
-assert.strictEqual(concPours[1].water_g, 192);
-assert.strictEqual(concPours[1].total_water_g, 252);
-console.log('✅ Pulsar Mini Concentrado 18g recipe and valve stages verified.');
 
 // 2. Verify valve sequence note formatting logic
 const testStages = [
