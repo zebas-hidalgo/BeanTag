@@ -4,7 +4,7 @@ import { getRoast, getDegassing, roastStyle } from '../utils/roast';
 
 const TubeRacksView = lazy(() => import('./TubeRacksView'));
 
-export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onSubtractDose, onRefreshBatches, showToast }) {
+export default function Inventory({ batches, currentUser, onRequireAuth, onSelectBatch, onCreateTrigger, onSubtractDose, onRefreshBatches, showToast }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [inventorySubView, setInventorySubView] = useState(() => {
     try {
@@ -91,6 +91,8 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
         <Suspense fallback={<div style={{ minHeight: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="barista-spinner" /></div>}>
           <TubeRacksView
             batches={safeBatches}
+            currentUser={currentUser}
+            onRequireAuth={onRequireAuth}
             onSelectBatch={onSelectBatch}
             onRefreshBatches={onRefreshBatches}
             showToast={showToast}
@@ -224,15 +226,23 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                 {showFinished ? <Flag size={32} /> : <Snowflake size={32} />}
               </div>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', textTransform: 'uppercase', margin: '0 0 6px 0', color: 'var(--color-text)' }}>
-                {showFinished ? 'Sin cafés agotados' : 'No hay cafés en el congelador'}
+                {!currentUser
+                  ? 'Inicia sesión para ver tu cava'
+                  : (showFinished ? 'Sin cafés agotados' : 'No hay cafés en tu inventario')}
               </h3>
               <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 18px 0', lineHeight: 1.4 }}>
-                {!showFinished ? 'Registra tu primer lote de tubos congelados para empezar a preparar.' : 'Los lotes cuyos tubos lleguen a 0 se moverán aquí.'}
+                {!currentUser
+                  ? 'Tus cafés, bolsas, tubos y recetas están vinculados de forma privada a tu cuenta.'
+                  : (!showFinished ? 'Registra tu primer lote en tubos o bolsa para empezar a preparar.' : 'Los lotes cuyas dosis o gramos lleguen a 0 se moverán aquí.')}
               </p>
               {!showFinished && (
-                <button className="btn-candy primary" onClick={onCreateTrigger} style={{ margin: '0 auto', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontSize: '12px' }}>
+                <button
+                  className="btn-candy primary"
+                  onClick={!currentUser && onRequireAuth ? onRequireAuth : onCreateTrigger}
+                  style={{ margin: '0 auto', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontSize: '12px' }}
+                >
                   <Plus size={16} strokeWidth={2.5} />
-                  Registrar Primer Lote
+                  {!currentUser ? 'Iniciar Sesión / Crear Cuenta' : 'Registrar Primer Lote'}
                 </button>
               )}
             </div>

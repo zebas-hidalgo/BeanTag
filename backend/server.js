@@ -151,11 +151,9 @@ function isOwnerUser(user) {
 
 function isResourceOwner(user, resourceUserId) {
   if (!user || !user.id) return false;
-  // If resource has no owner assigned (legacy unassigned), any logged-in user can manage it
-  if (resourceUserId === null || resourceUserId === undefined) return true;
   // Direct user ID match
   if (user.id === resourceUserId) return true;
-  // Global owner account match (covers both Sebastian Hidalgo emails across all his batches)
+  // Global owner account match (covers both Sebastian Hidalgo emails and legacy unassigned batches)
   if (isOwnerUser(user)) return true;
   return false;
 }
@@ -308,25 +306,27 @@ app.get('/api/auth/config', (req, res) => {
 
 // --- API ROUTES ---
 
-// Get all active batches (Filtered by user if authenticated, or public/unassigned)
+// Get all active batches (Scoped strictly to the authenticated user)
 app.get('/api/batches', async (req, res) => {
   try {
+    if (!req.user || !req.user.id) {
+      return res.json([]);
+    }
     const db = await getDb();
     let batches;
-    if (req.user && req.user.id) {
-      if (isOwnerUser(req.user)) {
-        batches = await db.all(
-          `SELECT b.* FROM batches b 
-           LEFT JOIN users u ON b.user_id = u.id 
-           WHERE b.user_id = ? OR b.user_id IS NULL OR LOWER(u.email) IN ('zebas.gpt@gmail.com', 'zeba.hidalgo@gmail.com')
-           ORDER BY b.created_at DESC`,
-          [req.user.id]
-        );
-      } else {
-        batches = await db.all('SELECT * FROM batches WHERE user_id = ? OR user_id IS NULL ORDER BY created_at DESC', [req.user.id]);
-      }
+    if (isOwnerUser(req.user)) {
+      batches = await db.all(
+        `SELECT b.* FROM batches b 
+         LEFT JOIN users u ON b.user_id = u.id 
+         WHERE b.user_id = ? OR b.user_id IS NULL OR LOWER(u.email) IN ('zebas.gpt@gmail.com', 'zeba.hidalgo@gmail.com')
+         ORDER BY b.created_at DESC`,
+        [req.user.id]
+      );
     } else {
-      batches = await db.all('SELECT * FROM batches ORDER BY created_at DESC');
+      batches = await db.all(
+        'SELECT * FROM batches WHERE user_id = ? ORDER BY created_at DESC',
+        [req.user.id]
+      );
     }
     res.json(batches);
   } catch (err) {
@@ -351,6 +351,9 @@ app.get('/api/batches/:id', async (req, res) => {
 
 // Create new batch
 app.post('/api/batches', async (req, res) => {
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ error: 'Debes iniciar sesión para registrar un café.' });
+  }
   const { id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, origin, roast_level, roast_date, freeze_date, sca_score, storage_type, total_weight_g } = req.body;
   if (!id || !name || !producer) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
@@ -378,15 +381,21 @@ app.post('/api/batches', async (req, res) => {
 
   try {
     const db = await getDb();
-    const userId = req.user ? req.user.id : null;
+    const userId = req.user.id;
     const scaScoreNum = (sca_score !== undefined && sca_score !== null && sca_score !== '' && !isNaN(parseFloat(sca_score))) ? parseFloat(sca_score) : null;
+
+    let finalId = id;
+    const existingBatch = await db.get('SELECT id FROM batches WHERE id = ?', finalId);
+    if (existingBatch) {
+      finalId = `${id}-${userId}-${Date.now().toString(36).slice(-4)}`;
+    }
 
     await db.run(
       `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, user_id, sca_score, storage_type)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, producer, altitude, variety, process, roaster, roaster_notes, `${doseWeightNum.toFixed(1)}g`, totalDosesNum, totalDosesNum, origin, roast_level, roast_date, freeze_date, totalWeightGNum, totalWeightGNum, userId, scaScoreNum, storageType]
+      [finalId, name, producer, altitude, variety, process, roaster, roaster_notes, `${doseWeightNum.toFixed(1)}g`, totalDosesNum, totalDosesNum, origin, roast_level, roast_date, freeze_date, totalWeightGNum, totalWeightGNum, userId, scaScoreNum, storageType]
     );
-    res.status(201).json({ success: true, id });
+    res.status(201).json({ success: true, id: finalId });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -508,26 +517,52 @@ app.post('/api/recipes', async (req, res) => {
   }
 });
 
-// Get global recipe history
+// Get recipe history (Scoped strictly to the authenticated user)
 app.get('/api/recipes', async (req, res) => {
   try {
+    if (!req.user || !req.user.id) {
+      return res.json([]);
+    }
     const db = await getDb();
-    const history = await db.all(`
-      SELECT r.*, 
-             b.name as batch_name, 
-             b.variety as batch_variety,
-             b.producer as batch_producer,
-             b.altitude as batch_altitude,
-             b.origin as batch_origin,
-             b.roaster as batch_roaster,
-             b.roast_level as batch_roast_level,
-             b.roaster_notes as batch_roaster_notes,
-             b.roast_date as batch_roast_date,
-             b.process as batch_process
-      FROM recipes r 
-      JOIN batches b ON r.batch_id = b.id 
-      ORDER BY r.created_at DESC
-    `);
+    let history;
+    if (isOwnerUser(req.user)) {
+      history = await db.all(`
+        SELECT r.*, 
+               b.name as batch_name, 
+               b.variety as batch_variety,
+               b.producer as batch_producer,
+               b.altitude as batch_altitude,
+               b.origin as batch_origin,
+               b.roaster as batch_roaster,
+               b.roast_level as batch_roast_level,
+               b.roaster_notes as batch_roaster_notes,
+               b.roast_date as batch_roast_date,
+               b.process as batch_process
+        FROM recipes r 
+        JOIN batches b ON r.batch_id = b.id
+        LEFT JOIN users u ON b.user_id = u.id
+        WHERE b.user_id = ? OR r.user_id = ? OR b.user_id IS NULL OR LOWER(u.email) IN ('zebas.gpt@gmail.com', 'zeba.hidalgo@gmail.com')
+        ORDER BY r.created_at DESC
+      `, [req.user.id, req.user.id]);
+    } else {
+      history = await db.all(`
+        SELECT r.*, 
+               b.name as batch_name, 
+               b.variety as batch_variety,
+               b.producer as batch_producer,
+               b.altitude as batch_altitude,
+               b.origin as batch_origin,
+               b.roaster as batch_roaster,
+               b.roast_level as batch_roast_level,
+               b.roaster_notes as batch_roaster_notes,
+               b.roast_date as batch_roast_date,
+               b.process as batch_process
+        FROM recipes r 
+        JOIN batches b ON r.batch_id = b.id
+        WHERE b.user_id = ? OR r.user_id = ?
+        ORDER BY r.created_at DESC
+      `, [req.user.id, req.user.id]);
+    }
     res.json(history);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -724,28 +759,27 @@ async function ensureRackSlots(db, rackId) {
   }
 }
 
-// Get all tube racks with their 6 slots and joined batch info
+// Get all tube racks with their 6 slots and joined batch info (Scoped strictly to the authenticated user)
 app.get('/api/racks', async (req, res) => {
   try {
+    if (!req.user || !req.user.id) {
+      return res.json([]);
+    }
     const db = await getDb();
     let racks;
-    if (req.user && req.user.id) {
-      if (isOwnerUser(req.user)) {
-        racks = await db.all(
-          `SELECT r.* FROM tube_racks r
-           LEFT JOIN users u ON r.user_id = u.id
-           WHERE r.user_id = ? OR r.user_id IS NULL OR LOWER(u.email) IN ('zebas.gpt@gmail.com', 'zeba.hidalgo@gmail.com')
-           ORDER BY r.order_index ASC, r.created_at ASC`,
-          [req.user.id]
-        );
-      } else {
-        racks = await db.all(
-          'SELECT * FROM tube_racks WHERE user_id = ? OR user_id IS NULL ORDER BY order_index ASC, created_at ASC',
-          [req.user.id]
-        );
-      }
+    if (isOwnerUser(req.user)) {
+      racks = await db.all(
+        `SELECT r.* FROM tube_racks r
+         LEFT JOIN users u ON r.user_id = u.id
+         WHERE r.user_id = ? OR r.user_id IS NULL OR LOWER(u.email) IN ('zebas.gpt@gmail.com', 'zeba.hidalgo@gmail.com')
+         ORDER BY r.order_index ASC, r.created_at ASC`,
+        [req.user.id]
+      );
     } else {
-      racks = await db.all('SELECT * FROM tube_racks ORDER BY order_index ASC, created_at ASC');
+      racks = await db.all(
+        'SELECT * FROM tube_racks WHERE user_id = ? ORDER BY order_index ASC, created_at ASC',
+        [req.user.id]
+      );
     }
 
     const racksWithSlots = await Promise.all(racks.map(async (rack) => {
@@ -771,6 +805,9 @@ app.get('/api/racks', async (req, res) => {
 
 // Create new tube rack
 app.post('/api/racks', async (req, res) => {
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ error: 'Debes iniciar sesión para crear un portatubos.' });
+  }
   const { name } = req.body;
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'El nombre del portatubos es obligatorio.' });
@@ -778,14 +815,12 @@ app.post('/api/racks', async (req, res) => {
   try {
     const db = await getDb();
     const id = 'rack_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-    const userId = req.user ? req.user.id : null;
+    const userId = req.user.id;
     
     // Determine next order_index
     const maxOrder = await db.get(
-      userId 
-        ? 'SELECT MAX(order_index) as max_ord FROM tube_racks WHERE user_id = ?' 
-        : 'SELECT MAX(order_index) as max_ord FROM tube_racks',
-      userId ? [userId] : []
+      'SELECT MAX(order_index) as max_ord FROM tube_racks WHERE user_id = ?',
+      [userId]
     );
     const nextOrder = (maxOrder && maxOrder.max_ord !== null ? maxOrder.max_ord : -1) + 1;
 
@@ -877,9 +912,12 @@ app.put('/api/racks/:id/slots/:position', async (req, res) => {
     }
 
     if (batch_id) {
-      const batch = await db.get('SELECT id, remaining_doses FROM batches WHERE id = ?', batch_id);
+      const batch = await db.get('SELECT id, user_id, remaining_doses FROM batches WHERE id = ?', batch_id);
       if (!batch) {
         return res.status(404).json({ error: 'El lote seleccionado no existe.' });
+      }
+      if (!isResourceOwner(req.user, batch.user_id)) {
+        return res.status(403).json({ error: 'No tienes permiso para usar este lote.' });
       }
 
       // Check how many slots already hold this batch (excluding current slot if it already had this batch)
@@ -935,9 +973,12 @@ app.post('/api/racks/:id/fill', async (req, res) => {
       return res.status(403).json({ error: 'No tienes permiso para editar este portatubos.' });
     }
 
-    const batch = await db.get('SELECT id, remaining_doses FROM batches WHERE id = ?', batch_id);
+    const batch = await db.get('SELECT id, user_id, remaining_doses FROM batches WHERE id = ?', batch_id);
     if (!batch) {
       return res.status(404).json({ error: 'El lote seleccionado no existe.' });
+    }
+    if (!isResourceOwner(req.user, batch.user_id)) {
+      return res.status(403).json({ error: 'No tienes permiso para usar este lote.' });
     }
 
     // Count how many slots in ALL racks already hold this batch

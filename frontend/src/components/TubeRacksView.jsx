@@ -17,7 +17,7 @@ const getRoastDotColor = (roast) => {
   return 'var(--accent)';
 };
 
-export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches, showToast }) {
+export default function TubeRacksView({ batches, currentUser, onRequireAuth, onSelectBatch, onRefreshBatches, showToast }) {
   const [racks, setRacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -78,7 +78,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
 
   useEffect(() => {
     fetchRacks();
-  }, [fetchRacks]);
+  }, [fetchRacks, currentUser?.id]);
 
   // Synchronize selectedRackId if null or no longer in racks
   useEffect(() => {
@@ -464,7 +464,13 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
           </p>
           <button
             type="button"
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => {
+              if (!currentUser && onRequireAuth) {
+                onRequireAuth();
+              } else {
+                setShowCreateModal(true);
+              }
+            }}
             style={{
               padding: '12px 24px',
               backgroundColor: 'var(--barista-accent-honey)',
@@ -480,7 +486,7 @@ export default function TubeRacksView({ batches, onSelectBatch, onRefreshBatches
             }}
           >
             <Plus size={18} strokeWidth={2.5} />
-            <span>Crear mi primer portatubos (2×3)</span>
+            <span>{!currentUser ? 'Inicia sesión para crear portatubos' : 'Crear mi primer portatubos (2×3)'}</span>
           </button>
         </div>
       )}

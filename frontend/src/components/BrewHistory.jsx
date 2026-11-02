@@ -18,7 +18,7 @@ const getMethodLucideIcon = (methodName, size = 18) => {
   return <Coffee size={size} color="var(--color-crimson)" />;
 };
 
-export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batches, showToast }) {
+export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batches, currentUser, onRequireAuth, showToast }) {
   const [history, setHistory] = useState(null); // null = loading, [] = empty
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [editingRecipe, setEditingRecipe] = useState(null);
@@ -58,7 +58,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
   useEffect(() => {
     let active = true;
-    fetch(apiUrl('api/recipes'))
+    const token = localStorage.getItem('beantag-token');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    fetch(apiUrl('api/recipes'), { headers })
       .then(res => res.json())
       .then(data => {
         if (active) {
@@ -74,7 +76,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
     img.onload = () => { textureRef.current = img; };
 
     return () => { active = false; };
-  }, []);
+  }, [currentUser?.id]);
 
 
   const dataURLtoBlob = (dataurl) => {
@@ -259,9 +261,9 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
         .then(data => {
           if (data.success) {
             setSelectedRecipe(null);
-            fetch(apiUrl('api/recipes'))
+            fetch(apiUrl('api/recipes'), { headers })
               .then(res => res.json())
-              .then(d => setHistory(d));
+              .then(d => setHistory(Array.isArray(d) ? d : []));
           }
         })
         .catch(err => {
@@ -440,12 +442,20 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
         /* R8: Empty state CTA with guidance */
         <div className="candy-card static" style={{ textAlign: 'center', padding: '30px' }}>
           <div style={{ marginBottom: '12px', color: 'var(--ink-muted)', display: 'flex', justifyContent: 'center' }}><Coffee size={32} strokeWidth={1.75} aria-hidden="true" /></div>
-          <p style={{ fontWeight: 'bold', margin: '0 0 6px 0' }}>Aún no has registrado ninguna receta.</p>
-          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 16px 0' }}>
-            Selecciona un café del congelador y registra tu primera preparación.
+          <p style={{ fontWeight: 'bold', margin: '0 0 6px 0' }}>
+            {!currentUser ? 'Inicia sesión para ver tu bitácora.' : 'Aún no has registrado ninguna receta.'}
           </p>
-          <button className="btn-candy primary" style={{ margin: '0 auto' }} onClick={onNavigateToInventory}>
-            Ir al congelador
+          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 16px 0' }}>
+            {!currentUser
+              ? 'Tus preparaciones y notas sensoriales se guardan vinculadas a tu cuenta.'
+              : 'Selecciona un café de tu inventario y registra tu primera preparación.'}
+          </p>
+          <button
+            className="btn-candy primary"
+            style={{ margin: '0 auto' }}
+            onClick={!currentUser && onRequireAuth ? onRequireAuth : onNavigateToInventory}
+          >
+            {!currentUser ? 'Iniciar Sesión' : 'Ir al inventario'}
           </button>
         </div>
       ) : filteredHistory.length === 0 ? (

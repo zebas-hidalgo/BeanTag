@@ -143,8 +143,12 @@ export default function App() {
   const handleLogout = () => {
     setCurrentUser(null);
     setToken('');
+    setBatches([]);
     localStorage.removeItem('beantag-token');
     localStorage.removeItem('beantag-user');
+    if (currentView === 'creator') {
+      setCurrentView('inventory');
+    }
     showToast('Has cerrado sesión.', { type: 'info', duration: 2000 });
     fetchBatches('');
   };
@@ -509,6 +513,8 @@ export default function App() {
         {currentView === 'inventory' && (
           <Inventory 
             batches={batches} 
+            currentUser={currentUser}
+            onRequireAuth={() => setShowAuthModal(true)}
             onSelectBatch={handleSelectBatch} 
             onCreateTrigger={() => {
               if (!currentUser) {
@@ -566,6 +572,8 @@ export default function App() {
           {currentView === 'brews' && (
             <BrewHistory 
               batches={batches}
+              currentUser={currentUser}
+              onRequireAuth={() => setShowAuthModal(true)}
               onSelectBatch={handleSelectBatch}
               onNavigateToInventory={() => setCurrentView('inventory')}
               showToast={showToast}
