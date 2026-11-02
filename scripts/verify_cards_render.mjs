@@ -304,7 +304,7 @@ const sampleRecipeWithSensory = {
 const sampleBatches = [
   { batch_name: 'Gesha Finca Deborah Echo', origin: 'Panamá', process: 'Maceración Carbónica', remaining_doses: 12, roaster: 'Savage Coffees' },
   { batch_name: 'Pink Bourbon El Paraiso', origin: 'Colombia', process: 'Doble Fermentación', remaining_doses: 8, roaster: 'Finca El Paraiso' },
-  { batch_name: 'Wush Wush Keffa', origin: 'Etiopía', process: 'Natural Anaeróbico', remaining_doses: 15, roaster: 'Keffa Forest' },
+  { batch_name: 'Wush Wush Keffa', origin: 'Etiopía', process: 'Natural Anaeróbico', remaining_doses: 14, remaining_weight_g: 250, storage_type: 'bag', roaster: 'Keffa Forest' },
   { batch_name: 'Chiroso Finca Los Alpes', origin: 'Colombia', process: 'Lavado Frío', remaining_doses: 6, roaster: 'Los Alpes' }
 ];
 
@@ -401,10 +401,13 @@ async function verify() {
   for (const style of STYLES) {
     try {
       mockOps.length = 0;
+      mockOpsDetailed.length = 0;
       const dataUrl = await window.__generateCoffeeMenuCardImage(sampleBatches, style);
       const isValidDataUrl = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png;base64,');
       const opsCount = mockOps.length;
-      const passed = isValidDataUrl && opsCount > 20;
+      const hasBagStockBadge = mockContext.operations.some(op => op.name === 'fillText' && typeof op.args[0] === 'string' && op.args[0].toUpperCase().includes('250G BOLSA'));
+      assert(hasBagStockBadge, 'Cellar menu must render bag stock as "250g BOLSA" rather than tubes');
+      const passed = isValidDataUrl && opsCount > 20 && hasBagStockBadge;
 
       if (!passed) hasFailure = true;
 

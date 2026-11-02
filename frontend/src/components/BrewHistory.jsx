@@ -6,8 +6,7 @@ import { stripEmojis, RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { parseGrindToMicrons } from '../utils/grinders';
-import CardStylePicker from './CardStylePicker';
-import { copyOrShareImage, STICKER_HINTS } from '../utils/clipboard';
+import StickerShareModal from './StickerShareModal';
 
 const getMethodLucideIcon = (methodName, size = 18) => {
   const m = (methodName || '').toLowerCase();
@@ -958,140 +957,25 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
         </div>
       )}
 
-      {/* Vista Previa de Compartir Ticket POS */}
-      {shareImage && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          zIndex: 'var(--z-modal)', 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'flex-start',
-          padding: '16px', 
-          boxSizing: 'border-box',
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch'
-        }} onClick={() => { setShareImage(null); setShareStatus(''); }}>
-          <div className="candy-card static animate-entrance" style={{
-            maxWidth: '480px', width: '100%',
-            maxHeight: 'calc(100dvh - 32px)',
-            margin: 'auto',
-            padding: '16px', boxSizing: 'border-box',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-            display: 'flex', flexDirection: 'column', gap: '10px',
-            overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch'
-          }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
-              {/* Row 1: Header + Format Selector */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '12.5px', margin: 0, color: 'var(--color-text)' }}>
-                  Sticker · {selectedRecipe?.batch_name}
-                </h3>
-              </div>
-              <CardStylePicker
-                value={shareTemplate || DEFAULT_CARD_STYLE}
-                onChange={(id) => {
-                  setShareTemplate(id);
-                  exportRecipeAsImage(selectedRecipe, id, shareIncludeRecipe, 'sticker', true, stickerOrientation);
-                }}
-                orientation={stickerOrientation}
-                onOrientationChange={(o) => {
-                  setStickerOrientation(o);
-                  exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'sticker', true, o);
-                }}
-              />
-
-
-
-
-            </div>
-
-            <div style={{
-              textAlign: 'center',
-              backgroundColor: 'var(--bg-canvas)',
-              borderRadius: 'var(--r-control)',
-              padding: '8px',
-              overflow: 'hidden',
-              flex: '0 1 auto',
-              minHeight: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <img 
-                src={shareImage} 
-                alt="Vista previa del sticker (fondo transparente)" 
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: 'calc(45dvh - 50px)',
-                  height: 'auto',
-                  objectFit: 'contain',
-                  borderRadius: 'var(--r-control)', 
-                  display: 'block',
-                  margin: '0 auto',
-                  background: 'repeating-conic-gradient(#D9D3CA 0% 25%, #F1EDE6 0% 50%) 50% / 24px 24px'
-                }} 
-              />
-            </div>
-            
-            {shareStatus && (
-              <div style={{
-                background: /error/i.test(shareStatus) ? 'var(--barista-accent-danger-bg)' : /éxito|copiad|descarga/i.test(shareStatus) ? 'var(--barista-accent-mint-bg)' : 'var(--barista-accent-honey-bg)',
-                color: /error/i.test(shareStatus) ? 'var(--barista-accent-danger-text)' : /éxito|copiad|descarga/i.test(shareStatus) ? 'var(--barista-accent-mint-text)' : 'var(--barista-accent-honey-text)',
-                border: '1.5px solid var(--border-color)',
-                borderRadius: 'var(--r-control)',
-                padding: '6px 10px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                textAlign: 'center',
-                fontFamily: 'var(--font-heading)',
-                flexShrink: 0
-              }}>
-                {shareStatus}
-              </div>
-            )}
-
-            <div style={{ display: 'flex', gap: '8px', marginTop: 'auto', flexShrink: 0, paddingTop: '4px' }}>
-              <button 
-                type="button" 
-                className="btn-candy primary" 
-                style={{ flex: 1, minHeight: '44px', padding: '9px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '12px' }} 
-                onClick={handleNativeShare}
-              >
-                <Share2 size={15} strokeWidth={2.5} />
-                Compartir o guardar
-              </button>
-              <button
-                type="button"
-                className="btn-candy"
-                style={{ flex: 1, minHeight: '44px', padding: '9px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                onClick={async () => {
-                  try {
-                    const how = await copyOrShareImage(shareImage, 'beantag-sticker.png');
-                    if (STICKER_HINTS[how]) setShareStatus(STICKER_HINTS[how]);
-                  } catch (err) {
-                    setShareStatus('No se pudo copiar ni compartir: ' + (err.message || err));
-                  }
-                }}
-              >
-                Copiar sticker
-              </button>
-              <button 
-                type="button" 
-                className="btn-candy" 
-                style={{ minHeight: '44px', padding: '9px 14px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '12px' }} 
-                onClick={() => setShareImage(null)}
-              >
-                <X size={15} strokeWidth={2.5} />
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Vista Previa de Compartir Sticker */}
+      <StickerShareModal
+        shareImage={shareImage}
+        title={selectedRecipe?.batch_name ? `Sticker · ${selectedRecipe.batch_name}` : 'Sticker'}
+        shareTemplate={shareTemplate || DEFAULT_CARD_STYLE}
+        onChangeTemplate={(id) => {
+          setShareTemplate(id);
+          exportRecipeAsImage(selectedRecipe, id, shareIncludeRecipe, 'sticker', true, stickerOrientation);
+        }}
+        stickerOrientation={stickerOrientation}
+        onChangeOrientation={(o) => {
+          setStickerOrientation(o);
+          exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'sticker', true, o);
+        }}
+        shareStatus={shareStatus}
+        setShareStatus={setShareStatus}
+        onClose={() => { setShareImage(null); setShareStatus(''); }}
+        onShareNative={handleNativeShare}
+      />
     </div>
   );
 }

@@ -23,18 +23,31 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
     } catch (e) {}
   };
 
-  const [showFinished, setShowFinished] = useState(false);
+  const [filterMode, setFilterMode] = useState('all'); // 'all' | 'bags' | 'tubes' | 'finished'
+  const showFinished = filterMode === 'finished';
 
   // Quick Action Context Menu State
   const [contextBatch, setContextBatch] = useState(null);
 
   const safeBatches = Array.isArray(batches) ? batches : [];
 
-  // Filter available vs finished batches
-  const availableBatches = safeBatches.filter(b => b && (b.remaining_doses || 0) > 0);
-  const finishedBatches = safeBatches.filter(b => b && (b.remaining_doses || 0) <= 0);
+  const isBatchAvailable = (b) => b && (b.storage_type === 'bag'
+    ? (parseFloat(b.remaining_weight_g) > 0 || (b.remaining_doses || 0) > 0)
+    : (b.remaining_doses || 0) > 0);
 
-  const currentList = showFinished ? finishedBatches : availableBatches;
+  // Filter available vs finished batches
+  const availableBatches = safeBatches.filter(isBatchAvailable);
+  const bagBatches = availableBatches.filter(b => b.storage_type === 'bag');
+  const tubeBatches = availableBatches.filter(b => b.storage_type !== 'bag');
+  const finishedBatches = safeBatches.filter(b => b && !isBatchAvailable(b));
+
+  const currentList = filterMode === 'finished'
+    ? finishedBatches
+    : filterMode === 'bags'
+      ? bagBatches
+      : filterMode === 'tubes'
+        ? tubeBatches
+        : availableBatches;
 
   // Search filter
   const filteredBatches = (Array.isArray(currentList) ? currentList : []).filter(batch => {
@@ -149,33 +162,54 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
             justifyContent: 'space-between',
             alignItems: 'center',
             gap: '8px',
-            marginBottom: '12px'
+            marginBottom: '12px',
+            flexWrap: 'wrap'
           }}>
             <span style={{ fontSize: 'var(--fs-14)', fontWeight: 500, color: 'var(--ink-muted)', whiteSpace: 'nowrap' }}>
               {filteredBatches.length} {filteredBatches.length === 1 ? 'lote en cava' : 'lotes en cava'}
             </span>
 
-            <div className="inventory-view-selector" role="tablist" aria-label="Estado de lotes">
+            <div className="inventory-view-selector" role="tablist" aria-label="Estado de lotes" style={{ flexWrap: 'wrap' }}>
               <button
                 type="button"
                 role="tab"
-                aria-selected={!showFinished}
-                className={`inventory-view-btn ${!showFinished ? 'active' : ''}`}
-                onClick={() => {
-                  setShowFinished(false);
-                }}
+                aria-selected={filterMode === 'all'}
+                className={`inventory-view-btn ${filterMode === 'all' ? 'active' : ''}`}
+                onClick={() => setFilterMode('all')}
               >
                 <Snowflake size={12} strokeWidth={2.3} />
-                <span>Congelador ({availableBatches.length})</span>
+                <span>Disponibles ({availableBatches.length})</span>
               </button>
+              {bagBatches.length > 0 && tubeBatches.length > 0 && (
+                <>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={filterMode === 'bags'}
+                    className={`inventory-view-btn ${filterMode === 'bags' ? 'active' : ''}`}
+                    onClick={() => setFilterMode('bags')}
+                  >
+                    <Coffee size={12} strokeWidth={2.3} />
+                    <span>Bolsas ({bagBatches.length})</span>
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={filterMode === 'tubes'}
+                    className={`inventory-view-btn ${filterMode === 'tubes' ? 'active' : ''}`}
+                    onClick={() => setFilterMode('tubes')}
+                  >
+                    <Package size={12} strokeWidth={2.3} />
+                    <span>Tubos ({tubeBatches.length})</span>
+                  </button>
+                </>
+              )}
               <button
                 type="button"
                 role="tab"
-                aria-selected={showFinished}
-                className={`inventory-view-btn ${showFinished ? 'active' : ''}`}
-                onClick={() => {
-                  setShowFinished(true);
-                }}
+                aria-selected={filterMode === 'finished'}
+                className={`inventory-view-btn ${filterMode === 'finished' ? 'active' : ''}`}
+                onClick={() => setFilterMode('finished')}
               >
                 <CheckCircle2 size={12} strokeWidth={2.3} />
                 <span>Agotados ({finishedBatches.length})</span>
@@ -323,7 +357,7 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
               <Zap size={15} color="var(--color-crimson)" />
             </button>
 
-            {contextBatch.remaining_doses > 0 && onSubtractDose && (
+            {isBatchAvailable(contextBatch) && onSubtractDose && (
               <button
                 type="button"
                 className="cupertino-context-item"
@@ -335,8 +369,14 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                   });
                 }}
               >
-                <span><Snowflake size={14} style={{marginRight:'6px',verticalAlign:'middle'}} /> Restar 1 Tubo (-1)</span>
-                <Snowflake size={15} color="var(--color-crimson)" />
+                <span>
+                  {contextBatch.storage_type === 'bag'
+                    ? <><Coffee size={14} style={{marginRight:'6px',verticalAlign:'middle'}} /> Restar 1 Dosis (~{Math.round(parseFloat(contextBatch.dose_weight) || 18)}g)</>
+                    : <><Snowflake size={14} style={{marginRight:'6px',verticalAlign:'middle'}} /> Restar 1 Tubo (-1)</>}
+                </span>
+                {contextBatch.storage_type === 'bag'
+                  ? <Coffee size={15} color="var(--color-crimson)" />
+                  : <Snowflake size={15} color="var(--color-crimson)" />}
               </button>
             )}
 

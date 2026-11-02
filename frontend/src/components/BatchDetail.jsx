@@ -9,7 +9,7 @@ import { FAMOUS_RECIPES } from '../utils/famousRecipes';
 import { GRINDERS, getGrinderConfig, scaleGrinderSettingForDose, calculateDoseDeltaMicrons } from '../utils/grinders';
 
 import BatchHeaderCard from './batch/BatchHeaderCard';
-import CardStylePicker from './CardStylePicker';
+import StickerShareModal from './StickerShareModal';
 import RecipeParamsGrid from './batch/RecipeParamsGrid';
 import GrinderSyncMatrix from './batch/GrinderSyncMatrix';
 
@@ -1371,6 +1371,44 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       {(
         <div ref={brewFormRef} className="animate-entrance">
           <form onSubmit={handleRecipeSubmit}>
+            {lastRecipe && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '8px',
+                  padding: '8px 12px',
+                  marginBottom: '12px',
+                  borderRadius: 'var(--r-control)',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-color)',
+                  fontSize: '12px',
+                  color: 'var(--ink-muted)'
+                }}
+              >
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <strong style={{ color: 'var(--ink)' }}>Última receta cargada:</strong> {lastRecipe.method} · {lastRecipe.ratio} · {lastRecipe.grind}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleLoadRecipeToForm(lastRecipe)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--accent)',
+                    fontWeight: 600,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    padding: '4px 6px',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Restaurar
+                </button>
+              </div>
+            )}
+
             {/* V4 Modular Recipe Parameters Grid */}
             <RecipeParamsGrid
               method={method}
@@ -1505,32 +1543,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               getGrindString={getGrindString}
             />
 
-            {/* ¿Cómo salió? (un toque) */}
+            {/* Paso 1: Preparar con el cronómetro */}
             <div style={{ marginTop: '16px' }}>
-              <div className="bt-tile-k" id="bt-taste-label" style={{ marginBottom: '8px' }}>¿Cómo salió?</div>
-              <div className="bt-taste" role="radiogroup" aria-labelledby="bt-taste-label">
-                {[
-                  { id: 'Sub', label: 'Ácido', hint: 'Muele más fino', balance: 'Ácido' },
-                  { id: 'En Punto', label: 'Bien', hint: 'Repetir así', balance: 'Dulce' },
-                  { id: 'Sobre', label: 'Amargo', hint: 'Muele más grueso', balance: 'Amargo' }
-                ].map(t => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={sensoryExtraction === t.id}
-                    className={`bt-taste-btn${sensoryExtraction === t.id ? ' is-active' : ''}`}
-                    onClick={() => { setSensoryExtraction(t.id); setSensoryBalance(t.balance); }}
-                  >
-                    {t.label}
-                    <small>{t.hint}</small>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Form Actions (In-Flow, No Floating Sticky Bar) */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
               <button
                 type="button"
                 onClick={startBrewFromForm}
@@ -1556,7 +1570,33 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 <Play size={18} fill="currentColor" />
                 <span>Preparar con el cronómetro</span>
               </button>
+            </div>
 
+            {/* Paso 2: ¿Cómo salió? (un toque tras probar) + Guardar */}
+            <div style={{ marginTop: '16px' }}>
+              <div className="bt-tile-k" id="bt-taste-label" style={{ marginBottom: '8px' }}>¿Cómo salió?</div>
+              <div className="bt-taste" role="radiogroup" aria-labelledby="bt-taste-label">
+                {[
+                  { id: 'Sub', label: 'Ácido', hint: 'Muele más fino', balance: 'Ácido' },
+                  { id: 'En Punto', label: 'Bien', hint: 'Repetir así', balance: 'Dulce' },
+                  { id: 'Sobre', label: 'Amargo', hint: 'Muele más grueso', balance: 'Amargo' }
+                ].map(t => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={sensoryExtraction === t.id}
+                    className={`bt-taste-btn${sensoryExtraction === t.id ? ' is-active' : ''}`}
+                    onClick={() => { setSensoryExtraction(t.id); setSensoryBalance(t.balance); }}
+                  >
+                    {t.label}
+                    <small>{t.hint}</small>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
               {isOwner ? (
                 <button
                   type="submit"
@@ -1620,127 +1660,26 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   </div>
       </details>
 
-      {/* Modal de Compartir Ticket POS & Carta de Cafés */}
-      {shareImage && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          zIndex: 'var(--z-modal)', 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'flex-start',
-          padding: '16px', 
-          boxSizing: 'border-box',
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch'
-        }} onClick={() => { setShareImage(null); setShareStatus(''); }}>
-          <div className="candy-card static animate-entrance" style={{
-            maxWidth: '480px', width: '100%',
-            maxHeight: 'calc(100dvh - 32px)',
-            margin: 'auto',
-            padding: '16px', boxSizing: 'border-box',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-            display: 'flex', flexDirection: 'column', gap: '10px',
-            overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch'
-          }} onClick={(e) => e.stopPropagation()}>
-            <CardStylePicker
-              value={shareTemplate || DEFAULT_CARD_STYLE}
-              onChange={(id) => {
-                setShareTemplate(id);
-                handleShareBatchCard(shareIncludeRecipe, id, 'sticker', true, stickerOrientation);
-              }}
-              orientation={stickerOrientation}
-              onOrientationChange={(o) => {
-                setStickerOrientation(o);
-                handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', true, o);
-              }}
-            />
-
-            <div style={{
-              textAlign: 'center',
-              backgroundColor: 'var(--bg-canvas)',
-              borderRadius: 'var(--r-control)',
-              padding: '8px',
-              overflow: 'hidden',
-              flex: '0 1 auto',
-              minHeight: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <img 
-                src={shareImage} 
-                alt="Vista previa del sticker (fondo transparente)" 
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: 'calc(45dvh - 50px)',
-                  height: 'auto',
-                  objectFit: 'contain',
-                  borderRadius: 'var(--r-control)', 
-                  display: 'block',
-                  margin: '0 auto',
-                  background: 'repeating-conic-gradient(#D9D3CA 0% 25%, #F1EDE6 0% 50%) 50% / 24px 24px'
-                }} 
-              />
-            </div>
-            
-            {shareStatus && (
-              <div style={{
-                background: /error/i.test(shareStatus) ? 'var(--barista-accent-danger-bg)' : 'var(--barista-accent-mint-bg)',
-                color: /error/i.test(shareStatus) ? 'var(--barista-accent-danger-text)' : 'var(--barista-accent-mint-text)',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--r-control)',
-                padding: '6px 12px',
-                fontSize: '12px',
-                fontWeight: '600',
-                textAlign: 'center',
-                flexShrink: 0
-              }}>
-                {shareStatus}
-              </div>
-            )}
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: 'auto', flexShrink: 0, paddingTop: '4px' }}>
-              <button
-                type="button"
-                className="barista-btn barista-btn-primary"
-                style={{ margin: 0 }}
-                onClick={async () => {
-                  try {
-                    const how = await copyOrShareImage(shareImage, 'beantag-sticker.png');
-                    if (STICKER_HINTS[how]) setShareStatus(STICKER_HINTS[how]);
-                  } catch (err) {
-                    setShareStatus('No se pudo copiar ni compartir: ' + (err.message || err));
-                  }
-                }}
-              >
-                <ClipboardCopy size={16} strokeWidth={2.2} aria-hidden="true" />
-                Copiar sticker
-              </button>
-              <button
-                type="button"
-                className="barista-btn barista-btn-secondary"
-                style={{ margin: 0 }}
-                onClick={handleNativeShare}
-              >
-                <Share2 size={16} strokeWidth={2.2} aria-hidden="true" />
-                Compartir
-              </button>
-              <button
-                type="button"
-                className="barista-btn barista-btn-ghost"
-                style={{ gridColumn: '1 / -1', margin: 0 }}
-                onClick={handleCopyShareText}
-              >
-                Copiar como texto (WhatsApp)
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal de Compartir Sticker & Carta de Cafés */}
+      <StickerShareModal
+        shareImage={shareImage}
+        title={batch?.name ? `Sticker · ${batch.name}` : 'Sticker'}
+        shareTemplate={shareTemplate || DEFAULT_CARD_STYLE}
+        onChangeTemplate={(id) => {
+          setShareTemplate(id);
+          handleShareBatchCard(shareIncludeRecipe, id, 'sticker', true, stickerOrientation);
+        }}
+        stickerOrientation={stickerOrientation}
+        onChangeOrientation={(o) => {
+          setStickerOrientation(o);
+          handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', true, o);
+        }}
+        shareStatus={shareStatus}
+        setShareStatus={setShareStatus}
+        onClose={() => { setShareImage(null); setShareStatus(''); }}
+        onShareNative={handleNativeShare}
+        onCopyText={handleCopyShareText}
+      />
 
       {/* Sticky "Preparar" bar: the main action is always one thumb away */}
       {batch && !isBrewGuideOpen && !shareImage && (

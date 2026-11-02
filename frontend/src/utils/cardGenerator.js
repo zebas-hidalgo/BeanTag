@@ -10,7 +10,7 @@
 
 import { cleanNotesString } from './scaIcons';
 import { GRINDERS } from './grinders';
-import { TREND_STYLES, TREND_THEMES, drawTrendCard, drawTrendMenu, trendMenuSize, drawTrendSticker } from './trendCards';
+import { TREND_STYLES, TREND_THEMES, drawTrendMenu, trendMenuSize } from './trendCards';
 import { STORY_STYLES, drawStoryCard } from './storyCards';
 import { STICKER_SIZES, drawSticker } from './stickerCards';
 
@@ -276,21 +276,15 @@ function composeStoryCanvas(feedCanvas, style, footerText) {
 // ---------------------------------------------------------------------------
 
 /**
- * Recipe card (incRecipe = true) or bean card (false), feed 4:5 or story 9:16.
+ * Recipe card (incRecipe = true) or bean card (false), native story 9:16 (1080x1920).
  */
-export async function generateRecipeCardImage(recipe, template = DEFAULT_CARD_STYLE, incRecipe = true, format = getPreferredCardFormat()) {
+export async function generateRecipeCardImage(recipe, template = DEFAULT_CARD_STYLE, incRecipe = true) {
   const style = normalizeCardStyle(template);
   await ensureFontsLoaded();
   const d = buildCardData(recipe, incRecipe);
-  if (format === 'story') {
-    // Native 9:16: the layout uses the whole story inside Instagram's safe zone
-    const story = createCanvas(1080, 1920);
-    drawStoryCard(story.getContext('2d'), style, d, incRecipe);
-    return story.toDataURL('image/png', 1.0);
-  }
-  const canvas = createCanvas(1080, 1350);
-  drawTrendCard(canvas.getContext('2d'), skinStyle(style), d, incRecipe, 1);
-  return canvas.toDataURL('image/png', 1.0);
+  const story = createCanvas(1080, 1920);
+  drawStoryCard(story.getContext('2d'), style, d, incRecipe);
+  return story.toDataURL('image/png', 1.0);
 }
 
 /**
@@ -300,12 +294,18 @@ export async function generateCoffeeMenuCardImage(batches, template = DEFAULT_CA
   const style = skinStyle(normalizeCardStyle(template));
   await ensureFontsLoaded();
   const all = Array.isArray(batches) ? batches : [];
-  const withStock = all.filter(b => (b.remaining_doses || b.weight_current_g || 0) > 0);
+  const withStock = all.filter(b => (b.remaining_doses || b.remaining_weight_g || b.weight_current_g || 0) > 0);
   const list = withStock.length > 0 ? withStock : all.slice(0, 10);
 
   const items = list.map(b => {
+    const isBag = b.storage_type === 'bag';
     const doses = b.remaining_doses !== undefined && b.remaining_doses !== null ? b.remaining_doses : 0;
-    const grams = b.remaining_weight_g || b.weight_current_g;
+    const grams = b.remaining_weight_g ?? b.weight_current_g;
+    const estBagGrams = Math.round(grams || (doses * (parseFloat(b.dose_weight) || 18)));
+    const stock = isBag
+      ? `${estBagGrams}g BOLSA`
+      : (doses > 0 ? `${doses} ${doses === 1 ? 'TUBO' : 'TUBOS'}` : (grams ? `~${Math.round(grams)}g` : ''));
+
     return {
       name: stripEmojis(b.batch_name || b.name || b.coffee_name || 'Café'),
       roaster: stripEmojis(b.roaster || ''),
@@ -313,7 +313,7 @@ export async function generateCoffeeMenuCardImage(batches, template = DEFAULT_CA
       process: stripEmojis(b.process || ''),
       sca: scaOf(b),
       tags: extractFlavorTags(cleanNotesString(b.flavor_notes || b.roaster_notes || b.notes || b.batch_roaster_notes || '')),
-      stock: doses > 0 ? `${doses} ${doses === 1 ? 'TUBO' : 'TUBOS'}` : (grams ? `~${Math.round(grams)}g` : '')
+      stock
     };
   });
 
