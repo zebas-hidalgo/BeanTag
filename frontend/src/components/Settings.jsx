@@ -36,7 +36,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   };
 
   // AI Provider & Keys State
-  const [aiProvider, setAiProvider] = useState(() => localStorage.getItem('beantag-ai-provider') || 'groq');
+  const aiProvider = 'groq'; // Groq is the only provider the app offers
   const [groqKey, setGroqKey] = useState(() => localStorage.getItem('groq-key') || '');
   const [groqModel, setGroqModel] = useState(() => {
     const stored = localStorage.getItem('groq-model');
@@ -50,23 +50,6 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   const [testGroqLoading, setTestGroqLoading] = useState(false);
   const [testGroqResult, setTestGroqResult] = useState(null);
 
-  const [apiKey, setApiKey] = useState(() => {
-    return localStorage.getItem('gemini-api-key') || '';
-  });
-  const geminiKey = apiKey;
-  const [selectedModel, setSelectedModel] = useState(() => {
-    const stored = localStorage.getItem('gemini-model');
-    if (!stored || stored === 'gemini-2.0-flash' || stored === 'gemini-1.5-flash' || stored === 'gemini-1.5-pro' || stored === 'gemini-2.5-pro') {
-      localStorage.setItem('gemini-model', 'gemini-3.8-flash');
-      return 'gemini-3.8-flash';
-    }
-    return stored;
-  });
-  const [isThinkingEnabled, setIsThinkingEnabled] = useState(() => {
-    return localStorage.getItem('gemini-thinking') === 'true';
-  });
-  const [testingGemini, setTestingGemini] = useState(false);
-  const [geminiTestResult, setGeminiTestResult] = useState(null);
   const [defaultGrinder, setDefaultGrinder] = useState(() => {
     return localStorage.getItem('default-grinder') || 'jmax';
   });
@@ -183,12 +166,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         'Content-Type': 'application/json',
         'x-ai-provider': aiProvider,
         'x-groq-key': groqKey,
-        'x-gemini-key': geminiKey,
-        'x-ai-model': aiProvider === 'groq' ? groqModel : selectedModel
+        'x-ai-model': groqModel
       };
-      if (geminiKey) {
-        headers['x-gemini-thinking'] = isThinkingEnabled ? 'true' : 'false';
-      }
 
       const res = await fetch(apiUrl('api/ai/sommelier'), {
         method: 'POST',
@@ -222,37 +201,6 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
     }
   };
 
-  const [cardStyle, setCardStyle] = useState(() => {
-    try {
-      return localStorage.getItem('beantag-inventory-style') || 'editorial';
-    } catch (e) {
-      return 'editorial';
-    }
-  });
-
-  const handleCardStyleChange = (style) => {
-    setCardStyle(style);
-    try {
-      localStorage.setItem('beantag-inventory-style', style);
-      window.dispatchEvent(new Event('beantag-inventory-style-changed'));
-    } catch (e) {}
-    const names = {
-      editorial: 'Editorial (Nordic)',
-      list: 'Lista (Cupertino)',
-      archive: 'Archivo (Tokyo Lab)'
-    };
-    if (showToast) {
-    }
-  };
-
-  const handleProviderChange = (newProvider) => {
-    setAiProvider(newProvider);
-    localStorage.setItem('beantag-ai-provider', newProvider);
-    if (showToast) {
-      showToast(`Proveedor de IA: ${newProvider === 'groq' ? 'Groq (LPU Ultra-Rápido)' : 'Google Gemini'}`, { type: 'info', duration: 2000 });
-    }
-  };
-
   const handleGroqKeyChange = (val) => {
     setGroqKey(val);
     localStorage.setItem('groq-key', val);
@@ -270,9 +218,6 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
     localStorage.setItem('beantag-ai-provider', aiProvider);
     localStorage.setItem('groq-key', groqKey);
     localStorage.setItem('groq-model', groqModel);
-    localStorage.setItem('gemini-api-key', apiKey);
-    localStorage.setItem('gemini-model', selectedModel);
-    localStorage.setItem('gemini-thinking', isThinkingEnabled ? 'true' : 'false');
     localStorage.setItem('default-grinder', defaultGrinder);
     if (showToast) {
       showToast('Configuración guardada correctamente.', { type: 'success', duration: 2500 });
@@ -309,51 +254,6 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       if (showToast) showToast('Error de conexión con el servidor.', { type: 'error', duration: 3500 });
     } finally {
       setTestGroqLoading(false);
-    }
-  };
-
-  const handleTestGemini = async () => {
-    setTestingGemini(true);
-    setGeminiTestResult(null);
-    try {
-      const res = await fetch(apiUrl('api/test-gemini'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          apiKey: apiKey.trim() || undefined,
-          model: selectedModel || undefined
-        })
-      });
-      const data = await res.json();
-      setGeminiTestResult(data);
-      if (data.success) {
-        if (showToast) showToast(`Conexión con Gemini exitosa (${data.model})`, { type: 'success', duration: 3000 });
-      } else {
-        if (showToast) showToast(`Error: ${data.message || data.error}`, { type: 'error', duration: 4000 });
-      }
-    } catch (err) {
-      const fail = { success: false, error: 'network_error', message: `Fallo de conexión con el servidor: ${err.message}` };
-      setGeminiTestResult(fail);
-      if (showToast) showToast('Error de conexión con el servidor.', { type: 'error', duration: 3500 });
-    } finally {
-      setTestingGemini(false);
-    }
-  };
-
-  const handleModelChange = (newModel) => {
-    setSelectedModel(newModel);
-    localStorage.setItem('gemini-model', newModel);
-    if (showToast) {
-      showToast(`Modelo cambiado a ${newModel}.`, { type: 'info', duration: 2000 });
-    }
-  };
-
-  const handleToggleThinking = () => {
-    const newVal = !isThinkingEnabled;
-    setIsThinkingEnabled(newVal);
-    localStorage.setItem('gemini-thinking', newVal ? 'true' : 'false');
-    if (showToast) {
-      showToast(newVal ? 'Modo Pensamiento (Thinking) Activado.' : 'Modo Rápido Activado.', { type: 'info', duration: 2000 });
     }
   };
 
@@ -466,7 +366,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   return (
     <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       <h2 className="bt-page-title">
-        Ajustes y Configuración
+        Ajustes
       </h2>
 
       {/* Tema de la Aplicación (V5: Automático / Crema / Tueste) */}
@@ -502,7 +402,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       {/* Preferencia de Molino Predeterminado */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
         <h4 className="bt-section-title" style={{ margin: '0 0 4px 0' }}>
-          Molino Predeterminado
+          Molino por defecto
         </h4>
         <p className="bt-section-desc" style={{ marginBottom: '12px' }}>
           Selecciona tu molino principal para precargar sus diales y física en cada nueva receta.
@@ -546,7 +446,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
       {/* Backup and restore section */}
       <div className="candy-card static" style={{ padding: '18px', cursor: 'default', marginBottom: '14px' }}>
         <h4 className="bt-section-title" style={{ margin: '0 0 8px 0' }}>
-          Copia de Seguridad
+          Copia de seguridad
         </h4>
         <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 16px 0', lineHeight: 1.4 }}>
           Exporta tu bitácora o restaura un respaldo en cualquier dispositivo.
@@ -660,7 +560,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
                 <Compass size={14} />
-                <span>Recomendación Sommelier {sommelierResult._source === 'barista_fallback' ? '(Local)' : (sommelierResult._source === 'groq' ? '(Groq)' : '(Gemini)')}</span>
+                <span>Recomendación Sommelier {sommelierResult._source === 'barista_fallback' ? '(Local)' : '(IA)'}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 {sommelierResult._source === 'barista_fallback' && (
@@ -735,7 +635,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               Configuración de Inteligencia Artificial
             </h4>
             <span style={{ fontSize: '12px', background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '3px 8px', borderRadius: 'var(--r-control)', fontWeight: '700', border: '1px solid var(--border-color)' }}>
-              {aiProvider === 'groq' ? 'Groq' : `GEMINI • ${selectedModel.toUpperCase()}`}
+              Groq
             </span>
           </div>
           <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 14px 0', lineHeight: 1.4 }}>
@@ -757,24 +657,27 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                     value={groqKey} 
                     onChange={(e) => handleGroqKeyChange(e.target.value)} 
                     placeholder="Introduce tu clave API (gsk_...)"
-                    style={{ width: '100%', boxSizing: 'border-box', fontFamily: 'var(--font-mono)', minHeight: '44px', fontSize: '13px', paddingRight: '40px' }}
+                    style={{ width: '100%', boxSizing: 'border-box', fontFamily: 'var(--font-mono)', minHeight: '44px', fontSize: '13px', paddingRight: '48px' }}
                   />
                   <button
                     type="button"
                     onClick={() => setShowGroqKey(!showGroqKey)}
                     style={{
                       position: 'absolute',
-                      right: '8px',
+                      right: '0',
+                      width: '44px',
+                      height: '44px',
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
-                      padding: '6px',
+                      padding: 0,
                       color: 'var(--color-text-muted)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}
                     title={showGroqKey ? 'Ocultar clave' : 'Mostrar clave'}
+                    aria-label={showGroqKey ? 'Ocultar clave' : 'Mostrar clave'}
                   >
                     {showGroqKey ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -966,7 +869,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: 0, fontWeight: '600', color: 'var(--color-text)' }}>
-                    Carta de Cafés • Menú en Cava
+                    Carta de cafés
                   </h3>
                   <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
                     {availableBatches.length > 0 ? availableBatches.length : safeBatches.length} lotes disponibles

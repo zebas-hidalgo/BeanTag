@@ -87,6 +87,18 @@ npm run dev
 
 ---
 
+## 🔍 Auditoría de interfaz
+
+Con la app corriendo (`npm run dev`), revisa contraste AA en Crema y Tueste, controles sin nombre, objetivos táctiles de menos de 44 px y el texto de los stickers (tamaño mínimo, márgenes y solapes):
+
+```bash
+npm i -D playwright && npx playwright install chromium   # solo la primera vez
+npm run audit:ui                                         # http://localhost:5173
+npm run audit:ui -- http://localhost:3000                # otra URL
+```
+
+Termina con código 1 si encuentra problemas, así que puede ir antes de `deploy.sh`.
+
 ## 🚀 Despliegue en Producción (VPS)
 
 El proyecto incluye el script `deploy.sh` para empaquetar, subir e implementar automáticamente las actualizaciones a un servidor VPS con Nginx y PM2:

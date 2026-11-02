@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Nfc, LogOut } from 'lucide-react';
+import { Nfc } from 'lucide-react';
 import Inventory from './components/Inventory';
 import BottomNav from './components/BottomNav';
 import { apiUrl } from './utils/api';
 import { normalizeTheme } from './utils/theme';
+import { confirmDialog } from './utils/confirmDialog';
 
 const BatchDetail = lazy(() => import('./components/BatchDetail'));
 const BatchCreator = lazy(() => import('./components/BatchCreator'));
@@ -48,6 +49,7 @@ export default function App() {
   const [batches, setBatches] = useState([]);
   const [selectedBatchId, setSelectedBatchId] = useState(initialRoute.batchId);
   const [prefillRecipe, setPrefillRecipe] = useState(null);
+  const [autoStartBrew, setAutoStartBrew] = useState(false);
   const [lastSubtractedBatch, setLastSubtractedBatch] = useState(null);
   const [batchToEdit, setBatchToEdit] = useState(null);
   const [showNfcTools, setShowNfcTools] = useState(false);
@@ -224,6 +226,7 @@ export default function App() {
     const id = typeof batchOrId === 'object' && batchOrId !== null ? batchOrId.id : batchOrId;
     setSelectedBatchId(id);
     setPrefillRecipe(options && options.prefillRecipe ? options.prefillRecipe : null);
+    setAutoStartBrew(Boolean(options && options.autoStart));
     setCurrentView('detail');
   };
 
@@ -317,12 +320,13 @@ export default function App() {
   };
 
   // R5: Save recipe with toast transition + automatic tube deduction
-  const handleSaveRecipe = (recipePayload) => {
+  // opts.stay: the brew guide keeps the user on screen (it shows its own confirmation + undo)
+  const handleSaveRecipe = (recipePayload, opts = {}) => {
     const headers = {
       'Content-Type': 'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     };
-    fetch(apiUrl('api/recipes'), {
+    return fetch(apiUrl('api/recipes'), {
       method: 'POST',
       headers,
       body: JSON.stringify(recipePayload)
@@ -336,16 +340,40 @@ export default function App() {
     })
     .then(data => {
       if (data.success) {
-        showToast('Receta guardada y stock descontado del inventario.', { type: 'success', duration: 2500 });
         fetchBatches();
-        setTimeout(() => {
-          handleBack();
-        }, 1500);
+        if (!opts.stay) {
+          showToast('Receta guardada y stock descontado del inventario.', { type: 'success', duration: 2500 });
+          setTimeout(() => {
+            handleBack();
+          }, 1500);
+        }
       }
+      return data;
     })
     .catch(err => {
       showToast(err.message, { type: 'error', duration: 4000 });
+      if (opts.stay) throw err;
+      return null;
     });
+  };
+
+  // Undo a brew saved from the guide: delete the log entry and give the dose back
+  const handleUndoRecipe = async ({ recipeId, batchId, doseG, isBag }) => {
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+    if (recipeId) {
+      const del = await fetch(apiUrl(`api/recipes/${recipeId}`), { method: 'DELETE', headers });
+      if (!del.ok) throw new Error('No se pudo deshacer el registro');
+    }
+    if (batchId) {
+      const body = isBag && doseG ? { weight_change: Number(doseG) } : { change: 1 };
+      const res = await fetch(apiUrl(`api/batches/${batchId}/doses`), { method: 'PATCH', headers, body: JSON.stringify(body) });
+      if (!res.ok) throw new Error('No se pudo devolver la dosis');
+    }
+    fetchBatches();
+    showToast('Deshecho: registro borrado y dosis devuelta.', { type: 'info', duration: 2500 });
   };
 
   // R1: NFC scan with toast instead of alert
@@ -417,113 +445,56 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <header className="app-header">
-        <div
+      <header className="app-header bt-appbar">
+        <button
+          type="button"
+          className="bt-appbar-brand"
           onClick={() => setCurrentView('inventory')}
-          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', userSelect: 'none' }}
-          role="button"
-          tabIndex={0}
-          aria-label="Ir al inventario de BeanTag"
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setCurrentView('inventory'); }}
+          aria-label="Ir a mi cava"
         >
-          <div style={{
-            width: '34px',
-            height: '34px',
-            borderRadius: 'var(--r-control)',
-            backgroundColor: 'var(--barista-bg-surface)',
-            border: '1px solid var(--border-color)',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0
-          }}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }} fill="none">
-              <rect x="4" y="2.5" width="16" height="19" rx="3.5" stroke="var(--color-text)" strokeWidth="1.8" />
-              <circle cx="12" cy="6" r="1.3" fill="var(--color-crimson)" />
-              <ellipse cx="12" cy="13.5" rx="4.2" ry="3.2" transform="rotate(-24 12 13.5)" stroke="var(--color-crimson)" strokeWidth="1.8" />
-              <path d="M9.6 15.2C11.1 13.4 12.9 13.6 14.4 11.8" stroke="var(--color-crimson)" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <span style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: '16px',
-              fontWeight: '600',
-              letterSpacing: '-0.02em',
-              color: 'var(--color-header-text)',
-              lineHeight: 1
-            }}>BeanTag</span>
-            <span style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '12px',
-              fontWeight: '700',
-              letterSpacing: '0.08em',
-              color: 'var(--color-text-muted)',
-              lineHeight: 1
-            }}>CELLAR LAB</span>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          {currentUser ? (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '7px',
-              background: 'var(--barista-bg-surface)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--r-pill)',
-              padding: '4px 10px 4px 5px',
-              minHeight: '34px',
-              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
-            }}>
-              {currentUser.picture ? (
-                <img src={currentUser.picture} alt="Avatar" style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }} />
-              ) : (
-                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--color-crimson)', color: 'var(--on-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600' }}>
-                  {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
-                </div>
-              )}
-              <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-text)', maxWidth: '84px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {currentUser.name}
-              </span>
-              <button onClick={handleLogout} title="Cerrar Sesión" aria-label="Cerrar sesión" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', minWidth: '28px', minHeight: '28px', justifyContent: 'center', display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)' }}>
-                <LogOut size={13} />
-              </button>
-            </div>
-          ) : (
-            <button 
-              className="btn-candy primary"
-              onClick={() => setShowAuthModal(true)}
-              style={{ padding: '6px 12px', minHeight: '34px', borderRadius: 'var(--r-pill)', fontSize: '12px', fontWeight: '600', margin: 0 }}
-            >
-              Iniciar Sesión
-            </button>
-          )}
-
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
+            <rect x="4" y="2.5" width="16" height="19" rx="3.5" stroke="var(--color-text)" strokeWidth="1.8" />
+            <circle cx="12" cy="6" r="1.3" fill="var(--color-crimson)" />
+            <ellipse cx="12" cy="13.5" rx="4.2" ry="3.2" transform="rotate(-24 12 13.5)" stroke="var(--color-crimson)" strokeWidth="1.8" />
+            <path d="M9.6 15.2C11.1 13.4 12.9 13.6 14.4 11.8" stroke="var(--color-crimson)" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+          <span>BeanTag</span>
+        </button>
+        <div className="bt-appbar-actions">
           <button
-            className="app-bar-btn"
+            type="button"
+            className="bt-appbar-btn"
             onClick={() => setShowNfcTools(true)}
             title="Herramientas NFC"
             aria-label="Herramientas NFC"
-            style={{
-              width: '34px',
-              height: '34px',
-              borderRadius: 'var(--r-control)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'var(--barista-bg-surface)',
-              border: '1px solid var(--border-color)',
-              color: 'var(--color-text)',
-              cursor: 'pointer',
-              padding: 0,
-              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
-              transition: 'var(--transition-ui)'
-            }}
           >
-            <Nfc size={15} strokeWidth={2} />
+            <Nfc size={18} strokeWidth={2} />
           </button>
+          {currentUser ? (
+            <button
+              type="button"
+              className="bt-appbar-btn bt-appbar-avatar"
+              onClick={async () => {
+                if (await confirmDialog(`¿Cerrar la sesión de ${currentUser.name || 'tu cuenta'}?`, { okText: 'Cerrar sesión' })) handleLogout();
+              }}
+              title="Cerrar sesión"
+              aria-label={`Cuenta de ${currentUser.name || 'usuario'}: cerrar sesión`}
+            >
+              {currentUser.picture ? (
+                <img src={currentUser.picture} alt="" />
+              ) : (
+                <div className="bt-appbar-initial">{currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}</div>
+              )}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn-candy primary bt-appbar-login"
+              onClick={() => setShowAuthModal(true)}
+            >
+              Entrar
+            </button>
+          )}
         </div>
       </header>
 
@@ -561,6 +532,9 @@ export default function App() {
               currentUser={currentUser}
               onRequireAuth={() => setShowAuthModal(true)}
               prefillRecipe={prefillRecipe}
+              autoStartBrew={autoStartBrew}
+              onAutoStartHandled={() => setAutoStartBrew(false)}
+              onUndoRecipe={handleUndoRecipe}
               onBack={handleBack}
               onSubtractDose={handleSubtractDose}
               onSaveRecipe={handleSaveRecipe}

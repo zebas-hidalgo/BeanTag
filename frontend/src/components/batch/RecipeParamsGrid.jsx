@@ -183,7 +183,7 @@ export default function RecipeParamsGrid({
                 value={doseInG}
                 onChange={(e) => setDoseInG(parseFloat(e.target.value) || 0)}
                 className="barista-metric-val"
-                style={{ width: '38px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
+                style={{ width: '48px', minHeight: '44px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
               />
               <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '1px' }}>g</span>
             </div>
@@ -232,7 +232,7 @@ export default function RecipeParamsGrid({
                   value={doseOutG}
                   onChange={(e) => setDoseOutG(parseFloat(e.target.value) || 0)}
                   className="barista-metric-val"
-                  style={{ width: '38px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
+                  style={{ width: '48px', minHeight: '44px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
                 />
                 <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '1px' }}>g</span>
               </div>
@@ -278,7 +278,7 @@ export default function RecipeParamsGrid({
                   value={ratioVal}
                   onChange={(e) => setRatioVal(parseFloat(e.target.value) || 0)}
                   className="barista-metric-val"
-                  style={{ width: '40px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
+                  style={{ width: '48px', minHeight: '44px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
                 />
               </div>
               <button
@@ -324,7 +324,7 @@ export default function RecipeParamsGrid({
                 value={waterTemp}
                 onChange={(e) => setWaterTemp(parseInt(e.target.value) || 93)}
                 className="barista-metric-val"
-                style={{ width: '36px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
+                style={{ width: '48px', minHeight: '44px', textAlign: 'center', fontSize: '17px', border: 'none', background: 'transparent', padding: 0 }}
               />
               <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600', marginLeft: '1px' }}>°C</span>
             </div>

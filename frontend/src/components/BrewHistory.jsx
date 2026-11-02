@@ -7,7 +7,7 @@ import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { parseGrindToMicrons } from '../utils/grinders';
 import CardStylePicker from './CardStylePicker';
-import { copyImageToClipboard } from '../utils/clipboard';
+import { copyOrShareImage, STICKER_HINTS } from '../utils/clipboard';
 
 const getMethodLucideIcon = (methodName, size = 18) => {
   const m = (methodName || '').toLowerCase();
@@ -353,7 +353,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   // R3: Skeleton loading state
   if (history === null) return (
     <div>
-      <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', marginBottom: '14px' }}>
+      <h2 className="bt-page-title" style={{ marginBottom: '14px' }}>
         Bitácoras
       </h2>
       {[1, 2, 3].map(i => (
@@ -369,7 +369,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   return (
     <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', textTransform: 'uppercase', margin: 0 }}>
+        <h2 className="bt-page-title" style={{ margin: 0 }}>
           Bitácoras
         </h2>
         {safeHistory.length > 0 && (
@@ -446,7 +446,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             Selecciona un café del congelador y registra tu primera preparación.
           </p>
           <button className="btn-candy primary" style={{ margin: '0 auto' }} onClick={onNavigateToInventory}>
-            Ir al Congelador
+            Ir al congelador
           </button>
         </div>
       ) : filteredHistory.length === 0 ? (
@@ -472,7 +472,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                     <div style={{ width: '28px', height: '28px', borderRadius: 'var(--r-xs)', border: '1.5px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-canvas)' }}>
                       {getMethodLucideIcon(item.method, 16)}
                     </div>
-                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: 0, textTransform: 'uppercase' }}>{item.method}</h3>
+                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: 0 }}>{item.method}</h3>
                   </div>
                   <span 
                     onClick={(e) => {
@@ -482,8 +482,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                     style={{ 
                       fontSize: '12px', 
                       fontWeight: 700, 
-                      color: 'var(--color-crimson)', 
-                      textTransform: 'uppercase',
+                      color: 'var(--color-crimson)',
                       cursor: 'pointer',
                       textDecoration: 'underline'
                     }}
@@ -557,7 +556,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   <div style={{ width: '32px', height: '32px', borderRadius: 'var(--r-xs)', border: '1.5px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-canvas)' }}>
                     {getMethodLucideIcon(selectedRecipe.method, 18)}
                   </div>
-                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', margin: 0, textTransform: 'uppercase' }}>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', margin: 0 }}>
                     {selectedRecipe.method}
                   </h3>
                 </div>
@@ -569,8 +568,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   style={{ 
                     fontSize: '12px', 
                     fontWeight: '700', 
-                    color: 'var(--color-crimson)', 
-                    textTransform: 'uppercase',
+                    color: 'var(--color-crimson)',
                     cursor: 'pointer',
                     textDecoration: 'underline'
                   }}
@@ -608,8 +606,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             {/* Evaluación sensorial */}
             {(selectedRecipe.sensory_balance || selectedRecipe.sensory_body || selectedRecipe.sensory_extraction) && (
               <div style={{ marginBottom: '14px' }}>
-                <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 8px 0', color: 'var(--color-crimson)' }}>
-                  Evaluación Sensorial
+                <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', margin: '0 0 8px 0', color: 'var(--color-crimson)' }}>
+                  Evaluación sensorial
                 </h4>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {selectedRecipe.sensory_balance && (
@@ -656,8 +654,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
               return (
                 <div style={{ marginBottom: '14px' }}>
-                  <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', textTransform: 'uppercase', margin: '0 0 4px 0', color: 'var(--color-crimson)' }}>
-                    Notas de Cata
+                  <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '12px', margin: '0 0 4px 0', color: 'var(--color-crimson)' }}>
+                    Notas de cata
                   </h4>
                   <p style={{ margin: 0, fontStyle: 'italic', fontSize: '12px', lineHeight: '1.4' }}>
                     "{displayNotes}"
@@ -679,8 +677,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             }}>
               {/* Opciones del Ticket POS */}
               <div style={{ marginTop: '12px' }}>
-                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '6px', display: 'block' }}>
-                  Contenido del Ticket POS:
+                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-text-muted)', marginBottom: '6px', display: 'block' }}>
+                  Texto del ticket:
                 </span>
                 <div className="canvas-tab-selector">
                   <button
@@ -691,7 +689,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       exportRecipeAsImage(selectedRecipe, shareTemplate, true);
                     }}
                   >
-                    Con Receta (Extracción)
+                    Con receta
                   </button>
                   <button
                     type="button"
@@ -701,7 +699,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                       exportRecipeAsImage(selectedRecipe, shareTemplate, false);
                     }}
                   >
-                    Solo Grano (Ficha Café)
+                    Solo el café
                   </button>
                 </div>
               </div>
@@ -724,7 +722,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 </button>
                 <button type="button" className="btn-candy" style={{ padding: '8px 10px', margin: 0, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe)}>
                   <ImageIcon size={12} strokeWidth={2.5} />
-                  Exportar Ticket
+                  Exportar ticket
                 </button>
                 <button type="button" className="btn-candy primary" style={{ padding: '8px 10px', margin: 0, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => setSelectedRecipe(null)}>
                   Cerrar
@@ -751,8 +749,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             animation: 'soft-pop 250ms var(--transition-spring)'
           }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', margin: 0, textTransform: 'uppercase' }}>
-                Editar Bitácora
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', margin: 0 }}>
+                Editar bitácora
               </h3>
               <button aria-label="Cerrar" type="button" onClick={() => setEditingRecipe(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
                 <X size={18} />
@@ -761,7 +759,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
             <form onSubmit={handleSaveEdit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label htmlFor="bt-brewhistory-1" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Método</label>
+                <label htmlFor="bt-brewhistory-1" style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Método</label>
                 <input id="bt-brewhistory-1" aria-label="Método"
                   type="text"
                   list="edit-method-list"
@@ -805,7 +803,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
-                  <label htmlFor="bt-brewhistory-2" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Molienda</label>
+                  <label htmlFor="bt-brewhistory-2" style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Molienda</label>
                   <input id="bt-brewhistory-2" aria-label="Molienda"
                     type="text"
                     className="candy-input"
@@ -816,7 +814,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   />
                 </div>
                 <div>
-                  <label htmlFor="bt-brewhistory-3" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Ratio</label>
+                  <label htmlFor="bt-brewhistory-3" style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Ratio</label>
                   <input id="bt-brewhistory-3" aria-label="Ratio"
                     type="text"
                     className="candy-input"
@@ -830,7 +828,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
-                  <label htmlFor="bt-brewhistory-4" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Tiempo</label>
+                  <label htmlFor="bt-brewhistory-4" style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Tiempo</label>
                   <input id="bt-brewhistory-4" aria-label="Tiempo"
                     type="text"
                     className="candy-input"
@@ -841,7 +839,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   />
                 </div>
                 <div>
-                  <label htmlFor="bt-brewhistory-5" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Temperatura</label>
+                  <label htmlFor="bt-brewhistory-5" style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Temperatura</label>
                   <input id="bt-brewhistory-5" aria-label="Temperatura"
                     type="text"
                     className="candy-input"
@@ -855,7 +853,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
-                  <label htmlFor="bt-brewhistory-6" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Dosis In (g)</label>
+                  <label htmlFor="bt-brewhistory-6" style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Café (g)</label>
                   <input id="bt-brewhistory-6" aria-label="Dosis In (g)"
                     type="text"
                     className="candy-input"
@@ -866,7 +864,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   />
                 </div>
                 <div>
-                  <label htmlFor="bt-brewhistory-7" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Dosis Out (g)</label>
+                  <label htmlFor="bt-brewhistory-7" style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Bebida (g)</label>
                   <input id="bt-brewhistory-7" aria-label="Dosis Out (g)"
                     type="text"
                     className="candy-input"
@@ -880,7 +878,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
               {/* Sensory Evaluation Selection */}
               <div>
-                <label style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Extracción</label>
+                <label style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Extracción</label>
                 <div style={{ display: 'flex', gap: '6px' }}>
                   {['Sub', 'En Punto', 'Sobre'].map(ext => (
                     <button
@@ -902,7 +900,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               </div>
 
               <div>
-                <label htmlFor="bt-brewhistory-8" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Balance Sensorial</label>
+                <label htmlFor="bt-brewhistory-8" style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Balance</label>
                 <input id="bt-brewhistory-8" aria-label="Balance Sensorial"
                   type="text"
                   className="candy-input"
@@ -914,7 +912,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               </div>
 
               <div>
-                <label htmlFor="bt-brewhistory-9" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Cuerpo</label>
+                <label htmlFor="bt-brewhistory-9" style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Cuerpo</label>
                 <input id="bt-brewhistory-9" aria-label="Cuerpo"
                   type="text"
                   className="candy-input"
@@ -926,7 +924,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
               </div>
 
               <div>
-                <label htmlFor="bt-brewhistory-10" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Notas de Cata / Observaciones</label>
+                <label htmlFor="bt-brewhistory-10" style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Notas de cata</label>
                 <textarea id="bt-brewhistory-10" aria-label="Notas de Cata / Observaciones"
                   className="candy-input"
                   rows="3"
@@ -952,7 +950,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   className="btn-candy primary"
                   style={{ flex: 1, padding: '10px' }}
                 >
-                  {savingEdit ? 'Guardando...' : 'Guardar Cambios'}
+                  {savingEdit ? 'Guardando...' : 'Guardar cambios'}
                 </button>
               </div>
             </form>
@@ -989,7 +987,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
               {/* Row 1: Header + Format Selector */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '12.5px', textTransform: 'uppercase', margin: 0, color: 'var(--color-text)' }}>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '12.5px', margin: 0, color: 'var(--color-text)' }}>
                   Sticker · {selectedRecipe?.batch_name}
                 </h3>
               </div>
@@ -1064,7 +1062,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 onClick={handleNativeShare}
               >
                 <Share2 size={15} strokeWidth={2.5} />
-                Compartir / Guardar PNG
+                Compartir o guardar
               </button>
               <button
                 type="button"
@@ -1072,10 +1070,10 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                 style={{ flex: 1, minHeight: '44px', padding: '9px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                 onClick={async () => {
                   try {
-                    await copyImageToClipboard(shareImage);
-                    setShareStatus('Sticker copiado. En la story de Instagram, mantén presionado y pega.');
+                    const how = await copyOrShareImage(shareImage, 'beantag-sticker.png');
+                    if (STICKER_HINTS[how]) setShareStatus(STICKER_HINTS[how]);
                   } catch (err) {
-                    setShareStatus('Error al copiar: ' + (err.message || err));
+                    setShareStatus('No se pudo copiar ni compartir: ' + (err.message || err));
                   }
                 }}
               >

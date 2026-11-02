@@ -1,5 +1,5 @@
 import React, { useState, lazy, Suspense } from 'react';
-import { Plus, Zap, Snowflake, CheckCircle2, Mountain, X, MoreHorizontal, MapPin, Flag, ClipboardList, Coffee, Flame, Search as SearchIcon, Package, Share2, AlertTriangle } from 'lucide-react';
+import { Plus, Zap, Play, Snowflake, CheckCircle2, Mountain, X, MoreHorizontal, MapPin, Flag, ClipboardList, Coffee, Flame, Search as SearchIcon, Package, Share2, AlertTriangle } from 'lucide-react';
 import { getRoast, getDegassing, roastStyle } from '../utils/roast';
 
 const TubeRacksView = lazy(() => import('./TubeRacksView'));
@@ -259,11 +259,11 @@ export default function Inventory({ batches, onSelectBatch, onCreateTrigger, onS
                           className="bt-link-btn"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onSelectBatch(batch, { prefillRecipe: firstRecipe });
+                            onSelectBatch(batch, { prefillRecipe: firstRecipe, autoStart: true });
                           }}
                         >
-                          <Zap size={14} aria-hidden="true" />
-                          <span>Repetir {(firstRecipe.method || 'V60').replace(' (Filtrado)', '')}</span>
+                          <Play size={14} fill="currentColor" aria-hidden="true" />
+                          <span>Preparar {(firstRecipe.method || 'V60').replace(' (Filtrado)', '')}</span>
                         </button>
                       )}
                       <button

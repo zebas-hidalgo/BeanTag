@@ -53,7 +53,6 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
   const [scaScore, setScaScore] = useState(batchToEdit ? (batchToEdit.sca_score !== null && batchToEdit.sca_score !== undefined ? String(batchToEdit.sca_score) : '') : '');
   const [selectedFlavorTags, setSelectedFlavorTags] = useState(getInitialFlavorTags());
   const [activeTab, setActiveTab] = useState('Floral');
-  const [creatorStep, setCreatorStep] = useState(1);
 
   // Organized Official SCA / World Coffee Research (WCR) Flavor Wheel Structure (9 Main Categories)
   const scaFlavorStructure = [

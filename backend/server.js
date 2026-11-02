@@ -474,13 +474,15 @@ app.post('/api/recipes', async (req, res) => {
       ? Math.max(0, Math.round(newWeight / defaultDose))
       : Math.max(0, (batch.remaining_doses || 0) - 1);
 
+    let insertedRecipeId = null;
     await db.run('BEGIN TRANSACTION;');
     try {
-      await db.run(
+      const insertResult = await db.run(
         `INSERT INTO recipes (batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion, user_id)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, doseInVal, dose_out_g, espresso_pressure, espresso_preinfusion, userId]
       );
+      insertedRecipeId = insertResult ? insertResult.lastID : null;
 
       // Subtract grams and doses from batch remaining stock
       await db.run(
@@ -497,6 +499,7 @@ app.post('/api/recipes', async (req, res) => {
     const updatedBatch = await db.get('SELECT remaining_doses, remaining_weight_g FROM batches WHERE id = ?', batch_id);
     res.status(201).json({ 
       success: true, 
+      recipe_id: insertedRecipeId,
       remaining_doses: updatedBatch ? updatedBatch.remaining_doses : 0, 
       remaining_weight_g: updatedBatch ? updatedBatch.remaining_weight_g : 0 
     });

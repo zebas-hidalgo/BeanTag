@@ -69,3 +69,34 @@ export async function copyImageToClipboard(dataUrl) {
   }
   return true;
 }
+
+// Plan B for browsers that refuse to copy images (older Safari, in-app browsers):
+// open the share sheet so the user can "Guardar imagen", or download as a last resort.
+export const STICKER_HINTS = {
+  copied: 'Sticker copiado. En la story, mantén presionado y elige «Pegar».',
+  shared: 'Elige «Guardar imagen» y añádelo a la story desde tu galería.',
+  downloaded: 'Imagen descargada. Añádela a la story desde tu galería.'
+};
+
+export async function copyOrShareImage(dataUrl, filename = 'beantag-sticker.png') {
+  try {
+    await copyImageToClipboard(dataUrl);
+    return 'copied';
+  } catch (copyErr) {
+    const blob = await fetch(dataUrl).then((r) => r.blob());
+    const file = typeof File !== 'undefined' ? new File([blob], filename, { type: 'image/png' }) : null;
+    if (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file] });
+        return 'shared';
+      } catch (shareErr) {
+        if (shareErr && shareErr.name === 'AbortError') return 'cancelled';
+      }
+    }
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = dataUrl;
+    link.click();
+    return 'downloaded';
+  }
+}

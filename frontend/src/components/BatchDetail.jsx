@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
 import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers, SlidersHorizontal, Cylinder, Compass, Target, Trophy, Sliders, Lightbulb, Check, Eye } from 'lucide-react';
-import { copyToClipboard, copyImageToClipboard } from '../utils/clipboard';
+import { copyToClipboard, copyOrShareImage, STICKER_HINTS } from '../utils/clipboard';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { FAMOUS_RECIPES } from '../utils/famousRecipes';
@@ -35,7 +35,7 @@ const calculateMicrons = (rot, num, click) => {
 };
 
 
-export default function BatchDetail({ batchId, batches = [], currentUser, onRequireAuth, prefillRecipe, onBack, onSubtractDose, onSaveRecipe, onDeleteBatch, onEditBatch, showToast }) {
+export default function BatchDetail({ batchId, batches = [], currentUser, onRequireAuth, prefillRecipe, autoStartBrew = false, onAutoStartHandled, onUndoRecipe, onBack, onSubtractDose, onSaveRecipe, onDeleteBatch, onEditBatch, showToast }) {
   const [batch, setBatch] = useState(null);
   const brewFormRef = useRef(null);
 
@@ -294,13 +294,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [aiError, setAiError] = useState('');
 
   const handleAiRecommend = () => {
-    const aiProvider = localStorage.getItem('beantag-ai-provider') || 'groq';
     const groqKey = localStorage.getItem('groq-key') || '';
     const rawGroqModel = localStorage.getItem('groq-model');
     const groqModel = (!rawGroqModel || rawGroqModel.includes('llama')) ? 'openai/gpt-oss-120b' : rawGroqModel;
-    const geminiKey = localStorage.getItem('gemini-api-key') || '';
-    const geminiModel = localStorage.getItem('gemini-model') || 'gemini-3.8-flash';
-    const isThinking = localStorage.getItem('gemini-thinking') === 'true';
 
     setAiLoading(true);
     setAiError('');
@@ -308,12 +304,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
     const headers = {
       'Content-Type': 'application/json',
-      'x-ai-provider': aiProvider,
+      'x-ai-provider': 'groq',
       'x-groq-key': groqKey,
-      'x-gemini-key': geminiKey,
-      'x-ai-model': aiProvider === 'groq' ? groqModel : geminiModel,
-      'x-gemini-model': geminiModel,
-      'x-gemini-thinking': isThinking ? 'true' : 'false'
+      'x-ai-model': groqModel
     };
 
     fetch(apiUrl('api/recommend-recipe'), {
@@ -1016,28 +1009,67 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         temperature: typeof tunedData.temperature === 'number' ? `${tunedData.temperature}°C` : tunedData.temperature,
         brew_time: tunedData.brew_time,
         notes: tunedData.notes,
+        sensory_extraction: tunedData.sensory_extraction,
         rating: tunedData.rating || 5,
         dose_in_g: tunedData.dose_in_g || doseInG,
         dose_out_g: tunedData.water_total_g || waterTotalG
       };
 
+      let result = null;
       if (typeof onSaveRecipe === 'function') {
-        await onSaveRecipe(payload);
+        result = await onSaveRecipe(payload, { stay: true });
       } else {
-        await fetch(apiUrl('/api/recipes'), {
+        const res = await fetch(apiUrl('/api/recipes'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
+        result = await res.json();
       }
+      if (!result || !result.success) throw new Error((result && result.error) || 'No se pudo guardar');
 
       if (tunedData.temperature) setTemperature(typeof tunedData.temperature === 'number' ? tunedData.temperature : parseInt(tunedData.temperature, 10));
-      if (showToast) showToast('¡Receta afinada y guardada con éxito en tu historial!', { type: 'success' });
-      setIsBrewGuideOpen(false);
+      fetch(apiUrl(`api/batches/${batch?.id}`))
+        .then(r => r.json())
+        .then(fresh => { if (fresh && !fresh.error) setBatch(fresh); })
+        .catch(() => {});
+      // The guide stays open: it shows the confirmation, the sticker and undo
+      return {
+        ...result,
+        payload,
+        undo: typeof onUndoRecipe === 'function'
+          ? async () => {
+              await onUndoRecipe({ recipeId: result.recipe_id, batchId: batch?.id, doseG: payload.dose_in_g, isBag: batch?.storage_type === 'bag' });
+              try {
+                const fresh = await fetch(apiUrl(`api/batches/${batch?.id}`)).then(r => r.json());
+                if (fresh && !fresh.error) setBatch(fresh);
+              } catch (e) { /* the list refresh in App still runs */ }
+            }
+          : null
+      };
     } catch (err) {
       console.error('Error saving tuned recipe:', err);
-      if (showToast) showToast('Error al guardar la receta afinada', { type: 'error' });
+      if (showToast) showToast('Error al guardar en la bitácora', { type: 'error' });
+      throw err;
     }
+  };
+
+  // One source for "brew what the form says" (form button, sticky bar, one-tap repeat)
+  const startBrewFromForm = () => {
+    handleStartBrewGuide({
+      method,
+      dose_in_g: doseInG,
+      water_total_g: method === 'Espresso' ? doseOutG : Math.round(doseInG * ratioVal),
+      ratio: method === 'Espresso' ? `1:${(doseOutG / doseInG).toFixed(1)}` : `1:${ratioVal}`,
+      temperature: `${waterTemp}°C`,
+      brew_time: brewTime,
+      grind: getGrindString(),
+      pours: (aiRecommendation?.method === method && Array.isArray(aiRecommendation?.pours)) ? aiRecommendation.pours : [],
+      active_grinder_dial: {
+        grinder_id: grinderType,
+        dial: getGrindString()
+      }
+    });
   };
 
   const handleStartBrewGuide = (customRecipe = null) => {
@@ -1072,6 +1104,16 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   };
 
 
+
+  // One-tap "Repetir" from the cava: open the guide as soon as the batch and its last recipe are loaded
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (!autoStartBrew || !batch || autoStartedRef.current) return;
+    autoStartedRef.current = true;
+    if (typeof onAutoStartHandled === 'function') onAutoStartHandled();
+    startBrewFromForm();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStartBrew, batch]);
 
   // R3: Skeleton loading state
   if (!batch) return (
@@ -1254,6 +1296,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     localStorage.setItem('default-grinder', id);
   };
 
+  const brewBarMethod = String(method || '').replace(/\s*\(.*\)\s*$/, '').replace(/^NextLevel\s+/i, '');
   return (
     <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       {/* Top Header - Row 1: Back Navigation + Status Badge */}
@@ -1408,7 +1451,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
                   <button type="button" className="btn-candy primary" onClick={() => handleStartBrewGuide(aiRecommendation)} style={{ width: '100%', marginBottom: '8px', minHeight: '44px', backgroundColor: 'var(--barista-accent-honey)', color: 'var(--on-accent)', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                     <Play size={15} fill="currentColor" />
-                    <span>Iniciar Extracción (Modo Barista)</span>
+                    <span>Preparar con el cronómetro</span>
                   </button>
 
                   <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
@@ -1490,22 +1533,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
               <button
                 type="button"
-                onClick={() => {
-                  handleStartBrewGuide({
-                    method,
-                    dose_in_g: doseInG,
-                    water_total_g: method === 'Espresso' ? doseOutG : Math.round(doseInG * ratioVal),
-                    ratio: method === 'Espresso' ? `1:${(doseOutG / doseInG).toFixed(1)}` : `1:${ratioVal}`,
-                    temperature: `${waterTemp}°C`,
-                    brew_time: brewTime,
-                    grind: getGrindString(),
-                    pours: (aiRecommendation?.method === method && Array.isArray(aiRecommendation?.pours)) ? aiRecommendation.pours : [],
-                    active_grinder_dial: {
-                      grinder_id: grinderType,
-                      dial: getGrindString()
-                    }
-                  });
-                }}
+                onClick={startBrewFromForm}
                 style={{
                   width: '100%',
                   minHeight: '48px',
@@ -1526,7 +1554,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 }}
               >
                 <Play size={18} fill="currentColor" />
-                <span>Iniciar Extracción (Modo Barista)</span>
+                <span>Preparar con el cronómetro</span>
               </button>
 
               {isOwner ? (
@@ -1545,7 +1573,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   }}
                 >
                   <Save size={18} />
-                  <span>Guardar Bitácora</span>
+                  <span>Guardar sin cronómetro</span>
                 </button>
               ) : (
                 <button 
@@ -1682,10 +1710,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 style={{ margin: 0 }}
                 onClick={async () => {
                   try {
-                    await copyImageToClipboard(shareImage);
-                    setShareStatus('Sticker copiado. En la story de Instagram, mantén presionado y pega.');
+                    const how = await copyOrShareImage(shareImage, 'beantag-sticker.png');
+                    if (STICKER_HINTS[how]) setShareStatus(STICKER_HINTS[how]);
                   } catch (err) {
-                    setShareStatus('Error al copiar: ' + (err.message || err));
+                    setShareStatus('No se pudo copiar ni compartir: ' + (err.message || err));
                   }
                 }}
               >
@@ -1712,6 +1740,20 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             </div>
           </div>
         </div>
+      )}
+
+      {/* Sticky "Preparar" bar: the main action is always one thumb away */}
+      {batch && !isBrewGuideOpen && !shareImage && (
+        <>
+          <div className="bt-brewbar-spacer" aria-hidden="true" />
+          <div className="bt-brewbar">
+            <button type="button" className="bt-brewbar-btn" onClick={startBrewFromForm}>
+              <Play size={18} fill="currentColor" aria-hidden="true" />
+              <span>Preparar {brewBarMethod}</span>
+              <span className="bt-brewbar-meta">{doseInG} g</span>
+            </button>
+          </div>
+        </>
       )}
 
       {/* Interactive Barista Brew Guide Modal */}
