@@ -452,7 +452,8 @@ app.post('/api/recipes', async (req, res) => {
   const { 
     batch_id, method, ratio, grind, temperature, brew_time, rating, notes, 
     sensory_balance, sensory_body, sensory_extraction,
-    dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion
+    dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion,
+    skip_deduction
   } = req.body;
   if (!batch_id || !method) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
@@ -478,10 +479,14 @@ app.post('/api/recipes', async (req, res) => {
     const currentWeight = batch.remaining_weight_g !== null && batch.remaining_weight_g !== undefined 
       ? batch.remaining_weight_g 
       : (defaultDose * (batch.remaining_doses || 0));
-    const newWeight = Math.max(0, Math.round((currentWeight - doseInVal) * 10) / 10);
-    const newDoses = isBag
-      ? Math.max(0, Math.round(newWeight / defaultDose))
-      : Math.max(0, (batch.remaining_doses || 0) - 1);
+    const newWeight = skip_deduction
+      ? currentWeight
+      : Math.max(0, Math.round((currentWeight - doseInVal) * 10) / 10);
+    const newDoses = skip_deduction
+      ? (batch.remaining_doses || 0)
+      : (isBag
+          ? Math.max(0, Math.round(newWeight / defaultDose))
+          : Math.max(0, (batch.remaining_doses || 0) - 1));
 
     let insertedRecipeId = null;
     await db.run('BEGIN TRANSACTION;');
@@ -493,11 +498,13 @@ app.post('/api/recipes', async (req, res) => {
       );
       insertedRecipeId = insertResult ? insertResult.lastID : null;
 
-      // Subtract grams and doses from batch remaining stock
-      await db.run(
-        'UPDATE batches SET remaining_doses = ?, remaining_weight_g = ? WHERE id = ?',
-        [newDoses, newWeight, batch_id]
-      );
+      if (!skip_deduction) {
+        // Subtract grams and doses from batch remaining stock
+        await db.run(
+          'UPDATE batches SET remaining_doses = ?, remaining_weight_g = ? WHERE id = ?',
+          [newDoses, newWeight, batch_id]
+        );
+      }
 
       await db.run('COMMIT;');
     } catch (dbErr) {
@@ -509,6 +516,7 @@ app.post('/api/recipes', async (req, res) => {
     res.status(201).json({ 
       success: true, 
       recipe_id: insertedRecipeId,
+      deducted: !skip_deduction,
       remaining_doses: updatedBatch ? updatedBatch.remaining_doses : 0, 
       remaining_weight_g: updatedBatch ? updatedBatch.remaining_weight_g : 0 
     });

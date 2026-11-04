@@ -50,6 +50,7 @@ export default function App() {
   const [selectedBatchId, setSelectedBatchId] = useState(initialRoute.batchId);
   const [prefillRecipe, setPrefillRecipe] = useState(null);
   const [autoStartBrew, setAutoStartBrew] = useState(false);
+  const [consumedFromRack, setConsumedFromRack] = useState(null);
   const [lastSubtractedBatch, setLastSubtractedBatch] = useState(null);
   const [batchToEdit, setBatchToEdit] = useState(null);
   const [showNfcTools, setShowNfcTools] = useState(false);
@@ -231,6 +232,7 @@ export default function App() {
     setSelectedBatchId(id);
     setPrefillRecipe(options && options.prefillRecipe ? options.prefillRecipe : null);
     setAutoStartBrew(Boolean(options && options.autoStart));
+    setConsumedFromRack(options && options.doseAlreadyConsumed ? (options.consumedSlotInfo || true) : null);
     setCurrentView('detail');
   };
 
@@ -244,6 +246,7 @@ export default function App() {
       setCurrentView('inventory');
       setSelectedBatchId(null);
       setPrefillRecipe(null);
+      setConsumedFromRack(null);
       dismissToast();
     }
     fetchBatches();
@@ -346,7 +349,10 @@ export default function App() {
       if (data.success) {
         fetchBatches();
         if (!opts.stay) {
-          showToast('Receta guardada y stock descontado del inventario.', { type: 'success', duration: 2500 });
+          const msg = recipePayload.skip_deduction
+            ? 'Receta guardada en bitácora (el tubo ya había sido descontado).'
+            : 'Receta guardada y stock descontado del inventario.';
+          showToast(msg, { type: 'success', duration: 2500 });
           setTimeout(() => {
             handleBack();
           }, 1500);
@@ -361,8 +367,8 @@ export default function App() {
     });
   };
 
-  // Undo a brew saved from the guide: delete the log entry and give the dose back
-  const handleUndoRecipe = async ({ recipeId, batchId, doseG, isBag }) => {
+  // Undo a brew saved from the guide: delete the log entry and give the dose back (unless deduction was skipped)
+  const handleUndoRecipe = async ({ recipeId, batchId, doseG, isBag, skipDeduction }) => {
     const headers = {
       'Content-Type': 'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -371,13 +377,16 @@ export default function App() {
       const del = await fetch(apiUrl(`api/recipes/${recipeId}`), { method: 'DELETE', headers });
       if (!del.ok) throw new Error('No se pudo deshacer el registro');
     }
-    if (batchId) {
+    if (batchId && !skipDeduction) {
       const body = isBag && doseG ? { weight_change: Number(doseG) } : { change: 1 };
       const res = await fetch(apiUrl(`api/batches/${batchId}/doses`), { method: 'PATCH', headers, body: JSON.stringify(body) });
       if (!res.ok) throw new Error('No se pudo devolver la dosis');
     }
     fetchBatches();
-    showToast('Deshecho: registro borrado y dosis devuelta.', { type: 'info', duration: 2500 });
+    showToast(
+      skipDeduction ? 'Deshecho: registro borrado de la bitácora.' : 'Deshecho: registro borrado y dosis devuelta.',
+      { type: 'info', duration: 2500 }
+    );
   };
 
   // R1: NFC scan with toast instead of alert
@@ -540,6 +549,8 @@ export default function App() {
               prefillRecipe={prefillRecipe}
               autoStartBrew={autoStartBrew}
               onAutoStartHandled={() => setAutoStartBrew(false)}
+              consumedFromRack={consumedFromRack}
+              onConsumeHandled={() => setConsumedFromRack(null)}
               onUndoRecipe={handleUndoRecipe}
               onBack={handleBack}
               onSubtractDose={handleSubtractDose}

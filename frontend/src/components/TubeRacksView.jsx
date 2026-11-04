@@ -267,10 +267,17 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
         );
       }
 
-      // Find full batch object to open recipe dial-in if user wants
+      // Find full batch object to open recipe dial-in if user wants (marking dose as already consumed from rack)
       const fullBatch = (batches || []).find(b => b.id === slot.batch_id) || data.consumed_batch;
       if (onSelectBatch && fullBatch) {
-        onSelectBatch(fullBatch);
+        onSelectBatch(fullBatch, {
+          doseAlreadyConsumed: true,
+          consumedSlotInfo: {
+            rackId: rack.id,
+            rackName: rack.name,
+            position: slot.position
+          }
+        });
       }
     } catch (err) {
       if (showToast) showToast(err.message, { type: 'error' });

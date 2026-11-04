@@ -35,9 +35,16 @@ const calculateMicrons = (rot, num, click) => {
 };
 
 
-export default function BatchDetail({ batchId, batches = [], currentUser, onRequireAuth, prefillRecipe, autoStartBrew = false, onAutoStartHandled, onUndoRecipe, onBack, onSubtractDose, onSaveRecipe, onDeleteBatch, onEditBatch, showToast }) {
+export default function BatchDetail({ batchId, batches = [], currentUser, onRequireAuth, prefillRecipe, autoStartBrew = false, onAutoStartHandled, consumedFromRack = null, onConsumeHandled, onUndoRecipe, onBack, onSubtractDose, onSaveRecipe, onDeleteBatch, onEditBatch, showToast }) {
   const [batch, setBatch] = useState(null);
+  const [doseAlreadyConsumed, setDoseAlreadyConsumed] = useState(() => Boolean(consumedFromRack));
   const brewFormRef = useRef(null);
+
+  useEffect(() => {
+    if (consumedFromRack) {
+      setDoseAlreadyConsumed(true);
+    }
+  }, [consumedFromRack]);
 
   const isOwner = Boolean(
     currentUser && (
@@ -740,6 +747,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   const handleDoseDeduction = () => {
     onSubtractDose(batch.id, (data) => {
+      setDoseAlreadyConsumed(true);
       setBatch(prev => ({
         ...prev,
         remaining_doses: data && data.remaining_doses !== undefined ? data.remaining_doses : Math.max(0, prev.remaining_doses - 1),
@@ -755,8 +763,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     if (!batch.recipes || batch.recipes.length === 0) return;
     const last = batch.recipes[0];
     const doseInVal = last.dose_in_g !== null && last.dose_in_g !== undefined ? last.dose_in_g : (parseFloat(batch.dose_weight) || 20.0);
+    const skipDeduct = Boolean(doseAlreadyConsumed);
     
-    // Save recipe (POST /api/recipes updates batch doses and weight automatically)
+    // Save recipe (POST /api/recipes updates batch doses and weight unless skip_deduction is true)
     onSaveRecipe({
       batch_id: batch.id,
       method: last.method,
@@ -771,15 +780,21 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       dose_in_g: doseInVal,
       dose_out_g: last.dose_out_g !== null && last.dose_out_g !== undefined ? last.dose_out_g : null,
       espresso_pressure: last.espresso_pressure !== null && last.espresso_pressure !== undefined ? last.espresso_pressure : null,
-      espresso_preinfusion: last.espresso_preinfusion !== null && last.espresso_preinfusion !== undefined ? last.espresso_preinfusion : null
+      espresso_preinfusion: last.espresso_preinfusion !== null && last.espresso_preinfusion !== undefined ? last.espresso_preinfusion : null,
+      skip_deduction: skipDeduct
     });
     
-    // Update UI remaining stock locally
-    setBatch(prev => ({
-      ...prev,
-      remaining_doses: Math.max(0, prev.remaining_doses - 1),
-      remaining_weight_g: Math.max(0.0, (prev.remaining_weight_g || 0) - doseInVal)
-    }));
+    if (skipDeduct) {
+      setDoseAlreadyConsumed(false);
+      if (typeof onConsumeHandled === 'function') onConsumeHandled();
+    } else {
+      // Update UI remaining stock locally
+      setBatch(prev => ({
+        ...prev,
+        remaining_doses: Math.max(0, prev.remaining_doses - 1),
+        remaining_weight_g: Math.max(0.0, (prev.remaining_weight_g || 0) - doseInVal)
+      }));
+    }
   };
 
   const handleLoadRecipeToForm = (rec) => {
@@ -966,6 +981,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     const ratioText = method === 'Espresso' 
       ? `1:${(doseOutG / doseInG).toFixed(1)}` 
       : `1:${ratioVal.toFixed(1)} (${(doseInG * ratioVal).toFixed(0)}g)`;
+    const skipDeduct = Boolean(doseAlreadyConsumed);
 
     onSaveRecipe({
       batch_id: batch.id,
@@ -981,14 +997,20 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       dose_in_g: parseFloat(doseInG),
       dose_out_g: method === 'Espresso' ? parseFloat(doseOutG) : null,
       espresso_pressure: method === 'Espresso' ? parseFloat(espressoPressure) : null,
-      espresso_preinfusion: method === 'Espresso' ? parseInt(espressoPreinfusion) : null
+      espresso_preinfusion: method === 'Espresso' ? parseInt(espressoPreinfusion) : null,
+      skip_deduction: skipDeduct
     });
 
-    // Update remaining weight locally
-    setBatch(prev => ({
-      ...prev,
-      remaining_weight_g: Math.max(0.0, prev.remaining_weight_g - parseFloat(doseInG))
-    }));
+    if (skipDeduct) {
+      setDoseAlreadyConsumed(false);
+      if (typeof onConsumeHandled === 'function') onConsumeHandled();
+    } else {
+      // Update remaining weight locally
+      setBatch(prev => ({
+        ...prev,
+        remaining_weight_g: Math.max(0.0, prev.remaining_weight_g - parseFloat(doseInG))
+      }));
+    }
 
     setNotes('');
   };
@@ -1000,6 +1022,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         const parsed = typeof t === 'number' ? t : parseInt(t, 10);
         if (!isNaN(parsed)) setWaterTemp(parsed);
       };
+      const skipDeduct = Boolean(doseAlreadyConsumed);
 
       const payload = {
         batch_id: batch?.id,
@@ -1012,7 +1035,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         sensory_extraction: tunedData.sensory_extraction,
         rating: tunedData.rating || 5,
         dose_in_g: tunedData.dose_in_g || doseInG,
-        dose_out_g: tunedData.water_total_g || waterTotalG
+        dose_out_g: tunedData.water_total_g || waterTotalG,
+        skip_deduction: skipDeduct
       };
 
       let result = null;
@@ -1028,6 +1052,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       }
       if (!result || !result.success) throw new Error((result && result.error) || 'No se pudo guardar');
 
+      if (skipDeduct) {
+        setDoseAlreadyConsumed(false);
+        if (typeof onConsumeHandled === 'function') onConsumeHandled();
+      }
+
       if (tunedData.temperature) setTemperature(typeof tunedData.temperature === 'number' ? tunedData.temperature : parseInt(tunedData.temperature, 10));
       fetch(apiUrl(`api/batches/${batch?.id}`))
         .then(r => r.json())
@@ -1039,7 +1068,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         payload,
         undo: typeof onUndoRecipe === 'function'
           ? async () => {
-              await onUndoRecipe({ recipeId: result.recipe_id, batchId: batch?.id, doseG: payload.dose_in_g, isBag: batch?.storage_type === 'bag' });
+              await onUndoRecipe({ recipeId: result.recipe_id, batchId: batch?.id, doseG: payload.dose_in_g, isBag: batch?.storage_type === 'bag', skipDeduction: skipDeduct });
               try {
                 const fresh = await fetch(apiUrl(`api/batches/${batch?.id}`)).then(r => r.json());
                 if (fresh && !fresh.error) setBatch(fresh);
@@ -1371,6 +1400,32 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       {(
         <div ref={brewFormRef} className="animate-entrance">
           <form onSubmit={handleRecipeSubmit}>
+            {doseAlreadyConsumed && (
+              <div
+                role="status"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '9px 12px',
+                  marginBottom: '12px',
+                  borderRadius: 'var(--r-control)',
+                  background: 'var(--ok-bg, rgba(16, 185, 129, 0.1))',
+                  border: '1px solid var(--ok, #10B981)',
+                  fontSize: '12px',
+                  color: 'var(--ink)'
+                }}
+              >
+                <Check size={15} style={{ color: 'var(--ok, #10B981)', flexShrink: 0 }} />
+                <span>
+                  <strong>Dosis ya descontada</strong>
+                  {consumedFromRack && consumedFromRack.rackName
+                    ? ` (${consumedFromRack.rackName} · Tubo #${consumedFromRack.position})`
+                    : ''}
+                  {' — '}al guardar en la bitácora no se volverá a restar otro tubo.
+                </span>
+              </div>
+            )}
             {lastRecipe && (
               <div
                 style={{
