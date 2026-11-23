@@ -38,9 +38,9 @@ export default function SlotAssignModal({
     return Math.max(0, (batch.remaining_doses || 0) - assignedCount + (isCurrentSlotThisBatch ? 1 : 0));
   };
 
-  // Filter batches: only coffees with unassigned stock available (remaining_doses - assignedInRacks > 0)
+  // Filter batches: only coffees in tube mode with unassigned stock available (remaining_doses - assignedInRacks > 0)
   const availableBatches = (batches || []).filter(batch => {
-    if (!batch || (batch.remaining_doses || 0) <= 0) return false;
+    if (!batch || batch.storage_type === 'bag' || (batch.remaining_doses || 0) <= 0) return false;
     return getAvailableForAssignment(batch) > 0;
   });
 

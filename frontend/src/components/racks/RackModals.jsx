@@ -380,7 +380,7 @@ export function TubeActionsModal({ actionTarget, batches, handleClearSlot, handl
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <button
                   type="button"
-                  onClick={() => handleConsumeTube(actionTarget.rack, actionTarget.slot)}
+                  onClick={() => handleConsumeTube(actionTarget.rack, actionTarget.slot, { autoStart: true })}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -399,7 +399,30 @@ export function TubeActionsModal({ actionTarget, batches, handleClearSlot, handl
                   }}
                 >
                   <Coffee size={18} strokeWidth={2.5} />
-                  <span>Preparar este café</span>
+                  <span>Preparar con cronómetro</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleConsumeTube(actionTarget.rack, actionTarget.slot, { autoStart: false })}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '12px',
+                    borderRadius: 'var(--barista-radius-md)',
+                    backgroundColor: 'var(--barista-bg-elevated)',
+                    color: 'var(--color-text)',
+                    border: '1.5px solid var(--barista-accent-honey)',
+                    fontWeight: '700',
+                    fontSize: '13.5px',
+                    fontFamily: 'var(--font-heading)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Edit3 size={16} />
+                  <span>Ajustar receta en ficha (descontar tubo)</span>
                 </button>
 
                 <button
@@ -414,18 +437,18 @@ export function TubeActionsModal({ actionTarget, batches, handleClearSlot, handl
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '6px',
-                    padding: '12px',
+                    padding: '11px',
                     borderRadius: 'var(--barista-radius-md)',
                     backgroundColor: 'var(--barista-bg-surface)',
                     color: 'var(--barista-text-primary)',
                     border: '1px solid var(--barista-border-hairline)',
-                    fontWeight: '700',
+                    fontWeight: '600',
                     fontSize: '13px',
                     cursor: 'pointer'
                   }}
                 >
-                  <ArrowRight size={16} />
-                  <span>Ver ficha del café</span>
+                  <ArrowRight size={15} />
+                  <span>Solo ver ficha (sin descontar tubo)</span>
                 </button>
 
                 <button

@@ -38,6 +38,11 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
   const [roaster, setRoaster] = useState(batchToEdit ? batchToEdit.roaster || '' : '');
   const [notes, setNotes] = useState(getInitialNotes());
   const [totalDoses, setTotalDoses] = useState(batchToEdit ? batchToEdit.total_doses : 12);
+  const [remainingDoses, setRemainingDoses] = useState(
+    batchToEdit && batchToEdit.remaining_doses !== undefined && batchToEdit.remaining_doses !== null
+      ? batchToEdit.remaining_doses
+      : (batchToEdit ? batchToEdit.total_doses : 12)
+  );
   const [doseWeight, setDoseWeight] = useState(batchToEdit ? batchToEdit.dose_weight || '20.0g' : '20.0g');
   const [storageType, setStorageType] = useState(batchToEdit ? (batchToEdit.storage_type || 'tubes') : 'tubes');
   const [bagWeight, setBagWeight] = useState(batchToEdit ? (batchToEdit.total_weight_g || 250) : 250);
@@ -227,7 +232,9 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
     const calculatedDoses = storageType === 'bag' ? Math.max(1, Math.round(totalWeightNum / doseWeightNum)) : parseInt(totalDoses, 10);
 
     const payload = {
-      name, producer, altitude, variety, process, roaster, roaster_notes: combinedNotes,
+      name,
+      producer: (producer && producer.trim()) || (roaster && roaster.trim()) || (origin && origin.trim()) || 'Especialidad',
+      altitude, variety, process, roaster, roaster_notes: combinedNotes,
       dose_weight: `${doseWeightNum.toFixed(1)}g`,
       total_doses: calculatedDoses,
       total_weight_g: totalWeightNum,
@@ -241,6 +248,12 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
       if (!isNaN(remNum) && remNum >= 0) {
         payload.remaining_weight_g = remNum;
         payload.remaining_doses = Math.max(0, Math.round(remNum / doseWeightNum));
+      }
+    } else if (batchToEdit && storageType === 'tubes') {
+      const remTubes = parseInt(remainingDoses, 10);
+      if (!isNaN(remTubes) && remTubes >= 0) {
+        payload.remaining_doses = remTubes;
+        payload.remaining_weight_g = remTubes * doseWeightNum;
       }
     }
 
@@ -276,7 +289,8 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
           showToast('Lote actualizado con éxito.', { type: 'success', duration: 2500 });
         } else {
           const host = window.location.origin;
-          setGeneratedUrl(`${host}/beantag/?batch=${encodeURIComponent(id)}&action=new_brew`);
+          const createdId = data.id || id;
+          setGeneratedUrl(`${host}/beantag/?batch=${encodeURIComponent(createdId)}&action=new_brew`);
           showToast('Lote creado con éxito.', { type: 'success', duration: 2500 });
         }
         if (onBatchCreated) onBatchCreated();
@@ -511,20 +525,32 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                 <>
                   <div className="form-row">
                     <div className="form-group">
-                      <label className="barista-label">Cantidad de Tubos</label>
+                      <label className="barista-label">{batchToEdit ? 'Tubos Totales' : 'Cantidad de Tubos'}</label>
                       <div className="mono-stepper compact" style={{ minHeight: '44px' }}>
                         <button type="button" className="stepper-btn" aria-label="Reducir cantidad de tubos" style={{ minHeight: '44px', minWidth: '44px', fontSize: '18px' }} onClick={() => setTotalDoses(d => Math.max(1, d - 1))}>-</button>
                         <div className="stepper-value" style={{ fontSize: '15px', fontWeight: 'bold' }}>{totalDoses}</div>
                         <button type="button" className="stepper-btn" aria-label="Añadir tubo" style={{ minHeight: '44px', minWidth: '44px', fontSize: '18px' }} onClick={() => setTotalDoses(d => d + 1)}>+</button>
                       </div>
                     </div>
+                    {batchToEdit && (
+                      <div className="form-group">
+                        <label className="barista-label">Tubos Restantes</label>
+                        <div className="mono-stepper compact" style={{ minHeight: '44px' }}>
+                          <button type="button" className="stepper-btn" aria-label="Reducir tubos restantes" style={{ minHeight: '44px', minWidth: '44px', fontSize: '18px' }} onClick={() => setRemainingDoses(d => Math.max(0, d - 1))}>-</button>
+                          <div className="stepper-value" style={{ fontSize: '15px', fontWeight: 'bold' }}>{remainingDoses}</div>
+                          <button type="button" className="stepper-btn" aria-label="Añadir tubo restante" style={{ minHeight: '44px', minWidth: '44px', fontSize: '18px' }} onClick={() => setRemainingDoses(d => d + 1)}>+</button>
+                        </div>
+                      </div>
+                    )}
                     <div className="form-group">
                       <label htmlFor="bt-batchcreator-13" className="barista-label">Gramos por Tubo</label>
                       <input id="bt-batchcreator-13" aria-label="Gramos por Tubo" className="candy-input" value={doseWeight} onChange={(e) => setDoseWeight(e.target.value)} type="text" inputMode="decimal" style={{ minHeight: '44px', fontSize: '13px' }} />
                     </div>
                   </div>
                   <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-crimson)', marginTop: '10px', textAlign: 'center' }}>
-                    Inventario Inicial: {(totalDoses * (parseFloat(doseWeight) || 20.0)).toFixed(0)}g en {totalDoses} tubos
+                    {batchToEdit
+                      ? `Stock actual: ${remainingDoses} de ${totalDoses} tubos (${(remainingDoses * (parseFloat(doseWeight) || 20.0)).toFixed(0)}g restantes)`
+                      : `Inventario Inicial: ${(totalDoses * (parseFloat(doseWeight) || 20.0)).toFixed(0)}g en ${totalDoses} tubos`}
                   </div>
                 </>
               ) : (
@@ -607,7 +633,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
             <div className="form-row">
               <div className="form-group">
               <label htmlFor="bt-batchcreator-2" className="barista-label">Productor / Finca</label>
-              <input id="bt-batchcreator-2" aria-label="Productor / Finca" className="candy-input" value={producer} onChange={(e) => setProducer(e.target.value)} type="text" required placeholder="Ej. Nestor Lasso / El Diviso" style={{ minHeight: '44px', fontSize: '13px' }} />
+              <input id="bt-batchcreator-2" aria-label="Productor / Finca" className="candy-input" value={producer} onChange={(e) => setProducer(e.target.value)} type="text" placeholder="Ej. Nestor Lasso / El Diviso" style={{ minHeight: '44px', fontSize: '13px' }} />
             </div>
               <div className="form-group">
                 <label htmlFor="bt-batchcreator-7" className="barista-label">Tostador</label>

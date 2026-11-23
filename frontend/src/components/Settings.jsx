@@ -70,7 +70,11 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   const [menuShareStatus, setMenuShareStatus] = useState('');
 
   const safeBatches = Array.isArray(batches) ? batches : [];
-  const availableBatches = safeBatches.filter(b => b && (b.remaining_doses || 0) > 0);
+  const availableBatches = safeBatches.filter(b => b && (
+    b.storage_type === 'bag'
+      ? (parseFloat(b.remaining_weight_g) > 0 || (b.remaining_doses || 0) > 0)
+      : (b.remaining_doses || 0) > 0
+  ));
 
   const handleOpenMenuShare = async (template = menuShareTemplate) => {
     const targetList = availableBatches.length > 0 ? availableBatches : safeBatches;

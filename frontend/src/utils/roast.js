@@ -20,10 +20,19 @@ export function roastStyle(level) {
 }
 
 const DAY = 86400000;
-const READY_FROM = 7;   // days after roast
-const READY_UNTIL = 30; // after this, "Pasado"
 
-// Rest status in one word. Freezing pauses it.
+function getDegassingWindow(roastLevel) {
+  const r = String(roastLevel || '').toLowerCase();
+  if (/oscuro|dark|franc|italian/.test(r)) {
+    return { readyFrom: 4, peakUntil: 21 };
+  }
+  if (/claro|light|n[oó]rdico|nordic|filtr/.test(r)) {
+    return { readyFrom: 10, peakUntil: 35 };
+  }
+  return { readyFrom: 7, peakUntil: 28 };
+}
+
+// Rest status with roast-aware degassing curve and exact day count. Freezing pauses aging.
 export function getDegassing(batch, now = new Date()) {
   if (!batch || !batch.roast_date) return null;
   const roast = new Date(batch.roast_date);
@@ -32,8 +41,13 @@ export function getDegassing(batch, now = new Date()) {
   const freeze = frozen ? new Date(batch.freeze_date) : null;
   const end = frozen && !Number.isNaN(freeze?.getTime()) ? freeze : now;
   const day = Math.max(0, Math.floor((end - roast) / DAY));
-  if (frozen) return { day, frozen, tone: 'cryo', word: 'Congelado' };
-  if (day < READY_FROM) return { day, frozen, tone: '', word: 'Descansando' };
-  if (day > READY_UNTIL) return { day, frozen, tone: 'warn', word: 'Pasado' };
-  return { day, frozen, tone: 'ok', word: 'Listo' };
+  const { readyFrom, peakUntil } = getDegassingWindow(batch.roast_level);
+
+  if (frozen) return { day, frozen, tone: 'cryo', word: `Congelado · d${day}` };
+  if (day < readyFrom) {
+    const left = Math.max(1, readyFrom - day);
+    return { day, frozen, tone: '', word: `Reposo · d${day} (+${left}d)` };
+  }
+  if (day > peakUntil) return { day, frozen, tone: 'warn', word: `Pasado · d${day}` };
+  return { day, frozen, tone: 'ok', word: `En pico · d${day}` };
 }

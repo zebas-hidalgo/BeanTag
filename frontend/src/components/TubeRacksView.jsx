@@ -189,7 +189,10 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
       headers: getAuthHeaders(),
       body: JSON.stringify({ batch_id: batchId })
     });
-    if (!res.ok) throw new Error('Error al asignar ranura');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || 'Error al asignar ranura');
+    }
     const data = await res.json();
     setRacks(prev => prev.map(r => {
       if (r.id !== rack.id) return r;
@@ -209,7 +212,10 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
       headers: getAuthHeaders(),
       body: JSON.stringify({ batch_id: batchId, only_empty: true })
     });
-    if (!res.ok) throw new Error('Error al llenar rack');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || 'Error al llenar rack');
+    }
     const data = await res.json();
     setRacks(prev => prev.map(r => r.id === rack.id ? { ...r, slots: data.slots } : r));
   };
@@ -221,7 +227,10 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
       headers: getAuthHeaders(),
       body: JSON.stringify({ batch_id: null })
     });
-    if (!res.ok) throw new Error('Error al vaciar ranura');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || 'Error al vaciar ranura');
+    }
     const data = await res.json();
     setRacks(prev => prev.map(r => {
       if (r.id !== rackId) return r;
@@ -234,7 +243,7 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
   };
 
   // Handle consuming a tube (atomic decrement + empty slot)
-  const handleConsumeTube = async (rack, slot) => {
+  const handleConsumeTube = async (rack, slot, opts = {}) => {
     try {
       const res = await fetch(apiUrl(`api/racks/${rack.id}/slots/${slot.position}/consume`), {
         method: 'POST',
@@ -267,10 +276,15 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
         );
       }
 
-      // Find full batch object to open recipe dial-in if user wants (marking dose as already consumed from rack)
+      // Find full batch object to open recipe dial-in or direct timer (marking dose as already consumed from rack)
       const fullBatch = (batches || []).find(b => b.id === slot.batch_id) || data.consumed_batch;
+      const lastRecipe = fullBatch && Array.isArray(fullBatch.recipes) && fullBatch.recipes.length > 0
+        ? fullBatch.recipes[0]
+        : null;
       if (onSelectBatch && fullBatch) {
         onSelectBatch(fullBatch, {
+          autoStart: Boolean(opts && opts.autoStart),
+          prefillRecipe: lastRecipe,
           doseAlreadyConsumed: true,
           consumedSlotInfo: {
             rackId: rack.id,
@@ -547,7 +561,7 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
                 backgroundColor: selectedRackId === 'all'
                   ? 'var(--color-crimson)'
                   : 'var(--barista-bg-elevated)',
-                color: selectedRackId === 'all' ? '#FFFFFF' : 'var(--barista-text-secondary)',
+                color: selectedRackId === 'all' ? 'var(--on-accent)' : 'var(--barista-text-secondary)',
                 fontWeight: selectedRackId === 'all' ? '800' : '600',
                 fontSize: '13px',
                 fontFamily: 'var(--font-heading)',
@@ -556,7 +570,7 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
                 flexShrink: 0,
                 transition: 'var(--transition-ui)',
                 boxShadow: selectedRackId === 'all'
-                  ? '0 2px 10px rgba(229, 62, 62, 0.35)'
+                  ? 'var(--shadow-1)'
                   : 'none'
               }}
             >
@@ -569,11 +583,11 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
                   padding: '2px 7px',
                   borderRadius: 'var(--r-pill)',
                   backgroundColor: selectedRackId === 'all'
-                    ? 'rgba(255, 255, 255, 0.25)'
+                    ? 'rgba(0, 0, 0, 0.14)'
                     : 'var(--barista-bg-surface)',
-                  color: selectedRackId === 'all' ? '#FFFFFF' : 'var(--barista-text-secondary)',
+                  color: selectedRackId === 'all' ? 'var(--on-accent)' : 'var(--barista-text-secondary)',
                   border: selectedRackId === 'all'
-                    ? '1px solid rgba(255, 255, 255, 0.4)'
+                    ? '1px solid rgba(255, 255, 255, 0.25)'
                     : '1px solid var(--barista-border-hairline)'
                 }}
               >
@@ -608,7 +622,7 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
                     backgroundColor: isSelected
                       ? 'var(--color-crimson)'
                       : 'var(--barista-bg-elevated)',
-                    color: isSelected ? '#FFFFFF' : 'var(--barista-text-secondary)',
+                    color: isSelected ? 'var(--on-accent)' : 'var(--barista-text-secondary)',
                     fontWeight: isSelected ? '800' : '600',
                     fontSize: '13px',
                     fontFamily: 'var(--font-heading)',
@@ -617,7 +631,7 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
                     flexShrink: 0,
                     transition: 'var(--transition-ui)',
                     boxShadow: isSelected
-                      ? '0 2px 10px rgba(229, 62, 62, 0.35)'
+                      ? 'var(--shadow-1)'
                       : 'none'
                   }}
                 >

@@ -122,13 +122,16 @@ export default function BrewDiagnostic({
   if (saved) {
     const corr = saved.correction || {};
     const changed = corr.diagnosis && corr.diagnosis !== 'balanced';
+    const deductionNote = saved.deducted === false
+      ? 'dosis ya descontada previamente'
+      : `se descontaron ${dose} g`;
     return (
       <div className="bt-diag">
         <div className="bt-diag-done">
           <span className="bt-diag-check" aria-hidden="true"><Check size={28} strokeWidth={2.6} /></span>
           <h2 className="bt-diag-title">Guardado en tu bitácora</h2>
           <p className="bt-diag-sub">
-            {tasteLabel(saved.feedback.taste)} · {formatTime(elapsedSeconds)} · se descontaron {dose} g
+            {tasteLabel(saved.feedback.taste)} · {formatTime(elapsedSeconds)} · {deductionNote}
           </p>
         </div>
 
@@ -167,7 +170,12 @@ export default function BrewDiagnostic({
         <span className="bt-diag-sub">{coffeeName} · {method} · {dose} g → {waterG} g</span>
       </div>
 
-      <h2 className="bt-diag-title" id="bt-diag-taste">¿Cómo sabe?</h2>
+      <div className="bt-diag-fine" style={{ marginBottom: '14px' }}>
+        <Segmented label="Caudal" options={FLOWS} value={feedback.flow} onChange={(v) => setFeedback((p) => ({ ...p, flow: v }))} />
+        <Segmented label="Cuerpo" options={BODIES} value={feedback.body} onChange={(v) => setFeedback((p) => ({ ...p, body: v }))} />
+      </div>
+
+      <h2 className="bt-diag-title" id="bt-diag-taste">¿Cómo sabe? (toca para guardar)</h2>
       <div className="bt-taste bt-diag-taste" role="group" aria-labelledby="bt-diag-taste">
         {TASTES.map((t) => (
           <button
@@ -182,16 +190,7 @@ export default function BrewDiagnostic({
           </button>
         ))}
       </div>
-      <p className="bt-diag-note">Un toque guarda la extracción y descuenta la dosis.</p>
-
-      <details className="bt-more">
-        <summary>Caudal y cuerpo (opcional)</summary>
-        <div className="bt-diag-fine">
-          <Segmented label="Caudal" options={FLOWS} value={feedback.flow} onChange={(v) => setFeedback((p) => ({ ...p, flow: v }))} />
-          <Segmented label="Cuerpo" options={BODIES} value={feedback.body} onChange={(v) => setFeedback((p) => ({ ...p, body: v }))} />
-          <p className="bt-diag-note">Elige esto antes de tocar el sabor.</p>
-        </div>
-      </details>
+      <p className="bt-diag-note">Ajusta caudal/cuerpo arriba si lo necesitas y toca el sabor para guardar en la bitácora.</p>
 
       <p className="bt-diag-status" role="status" aria-live="polite">{status}</p>
 

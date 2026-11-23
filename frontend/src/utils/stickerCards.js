@@ -68,6 +68,22 @@ const THEMES = {
   }
 };
 
+function themeOf(style, transparent = false) {
+  const base = THEMES[style] || THEMES.stretch;
+  if (!transparent) return base;
+  return {
+    ...base,
+    transparent: true,
+    card: 'transparent',
+    ink: '#FFFDF9',
+    muted: 'rgba(255, 253, 249, 0.80)',
+    accent: '#F5B87A',
+    rule: 'rgba(255, 253, 249, 0.34)',
+    chipBg: 'rgba(20, 16, 13, 0.50)',
+    mark: ['#F5B87A', '#1A1410']
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -249,10 +265,35 @@ function shadowed(ctx, paint) {
   ctx.restore();
 }
 
-function shape(ctx, style, d, sp, W, H, vertical) {
-  const th = THEMES[style];
+function shape(ctx, style, d, sp, W, H, vertical, transparent = false) {
+  const th = themeOf(style, transparent);
   const x = sp.margin, y = sp.margin, w = W - sp.margin * 2, h = H - sp.margin * 2;
   const p = sp.pad;
+
+  if (transparent) {
+    // Strava-style transparent HUD mode: no opaque card background, optional subtle topographic lines on 'origen'
+    if (style === 'origen') {
+      ctx.save();
+      const rnd = seeded(`${d.name}${d.origin}`);
+      const sx = vertical ? x + w * 0.72 : x + w * 0.8, sy = vertical ? y + 170 : y + h * 0.42;
+      const ph = [rnd() * 6.28, rnd() * 6.28, rnd() * 6.28];
+      ctx.strokeStyle = 'rgba(255, 253, 249, 0.22)'; ctx.lineWidth = 2.2;
+      for (let k = 0; k < 12; k++) {
+        const base = 30 + k * 42, amp = 8 + k * 4;
+        ctx.beginPath();
+        for (let a = 0; a <= 64; a++) {
+          const t = (a / 64) * Math.PI * 2;
+          const r = base + amp * (Math.sin(3 * t + ph[0]) * 0.5 + Math.sin(5 * t + ph[1]) * 0.3 + Math.sin(2 * t + ph[2]) * 0.4);
+          const px = sx + Math.cos(t) * r * 1.15, py = sy + Math.sin(t) * r * 0.9;
+          if (a === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.closePath(); ctx.stroke();
+      }
+      ctx.fillStyle = th.accent; ctx.beginPath(); ctx.arc(sx, sy, 10, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+    return { x: x + p, y: y + p, w: w - 2 * p, h: h - 2 * p };
+  }
 
   if (style === 'zine') {
     const rot = vertical ? -1.0 : -0.8;
@@ -424,7 +465,7 @@ function notes(ctx, th, sp, tags, x, y, w) {
     return cy - y + Math.round(sp.body * 1.15);
   }
   if (th.notes === 'hand') {
-    ctx.fillStyle = '#2B2A8C';
+    ctx.fillStyle = th.transparent ? th.accent : '#2B2A8C';
     const f = fit(ctx, tags.map((t) => t.toLowerCase()).join(', '), { maxW: w, maxLines: 2, max: sp.body * 1.3, min: sp.body * 1.05, weight: 600, family: HAND, lh: 1.05 });
     font(ctx, 600, f.size, HAND);
     return draw(ctx, f, x, y);
@@ -486,8 +527,8 @@ function altitudeHero(ctx, th, sp, d, x, y, k, vertical) {
 // ---------------------------------------------------------------------------
 // Layouts
 // ---------------------------------------------------------------------------
-function layoutVertical(ctx, style, d, inc, sp, r, lv) {
-  const th = THEMES[style];
+function layoutVertical(ctx, style, d, inc, sp, r, lv, transparent = false) {
+  const th = themeOf(style, transparent);
   let y = r.y;
   const bottomBrand = r.y + r.h;
   const brandH = Math.round(sp.foot * 1.3);
@@ -532,8 +573,8 @@ function layoutVertical(ctx, style, d, inc, sp, r, lv) {
   return { fits: tf.ok && fr.ok && y <= bottomBrand - brandH - sp.gap };
 }
 
-function layoutHorizontal(ctx, style, d, inc, sp, r, lv) {
-  const th = THEMES[style];
+function layoutHorizontal(ctx, style, d, inc, sp, r, lv, transparent = false) {
+  const th = themeOf(style, transparent);
   const leftW = Math.round(r.w * 0.56);
   const rightX = r.x + leftW + 48;
   const rightW = r.w - leftW - 48;
@@ -583,7 +624,7 @@ function layoutHorizontal(ctx, style, d, inc, sp, r, lv) {
 }
 
 // ---------------------------------------------------------------------------
-export function drawSticker(ctx, style, d, incRecipe, orientation, width, height) {
+export function drawSticker(ctx, style, d, incRecipe, orientation, width, height, transparent = false) {
   const st = STICKER_STYLES.includes(style) ? style : 'stretch';
   const vertical = orientation === 'vertical';
   const sp = SPEC[vertical ? 'vertical' : 'horizontal'];
@@ -597,14 +638,19 @@ export function drawSticker(ctx, style, d, incRecipe, orientation, width, height
     const probe = measuring(ctx);
     let res = { fits: false };
     try {
-      const r = shape(probe, st, d, sp, width, height, vertical);
-      res = layout(probe, st, d, incRecipe, sp, r, lv) || res;
+      const r = shape(probe, st, d, sp, width, height, vertical, transparent);
+      res = layout(probe, st, d, incRecipe, sp, r, lv, transparent) || res;
     } catch (e) { res = { fits: false }; }
     if (res.fits) { level = lv; break; }
   }
   ctx.save();
-  const r = shape(ctx, st, d, sp, width, height, vertical);
-  layout(ctx, st, d, incRecipe, sp, r, level);
+  const r = shape(ctx, st, d, sp, width, height, vertical, transparent);
+  if (transparent) {
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.72)';
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetY = 3;
+  }
+  layout(ctx, st, d, incRecipe, sp, r, level, transparent);
   spaced(ctx, 0);
   ctx.restore();
 }

@@ -349,15 +349,43 @@ app.get('/api/batches/:id', async (req, res) => {
   }
 });
 
+// Helper: Reconcile tube_rack_slots when a batch's remaining_doses or storage_type changes
+async function reconcileRackSlotsForBatch(db, batchId, newRemainingDoses, storageType = 'tubes') {
+  if (!batchId) return;
+  const maxAllowed = storageType === 'bag' ? 0 : Math.max(0, parseInt(newRemainingDoses, 10) || 0);
+  if (maxAllowed <= 0) {
+    await db.run(
+      'UPDATE tube_rack_slots SET batch_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE batch_id = ?',
+      [batchId]
+    );
+    return;
+  }
+  const assignedSlots = await db.all(
+    'SELECT id FROM tube_rack_slots WHERE batch_id = ? ORDER BY updated_at DESC, id DESC',
+    [batchId]
+  );
+  if (assignedSlots.length > maxAllowed) {
+    const excessCount = assignedSlots.length - maxAllowed;
+    const slotsToFree = assignedSlots.slice(0, excessCount);
+    for (const s of slotsToFree) {
+      await db.run(
+        'UPDATE tube_rack_slots SET batch_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [s.id]
+      );
+    }
+  }
+}
+
 // Create new batch
 app.post('/api/batches', async (req, res) => {
   if (!req.user || !req.user.id) {
     return res.status(401).json({ error: 'Debes iniciar sesión para registrar un café.' });
   }
   const { id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, origin, roast_level, roast_date, freeze_date, sca_score, storage_type, total_weight_g } = req.body;
-  if (!id || !name || !producer) {
-    return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  if (!id || !name) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios (nombre del café)' });
   }
+  const safeProducer = (producer && String(producer).trim()) || (roaster && String(roaster).trim()) || (origin && String(origin).trim()) || 'Especialidad';
   const storageType = storage_type === 'bag' ? 'bag' : 'tubes';
   const doseWeightNum = parseFloat(dose_weight) || (storageType === 'bag' ? 18.0 : 20.0);
   let totalDosesNum = parseInt(total_doses, 10);
@@ -393,7 +421,7 @@ app.post('/api/batches', async (req, res) => {
     await db.run(
       `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, user_id, sca_score, storage_type)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [finalId, name, producer, altitude, variety, process, roaster, roaster_notes, `${doseWeightNum.toFixed(1)}g`, totalDosesNum, totalDosesNum, origin, roast_level, roast_date, freeze_date, totalWeightGNum, totalWeightGNum, userId, scaScoreNum, storageType]
+      [finalId, name, safeProducer, altitude, variety, process, roaster, roaster_notes, `${doseWeightNum.toFixed(1)}g`, totalDosesNum, totalDosesNum, origin, roast_level, roast_date, freeze_date, totalWeightGNum, totalWeightGNum, userId, scaScoreNum, storageType]
     );
     res.status(201).json({ success: true, id: finalId });
   } catch (err) {
@@ -420,10 +448,12 @@ app.patch('/api/batches/:id/doses', async (req, res) => {
 
     const doseWeightNum = parseFloat(batch.dose_weight) || 18.0;
     const isBag = batch.storage_type === 'bag';
-    let newWeight = batch.remaining_weight_g !== null && batch.remaining_weight_g !== undefined
+    const prevWeight = batch.remaining_weight_g !== null && batch.remaining_weight_g !== undefined
       ? batch.remaining_weight_g
       : (doseWeightNum * (batch.remaining_doses || 0));
-    let newDoses = batch.remaining_doses || 0;
+    const prevDoses = batch.remaining_doses || 0;
+    let newWeight = prevWeight;
+    let newDoses = prevDoses;
 
     if (weight_change !== undefined && !isNaN(parseFloat(weight_change))) {
       const deltaW = parseFloat(weight_change);
@@ -435,13 +465,21 @@ app.patch('/api/batches/:id/doses', async (req, res) => {
         newWeight = Math.max(0, Math.round((newWeight + deltaW) * 10) / 10);
         newDoses = Math.max(0, Math.round(newWeight / doseWeightNum));
       } else {
-        newDoses = Math.max(0, Math.min(batch.total_doses || 99, newDoses + change));
+        newDoses = Math.max(0, Math.min(Math.max(batch.total_doses || 99, prevDoses + 1), newDoses + change));
         newWeight = Math.max(0, Math.round((newDoses * doseWeightNum) * 10) / 10);
       }
     }
 
     await db.run('UPDATE batches SET remaining_doses = ?, remaining_weight_g = ? WHERE id = ?', [newDoses, newWeight, req.params.id]);
-    res.json({ success: true, remaining_doses: newDoses, remaining_weight_g: newWeight });
+    await reconcileRackSlotsForBatch(db, req.params.id, newDoses, batch.storage_type);
+    res.json({
+      success: true,
+      remaining_doses: newDoses,
+      remaining_weight_g: newWeight,
+      previous_doses: prevDoses,
+      previous_weight_g: prevWeight,
+      actual_weight_delta: Math.round((newWeight - prevWeight) * 10) / 10
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -504,6 +542,7 @@ app.post('/api/recipes', async (req, res) => {
           'UPDATE batches SET remaining_doses = ?, remaining_weight_g = ? WHERE id = ?',
           [newDoses, newWeight, batch_id]
         );
+        await reconcileRackSlotsForBatch(db, batch_id, newDoses, batch.storage_type);
       }
 
       await db.run('COMMIT;');
@@ -580,8 +619,8 @@ app.get('/api/recipes', async (req, res) => {
 // Update batch details
 app.put('/api/batches/:id', async (req, res) => {
   const { name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, sca_score, storage_type, total_weight_g, remaining_weight_g } = req.body;
-  if (!name || !producer) {
-    return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  if (!name) {
+    return res.status(400).json({ error: 'El nombre del café es obligatorio' });
   }
   try {
     const db = await getDb();
@@ -594,6 +633,7 @@ app.put('/api/batches/:id', async (req, res) => {
       return res.status(403).json({ error: 'Solo el propietario puede editar este lote.' });
     }
     
+    const safeProducer = (producer && String(producer).trim()) || current.producer || (roaster && String(roaster).trim()) || (origin && String(origin).trim()) || 'Especialidad';
     const storageType = storage_type || current.storage_type || 'tubes';
     const doseWeightNum = parseFloat(dose_weight) || (storageType === 'bag' ? 18.0 : 20.0);
 
@@ -612,8 +652,12 @@ app.put('/api/batches/:id', async (req, res) => {
       newTotalDoses = Math.max(1, Math.round(newTotalWeight / doseWeightNum));
       newRemaining = Math.max(0, Math.round(newRemainingWeight / doseWeightNum));
     } else {
-      if (total_doses !== undefined && current.total_doses !== undefined && total_doses !== current.total_doses && remaining_doses === undefined) {
-        const diff = (parseInt(total_doses) || 0) - (current.total_doses || 0);
+      if (remaining_doses !== undefined && remaining_doses !== null && !isNaN(parseInt(remaining_doses, 10))) {
+        newRemaining = Math.max(0, parseInt(remaining_doses, 10));
+      } else if (current.storage_type === 'bag') {
+        newRemaining = Math.min(newTotalDoses, Math.max(0, Math.round(newRemainingWeight / doseWeightNum)));
+      } else if (total_doses !== undefined && current.total_doses !== undefined && total_doses !== current.total_doses) {
+        const diff = (parseInt(total_doses, 10) || 0) - (current.total_doses || 0);
         newRemaining = Math.max(0, (current.remaining_doses || 0) + diff);
       }
       newTotalWeight = doseWeightNum * newTotalDoses;
@@ -628,8 +672,9 @@ app.put('/api/batches/:id', async (req, res) => {
            dose_weight = ?, total_doses = ?, remaining_doses = ?, origin = ?, roast_level = ?, roast_date = ?, freeze_date = ?,
            total_weight_g = ?, remaining_weight_g = ?, sca_score = ?, storage_type = ?
        WHERE id = ?`,
-      [name, producer, altitude, variety, process, roaster, roaster_notes, `${doseWeightNum.toFixed(1)}g`, newTotalDoses, newRemaining, origin, roast_level, roast_date, freeze_date, newTotalWeight, newRemainingWeight, scaScoreNum, storageType, req.params.id]
+      [name, safeProducer, altitude, variety, process, roaster, roaster_notes, `${doseWeightNum.toFixed(1)}g`, newTotalDoses, newRemaining, origin, roast_level, roast_date, freeze_date, newTotalWeight, newRemainingWeight, scaScoreNum, storageType, req.params.id]
     );
+    await reconcileRackSlotsForBatch(db, req.params.id, newRemaining, storageType);
     res.json({ success: true, remaining_doses: newRemaining, remaining_weight_g: newRemainingWeight });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -920,12 +965,15 @@ app.put('/api/racks/:id/slots/:position', async (req, res) => {
     }
 
     if (batch_id) {
-      const batch = await db.get('SELECT id, user_id, remaining_doses FROM batches WHERE id = ?', batch_id);
+      const batch = await db.get('SELECT id, user_id, remaining_doses, storage_type FROM batches WHERE id = ?', batch_id);
       if (!batch) {
         return res.status(404).json({ error: 'El lote seleccionado no existe.' });
       }
       if (!isResourceOwner(req.user, batch.user_id)) {
         return res.status(403).json({ error: 'No tienes permiso para usar este lote.' });
+      }
+      if (batch.storage_type === 'bag') {
+        return res.status(400).json({ error: 'Los cafés guardados en bolsa no se asignan a portatubos. Cambia el formato a tubos si los dosificaste.' });
       }
 
       // Check how many slots already hold this batch (excluding current slot if it already had this batch)
@@ -981,12 +1029,15 @@ app.post('/api/racks/:id/fill', async (req, res) => {
       return res.status(403).json({ error: 'No tienes permiso para editar este portatubos.' });
     }
 
-    const batch = await db.get('SELECT id, user_id, remaining_doses FROM batches WHERE id = ?', batch_id);
+    const batch = await db.get('SELECT id, user_id, remaining_doses, storage_type FROM batches WHERE id = ?', batch_id);
     if (!batch) {
       return res.status(404).json({ error: 'El lote seleccionado no existe.' });
     }
     if (!isResourceOwner(req.user, batch.user_id)) {
       return res.status(403).json({ error: 'No tienes permiso para usar este lote.' });
+    }
+    if (batch.storage_type === 'bag') {
+      return res.status(400).json({ error: 'Los cafés guardados en bolsa no se asignan a portatubos. Cambia el formato a tubos si los dosificaste.' });
     }
 
     // Count how many slots in ALL racks already hold this batch
@@ -1223,16 +1274,17 @@ app.post('/api/backup/import', requireAuth, async (req, res) => {
     }
 
     const verb = mode === 'merge' ? 'INSERT OR IGNORE' : 'INSERT';
-    const insertBatchSql = `${verb} INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, sca_score, created_at, user_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const insertBatchSql = `${verb} INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, sca_score, storage_type, created_at, user_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     for (const b of batches) {
       await db.run(insertBatchSql, [
-        b.id, b.name, b.producer, b.altitude, b.variety, b.process, b.roaster, b.roaster_notes,
+        b.id, b.name, b.producer || 'Especialidad', b.altitude, b.variety, b.process, b.roaster, b.roaster_notes,
         b.dose_weight, b.total_doses, b.remaining_doses, b.origin, b.roast_level, b.roast_date, b.freeze_date,
         b.total_weight_g !== undefined ? b.total_weight_g : 0,
         b.remaining_weight_g !== undefined ? b.remaining_weight_g : 0,
         b.sca_score !== undefined && b.sca_score !== null && !isNaN(parseFloat(b.sca_score)) ? parseFloat(b.sca_score) : null,
+        b.storage_type === 'bag' ? 'bag' : 'tubes',
         b.created_at,
         userId
       ]);
@@ -1270,15 +1322,16 @@ app.post('/api/backup/import', requireAuth, async (req, res) => {
 
 
 // R7: PWA manifest
-app.get('/manifest.json', (req, res) => {
+const sendManifest = (req, res) => {
   res.json({
     name: 'BeanTag',
     short_name: 'BeanTag',
     description: 'Gestión de café specialty congelado con NFC',
-    start_url: '/',
+    start_url: '/beantag/',
+    scope: '/beantag/',
     display: 'standalone',
-    background_color: '#FFF5F5',
-    theme_color: '#FFF5F5',
+    background_color: '#EEECE8',
+    theme_color: '#EEECE8',
     icons: [
       {
         src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="35" y="10" width="30" height="12" rx="4" fill="%23E53E3E" stroke="%23000000" stroke-width="5"/><path d="M40 22V72C40 80.28 44.48 87 50 87C55.52 87 60 80.28 60 72V22" fill="%23FFFFFF" stroke="%23000000" stroke-width="5"/><ellipse cx="50" cy="55" rx="7" ry="11" transform="rotate(-15 50 55)" fill="%23000000" stroke="%23000000" stroke-width="4"/></svg>',
@@ -1287,7 +1340,9 @@ app.get('/manifest.json', (req, res) => {
       }
     ]
   });
-});
+};
+app.get('/manifest.json', sendManifest);
+app.get('/beantag/manifest.json', sendManifest);
 
 // --- UNIFIED MULTI-PROVIDER AI DISPATCHER (GROQ & GEMINI) ---
 

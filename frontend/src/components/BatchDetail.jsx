@@ -56,13 +56,20 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   );
 
   useEffect(() => {
+    if (!batch || batch.error) return;
     const isNewBrew = window.location.search.includes('action=new_brew') || window.location.pathname.includes('/batch/');
     if (isNewBrew && brewFormRef.current) {
       setTimeout(() => {
-        brewFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
-      }, 350);
+        if (brewFormRef.current) {
+          brewFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+        }
+        if (window.location.search.includes('action=new_brew')) {
+          const cleanUrl = `${window.location.pathname}?batch=${encodeURIComponent(batch.id)}`;
+          window.history.replaceState({}, '', cleanUrl);
+        }
+      }, 250);
     }
-  }, [batchId]);
+  }, [batchId, batch?.id]);
   
   // Form fields (Default: NextLevel Pulsar Mini)
   const [method, setMethod] = useState('NextLevel Pulsar Mini');
@@ -309,11 +316,13 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     setAiError('');
     setAiRecommendation(null);
 
+    const token = localStorage.getItem('beantag-token');
     const headers = {
       'Content-Type': 'application/json',
       'x-ai-provider': 'groq',
       'x-groq-key': groqKey,
-      'x-ai-model': groqModel
+      'x-ai-model': groqModel,
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     };
 
     fetch(apiUrl('api/recommend-recipe'), {
@@ -602,7 +611,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   useEffect(() => {
     let active = true;
-    fetch(apiUrl(`api/batches/${batchId}`))
+    const token = localStorage.getItem('beantag-token');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    fetch(apiUrl(`api/batches/${batchId}`), { headers })
       .then(res => res.json())
       .then(data => {
         if (!active) return;
@@ -1005,11 +1016,20 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       setDoseAlreadyConsumed(false);
       if (typeof onConsumeHandled === 'function') onConsumeHandled();
     } else {
-      // Update remaining weight locally
-      setBatch(prev => ({
-        ...prev,
-        remaining_weight_g: Math.max(0.0, prev.remaining_weight_g - parseFloat(doseInG))
-      }));
+      // Update remaining weight and doses locally
+      const isBag = batch.storage_type === 'bag';
+      const defaultDose = parseFloat(batch.dose_weight) || (isBag ? 18.0 : 20.0);
+      setBatch(prev => {
+        const nextWeight = Math.max(0.0, (prev.remaining_weight_g || 0) - parseFloat(doseInG));
+        const nextDoses = isBag
+          ? Math.max(0, Math.round(nextWeight / defaultDose))
+          : Math.max(0, (prev.remaining_doses || 0) - 1);
+        return {
+          ...prev,
+          remaining_doses: nextDoses,
+          remaining_weight_g: nextWeight
+        };
+      });
     }
 
     setNotes('');
@@ -1043,9 +1063,13 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       if (typeof onSaveRecipe === 'function') {
         result = await onSaveRecipe(payload, { stay: true });
       } else {
+        const token = localStorage.getItem('beantag-token');
         const res = await fetch(apiUrl('/api/recipes'), {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
           body: JSON.stringify(payload)
         });
         result = await res.json();
@@ -1057,8 +1081,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         if (typeof onConsumeHandled === 'function') onConsumeHandled();
       }
 
+      const authToken = localStorage.getItem('beantag-token');
+      const authHeaders = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
       if (tunedData.temperature) setTemperature(typeof tunedData.temperature === 'number' ? tunedData.temperature : parseInt(tunedData.temperature, 10));
-      fetch(apiUrl(`api/batches/${batch?.id}`))
+      fetch(apiUrl(`api/batches/${batch?.id}`), { headers: authHeaders })
         .then(r => r.json())
         .then(fresh => { if (fresh && !fresh.error) setBatch(fresh); })
         .catch(() => {});
@@ -1069,8 +1095,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         undo: typeof onUndoRecipe === 'function'
           ? async () => {
               await onUndoRecipe({ recipeId: result.recipe_id, batchId: batch?.id, doseG: payload.dose_in_g, isBag: batch?.storage_type === 'bag', skipDeduction: skipDeduct });
+              if (skipDeduct) {
+                setDoseAlreadyConsumed(true);
+              }
               try {
-                const fresh = await fetch(apiUrl(`api/batches/${batch?.id}`)).then(r => r.json());
+                const fresh = await fetch(apiUrl(`api/batches/${batch?.id}`), { headers: authHeaders }).then(r => r.json());
                 if (fresh && !fresh.error) setBatch(fresh);
               } catch (e) { /* the list refresh in App still runs */ }
             }
@@ -1722,12 +1751,22 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         shareTemplate={shareTemplate || DEFAULT_CARD_STYLE}
         onChangeTemplate={(id) => {
           setShareTemplate(id);
-          handleShareBatchCard(shareIncludeRecipe, id, 'sticker', true, stickerOrientation);
+          handleShareBatchCard(shareIncludeRecipe, id, 'sticker', stickerTransparent, stickerOrientation);
         }}
         stickerOrientation={stickerOrientation}
         onChangeOrientation={(o) => {
           setStickerOrientation(o);
-          handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', true, o);
+          handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', stickerTransparent, o);
+        }}
+        includeRecipe={shareIncludeRecipe}
+        onChangeIncludeRecipe={(inc) => {
+          setShareIncludeRecipe(inc);
+          handleShareBatchCard(inc, shareTemplate, 'sticker', stickerTransparent, stickerOrientation);
+        }}
+        stickerTransparent={stickerTransparent}
+        onChangeTransparent={(transp) => {
+          setStickerTransparent(transp);
+          handleShareBatchCard(shareIncludeRecipe, shareTemplate, 'sticker', transp, stickerOrientation);
         }}
         shareStatus={shareStatus}
         setShareStatus={setShareStatus}

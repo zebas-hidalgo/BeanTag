@@ -1132,9 +1132,13 @@ function computeOfflineSommelier(batches = [], timeOfDay = 'mañana') {
     return null;
   }
 
-  // Strictly filter batches with positive stock (remaining_doses > 0)
+  // Strictly filter batches with positive stock (remaining_doses > 0 or remaining_weight_g > 0 for bags)
   const availableBatches = batches.filter(b => {
     if (!b) return false;
+    if (b.storage_type === 'bag') {
+      const w = parseFloat(b.remaining_weight_g);
+      if (Number.isFinite(w) && w > 0) return true;
+    }
     const doses = parseFloat(b.remaining_doses);
     return Number.isFinite(doses) && doses > 0;
   });

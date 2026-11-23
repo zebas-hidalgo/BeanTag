@@ -273,7 +273,10 @@ export default function App() {
       if (data.success) {
         if (callback) callback(data);
         fetchBatches();
-        setLastSubtractedBatch(id);
+        setLastSubtractedBatch({
+          id,
+          actualWeightDelta: data.actual_weight_delta
+        });
         showToast('Dosis restada con éxito.', { type: 'success', duration: 5000, showUndo: true });
         
         const badge = document.getElementById('doses-detail-badge');
@@ -292,14 +295,19 @@ export default function App() {
   // R4: Undo without page reload — re-fetch batch data instead
   const handleUndo = () => {
     if (!lastSubtractedBatch) return;
+    const targetId = typeof lastSubtractedBatch === 'object' ? lastSubtractedBatch.id : lastSubtractedBatch;
+    const weightDelta = typeof lastSubtractedBatch === 'object' ? lastSubtractedBatch.actualWeightDelta : undefined;
     const headers = {
       'Content-Type': 'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     };
-    fetch(apiUrl(`api/batches/${lastSubtractedBatch}/doses`), {
+    const body = (weightDelta !== undefined && weightDelta < 0)
+      ? { weight_change: Math.abs(weightDelta) }
+      : { change: 1 };
+    fetch(apiUrl(`api/batches/${targetId}/doses`), {
       method: 'PATCH',
       headers,
-      body: JSON.stringify({ change: 1 })
+      body: JSON.stringify(body)
     })
     .then(async res => {
       const data = await res.json();
@@ -315,9 +323,9 @@ export default function App() {
         // R4: Instead of window.location.reload(), re-fetch batches
         fetchBatches();
         // If in detail view, trigger a re-fetch via key change
-        if (currentView === 'detail' && selectedBatchId === lastSubtractedBatch) {
+        if (currentView === 'detail' && selectedBatchId === targetId) {
           setSelectedBatchId(null);
-          setTimeout(() => setSelectedBatchId(lastSubtractedBatch), 50);
+          setTimeout(() => setSelectedBatchId(targetId), 50);
         }
       }
     })
@@ -402,9 +410,18 @@ export default function App() {
             if (record.recordType === 'url') {
               const decoder = new TextDecoder();
               const url = decoder.decode(record.data);
-              const parts = url.split('/batch/');
-              if (parts.length > 1) {
-                const batchId = parts[1].trim();
+              let batchId = null;
+              try {
+                const parsed = new URL(url, window.location.origin);
+                batchId = parsed.searchParams.get('batch') || parsed.searchParams.get('b');
+                if (!batchId && parsed.pathname.includes('/batch/')) {
+                  batchId = decodeURIComponent(parsed.pathname.split('/batch/')[1].split('?')[0].replace(/\/$/, ''));
+                }
+              } catch (e) {
+                const parts = url.split('/batch/');
+                if (parts.length > 1) batchId = parts[1].trim();
+              }
+              if (batchId) {
                 setSelectedBatchId(batchId);
                 setCurrentView('detail');
                 showToast(`Café detectado: ${batchId}`, { type: 'success', duration: 3000 });

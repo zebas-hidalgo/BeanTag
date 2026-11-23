@@ -555,7 +555,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             maxWidth: '380px', width: '100%',
             margin: 'auto',
             padding: '20px', boxSizing: 'border-box',
-            boxShadow: '8px 8px 0px var(--border-color)',
+            boxShadow: 'var(--shadow-2)',
+            border: '1px solid var(--line)',
             animation: 'soft-pop 250ms var(--transition-spring)'
           }} onClick={(e) => e.stopPropagation()}>
             {/* Header */}
@@ -693,20 +694,14 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
                   <button
                     type="button"
                     className={`canvas-tab-btn ${shareIncludeRecipe ? 'active' : ''}`}
-                    onClick={() => {
-                      setShareIncludeRecipe(true);
-                      exportRecipeAsImage(selectedRecipe, shareTemplate, true);
-                    }}
+                    onClick={() => setShareIncludeRecipe(true)}
                   >
                     Con receta
                   </button>
                   <button
                     type="button"
                     className={`canvas-tab-btn ${!shareIncludeRecipe ? 'active' : ''}`}
-                    onClick={() => {
-                      setShareIncludeRecipe(false);
-                      exportRecipeAsImage(selectedRecipe, shareTemplate, false);
-                    }}
+                    onClick={() => setShareIncludeRecipe(false)}
                   >
                     Solo el café
                   </button>
@@ -754,7 +749,8 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             maxWidth: '420px', width: '100%', maxHeight: '90vh', overflowY: 'auto',
             margin: 'auto',
             padding: '20px', boxSizing: 'border-box',
-            boxShadow: '8px 8px 0px var(--border-color)',
+            boxShadow: 'var(--shadow-2)',
+            border: '1px solid var(--line)',
             animation: 'soft-pop 250ms var(--transition-spring)'
           }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -974,12 +970,22 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
         shareTemplate={shareTemplate || DEFAULT_CARD_STYLE}
         onChangeTemplate={(id) => {
           setShareTemplate(id);
-          exportRecipeAsImage(selectedRecipe, id, shareIncludeRecipe, 'sticker', true, stickerOrientation);
+          exportRecipeAsImage(selectedRecipe, id, shareIncludeRecipe, 'sticker', stickerTransparent, stickerOrientation);
         }}
         stickerOrientation={stickerOrientation}
         onChangeOrientation={(o) => {
           setStickerOrientation(o);
-          exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'sticker', true, o);
+          exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'sticker', stickerTransparent, o);
+        }}
+        includeRecipe={shareIncludeRecipe}
+        onChangeIncludeRecipe={(inc) => {
+          setShareIncludeRecipe(inc);
+          exportRecipeAsImage(selectedRecipe, shareTemplate, inc, 'sticker', stickerTransparent, stickerOrientation);
+        }}
+        stickerTransparent={stickerTransparent}
+        onChangeTransparent={(transp) => {
+          setStickerTransparent(transp);
+          exportRecipeAsImage(selectedRecipe, shareTemplate, shareIncludeRecipe, 'sticker', transp, stickerOrientation);
         }}
         shareStatus={shareStatus}
         setShareStatus={setShareStatus}

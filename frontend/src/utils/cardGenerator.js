@@ -379,12 +379,13 @@ export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
   const style = normalizeCardStyle(options.template);
   const orientation = String(options.orientation || '').toLowerCase() === 'vertical' ? 'vertical' : 'horizontal';
   const includeRecipe = Boolean(options.includeRecipe);
+  const transparent = Boolean(options.transparent);
   const { w, h } = STICKER_SIZES[orientation];
   await ensureFontsLoaded();
   const canvas = createCanvas(w, h);
   const item = batchOrRecipe || {};
   const d = buildCardData(item.recipe ? { ...item.recipe, ...item } : item, includeRecipe);
-  drawSticker(canvas.getContext('2d'), style, d, includeRecipe, orientation, w, h);
+  drawSticker(canvas.getContext('2d'), style, d, includeRecipe, orientation, w, h, transparent);
   return canvas.toDataURL('image/png', 1.0);
 }
 

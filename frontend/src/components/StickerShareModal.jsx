@@ -11,6 +11,10 @@ export default function StickerShareModal({
   onChangeTemplate,
   stickerOrientation,
   onChangeOrientation,
+  includeRecipe,
+  onChangeIncludeRecipe,
+  stickerTransparent,
+  onChangeTransparent,
   shareStatus,
   setShareStatus,
   onClose,
@@ -80,6 +84,59 @@ export default function StickerShareModal({
           onOrientationChange={onChangeOrientation}
         />
 
+        {(typeof onChangeIncludeRecipe === 'function' || typeof onChangeTransparent === 'function') && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'space-between' }}>
+            {typeof onChangeIncludeRecipe === 'function' && (
+              <div className="bt-seg" role="radiogroup" aria-label="Contenido del sticker" style={{ flex: 1, minWidth: '170px' }}>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={!includeRecipe}
+                  className={`bt-seg-btn${!includeRecipe ? ' is-active' : ''}`}
+                  onClick={() => onChangeIncludeRecipe(false)}
+                  style={{ fontSize: '12px', padding: '6px 10px' }}
+                >
+                  Solo café
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={Boolean(includeRecipe)}
+                  className={`bt-seg-btn${includeRecipe ? ' is-active' : ''}`}
+                  onClick={() => onChangeIncludeRecipe(true)}
+                  style={{ fontSize: '12px', padding: '6px 10px' }}
+                >
+                  Con receta
+                </button>
+              </div>
+            )}
+            {typeof onChangeTransparent === 'function' && (
+              <div className="bt-seg" role="radiogroup" aria-label="Fondo del sticker" style={{ flex: 1, minWidth: '185px' }}>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={!stickerTransparent}
+                  className={`bt-seg-btn${!stickerTransparent ? ' is-active' : ''}`}
+                  onClick={() => onChangeTransparent(false)}
+                  style={{ fontSize: '12px', padding: '6px 10px' }}
+                >
+                  Tarjeta
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={Boolean(stickerTransparent)}
+                  className={`bt-seg-btn${stickerTransparent ? ' is-active' : ''}`}
+                  onClick={() => onChangeTransparent(true)}
+                  style={{ fontSize: '12px', padding: '6px 10px' }}
+                >
+                  Transparente (HUD)
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         <div style={{
           textAlign: 'center',
           backgroundColor: 'var(--bg-canvas)',
@@ -103,7 +160,9 @@ export default function StickerShareModal({
               borderRadius: 'var(--r-control)',
               display: 'block',
               margin: '0 auto',
-              background: 'repeating-conic-gradient(#D9D3CA 0% 25%, #F1EDE6 0% 50%) 50% / 24px 24px'
+              background: stickerTransparent
+                ? 'repeating-conic-gradient(#26201B 0% 25%, #352D26 0% 50%) 50% / 24px 24px'
+                : 'repeating-conic-gradient(#D9D3CA 0% 25%, #F1EDE6 0% 50%) 50% / 24px 24px'
             }}
           />
         </div>

@@ -123,12 +123,26 @@ export default function BrewGuideModal({
     return Math.max(0, Math.ceil(currentStage.endSec - elapsedSeconds));
   }, [currentStage, elapsedSeconds]);
 
-  // Suggested flow rate for active stage
-  const suggestedFlowRate = useMemo(() => {
-    if (!currentStage || currentStage.water_g <= 0) return null;
+  // Suggested flow rate & live pour pacing for active stage
+  const { suggestedFlowRate, liveTargetWaterG, isPouringActiveWindow } = useMemo(() => {
+    const prevTotal = currentStageIndex > 0 ? (stages[currentStageIndex - 1]?.total_water_g || 0) : 0;
+    if (!currentStage || currentStage.water_g <= 0) {
+      return {
+        suggestedFlowRate: null,
+        liveTargetWaterG: currentStage?.total_water_g || prevTotal,
+        isPouringActiveWindow: false
+      };
+    }
     const pourDuration = Math.max(10, Math.min(currentStage.duration, Math.round(currentStage.duration * 0.55)));
-    return (currentStage.water_g / pourDuration).toFixed(1);
-  }, [currentStage]);
+    const stageElapsed = Math.max(0, elapsedSeconds - (currentStage.startSec || 0));
+    const ratio = Math.max(0, Math.min(1, stageElapsed / pourDuration));
+    const currentG = Math.round(prevTotal + currentStage.water_g * ratio);
+    return {
+      suggestedFlowRate: (currentStage.water_g / pourDuration).toFixed(1),
+      liveTargetWaterG: currentG,
+      isPouringActiveWindow: stageElapsed < pourDuration
+    };
+  }, [currentStage, currentStageIndex, stages, elapsedSeconds]);
 
   // Dynamic Real-time Voice Coach instruction generator
   const getStageSpeechText = useCallback((stageIndex, stage) => {
@@ -737,50 +751,51 @@ export default function BrewGuideModal({
               </div>
             </div>
 
-            {/* Live Voice Coach Guidance Banner */}
-            <div
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                backgroundColor: isVoiceEnabled ? 'var(--barista-accent-mint-bg)' : 'var(--barista-bg-subtle)',
-                border: isVoiceEnabled ? '1.5px solid var(--barista-accent-mint-text)' : '1px dashed var(--border-color)',
-                borderRadius: 'var(--r-tile)',
-                padding: '12px 16px',
-                marginBottom: '16px',
-                boxSizing: 'border-box',
-                transition: 'var(--transition-ui)',
-                boxShadow: isVoiceEnabled ? '0 2px 8px rgba(16, 185, 129, 0.12)' : 'none'
-              }}
-            >
-              <div style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: 'var(--r-control)',
-                backgroundColor: isVoiceEnabled ? 'var(--barista-accent-mint-text)' : 'var(--barista-bg-subtle)',
-                color: 'var(--on-accent)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                {isVoiceEnabled ? <Mic size={18} /> : <MicOff size={18} />}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+            {/* Live Voice Coach Guidance Banner (only shown when voice is active to save mobile vertical space) */}
+            {isVoiceEnabled && (
+              <div
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  backgroundColor: 'var(--barista-accent-mint-bg)',
+                  border: '1.5px solid var(--barista-accent-mint-text)',
+                  borderRadius: 'var(--r-tile)',
+                  padding: '10px 14px',
+                  marginBottom: '12px',
+                  boxSizing: 'border-box',
+                  transition: 'var(--transition-ui)',
+                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.12)'
+                }}
+              >
                 <div style={{
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  letterSpacing: '0',
-                  color: isVoiceEnabled ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)'
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: 'var(--r-control)',
+                  backgroundColor: 'var(--barista-accent-mint-text)',
+                  color: 'var(--on-accent)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
                 }}>
-                  {isVoiceEnabled ? 'Asistente de Voz del Barista' : 'Voz Silenciada (Pulsa el botón superior para activar)'}
+                  <Mic size={16} />
                 </div>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text)', lineHeight: 1.4, marginTop: '2px' }}>
-                  {getStageSpeechText(currentStageIndex, currentStage)}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    color: 'var(--barista-accent-mint-text)'
+                  }}>
+                    Asistente de Voz del Barista
+                  </div>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text)', lineHeight: 1.35, marginTop: '2px' }}>
+                    {getStageSpeechText(currentStageIndex, currentStage)}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Active Stage Card */}
             <div
@@ -925,23 +940,37 @@ export default function BrewGuideModal({
                 {suggestedFlowRate ? (
                   <div
                     style={{
-                      fontSize: '12px',
-                      color: 'var(--barista-accent-honey-text)',
                       display: 'flex',
+                      flexWrap: 'wrap',
                       alignItems: 'center',
-                      gap: '5px',
-                      marginTop: '2px',
-                      fontWeight: 600
+                      justifyContent: 'center',
+                      gap: '8px',
+                      marginTop: '4px'
                     }}
                   >
-                    <span>Caudal sugerido:</span>
                     <span
                       style={{
                         fontFamily: 'var(--font-mono)',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        background: isPouringActiveWindow ? 'var(--color-crimson)' : 'var(--segmented-bg)',
+                        color: isPouringActiveWindow ? 'var(--on-accent)' : 'var(--color-text)',
+                        padding: '3px 10px',
+                        borderRadius: 'var(--r-pill)',
+                        transition: 'var(--transition-ui)'
+                      }}
+                    >
+                      En balanza ahora: ~{liveTargetWaterG} g
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '12px',
+                        fontWeight: 600,
                         background: 'var(--barista-accent-honey-bg)',
                         border: '1px solid var(--barista-instr-border)',
                         color: 'var(--barista-accent-honey-text)',
-                        padding: '1px 7px',
+                        padding: '2px 8px',
                         borderRadius: 'var(--r-xs)',
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -954,7 +983,7 @@ export default function BrewGuideModal({
                   </div>
                 ) : (
                   <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontStyle: 'italic', marginTop: '2px' }}>
-                    Drenaje libre hacia lecho plano
+                    Drenaje libre hacia lecho plano ({liveTargetWaterG} g totales)
                   </div>
                 )}
               </div>
