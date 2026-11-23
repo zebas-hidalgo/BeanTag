@@ -85,6 +85,67 @@ export default function App() {
     }
   }, [theme]);
 
+  // iOS / Mobile Virtual Keyboard UX: track visualViewport height, hide BottomNav while typing, and keep focused inputs visible
+  useEffect(() => {
+    const isEditable = (el) => {
+      if (!el || !el.tagName) return false;
+      const tag = el.tagName.toUpperCase();
+      if (tag === 'TEXTAREA' || tag === 'SELECT') return true;
+      if (tag === 'INPUT') {
+        const t = (el.type || 'text').toLowerCase();
+        return !['checkbox', 'radio', 'range', 'button', 'submit', 'reset', 'file'].includes(t);
+      }
+      return Boolean(el.isContentEditable);
+    };
+
+    const updateViewportKb = () => {
+      const vv = window.visualViewport;
+      if (!vv) return;
+      const kbH = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+      document.documentElement.style.setProperty('--kb-height', `${kbH}px`);
+      if (kbH > 120) {
+        document.body.classList.add('keyboard-open');
+      } else if (!isEditable(document.activeElement)) {
+        document.body.classList.remove('keyboard-open');
+      }
+    };
+
+    const onFocusIn = (e) => {
+      if (!isEditable(e.target)) return;
+      document.body.classList.add('keyboard-open');
+      setTimeout(() => {
+        try {
+          if (document.activeElement === e.target && typeof e.target.scrollIntoView === 'function') {
+            e.target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+          }
+        } catch (err) {}
+      }, 280);
+    };
+
+    const onFocusOut = () => {
+      setTimeout(() => {
+        if (!isEditable(document.activeElement)) {
+          document.body.classList.remove('keyboard-open');
+          document.documentElement.style.setProperty('--kb-height', '0px');
+        }
+      }, 120);
+    };
+
+    document.addEventListener('focusin', onFocusIn);
+    document.addEventListener('focusout', onFocusOut);
+    window.visualViewport?.addEventListener('resize', updateViewportKb);
+    window.visualViewport?.addEventListener('scroll', updateViewportKb);
+
+    return () => {
+      document.removeEventListener('focusin', onFocusIn);
+      document.removeEventListener('focusout', onFocusOut);
+      window.visualViewport?.removeEventListener('resize', updateViewportKb);
+      window.visualViewport?.removeEventListener('scroll', updateViewportKb);
+      document.body.classList.remove('keyboard-open');
+      document.documentElement.style.setProperty('--kb-height', '0px');
+    };
+  }, []);
+
   // Toast Notification System State
   const [toast, setToast] = useState({
     visible: false,

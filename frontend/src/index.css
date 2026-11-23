@@ -130,7 +130,15 @@ main {
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
-  padding: 16px 20px calc(88px + env(safe-area-inset-bottom)) 20px;
+  padding: 16px 20px calc(88px + env(safe-area-inset-bottom) + var(--kb-height, 0px)) 20px;
+}
+
+body.keyboard-open .bt-nav,
+body.keyboard-open .bt-fab {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(24px) !important;
+  transition: opacity 150ms ease, transform 150ms ease;
 }
 
 /* Modern Clean Specialty Coffee Card (Minimalist & Precision) */
@@ -1562,10 +1570,14 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px)) 16px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px) + var(--kb-height, 0px)) 16px;
   box-sizing: border-box;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+body.keyboard-open .bento-modal-overlay {
+  align-items: flex-start;
 }
 
 /* 🍎 Cupertino Segmented Controls */
