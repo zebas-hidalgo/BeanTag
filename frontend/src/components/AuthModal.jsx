@@ -48,7 +48,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
           client_id: cId,
           callback: handleGoogleCallback,
           auto_select: false,
-          ux_mode: 'popup'
+          ux_mode: 'popup',
+          itp_support: true,
+          use_fedcm_for_prompt: true
         });
         setGoogleInitialized(true);
         renderNativeBtn();
