@@ -495,8 +495,11 @@
 .bt-style-btn.is-active { background: var(--action); color: var(--on-action); border-color: transparent; }
 .bt-style-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
-/* ── App bar: compact (logo + 2 icons, 44px targets) ── */
-.app-header.bt-appbar { padding: 6px 12px 6px 16px; min-height: 56px; }
+/* ── App bar: compact (logo + 2 icons, 44px targets, safe-area top aware on iOS) ── */
+.app-header.bt-appbar {
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 14px 8px 16px;
+  min-height: calc(56px + env(safe-area-inset-top, 0px));
+}
 .bt-appbar-brand {
   display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 6px 0 0;
   border: 0; background: transparent; color: var(--ink); cursor: pointer;

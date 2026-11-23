@@ -171,7 +171,23 @@ export default function App() {
   };
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('beantag-token');
+    const searchParams = new URLSearchParams(window.location.search);
+    const urlAuthToken = searchParams.get('auth_token');
+    const urlAuthError = searchParams.get('auth_error');
+    if (urlAuthToken) {
+      localStorage.setItem('beantag-token', urlAuthToken);
+      setToken(urlAuthToken);
+      searchParams.delete('auth_token');
+      const cleanQuery = searchParams.toString();
+      window.history.replaceState({}, '', `${window.location.pathname}${cleanQuery ? `?${cleanQuery}` : ''}`);
+    } else if (urlAuthError) {
+      showToast(urlAuthError, { type: 'error', duration: 4000 });
+      searchParams.delete('auth_error');
+      const cleanQuery = searchParams.toString();
+      window.history.replaceState({}, '', `${window.location.pathname}${cleanQuery ? `?${cleanQuery}` : ''}`);
+    }
+
+    const savedToken = urlAuthToken || localStorage.getItem('beantag-token');
     if (savedToken) {
       fetch(apiUrl('api/auth/me'), {
         headers: { 'Authorization': `Bearer ${savedToken}` }

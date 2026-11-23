@@ -573,7 +573,7 @@ export default function BrewGuideModal({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '16px 20px',
+          padding: 'calc(14px + env(safe-area-inset-top, 0px)) 18px 14px 18px',
           borderBottom: '1px solid var(--border-color)',
           backgroundColor: 'var(--bg-header)',
           backdropFilter: 'blur(16px)',

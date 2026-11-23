@@ -36,7 +36,7 @@ export default function StickerShareModal({
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'flex-start',
-        padding: '16px',
+        padding: 'calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px)) 16px',
         boxSizing: 'border-box',
         overflowY: 'auto',
         WebkitOverflowScrolling: 'touch'

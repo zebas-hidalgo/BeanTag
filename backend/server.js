@@ -214,10 +214,12 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Correo o contraseña incorrectos.' });
     }
     if (!user.password_hash) {
-      return res.status(401).json({
-        error: 'Esta cuenta fue registrada con Google y aún no tiene contraseña. Usa el botón de Google o ingresa en la pestaña "Crear Cuenta" con este correo para vincularle una contraseña.',
-        isGoogleOnly: true
-      });
+      // Account originally created with Google OAuth: link the provided password seamlessly on first login!
+      const passwordHash = await bcrypt.hash(password, 10);
+      await db.run('UPDATE users SET password_hash = ? WHERE id = ?', [passwordHash, user.id]);
+      const userData = { id: user.id, email: user.email, name: user.name, picture: user.picture, is_owner: isOwnerUser(user) };
+      const token = jwt.sign(userData, JWT_SECRET, { expiresIn: '30d' });
+      return res.json({ success: true, token, user: userData, linked: true });
     }
 
     const valid = await bcrypt.compare(password, user.password_hash);
@@ -234,55 +236,85 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Google OAuth Login / Register
+// Helper: Verify Google ID Token and upsert user in SQLite
+async function verifyGoogleCredentialAndIssueJwt(credential) {
+  let payload;
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: GOOGLE_CLIENT_ID || undefined
+    });
+    payload = ticket.getPayload();
+  } catch (e) {
+    const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+    if (!response.ok) throw new Error('Token de Google no válido.');
+    payload = await response.json();
+  }
+
+  const { email, name, picture, sub: googleId } = payload;
+  if (!email) {
+    throw new Error('No se pudo obtener el correo de Google.');
+  }
+
+  const db = await getDb();
+  let user = await db.get('SELECT * FROM users WHERE google_id = ? OR email = ?', [googleId, email.toLowerCase().trim()]);
+
+  if (!user) {
+    const result = await db.run(
+      'INSERT INTO users (email, name, picture, google_id) VALUES (?, ?, ?, ?)',
+      [email.toLowerCase().trim(), name || 'Usuario de Google', picture || null, googleId]
+    );
+    user = { id: result.lastID, email: email.toLowerCase().trim(), name: name || 'Usuario de Google', picture: picture || null };
+  } else if (!user.google_id) {
+    await db.run('UPDATE users SET google_id = ?, picture = COALESCE(picture, ?) WHERE id = ?', [googleId, picture, user.id]);
+    user.picture = user.picture || picture;
+  }
+
+  const userData = { id: user.id, email: user.email, name: user.name, picture: user.picture, is_owner: isOwnerUser(user) };
+  const token = jwt.sign(userData, JWT_SECRET, { expiresIn: '30d' });
+  return { token, userData };
+}
+
+// Google OAuth Login / Register (JSON API for popup mode)
 app.post('/api/auth/google', async (req, res) => {
   const { credential } = req.body;
   if (!credential) {
     return res.status(400).json({ error: 'Token de Google no proporcionado.' });
   }
   try {
-    let payload;
-    try {
-      const ticket = await googleClient.verifyIdToken({
-        idToken: credential,
-        audience: GOOGLE_CLIENT_ID || undefined
-      });
-      payload = ticket.getPayload();
-    } catch (e) {
-      // Fallback: Verify token directly with Google tokeninfo endpoint
-      const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
-      if (!response.ok) throw new Error('Token de Google no válido.');
-      payload = await response.json();
-    }
-
-    const { email, name, picture, sub: googleId } = payload;
-    if (!email) {
-      return res.status(400).json({ error: 'No se pudo obtener el correo de Google.' });
-    }
-
-    const db = await getDb();
-    let user = await db.get('SELECT * FROM users WHERE google_id = ? OR email = ?', [googleId, email.toLowerCase().trim()]);
-
-    if (!user) {
-      const result = await db.run(
-        'INSERT INTO users (email, name, picture, google_id) VALUES (?, ?, ?, ?)',
-        [email.toLowerCase().trim(), name || 'Usuario de Google', picture || null, googleId]
-      );
-      user = { id: result.lastID, email: email.toLowerCase().trim(), name: name || 'Usuario de Google', picture: picture || null };
-    } else if (!user.google_id) {
-      await db.run('UPDATE users SET google_id = ?, picture = COALESCE(picture, ?) WHERE id = ?', [googleId, picture, user.id]);
-      user.picture = user.picture || picture;
-    }
-
-    const userData = { id: user.id, email: user.email, name: user.name, picture: user.picture, is_owner: isOwnerUser(user) };
-    const token = jwt.sign(userData, JWT_SECRET, { expiresIn: '30d' });
-
+    const { token, userData } = await verifyGoogleCredentialAndIssueJwt(credential);
     res.json({ success: true, token, user: userData });
   } catch (err) {
     console.error("Google Auth error:", err);
     res.status(401).json({ error: 'Autenticación con Google fallida: ' + err.message });
   }
 });
+
+// Google OAuth Same-Window Redirect Callback (for iOS Capacitor WKWebView & Standalone PWA)
+const handleGoogleRedirectCallback = async (req, res) => {
+  const credential = req.body?.credential || req.query?.credential;
+  if (!credential) {
+    return res.redirect('/beantag/');
+  }
+  try {
+    const { token, userData } = await verifyGoogleCredentialAndIssueJwt(credential);
+    const safeToken = JSON.stringify(token);
+    const safeUser = JSON.stringify(JSON.stringify(userData));
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(`<!doctype html><html><head><meta charset="utf-8"><title>Iniciando sesión...</title></head><body style="background:#120F0D;color:#EEECE8;font-family:-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0"><script>
+      try {
+        localStorage.setItem('beantag-token', ${safeToken});
+        localStorage.setItem('beantag-user', ${safeUser});
+      } catch (e) {}
+      window.location.replace('/beantag/?auth_token=' + encodeURIComponent(${safeToken}));
+    </script><p>Conectando tu cuenta con BeanTag...</p></body></html>`);
+  } catch (err) {
+    console.error("Google Redirect Auth error:", err);
+    res.redirect('/beantag/?auth_error=' + encodeURIComponent(err.message || 'Error de autenticación'));
+  }
+};
+app.post('/api/auth/google/redirect', handleGoogleRedirectCallback);
+app.post('/beantag/api/auth/google/redirect', handleGoogleRedirectCallback);
 
 // Current User Profile
 app.get('/api/auth/me', (req, res) => {

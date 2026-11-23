@@ -37,11 +37,18 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
     if (!cId) return;
     if (window.google && window.google.accounts && window.google.accounts.id) {
       try {
+        const isNativeOrStandalone = Boolean(
+          (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) ||
+          window.matchMedia?.('(display-mode: standalone)')?.matches ||
+          window.navigator?.standalone === true
+        );
+        const redirectUri = `${window.location.origin}/beantag/api/auth/google/redirect`;
         window.google.accounts.id.initialize({
           client_id: cId,
           callback: handleGoogleCallback,
           auto_select: false,
-          ux_mode: 'popup'
+          ux_mode: isNativeOrStandalone ? 'redirect' : 'popup',
+          ...(isNativeOrStandalone ? { login_uri: redirectUri } : {})
         });
         setGoogleInitialized(true);
         renderNativeBtn();
