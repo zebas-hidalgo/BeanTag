@@ -12,7 +12,7 @@ on:
 jobs:
   build-ipa:
     name: Compilar BeanTag.ipa (iOS Bluetooth BLE)
-    runs-on: macos-15
+    runs-on: macos-latest
     permissions:
       contents: write
 
@@ -63,3 +63,13 @@ jobs:
           path: frontend/ios/App/BeanTag.ipa
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish Direct BeanTag.ipa Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ios-latest
+          name: "BeanTag iOS App (Timemore Dot BLE)"
+          body: "Descarga **BeanTag.ipa** e instálalo en tu iPhone usando [Sideloadly](https://sideloadly.io/) o AltStore para conectar directo por Bluetooth CoreBluetooth con tu balanza Timemore Dot."
+          files: frontend/ios/App/BeanTag.ipa
+          prerelease: false
+
