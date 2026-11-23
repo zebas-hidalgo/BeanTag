@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircle2, AlertTriangle, Loader2, Sparkles, Compass, Share2, ClipboardList, X, Eye, EyeOff, Coffee, Zap, Cpu, Palette, SlidersHorizontal, SunMoon } from 'lucide-react';
-import { normalizeTheme } from '../utils/theme';
+import { normalizeTheme, THEME_OPTIONS } from '../utils/theme';
 import NfcToolsModal from './NfcToolsModal';
 import { apiUrl } from '../utils/api';
 import { GRINDERS } from '../utils/grinders';
@@ -373,33 +373,104 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         Ajustes
       </h2>
 
-      {/* Tema de la Aplicación (V5: Automático / Crema / Tueste) */}
+      {/* Tema de la Aplicación */}
       <section className="bt-section" aria-labelledby="bt-theme-title">
         <div className="bt-section-head">
           <h4 id="bt-theme-title" className="bt-section-title">
             <Palette size={16} aria-hidden="true" />
             <span>Apariencia</span>
           </h4>
-          <p className="bt-section-desc">Crema para el día, Tueste para la noche. Las extracciones usan siempre el Modo Barra de alto contraste.</p>
+          <p className="bt-section-desc">Elige una paleta inspirada en café de especialidad. Las extracciones usan siempre el Modo Barra de alto contraste.</p>
         </div>
-        <div className="bt-seg" role="radiogroup" aria-label="Tema de la aplicación">
-          {[
-            { id: 'auto', label: 'Automático', Icon: SunMoon },
-            { id: 'light', label: 'Crema', Icon: Sun },
-            { id: 'dark', label: 'Tueste', Icon: Moon }
-          ].map(({ id, label, Icon }) => (
-            <button
-              key={id}
-              type="button"
-              role="radio"
-              aria-checked={appTheme === id}
-              className={`bt-seg-btn${appTheme === id ? ' is-active' : ''}`}
-              onClick={() => handleThemeChange(id)}
-            >
-              <Icon size={16} aria-hidden="true" />
-              <span>{label}</span>
-            </button>
-          ))}
+        <div
+          role="radiogroup"
+          aria-label="Tema de la aplicación"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+            gap: '8px',
+          }}
+        >
+          {THEME_OPTIONS.map((t) => {
+            const isActive = appTheme === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                role="radio"
+                aria-checked={isActive}
+                onClick={() => handleThemeChange(t.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  border: isActive
+                    ? '1.5px solid var(--accent)'
+                    : '1px solid var(--line)',
+                  background: isActive ? 'var(--accent-soft)' : 'var(--raised)',
+                  color: 'var(--ink)',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  transition: 'border-color 140ms ease, background 140ms ease, transform 120ms ease',
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '8px',
+                    flexShrink: 0,
+                    background: t.swatch,
+                    border: '1px solid rgba(128, 128, 128, 0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                  }}
+                >
+                  <span
+                    style={{
+                      width: '10px',
+                      height: '10px',
+                      borderRadius: '50%',
+                      background: t.accent,
+                      boxShadow: '0 0 0 1.5px rgba(255,255,255,0.65)',
+                    }}
+                  />
+                </span>
+                <span style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                  <span
+                    style={{
+                      fontSize: '0.88rem',
+                      fontWeight: isActive ? 700 : 600,
+                      color: 'var(--ink)',
+                      lineHeight: 1.2,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {t.label}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '0.72rem',
+                      color: 'var(--ink-3)',
+                      lineHeight: 1.2,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {t.desc}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
         </div>
       </section>
 

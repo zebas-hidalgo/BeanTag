@@ -102,9 +102,9 @@
   --transition-ui: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out), opacity var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
 }
 
-/* ── Tueste (warm dark) — system dark unless user picked Crema ── */
+/* ── Tueste (warm dark) — system dark unless user picked a light theme ── */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root:not([data-theme="light"]):not([data-theme="matcha"]):not([data-theme="gesha"]):not([data-theme="nordic"]) {
     color-scheme: dark;
     --bg: #120F0D; --surface: #1C1815; --raised: #262019;
     --fill: rgba(242, 237, 230, 0.07); --fill-strong: rgba(242, 237, 230, 0.12); --fill-solid: #241E19;
@@ -146,6 +146,91 @@
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--line);
   --shadow-2: 0 12px 32px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--line);
   --shadow-float: 0 14px 34px -10px rgba(0, 0, 0, 0.8);
+}
+
+/* ── Matcha Uji (light ceremonial green) ── */
+:root[data-theme="matcha"] {
+  color-scheme: light;
+  --bg: #EBF0EA; --surface: #F7FAF6; --raised: #FFFFFF;
+  --fill: rgba(22, 36, 25, 0.06); --fill-strong: rgba(22, 36, 25, 0.10); --fill-solid: #EEF4ED;
+  --glass: rgba(247, 250, 246, 0.76); --glass-strong: rgba(247, 250, 246, 0.95); --glass-edge: rgba(255, 255, 255, 0.78);
+  --ink: #162419; --ink-2: #384B3C; --ink-muted: #526756; --ink-disabled: #95A699;
+  --line: rgba(22, 36, 25, 0.11); --line-strong: rgba(22, 36, 25, 0.22);
+  --action: #162419; --on-action: #F7FAF6;
+  --accent: #2D6A4F; --accent-strong: #1B4332; --accent-bg: #DCECE2; --accent-text: #1B4332;
+  --accent-line: rgba(45, 106, 79, 0.35); --accent-glow: rgba(45, 106, 79, 0.22); --on-accent: #FFFFFF; --focus: #2D6A4F;
+}
+
+/* ── Gesha Floral (light botanical rose) ── */
+:root[data-theme="gesha"] {
+  color-scheme: light;
+  --bg: #F3ECEE; --surface: #FCF9FA; --raised: #FFFFFF;
+  --fill: rgba(36, 23, 28, 0.06); --fill-strong: rgba(36, 23, 28, 0.10); --fill-solid: #F6EEF1;
+  --glass: rgba(252, 249, 250, 0.76); --glass-strong: rgba(252, 249, 250, 0.95); --glass-edge: rgba(255, 255, 255, 0.78);
+  --ink: #24171C; --ink-2: #523E46; --ink-muted: #6E5861; --ink-disabled: #B09DA4;
+  --line: rgba(36, 23, 28, 0.10); --line-strong: rgba(36, 23, 28, 0.20);
+  --action: #24171C; --on-action: #FCF9FA;
+  --accent: #B23A58; --accent-strong: #8B2640; --accent-bg: #F8E3E8; --accent-text: #8B2640;
+  --accent-line: rgba(178, 58, 88, 0.35); --accent-glow: rgba(178, 58, 88, 0.22); --on-accent: #FFFFFF; --focus: #B23A58;
+}
+
+/* ── Nórdico (light scandinavian slate) ── */
+:root[data-theme="nordic"] {
+  color-scheme: light;
+  --bg: #E8EEF4; --surface: #F6F9FC; --raised: #FFFFFF;
+  --fill: rgba(17, 27, 39, 0.06); --fill-strong: rgba(17, 27, 39, 0.10); --fill-solid: #EDF2F7;
+  --glass: rgba(246, 249, 252, 0.76); --glass-strong: rgba(246, 249, 252, 0.95); --glass-edge: rgba(255, 255, 255, 0.80);
+  --ink: #111B27; --ink-2: #374759; --ink-muted: #55677B; --ink-disabled: #99A7B8;
+  --line: rgba(17, 27, 39, 0.10); --line-strong: rgba(17, 27, 39, 0.20);
+  --action: #111B27; --on-action: #F6F9FC;
+  --accent: #1D5B8C; --accent-strong: #134268; --accent-bg: #DFECF6; --accent-text: #134268;
+  --accent-line: rgba(29, 91, 140, 0.35); --accent-glow: rgba(29, 91, 140, 0.22); --on-accent: #FFFFFF; --focus: #1D5B8C;
+}
+
+/* ── Kissaten (dark midnight indigo & amber) ── */
+:root[data-theme="kissaten"] {
+  color-scheme: dark;
+  --bg: #0E131A; --surface: #161E29; --raised: #1F2A38;
+  --fill: rgba(234, 240, 247, 0.07); --fill-strong: rgba(234, 240, 247, 0.12); --fill-solid: #1B2431;
+  --glass: rgba(22, 30, 41, 0.74); --glass-strong: rgba(22, 30, 41, 0.96); --glass-edge: rgba(255, 255, 255, 0.10);
+  --ink: #EAF0F7; --ink-2: #C2CDD9; --ink-muted: #8FA0B5; --ink-disabled: #556375;
+  --line: rgba(234, 240, 247, 0.12); --line-strong: rgba(234, 240, 247, 0.24);
+  --action: #EAF0F7; --on-action: #0E131A;
+  --accent: #F2A65A; --accent-strong: #F7BE81; --accent-bg: rgba(242, 166, 90, 0.16); --accent-text: #F7BE81;
+  --accent-line: rgba(242, 166, 90, 0.45); --accent-glow: rgba(242, 166, 90, 0.25); --on-accent: #10161E; --focus: #F2A65A;
+  --ok: #5CC98E; --ok-bg: rgba(92, 201, 142, 0.16); --ok-text: #7EDDA8;
+  --warn: #F0B35A; --warn-bg: rgba(240, 179, 90, 0.16); --warn-text: #F5C77F;
+  --bad: #FF8A7A; --bad-bg: rgba(255, 138, 122, 0.16); --bad-text: #FFA699;
+  --cryo: #5BBDF0; --cryo-bg: rgba(91, 189, 240, 0.16); --cryo-text: #85CFF5;
+  --valve-closed-bg: rgba(239, 68, 68, 0.18); --valve-closed-text: #FCA5A5;
+  --valve-half-bg: rgba(245, 158, 11, 0.18);  --valve-half-text: #FDE68A;
+  --valve-open-bg: rgba(16, 185, 129, 0.18);  --valve-open-text: #A7F3D0;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--line);
+  --shadow-2: 0 12px 32px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--line);
+  --shadow-float: 0 14px 34px -10px rgba(0, 0, 0, 0.8);
+}
+
+/* ── Espresso OLED (pure black & copper) ── */
+:root[data-theme="espresso"] {
+  color-scheme: dark;
+  --bg: #000000; --surface: #11100F; --raised: #1C1A18;
+  --fill: rgba(245, 242, 238, 0.08); --fill-strong: rgba(245, 242, 238, 0.14); --fill-solid: #161412;
+  --glass: rgba(10, 9, 8, 0.76); --glass-strong: rgba(17, 16, 15, 0.96); --glass-edge: rgba(255, 255, 255, 0.10);
+  --ink: #F5F2EE; --ink-2: #D4CEC7; --ink-muted: #9E968E; --ink-disabled: #5C554F;
+  --line: rgba(245, 242, 238, 0.13); --line-strong: rgba(245, 242, 238, 0.25);
+  --action: #F5F2EE; --on-action: #000000;
+  --accent: #E68A45; --accent-strong: #F2A56B; --accent-bg: rgba(230, 138, 69, 0.16); --accent-text: #F2A56B;
+  --accent-line: rgba(230, 138, 69, 0.45); --accent-glow: rgba(230, 138, 69, 0.25); --on-accent: #000000; --focus: #E68A45;
+  --ok: #34D399; --ok-bg: rgba(52, 211, 153, 0.16); --ok-text: #6EE7B7;
+  --warn: #FBBF24; --warn-bg: rgba(251, 191, 36, 0.16); --warn-text: #FCD34D;
+  --bad: #F87171; --bad-bg: rgba(248, 113, 113, 0.16); --bad-text: #FCA5A5;
+  --cryo: #38BDF8; --cryo-bg: rgba(56, 189, 248, 0.16); --cryo-text: #7DD3FC;
+  --valve-closed-bg: rgba(239, 68, 68, 0.2); --valve-closed-text: #FCA5A5;
+  --valve-half-bg: rgba(245, 158, 11, 0.2);  --valve-half-text: #FDE68A;
+  --valve-open-bg: rgba(16, 185, 129, 0.2);  --valve-open-text: #A7F3D0;
+  --shadow-1: 0 0 0 1px var(--line);
+  --shadow-2: 0 10px 28px -8px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--line-strong);
+  --shadow-float: 0 14px 34px -10px rgba(0, 0, 0, 0.9);
 }
 
 /* ── Barra (OLED, high contrast) — brew/extraction screens, any theme ── */
