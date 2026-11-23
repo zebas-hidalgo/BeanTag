@@ -1,0 +1,65 @@
+name: Build BeanTag iOS (.ipa)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/build-ios.yml'
+  workflow_dispatch:
+
+jobs:
+  build-ipa:
+    name: Compilar BeanTag.ipa (iOS Bluetooth BLE)
+    runs-on: macos-15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install frontend dependencies & build web bundle
+        run: |
+          npm install --prefix frontend
+          npm run build-frontend
+
+      - name: Sync Capacitor iOS project
+        working-directory: frontend
+        run: |
+          npx cap sync ios
+
+      - name: Build iOS App (Release-iphoneos, Unsigned for Sideloadly / AltStore)
+        working-directory: frontend/ios/App
+        run: |
+          xcodebuild -project App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
+
+      - name: Package Payload into BeanTag.ipa
+        working-directory: frontend/ios/App
+        run: |
+          mkdir -p ipa_out/Payload
+          cp -R build/Build/Products/Release-iphoneos/App.app ipa_out/Payload/
+          cd ipa_out
+          zip -qry ../BeanTag.ipa Payload
+
+      - name: Upload BeanTag.ipa Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BeanTag-iOS-IPA
+          path: frontend/ios/App/BeanTag.ipa
+          if-no-files-found: error
+          retention-days: 30
