@@ -911,11 +911,6 @@ export default function BrewGuideModal({
                   >
                     {scale.connecting ? 'Conectando…' : 'Conectar Timemore Dot'}
                   </button>
-                  {scale.error && (
-                    <div style={{ width: '100%', fontSize: '11px', color: 'var(--barista-accent-danger-text)', marginTop: '4px' }}>
-                      {scale.error}
-                    </div>
-                  )}
                 </>
               )}
             </div>

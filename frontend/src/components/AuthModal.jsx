@@ -204,9 +204,18 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
         </div>
 
         {errorMsg && (
-          <div style={{ background: 'var(--bad-bg)', color: 'var(--bad-text)', padding: '10px 12px', borderRadius: 'var(--r-control)', fontSize: '12px', marginBottom: '14px', fontWeight: '600', border: '1px solid #FECACA' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <AlertCircle size={15} color="var(--bad)" style={{ flexShrink: 0 }} />
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.08)',
+            color: 'var(--ink, var(--color-text))',
+            padding: '10px 12px',
+            borderRadius: '12px',
+            fontSize: '12.5px',
+            marginBottom: '14px',
+            fontWeight: '600',
+            border: '1px solid rgba(239, 68, 68, 0.28)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertCircle size={16} color="#EF4444" style={{ flexShrink: 0 }} />
               <span>{errorMsg}</span>
             </div>
             {isGoogleOnlyError && (
@@ -218,7 +227,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
                   setIsGoogleOnlyError(false);
                 }}
                 className="btn-candy secondary"
-                style={{ width: '100%', marginTop: '8px', fontSize: '12px', padding: '8px 10px', background: 'var(--surface)', color: 'var(--bad-text)', borderColor: 'var(--bad-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                style={{ width: '100%', marginTop: '8px', fontSize: '12px', padding: '8px 10px', background: 'var(--surface)', color: 'var(--ink)', borderColor: 'var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
                 <KeyRound size={14} />
                 <span>Asignar contraseña a este correo en "Crear Cuenta"</span>
@@ -292,7 +301,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
         </div>
 
         {/* Email Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {mode === 'register' && (
             <div className="form-group" style={{ margin: 0 }}>
               <label htmlFor="bt-authmodal-1" style={{ fontSize: '12px' }}>Nombre Barista</label>

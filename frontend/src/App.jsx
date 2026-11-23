@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Nfc } from 'lucide-react';
+import { Nfc, CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 import Inventory from './components/Inventory';
 import BottomNav from './components/BottomNav';
 import { apiUrl } from './utils/api';
@@ -466,11 +466,29 @@ export default function App() {
         showToast(err.message, { type: 'error', duration: 4000 });
       });
   };
-  // Toast color based on type
-  const toastStyles = {
-    success: { backgroundColor: 'var(--bg-header)', color: 'var(--color-text)', border: '1.5px solid var(--border-color)' },
-    error: { backgroundColor: 'var(--bad-bg)', color: 'var(--bad-text)', border: '1.5px solid #FECACA' },
-    info: { backgroundColor: 'var(--bg-card)', color: 'var(--color-text)', border: '1.5px solid var(--border-color)' },
+  // Modern App Notification Banner tokens (Sonner / iOS style)
+  const toastMeta = {
+    success: {
+      title: 'Listo',
+      icon: <CheckCircle2 size={17} strokeWidth={2.3} />,
+      badgeBg: 'rgba(16, 185, 129, 0.14)',
+      badgeColor: '#10B981',
+      accentBorder: 'rgba(16, 185, 129, 0.32)'
+    },
+    error: {
+      title: 'Aviso',
+      icon: <AlertCircle size={17} strokeWidth={2.3} />,
+      badgeBg: 'rgba(239, 68, 68, 0.14)',
+      badgeColor: '#EF4444',
+      accentBorder: 'rgba(239, 68, 68, 0.32)'
+    },
+    info: {
+      title: 'BeanTag',
+      icon: <Info size={17} strokeWidth={2.3} />,
+      badgeBg: 'rgba(217, 119, 6, 0.14)',
+      badgeColor: 'var(--color-crimson)',
+      accentBorder: 'var(--line, var(--border-color))'
+    }
   };
 
   return (
@@ -621,37 +639,53 @@ export default function App() {
         </Suspense>
       </main>
 
-      {toast.visible && (
-        <div className="toast-notification animate-entrance" role={toast.type === 'error' ? 'alert' : 'status'} aria-live={toast.type === 'error' ? 'assertive' : 'polite'} style={{
-          ...toastStyles[toast.type],
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '12px'
-        }}>
-          <span>{toast.message}</span>
-          {toast.showUndo && (
-            <button
-              type="button"
-              onClick={handleUndo}
+      {toast.visible && (() => {
+        const meta = toastMeta[toast.type] || toastMeta.info;
+        return (
+          <div
+            className="toast-notification animate-entrance"
+            role={toast.type === 'error' ? 'alert' : 'status'}
+            aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
+            style={{
+              borderColor: meta.accentBorder
+            }}
+          >
+            <div
+              className="toast-icon-badge"
               style={{
-                background: 'var(--color-crimson)',
-                color: 'var(--on-accent)',
-                border: 'none',
-                padding: '4px 10px',
-                borderRadius: 'var(--r-control)',
-                fontSize: '12px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                letterSpacing: '0.5px',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+                backgroundColor: meta.badgeBg,
+                color: meta.badgeColor
               }}
+              aria-hidden="true"
             >
-              DESHACER
-            </button>
-          )}
-        </div>
-      )}
+              {meta.icon}
+            </div>
+            <div className="toast-body">
+              <div className="toast-title">{meta.title}</div>
+              <div className="toast-msg">{toast.message}</div>
+            </div>
+            <div className="toast-actions">
+              {toast.showUndo && (
+                <button
+                  type="button"
+                  onClick={handleUndo}
+                  className="toast-undo-btn"
+                >
+                  Deshacer
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={dismissToast}
+                className="toast-close-btn"
+                aria-label="Cerrar notificación"
+              >
+                <X size={15} />
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {deleteModal.visible && (
         <div className="bento-modal-overlay" style={{ zIndex: 'var(--z-modal)' }} role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" onKeyDown={(e) => { if (e.key === 'Escape') setDeleteModal({ visible: false, batchId: null, batchName: '' }); }} tabIndex={-1} ref={(el) => el && el.focus()}>

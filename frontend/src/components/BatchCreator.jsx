@@ -222,6 +222,10 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!name || !name.trim()) {
+      if (showToast) showToast('Ingresa el nombre del café para guardar el lote.', { type: 'error', duration: 3500 });
+      return;
+    }
     const id = batchToEdit ? batchToEdit.id : name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     
     const combinedNotes = [
@@ -470,7 +474,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
         {batchToEdit ? 'Editar café' : 'Nuevo café'}
       </h2>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {/* KISS: lo básico a la vista, el resto plegado */}
         <div className="candy-card static" style={{ cursor: 'default', marginBottom: '14px' }}>
           <h4 className="bt-section-title" style={{ margin: '0 0 14px' }}>Lo básico</h4>

@@ -1556,43 +1556,6 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 </span>
               </div>
             )}
-            {lastRecipe && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '8px',
-                  padding: '8px 12px',
-                  marginBottom: '12px',
-                  borderRadius: 'var(--r-control)',
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border-color)',
-                  fontSize: '12px',
-                  color: 'var(--ink-muted)'
-                }}
-              >
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  <strong style={{ color: 'var(--ink)' }}>Última receta cargada:</strong> {lastRecipe.method} · {lastRecipe.ratio} · {lastRecipe.grind}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleLoadRecipeToForm(lastRecipe)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'var(--accent)',
-                    fontWeight: 600,
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                    padding: '4px 6px',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  Restaurar
-                </button>
-              </div>
-            )}
 
             {/* V4 Modular Recipe Parameters Grid */}
             <RecipeParamsGrid
@@ -1629,8 +1592,6 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 </div>
                 <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-crimson)', background: 'var(--bg-header)', padding: '2px 8px', borderRadius: 'var(--r-control)' }}>{doseInG}g</span>
               </div>
-
-              {aiError && <div style={{ color: 'var(--barista-accent-danger-text)', fontSize: '12px', fontWeight: 'bold', marginTop: '8px' }}>{aiError}</div>}
 
               {aiRecommendation ? (
                 <div style={{ marginTop: '12px', padding: '12px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: 'var(--r-control)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -1875,20 +1836,6 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         onShareNative={handleNativeShare}
         onCopyText={handleCopyShareText}
       />
-
-      {/* Sticky "Preparar" bar: the main action is always one thumb away */}
-      {batch && !isBrewGuideOpen && !shareImage && (
-        <>
-          <div className="bt-brewbar-spacer" aria-hidden="true" />
-          <div className="bt-brewbar">
-            <button type="button" className="bt-brewbar-btn" onClick={startBrewFromForm}>
-              <Play size={18} fill="currentColor" aria-hidden="true" />
-              <span>Preparar {brewBarMethod}</span>
-              <span className="bt-brewbar-meta">{doseInG} g</span>
-            </button>
-          </div>
-        </>
-      )}
 
       {/* Interactive Barista Brew Guide Modal */}
       {isBrewGuideOpen && (
