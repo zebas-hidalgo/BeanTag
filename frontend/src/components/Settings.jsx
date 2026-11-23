@@ -405,11 +405,11 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   alignItems: 'center',
                   gap: '10px',
                   padding: '10px 12px',
-                  borderRadius: '12px',
+                  borderRadius: 'var(--r-control)',
                   border: isActive
                     ? '1.5px solid var(--accent)'
                     : '1px solid var(--line)',
-                  background: isActive ? 'var(--accent-soft)' : 'var(--raised)',
+                  background: isActive ? 'var(--accent-bg)' : 'var(--raised)',
                   color: 'var(--ink)',
                   textAlign: 'left',
                   cursor: 'pointer',
@@ -421,7 +421,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   style={{
                     width: '28px',
                     height: '28px',
-                    borderRadius: '8px',
+                    borderRadius: 'var(--r-xs)',
                     flexShrink: 0,
                     background: t.swatch,
                     border: '1px solid rgba(128, 128, 128, 0.25)',
@@ -458,7 +458,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   <span
                     style={{
                       fontSize: '0.72rem',
-                      color: 'var(--ink-3)',
+                      color: 'var(--ink-muted)',
                       lineHeight: 1.2,
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
@@ -854,7 +854,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 'var(--z-nav)', padding: '20px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 'var(--z-nav)',
+          padding: 'calc(20px + env(safe-area-inset-top, 0px)) 20px calc(20px + env(safe-area-inset-bottom, 0px)) 20px',
           overflowY: 'auto', WebkitOverflowScrolling: 'touch'
         }}>
           <div className="candy-card static" style={{ width: '100%', maxWidth: '350px', padding: '20px', cursor: 'default', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto', margin: 'auto' }}>
@@ -921,7 +922,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             display: 'flex', 
             justifyContent: 'center', 
             alignItems: 'flex-start',
-            padding: '16px', 
+            padding: 'calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px)) 16px',
             boxSizing: 'border-box',
             overflowY: 'auto',
             WebkitOverflowScrolling: 'touch'

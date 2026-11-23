@@ -313,6 +313,29 @@ export default function App() {
     setCurrentView('detail');
   };
 
+  const handleNavigateTab = (nextView) => {
+    if (nextView === 'creator') {
+      if (!currentUser) {
+        setShowAuthModal(true);
+        return;
+      }
+      setBatchToEdit(null);
+      setSelectedBatchId(null);
+      setPrefillRecipe(null);
+      setConsumedFromRack(null);
+      setCurrentView('creator');
+      return;
+    }
+    setBatchToEdit(null);
+    setSelectedBatchId(null);
+    setPrefillRecipe(null);
+    setConsumedFromRack(null);
+    if (nextView === 'inventory' && window.location.pathname !== '/beantag/') {
+      window.history.pushState({}, '', '/beantag/');
+    }
+    setCurrentView(nextView);
+  };
+
   const handleBack = () => {
     if (batchToEdit) {
       setCurrentView('detail');
@@ -574,7 +597,7 @@ export default function App() {
         <button
           type="button"
           className="bt-appbar-brand"
-          onClick={() => setCurrentView('inventory')}
+          onClick={() => handleNavigateTab('inventory')}
           aria-label="Ir a mi cava"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
@@ -809,7 +832,7 @@ export default function App() {
       </Suspense>
 
       {/* Genjutsu Floating Bottom Navigation Bar */}
-      <BottomNav currentView={currentView} setCurrentView={setCurrentView} />
+      <BottomNav currentView={currentView} setCurrentView={handleNavigateTab} />
     </div>
   );
 }

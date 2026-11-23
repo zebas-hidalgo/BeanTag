@@ -1,6 +1,7 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { Plus, Zap, Play, Snowflake, CheckCircle2, Mountain, X, MoreHorizontal, MapPin, Flag, ClipboardList, Coffee, Flame, Search as SearchIcon, Package, Share2, AlertTriangle } from 'lucide-react';
 import { getRoast, getDegassing, roastStyle } from '../utils/roast';
+import { MethodIcon } from './icons/CoffeeIcons';
 
 const TubeRacksView = lazy(() => import('./TubeRacksView'));
 
@@ -167,10 +168,6 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
             marginBottom: '12px',
             flexWrap: 'wrap'
           }}>
-            <span style={{ fontSize: 'var(--fs-14)', fontWeight: 500, color: 'var(--ink-muted)', whiteSpace: 'nowrap' }}>
-              {filteredBatches.length} {filteredBatches.length === 1 ? 'lote en cava' : 'lotes en cava'}
-            </span>
-
             <div className="inventory-view-selector" role="tablist" aria-label="Estado de lotes" style={{ flexWrap: 'wrap' }}>
               <button
                 type="button"
@@ -306,7 +303,7 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
                             onSelectBatch(batch, { prefillRecipe: firstRecipe, autoStart: true });
                           }}
                         >
-                          <Play size={14} fill="currentColor" aria-hidden="true" />
+                          <MethodIcon method={firstRecipe.method} size={14} />
                           <span>Preparar {(firstRecipe.method || 'V60').replace(' (Filtrado)', '')}</span>
                         </button>
                       )}

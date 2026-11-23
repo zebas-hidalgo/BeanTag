@@ -185,8 +185,8 @@ body.keyboard-open .bt-fab {
 .inventory-view-btn {
   border: none;
   background: transparent;
-  min-height: 36px;
-  padding: 0 12px;
+  min-height: 44px;
+  padding: 0 14px;
   border-radius: var(--r-pill);
   font-size: var(--fs-12);
   font-weight: 500;
@@ -1127,9 +1127,9 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   transform: translateX(-50%) translateY(140px);
   width: max-content;
   max-width: calc(100% - 32px);
-  background-color: var(--color-text);
-  color: #FFFFFF;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: var(--action);
+  color: var(--on-action);
+  border: 1px solid var(--line);
   padding: 10px 20px;
   display: flex;
   justify-content: space-between;
@@ -1179,7 +1179,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 
 .mono-lbl-tag {
   background: var(--color-crimson);
-  color: #FFFFFF;
+  color: var(--on-accent);
   padding: 4px 10px;
   font-size: 12px;
   font-weight: 700;
@@ -1319,7 +1319,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .skeleton-line {
-  background: linear-gradient(90deg, #E2E8F0 25%, #EDF2F7 50%, #E2E8F0 75%);
+  background: linear-gradient(90deg, var(--fill) 25%, var(--fill-strong) 50%, var(--fill) 75%);
   background-size: 200% 100%;
   animation: skeleton-pulse 1.5s ease-in-out infinite;
   border-radius: var(--r-xs);
@@ -1848,9 +1848,9 @@ body.keyboard-open .bento-modal-overlay {
 }
 
 .filter-chip.active {
-  background-color: var(--barista-accent-honey);
-  color: #000000;
-  border-color: var(--barista-accent-honey);
+  background-color: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
   box-shadow: var(--barista-shadow-honey);
 }
 
@@ -2205,7 +2205,7 @@ body.keyboard-open .bento-modal-overlay {
   background: transparent; color: inherit;
 }
 .bt-dialog-actions .bt-dialog-ok {
-  background: var(--color-crimson); color: #fff; border-color: transparent;
+  background: var(--color-crimson); color: var(--on-accent); border-color: transparent;
 }
 @media (min-width: 600px) { .bt-dialog-overlay { align-items: center; } }
 

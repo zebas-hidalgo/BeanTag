@@ -545,12 +545,21 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
       {/* Modal / Vista de Detalle de Receta */}
       {selectedRecipe && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(26, 5, 5, 0.4)', // backdrop overlay
-          zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '16px', boxSizing: 'border-box'
-        }} onClick={() => setSelectedRecipe(null)}>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Detalle de extracción"
+          tabIndex={-1}
+          onKeyDown={(e) => { if (e.key === 'Escape') setSelectedRecipe(null); }}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(26, 5, 5, 0.4)', // backdrop overlay
+            zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 'calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px)) 16px',
+            boxSizing: 'border-box'
+          }}
+          onClick={() => setSelectedRecipe(null)}
+        >
           <div className="candy-card static" style={{
             maxWidth: '380px', width: '100%',
             margin: 'auto',

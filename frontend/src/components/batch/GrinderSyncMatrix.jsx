@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sliders, CheckCircle2, ChevronRight, Gauge } from 'lucide-react';
+import { HandGrinderIcon, ElectricGrinderIcon } from '../icons/CoffeeIcons';
 import { GRINDERS, getGrinderConfig } from '../../utils/grinders';
 
 export default function GrinderSyncMatrix({
@@ -33,7 +34,9 @@ export default function GrinderSyncMatrix({
   return (
     <div className="barista-card" style={{ marginBottom: '16px' }}>
       <h3 className="bt-section-title" style={{ margin: '0 0 12px' }}>
-        <Sliders size={16} aria-hidden="true" />
+        {['ode2', 'baratza'].includes(activeGrinderMeta.id)
+          ? <ElectricGrinderIcon size={16} />
+          : <HandGrinderIcon size={16} />}
         <span>Molienda</span>
       </h3>
 

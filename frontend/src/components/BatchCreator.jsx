@@ -226,7 +226,8 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
       if (showToast) showToast('Ingresa el nombre del café para guardar el lote.', { type: 'error', duration: 3500 });
       return;
     }
-    const id = batchToEdit ? batchToEdit.id : name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const rawSlug = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'lote';
+    const id = batchToEdit ? batchToEdit.id : `${rawSlug}-${Date.now().toString(36).slice(-4)}`;
     
     const combinedNotes = [
       selectedFlavorTags.length > 0 ? `[Notas: ${selectedFlavorTags.join(', ')}]` : '',

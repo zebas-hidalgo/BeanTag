@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { confirmDialog } from '../utils/confirmDialog';
-import { Plus, Coffee, MoreVertical, Trash2, Edit3, Layers, Check, X, RefreshCw, AlertCircle, ArrowRight, Zap, Snowflake, FlaskConical } from 'lucide-react';
+import { Plus, Coffee, MoreVertical, Trash2, Edit3, Layers, Check, X, RefreshCw, AlertCircle, ArrowRight, Zap, Snowflake, FlaskConical, ChevronUp, ChevronDown } from 'lucide-react';
 import { apiUrl } from '../utils/api';
 import SlotAssignModal from './SlotAssignModal';
 import { NewRackModal, RenameRackModal, TubeActionsModal } from './racks/RackModals';
@@ -385,7 +385,13 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
 
           <button
             type="button"
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => {
+              if (!currentUser && onRequireAuth) {
+                onRequireAuth();
+                return;
+              }
+              setShowCreateModal(true);
+            }}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -658,31 +664,6 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
               );
             })}
           </div>
-
-          {/* + Nuevo Rack Pill Button */}
-          <button
-            type="button"
-            onClick={() => setShowCreateModal(true)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 14px',
-              borderRadius: 'var(--barista-radius-pill)',
-              border: '1px dashed var(--barista-border-hairline)',
-              backgroundColor: 'transparent',
-              color: 'var(--barista-text-secondary)',
-              fontWeight: '700',
-              fontSize: '13px',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              flexShrink: 0,
-              transition: 'var(--transition-ui)'
-            }}
-          >
-            <Plus size={15} />
-            <span>+ Nuevo Rack</span>
-          </button>
         </div>
       )}
 
@@ -937,11 +918,11 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
                     }}
                   >
                     <span style={{ color: 'var(--barista-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <span>▲</span>
+                      <ChevronUp size={13} aria-hidden="true" />
                       <span>Fila de atrás (#04–#06)</span>
                     </span>
                     <span style={{ color: 'var(--barista-accent-honey)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <span>▼</span>
+                      <ChevronDown size={13} aria-hidden="true" />
                       <span>Fila de delante (#01–#03)</span>
                     </span>
                   </div>
@@ -1016,8 +997,8 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
                               : '2px dashed var(--barista-border-hairline)',
                             boxShadow: isFilled
                               ? (isFrozen
-                                  ? '0 3px 10px rgba(56, 189, 248, 0.18), inset 0 1px 0 rgba(255,255,255,0.8)'
-                                  : '0 3px 10px rgba(217, 119, 6, 0.12), inset 0 1px 0 rgba(255,255,255,0.8)')
+                                  ? '0 3px 10px rgba(56, 189, 248, 0.18), inset 0 1px 0 var(--glass-edge)'
+                                  : '0 3px 10px rgba(217, 119, 6, 0.12), inset 0 1px 0 var(--glass-edge)')
                               : 'none',
                             padding: '8px 2px',
                             display: 'flex',

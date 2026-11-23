@@ -1,5 +1,6 @@
 import React from 'react';
 import { SlidersHorizontal, Coffee, Scale, Gauge, Thermometer, Clock, Sparkles } from 'lucide-react';
+import { MethodIcon } from '../icons/CoffeeIcons';
 import { FAMOUS_RECIPES } from '../../utils/famousRecipes';
 
 const METHODS = [
@@ -88,7 +89,7 @@ export default function RecipeParamsGrid({
                 whiteSpace: 'nowrap'
               }}
             >
-              {m.id === 'NextLevel Pulsar Mini' ? <SlidersHorizontal size={14} /> : <Coffee size={14} />}
+              <MethodIcon method={m.id} size={15} />
               <span>{m.label}</span>
             </button>
           );
@@ -130,7 +131,7 @@ export default function RecipeParamsGrid({
                     minHeight: '44px',
                     padding: '8px 14px',
                     backgroundColor: isSelected ? 'var(--accent-honey)' : 'var(--bg-surface)',
-                    color: isSelected ? '#FFFFFF' : 'var(--text-primary)',
+                    color: isSelected ? 'var(--on-accent)' : 'var(--text-primary)',
                     borderColor: isSelected ? 'transparent' : 'var(--border-subtle)',
                     fontSize: 'var(--text-xs)',
                     display: 'flex',

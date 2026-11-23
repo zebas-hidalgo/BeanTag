@@ -1369,10 +1369,6 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           <ArrowLeft size={16} strokeWidth={2.5} />
           <span>Volver</span>
         </button>
-
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-          {isLowStock && <span className="mono-lbl-tag" style={{ background: 'var(--bad)', fontSize: '12px', padding: '3px 8px' }}>Quedan pocos</span>}
-        </div>
       </div>
 
       {/* Guest Mode Banner */}
@@ -1619,7 +1615,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     {aiRecommendation.water_profile && <span style={{ background: 'var(--barista-accent-cryo-bg)', color: 'var(--barista-accent-cryo-text)', padding: '2px 6px', borderRadius: 'var(--r-xs)', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Droplet size={10} /> {aiRecommendation.water_profile}</span>}
                     {aiRecommendation.active_grinder_dial && <span style={{ background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: 'var(--r-xs)', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><SlidersHorizontal size={10} /> {aiRecommendation.active_grinder_dial.grinder_name}: {aiRecommendation.active_grinder_dial.dial}</span>}
                     {aiRecommendation._source === 'barista_fallback' && (
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--barista-instr-bg)', border: '1px solid var(--barista-instr-border)', color: 'var(--barista-accent-honey)', padding: '4px 10px', borderRadius: 'var(--r-card)', fontSize: '12px', fontWeight: '600' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--barista-instr-bg)', border: '1px solid var(--barista-instr-border)', color: 'var(--barista-accent-honey)', padding: '4px 10px', borderRadius: 'var(--r-xs)', fontSize: '12px', fontWeight: '600' }}>
                         <Zap size={13} />
                         <span>Motor Barista Físico (Micrones & Clics Calculados)</span>
                       </div>
@@ -1635,14 +1631,14 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
                   <button type="button" className="btn-candy primary" onClick={() => handleStartBrewGuide(aiRecommendation)} style={{ width: '100%', marginBottom: '8px', minHeight: '44px', backgroundColor: 'var(--barista-accent-honey)', color: 'var(--on-accent)', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                     <Play size={15} fill="currentColor" />
-                    <span>Preparar con el cronómetro</span>
+                    <span>Preparar esta receta (IA)</span>
                   </button>
 
                   <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                    <button type="button" className="btn-candy primary" onClick={handleApplyAiRecipe} style={{ flex: 1, padding: '8px', fontSize: '12px', minHeight: '38px' }}>
+                    <button type="button" className="btn-candy primary" onClick={handleApplyAiRecipe} style={{ flex: 1, padding: '8px', fontSize: '12px', minHeight: '44px' }}>
                       Aplicar al Formulario
                     </button>
-                    <button type="button" className="btn-candy secondary" onClick={() => setAiRecommendation(null)} style={{ padding: '8px 12px', fontSize: '12px', minHeight: '38px', margin: 0 }}>
+                    <button type="button" className="btn-candy secondary" onClick={() => setAiRecommendation(null)} style={{ padding: '8px 14px', fontSize: '12px', minHeight: '44px', margin: 0 }}>
                       Cerrar
                     </button>
                   </div>

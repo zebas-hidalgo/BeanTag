@@ -1,5 +1,6 @@
 import React from 'react';
 import { Snowflake, Mountain, MinusCircle, Edit, Trash2, Share2, MapPin, Sprout, Cog } from 'lucide-react';
+import { CoffeeBeanIcon } from '../icons/CoffeeIcons';
 import { stripEmojis } from '../../utils/scaIcons';
 import { getRoast, getDegassing, roastStyle } from '../../utils/roast';
 
@@ -56,7 +57,7 @@ export default function BatchHeaderCard({
           )}
         </div>
         <div className="bt-hero-chips">
-          {isBag && <span className="bt-hero-chip">☕ Bolsa {Math.round(totalGrams)}g</span>}
+          {isBag && <span className="bt-hero-chip"><CoffeeBeanIcon size={13} />Bolsa {Math.round(totalGrams)}g</span>}
           {batch.origin && <span className="bt-hero-chip"><MapPin size={13} aria-hidden="true" />{batch.origin}</span>}
           {batch.variety && <span className="bt-hero-chip"><Sprout size={13} aria-hidden="true" />{batch.variety}</span>}
           {batch.process && <span className="bt-hero-chip"><Cog size={13} aria-hidden="true" />{batch.process}</span>}

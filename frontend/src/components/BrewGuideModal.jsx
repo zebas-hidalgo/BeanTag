@@ -5,6 +5,7 @@ import {
   Pause,
   SkipForward,
   CheckCircle2,
+  Check,
   Volume2,
   VolumeX,
   X,
@@ -43,6 +44,7 @@ import { getGrinderConfig } from '../utils/grinders.js';
 
 import { parseTimeToSeconds, formatTime, parseStages } from '../utils/brewStages.js';
 import { useTimemoreScale } from '../utils/timemoreScale.js';
+import { MethodIcon, CoffeeScaleIcon } from './icons/CoffeeIcons';
 import BrewDiagnostic from './brew/BrewDiagnostic';
 
 /**
@@ -637,7 +639,7 @@ export default function BrewGuideModal({
               flexShrink: 0
             }}
           >
-            <Coffee size={18} strokeWidth={2.4} />
+            <MethodIcon method={recipe?.method} size={18} />
           </div>
           <div style={{ minWidth: 0 }}>
             <h2
@@ -939,17 +941,22 @@ export default function BrewGuideModal({
                         onClick={() => setAutoStartOnPour((v) => !v)}
                         title="Inicia el cronómetro automáticamente al detectar que viertes agua (> 0.8 g)"
                         style={{
-                          padding: '3px 9px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          minHeight: '34px',
+                          padding: '4px 10px',
                           borderRadius: 'var(--r-pill)',
                           border: autoStartOnPour ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
                           background: autoStartOnPour ? 'var(--accent-bg)' : 'transparent',
                           color: autoStartOnPour ? 'var(--color-crimson)' : 'var(--color-text-muted)',
-                          fontSize: '11px',
+                          fontSize: '12px',
                           fontWeight: 700,
                           cursor: 'pointer'
                         }}
                       >
-                        ⚡ Auto {autoStartOnPour ? 'ON' : 'OFF'}
+                        <Zap size={12} aria-hidden="true" />
+                        <span>Auto {autoStartOnPour ? 'ON' : 'OFF'}</span>
                       </button>
                     )}
                     <button
@@ -957,17 +964,22 @@ export default function BrewGuideModal({
                       onClick={() => setSyncStepsWithWeight((v) => !v)}
                       title="Sincroniza automáticamente el paso activo y el tiempo cuando el peso entra en la siguiente fase"
                       style={{
-                        padding: '3px 9px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        minHeight: '34px',
+                        padding: '4px 10px',
                         borderRadius: 'var(--r-pill)',
                         border: syncStepsWithWeight ? '1px solid var(--barista-accent-mint-text)' : '1px solid var(--border-color)',
                         background: syncStepsWithWeight ? 'var(--barista-accent-mint-bg)' : 'transparent',
                         color: syncStepsWithWeight ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)',
-                        fontSize: '11px',
+                        fontSize: '12px',
                         fontWeight: 700,
                         cursor: 'pointer'
                       }}
                     >
-                      ⚖️ Sincro {syncStepsWithWeight ? 'ON' : 'OFF'}
+                      <CoffeeScaleIcon size={12} />
+                      <span>Sincro {syncStepsWithWeight ? 'ON' : 'OFF'}</span>
                     </button>
                     <button
                       type="button"
@@ -977,13 +989,14 @@ export default function BrewGuideModal({
                         autoStartedPourRef.current = false;
                       }}
                       style={{
-                        padding: '3px 10px',
+                        minHeight: '34px',
+                        padding: '4px 12px',
                         borderRadius: 'var(--r-pill)',
                         border: '1px solid var(--border-strong)',
                         background: 'var(--bg-subtle)',
                         color: 'var(--color-text)',
                         fontFamily: 'var(--font-mono)',
-                        fontSize: '11px',
+                        fontSize: '12px',
                         fontWeight: 700,
                         cursor: 'pointer'
                       }}
@@ -994,21 +1007,27 @@ export default function BrewGuideModal({
                 </>
               ) : (
                 <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                    <Scale size={13} />
-                    <span>Balanza Bluetooth</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                      <CoffeeScaleIcon size={14} />
+                      <span>Balanza Bluetooth</span>
+                    </div>
+                    {scale.error && (
+                      <span style={{ fontSize: '11px', color: 'var(--bad-text, var(--bad))' }}>{scale.error}</span>
+                    )}
                   </div>
                   <button
                     type="button"
                     disabled={scale.connecting}
                     onClick={() => scale.connect().catch(() => {})}
                     style={{
-                      padding: '4px 10px',
+                      minHeight: '36px',
+                      padding: '6px 14px',
                       borderRadius: 'var(--r-pill)',
                       border: 'none',
                       background: 'var(--color-crimson)',
                       color: 'var(--on-accent)',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: 700,
                       cursor: 'pointer'
                     }}
@@ -1110,13 +1129,16 @@ export default function BrewGuideModal({
                   return (
                     <span
                       style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
                         fontFamily: 'var(--font-mono)',
                         fontSize: '12px',
                         fontWeight: 700,
                         color: reached ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)'
                       }}
                     >
-                      {reached ? '✓ Listo' : `Faltan ${remainingG.toFixed(1)}g`}
+                      {reached ? <><Check size={12} aria-hidden="true" /><span>Listo</span></> : `Faltan ${remainingG.toFixed(1)}g`}
                     </span>
                   );
                 })() : (
@@ -1330,8 +1352,8 @@ export default function BrewGuideModal({
                     padding: '12px 16px',
                     borderRadius: 'var(--radius-md)',
                     backgroundColor: 'var(--barista-accent-mint-bg)',
-                    border: '1.5px solid var(--valve-open)',
-                    color: 'var(--valve-open)',
+                    border: '1.5px solid var(--ok-text)',
+                    color: 'var(--ok-text)',
                     fontSize: '13px',
                     fontWeight: '600',
                     minHeight: '48px',
