@@ -33,22 +33,22 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
     }
   };
 
+  const isNativeApp = Boolean(
+    typeof window !== 'undefined' &&
+    window.Capacitor &&
+    typeof window.Capacitor.isNativePlatform === 'function' &&
+    window.Capacitor.isNativePlatform()
+  );
+
   const initGoogleAuth = (cId) => {
     if (!cId) return;
     if (window.google && window.google.accounts && window.google.accounts.id) {
       try {
-        const isNativeOrStandalone = Boolean(
-          (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) ||
-          window.matchMedia?.('(display-mode: standalone)')?.matches ||
-          window.navigator?.standalone === true
-        );
-        const redirectUri = `${window.location.origin}/beantag/api/auth/google/redirect`;
         window.google.accounts.id.initialize({
           client_id: cId,
           callback: handleGoogleCallback,
           auto_select: false,
-          ux_mode: isNativeOrStandalone ? 'redirect' : 'popup',
-          ...(isNativeOrStandalone ? { login_uri: redirectUri } : {})
+          ux_mode: 'popup'
         });
         setGoogleInitialized(true);
         renderNativeBtn();
@@ -268,6 +268,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
               >
                 ¿No puedes hacer clic? Abrir selector Google One-Tap
               </button>
+            </div>
+          )}
+
+          {isNativeApp && (
+            <div style={{ marginTop: '10px', fontSize: '11.5px', color: 'var(--color-text-muted)', lineHeight: 1.4 }}>
+              En la App iOS, puedes entrar directo abajo escribiendo tu <strong>correo Gmail</strong> y una contraseña (si es tu primer acceso con contraseña, se vincula automáticamente).
             </div>
           )}
         </div>
