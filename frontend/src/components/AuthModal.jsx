@@ -80,6 +80,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
     setErrorMsg('');
     setIsGoogleOnlyError(false);
 
+    if (isNativeApp) return; // WKWebView blocks Google OAuth popups; use direct Gmail + password form
+
     const defaultCId = '167578250344-6e3dbkah789lpad56abbijv4j6vcb9jt.apps.googleusercontent.com';
 
     fetch(apiUrl('api/auth/config'))
@@ -92,7 +94,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
       .catch(() => {
         loadAndInitGoogle(defaultCId);
       });
-  }, [isOpen]);
+  }, [isOpen, isNativeApp]);
 
   useEffect(() => {
     if (isOpen && googleInitialized) {
@@ -243,47 +245,50 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
           </div>
         )}
 
-        {/* HERO: Google Sign-In Container */}
-        <div style={{ background: 'var(--color-bg)', border: '1.5px solid var(--color-border)', borderRadius: 'var(--r-tile)', padding: '16px 14px', textAlign: 'center', marginBottom: '18px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '12px', color: 'var(--color-text)' }}>
-            Acceso Rápido con tu Cuenta de Google
+        {/* HERO: Google Sign-In Container (Web browsers) or Direct Gmail Notice (iOS Native App) */}
+        {isNativeApp ? (
+          <div style={{ background: 'var(--color-bg)', border: '1px solid var(--line, var(--color-border))', borderRadius: 'var(--r-tile)', padding: '12px 14px', marginBottom: '16px', fontSize: '12px', color: 'var(--color-text-muted)', lineHeight: 1.45 }}>
+            <strong style={{ color: 'var(--color-text)', display: 'block', marginBottom: '4px' }}>Acceso directo en iOS App</strong>
+            Ingresa con tu <strong>correo Gmail</strong> y contraseña abajo. Si antes entrabas con el botón de Google, la contraseña que escribas se vinculará automáticamente en este primer ingreso.
           </div>
+        ) : (
+          <>
+            <div style={{ background: 'var(--color-bg)', border: '1.5px solid var(--color-border)', borderRadius: 'var(--r-tile)', padding: '16px 14px', textAlign: 'center', marginBottom: '18px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '12px', color: 'var(--color-text)' }}>
+                Acceso Rápido con tu Cuenta de Google
+              </div>
 
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '44px', width: '100%' }}>
-            <div ref={googleBtnContainerRef} id="google-btn-container" style={{ display: 'flex', justifyContent: 'center', width: '100%', minHeight: '40px' }}></div>
-          </div>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '44px', width: '100%' }}>
+                <div ref={googleBtnContainerRef} id="google-btn-container" style={{ display: 'flex', justifyContent: 'center', width: '100%', minHeight: '40px' }}></div>
+              </div>
 
-          {!googleInitialized && (
-            <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '8px' }}>
-              Cargando Google Sign-In... o ingresa con tu correo abajo.
+              {!googleInitialized && (
+                <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '8px' }}>
+                  Cargando Google Sign-In... o ingresa con tu correo abajo.
+                </div>
+              )}
+
+              {googleInitialized && (
+                <div style={{ marginTop: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={handlePromptFallback}
+                    style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                  >
+                    ¿No puedes hacer clic? Abrir selector Google One-Tap
+                  </button>
+                </div>
+              )}
             </div>
-          )}
 
-          {googleInitialized && (
-            <div style={{ marginTop: '8px' }}>
-              <button
-                type="button"
-                onClick={handlePromptFallback}
-                style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-              >
-                ¿No puedes hacer clic? Abrir selector Google One-Tap
-              </button>
+            {/* Divider */}
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', color: 'var(--color-text-muted)', fontSize: '12px' }}>
+              <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
+              <span style={{ padding: '0 10px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>o continuar con correo</span>
+              <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
             </div>
-          )}
-
-          {isNativeApp && (
-            <div style={{ marginTop: '10px', fontSize: '11.5px', color: 'var(--color-text-muted)', lineHeight: 1.4 }}>
-              En la App iOS, puedes entrar directo abajo escribiendo tu <strong>correo Gmail</strong> y una contraseña (si es tu primer acceso con contraseña, se vincula automáticamente).
-            </div>
-          )}
-        </div>
-
-        {/* Divider */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', color: 'var(--color-text-muted)', fontSize: '12px' }}>
-          <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
-          <span style={{ padding: '0 10px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 'bold' }}>o continuar con correo</span>
-          <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }}></div>
-        </div>
+          </>
+        )}
 
         {/* Tab Switcher for Email Auth */}
         <div style={{ display: 'flex', background: 'var(--color-bg)', borderRadius: 'var(--r-control)', padding: '4px', marginBottom: '14px' }}>
