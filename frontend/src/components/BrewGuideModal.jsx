@@ -550,7 +550,6 @@ export default function BrewGuideModal({
 
   return (
     <div
-      className="mode-barra"
       role="dialog"
       aria-modal="true"
       aria-label="Guía de extracción"

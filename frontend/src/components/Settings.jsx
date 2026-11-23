@@ -380,7 +380,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             <Palette size={16} aria-hidden="true" />
             <span>Apariencia</span>
           </h4>
-          <p className="bt-section-desc">Elige una paleta inspirada en café de especialidad. Las extracciones usan siempre el Modo Barra de alto contraste.</p>
+          <p className="bt-section-desc">Elige una paleta inspirada en café de especialidad. Se aplica a toda la app, incluido el cronómetro de extracción.</p>
         </div>
         <div
           role="radiogroup"
