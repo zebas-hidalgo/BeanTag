@@ -334,7 +334,7 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
 
       {/* 🍎 CUPERTINO HAPTIC TOUCH CONTEXT MENU */}
       {contextBatch && (
-        <div className="cupertino-context-overlay" onClick={() => setContextBatch(null)} role="dialog" aria-modal="true" aria-label={`Acciones rápidas para ${contextBatch.name}`} onKeyDown={(e) => { if (e.key === 'Escape') setContextBatch(null); }} tabIndex={-1} ref={(el) => el && el.focus()}>
+        <div className="cupertino-context-overlay" onClick={() => setContextBatch(null)} role="dialog" aria-modal="true" aria-label={`Acciones rápidas para ${contextBatch.name}`} onKeyDown={(e) => { if (e.key === 'Escape') setContextBatch(null); }} tabIndex={-1}>
           <div className="cupertino-context-menu" onClick={e => e.stopPropagation()}>
             <div style={{ padding: '14px 16px 10px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-canvas)' }}>
               <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-crimson)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' }}>

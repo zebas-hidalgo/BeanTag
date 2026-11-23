@@ -157,7 +157,6 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
       aria-label="Herramientas NFC"
       onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
       tabIndex={-1}
-      ref={(el) => el && el.focus()}
       style={{
         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
         backgroundColor: 'rgba(18, 10, 8, 0.65)',

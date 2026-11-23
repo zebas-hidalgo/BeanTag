@@ -765,7 +765,7 @@ export default function App() {
       })()}
 
       {deleteModal.visible && (
-        <div className="bento-modal-overlay" style={{ zIndex: 'var(--z-modal)' }} role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" onKeyDown={(e) => { if (e.key === 'Escape') setDeleteModal({ visible: false, batchId: null, batchName: '' }); }} tabIndex={-1} ref={(el) => el && el.focus()}>
+        <div className="bento-modal-overlay" style={{ zIndex: 'var(--z-modal)' }} role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" onKeyDown={(e) => { if (e.key === 'Escape') setDeleteModal({ visible: false, batchId: null, batchName: '' }); }} tabIndex={-1}>
           <div className="candy-card animate-entrance" style={{ maxWidth: '340px', padding: '20px', margin: 'auto', textAlign: 'center' }}>
             <h4 id="delete-modal-title" style={{ margin: '0 0 8px 0', fontFamily: 'var(--font-heading)' }}>¿Eliminar este Lote?</h4>
             <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>

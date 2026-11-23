@@ -192,8 +192,17 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
 
   if (!isOpen) return null;
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, onClose]);
+
   return (
-    <div className="bento-modal-overlay" onClick={onClose} style={{ zIndex: 'var(--z-modal)' }} role="dialog" aria-modal="true" aria-label="Iniciar sesión" onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }} tabIndex={-1} ref={(el) => el && el.focus()}>
+    <div className="bento-modal-overlay" onClick={onClose} style={{ zIndex: 'var(--z-modal)' }} role="dialog" aria-modal="true" aria-label="Iniciar sesión" tabIndex={-1}>
       <div className="candy-card animate-entrance" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', width: '100%', padding: '20px 18px', margin: 'auto', background: 'var(--color-surface)', boxSizing: 'border-box' }}>
         
         {/* Header */}
