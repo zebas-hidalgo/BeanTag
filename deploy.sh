@@ -10,6 +10,7 @@ ssh -o StrictHostKeyChecking=no "${VPS_USER}@${VPS_IP}" "
   cd ${VPS_PATH} && \
   git fetch origin main && \
   git reset --hard origin/main && \
+  npm install --prefix frontend && \
   npm run build-frontend && \
   pm2 restart beantag
 "
