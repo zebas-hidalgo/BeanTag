@@ -89,6 +89,7 @@ export default function BrewGuideModal({
   // Timemore Dot BLE Smart Scale
   const scale = useTimemoreScale();
   const [autoStartOnPour, setAutoStartOnPour] = useState(true);
+  const [syncStepsWithWeight, setSyncStepsWithWeight] = useState(true);
   const autoStartedPourRef = useRef(false);
   const taredReadyRef = useRef(false);
 
@@ -412,6 +413,45 @@ export default function BrewGuideModal({
       handleTogglePlay();
     }
   }, [isOpen, viewMode, scale.connected, scale.weightG, autoStartOnPour, isActive, elapsedSeconds, handleTogglePlay]);
+
+  // Sync active step & timer when live weight crosses into the next pouring stage (+3g hysteresis)
+  useEffect(() => {
+    if (!isOpen || viewMode !== 'timer' || !scale.connected || !syncStepsWithWeight || !isActive) {
+      return;
+    }
+    const nextIdx = currentStageIndex + 1;
+    if (nextIdx >= stages.length) return;
+    const nextStage = stages[nextIdx];
+    if (!currentStage || currentStage.total_water_g <= 0 || !nextStage || nextStage.water_g <= 0) {
+      return;
+    }
+    if (scale.weightG >= currentStage.total_water_g + 3.0) {
+      setElapsedSeconds(nextStage.startSec);
+      baseElapsedRef.current = nextStage.startSec;
+      startTimestampRef.current = Date.now();
+      lastBeepSecRef.current = null;
+      prevStageIndexRef.current = nextIdx;
+      if (!isMuted) {
+        playPhaseChime();
+        if (isVoiceEnabled) {
+          speakBaristaGuidance(getStageSpeechText(nextIdx, nextStage));
+        }
+      }
+    }
+  }, [
+    isOpen,
+    viewMode,
+    scale.connected,
+    scale.weightG,
+    syncStepsWithWeight,
+    isActive,
+    currentStageIndex,
+    currentStage,
+    stages,
+    isMuted,
+    isVoiceEnabled,
+    getStageSpeechText
+  ]);
 
   // Handler: Skip forward to next stage
   const handleNextStage = useCallback(() => {
@@ -747,37 +787,99 @@ export default function BrewGuideModal({
           /* ⏱️ VIEW 1: EXTRACTION TIMER VIEW                             */
           /* ============================================================== */
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {/* Giant Monospace Timer with Glanceability at 1m */}
-            <div style={{ textAlign: 'center', margin: '8px 0 16px' }}>
-              <div
-                className="barista-timer font-mono text-7xl md:text-8xl font-black tracking-tight"
-                style={{
-                  fontFamily: 'var(--font-metric)',
-                  fontSize: 'clamp(4.2rem, 15vw, 6.5rem)',
-                  fontWeight: '700',
-                  letterSpacing: '-0.04em',
-                  lineHeight: 1,
-                  fontVariantNumeric: 'tabular-nums',
-                  color: 'var(--text-primary)'
-                }}
-              >
-                {formatTime(elapsedSeconds)}
+            {/* Giant Monospace Timer (+ Live Scale Weight when connected) */}
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: scale.connected ? 'space-evenly' : 'center',
+                gap: '16px',
+                flexWrap: 'wrap',
+                textAlign: 'center',
+                margin: '8px 0 16px'
+              }}
+            >
+              <div>
+                <div
+                  className="barista-timer font-mono text-7xl md:text-8xl font-black tracking-tight"
+                  style={{
+                    fontFamily: 'var(--font-metric)',
+                    fontSize: scale.connected ? 'clamp(3.2rem, 12vw, 5.2rem)' : 'clamp(4.2rem, 15vw, 6.5rem)',
+                    fontWeight: '700',
+                    letterSpacing: '-0.04em',
+                    lineHeight: 1,
+                    fontVariantNumeric: 'tabular-nums',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  {formatTime(elapsedSeconds)}
+                </div>
+                <div
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--text-secondary)',
+                    marginTop: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    fontFamily: 'var(--font-display)'
+                  }}
+                >
+                  <Clock size={14} />
+                  <span>Total: {formatTime(totalBrewDuration)}</span>
+                </div>
               </div>
-              <div
-                style={{
-                  fontSize: '13px',
-                  color: 'var(--text-secondary)',
-                  marginTop: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  fontFamily: 'var(--font-display)'
-                }}
-              >
-                <Clock size={14} />
-                <span>Total: {formatTime(totalBrewDuration)}</span>
-              </div>
+
+              {scale.connected && (
+                <>
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      width: '1px',
+                      height: '58px',
+                      backgroundColor: 'var(--border-color)',
+                      opacity: 0.8
+                    }}
+                  />
+                  <div>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-metric)',
+                        fontSize: 'clamp(3.0rem, 11vw, 5.0rem)',
+                        fontWeight: '700',
+                        letterSpacing: '-0.04em',
+                        lineHeight: 1,
+                        fontVariantNumeric: 'tabular-nums',
+                        color: currentStage?.total_water_g > 0 && scale.weightG >= currentStage.total_water_g - 0.5
+                          ? 'var(--barista-accent-mint-text)'
+                          : 'var(--color-crimson)'
+                      }}
+                    >
+                      {scale.weightG.toFixed(1)}
+                      <span style={{ fontSize: '0.42em', fontWeight: 700, marginLeft: '4px' }}>g</span>
+                    </div>
+                    <div
+                      style={{
+                        fontSize: '13px',
+                        color: 'var(--text-secondary)',
+                        marginTop: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        fontFamily: 'var(--font-mono)'
+                      }}
+                    >
+                      <Scale size={14} />
+                      <span>
+                        {currentStage?.total_water_g > 0 ? `Meta: ${currentStage.total_water_g}g` : `${scale.flowRate.toFixed(1)} ml/s`}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* ⚖️ Timemore Dot BLE Live Scale Telemetry & Control Bar */}
@@ -864,6 +966,23 @@ export default function BrewGuideModal({
                         ⚡ Auto-inicio {autoStartOnPour ? 'ON' : 'OFF'}
                       </button>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => setSyncStepsWithWeight((v) => !v)}
+                      title="Sincroniza automáticamente el paso activo y el tiempo cuando el peso entra en la siguiente fase"
+                      style={{
+                        padding: '5px 10px',
+                        borderRadius: 'var(--r-pill)',
+                        border: syncStepsWithWeight ? '1.5px solid var(--barista-accent-mint-text)' : '1px solid var(--border-color)',
+                        background: syncStepsWithWeight ? 'var(--barista-accent-mint-bg)' : 'var(--barista-bg-subtle)',
+                        color: syncStepsWithWeight ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ⚖️ Sincro pasos {syncStepsWithWeight ? 'ON' : 'OFF'}
+                    </button>
                     <button
                       type="button"
                       onClick={async () => {
@@ -1154,6 +1273,61 @@ export default function BrewGuideModal({
                   </div>
                 )}
               </div>
+
+              {/* Live Scale Water Progress Bar (when scale is connected) */}
+              {scale.connected && currentStage?.total_water_g > 0 && (() => {
+                const prevWater = currentStageIndex > 0 ? (stages[currentStageIndex - 1]?.total_water_g || 0) : 0;
+                const span = Math.max(1, currentStage.total_water_g - prevWater);
+                const waterPct = Math.min(100, Math.max(0, ((scale.weightG - prevWater) / span) * 100));
+                const remainingG = Math.max(0, currentStage.total_water_g - scale.weightG);
+                const reached = remainingG <= 1.0;
+                return (
+                  <div style={{ width: '100%', marginTop: '6px', marginBottom: '6px' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        marginBottom: '5px'
+                      }}
+                    >
+                      <span style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
+                        Agua: {scale.weightG.toFixed(1)} / {currentStage.total_water_g} g
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-mono)',
+                          color: reached ? 'var(--barista-accent-mint-text)' : 'var(--color-crimson)',
+                          fontSize: '12px',
+                          fontWeight: 700
+                        }}
+                      >
+                        {reached ? '✓ Meta alcanzada' : `Faltan ${remainingG.toFixed(1)} g`}
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '6px',
+                        borderRadius: 'var(--r-xs)',
+                        backgroundColor: 'var(--segmented-bg)',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: '100%',
+                          width: `${waterPct}%`,
+                          backgroundColor: reached ? 'var(--barista-accent-mint)' : 'var(--color-crimson)',
+                          transition: 'width 150ms linear, background-color 200ms ease'
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Stage Countdown & Mini Progress Bar */}
               <div style={{ width: '100%', marginTop: '8px' }}>
