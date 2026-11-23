@@ -787,98 +787,122 @@ export default function BrewGuideModal({
           /* ⏱️ VIEW 1: EXTRACTION TIMER VIEW                             */
           /* ============================================================== */
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {/* Minimalist Hero: Time & Weight */}
+            {/* Minimalist Hero: Time & Weight Stacked Cockpit */}
             <div
               style={{
                 width: '100%',
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: scale.connected ? 'space-evenly' : 'center',
-                gap: '16px',
-                flexWrap: 'wrap',
-                textAlign: 'center',
-                margin: '16px 0 20px'
+                gap: '14px',
+                margin: '10px 0 18px'
               }}
             >
-              <div>
+              {/* Time Block */}
+              <div style={{ width: '100%', textAlign: 'center' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: 'var(--text-muted)',
+                    marginBottom: '2px',
+                    padding: '0 4px'
+                  }}
+                >
+                  <span>Tiempo</span>
+                  <span style={{ fontFamily: 'var(--font-mono)' }}>Total {formatTime(totalBrewDuration)}</span>
+                </div>
                 <div
                   className="barista-timer font-mono text-7xl md:text-8xl font-black tracking-tight"
                   style={{
                     fontFamily: 'var(--font-metric)',
-                    fontSize: scale.connected ? 'clamp(3.6rem, 13vw, 5.6rem)' : 'clamp(4.4rem, 16vw, 6.8rem)',
+                    fontSize: scale.connected ? 'clamp(4.0rem, 17vw, 5.8rem)' : 'clamp(4.6rem, 18vw, 6.8rem)',
                     fontWeight: '700',
                     letterSpacing: '-0.04em',
-                    lineHeight: 1,
+                    lineHeight: 0.96,
                     fontVariantNumeric: 'tabular-nums',
                     color: 'var(--text-primary)'
                   }}
                 >
                   {formatTime(elapsedSeconds)}
                 </div>
-                <div
-                  style={{
-                    fontSize: '12px',
-                    color: 'var(--text-muted)',
-                    marginTop: '6px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '5px',
-                    fontFamily: 'var(--font-mono)'
-                  }}
-                >
-                  <Clock size={12} />
-                  <span>{formatTime(totalBrewDuration)}</span>
-                </div>
               </div>
 
-              {scale.connected && (
-                <>
+              {/* Weight Block (prominent, full-width when scale connected) */}
+              {scale.connected && (() => {
+                const targetWater = currentStage?.total_water_g || 0;
+                const reached = targetWater > 0 && scale.weightG >= targetWater - 0.5;
+                const totalRecipeWater = stages[stages.length - 1]?.total_water_g || targetWater || 1;
+                const overallWaterPct = Math.min(100, Math.max(0, (scale.weightG / Math.max(1, totalRecipeWater)) * 100));
+                return (
                   <div
-                    aria-hidden="true"
                     style={{
-                      width: '1px',
-                      height: '62px',
-                      backgroundColor: 'var(--border-color)',
-                      opacity: 0.7
+                      width: '100%',
+                      paddingTop: '14px',
+                      borderTop: '1px solid var(--border-color)',
+                      textAlign: 'center'
                     }}
-                  />
-                  <div>
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        color: 'var(--text-muted)',
+                        marginBottom: '2px',
+                        padding: '0 4px'
+                      }}
+                    >
+                      <span>Peso en balanza</span>
+                      <span style={{ fontFamily: 'var(--font-mono)' }}>
+                        {targetWater > 0 ? `Meta ${targetWater}g` : 'Libre'} · {scale.flowRate.toFixed(1)} ml/s
+                      </span>
+                    </div>
                     <div
                       style={{
                         fontFamily: 'var(--font-metric)',
-                        fontSize: 'clamp(3.6rem, 13vw, 5.6rem)',
+                        fontSize: 'clamp(4.2rem, 18vw, 6.0rem)',
                         fontWeight: '700',
                         letterSpacing: '-0.04em',
-                        lineHeight: 1,
+                        lineHeight: 0.96,
                         fontVariantNumeric: 'tabular-nums',
-                        color: currentStage?.total_water_g > 0 && scale.weightG >= currentStage.total_water_g - 0.5
-                          ? 'var(--barista-accent-mint-text)'
-                          : 'var(--color-crimson)'
+                        color: reached ? 'var(--barista-accent-mint-text)' : 'var(--color-crimson)'
                       }}
                     >
                       {scale.weightG.toFixed(1)}
-                      <span style={{ fontSize: '0.38em', fontWeight: 700, marginLeft: '3px' }}>g</span>
+                      <span style={{ fontSize: '0.35em', fontWeight: 700, marginLeft: '4px', opacity: 0.85 }}>g</span>
                     </div>
                     <div
                       style={{
-                        fontSize: '12px',
-                        color: 'var(--text-muted)',
-                        marginTop: '6px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        fontFamily: 'var(--font-mono)'
+                        width: '100%',
+                        height: '3px',
+                        borderRadius: '999px',
+                        backgroundColor: 'var(--segmented-bg)',
+                        overflow: 'hidden',
+                        marginTop: '10px'
                       }}
                     >
-                      <span>{currentStage?.total_water_g > 0 ? `Meta ${currentStage.total_water_g}g` : 'Libre'}</span>
-                      <span>·</span>
-                      <span>{scale.flowRate.toFixed(1)} ml/s</span>
+                      <div
+                        style={{
+                          height: '100%',
+                          width: `${overallWaterPct}%`,
+                          backgroundColor: reached ? 'var(--barista-accent-mint)' : 'var(--color-crimson)',
+                          transition: 'width 150ms linear, background-color 200ms ease'
+                        }}
+                      />
                     </div>
                   </div>
-                </>
-              )}
+                );
+              })()}
             </div>
 
             {/* Slim Scale Toolbar */}
