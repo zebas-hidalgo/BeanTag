@@ -994,28 +994,42 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
 }
 
 /* Modern App Notification Banner (Sonner / iOS Banner Style) */
+@keyframes toastSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .toast-notification {
   position: fixed;
   top: calc(14px + env(safe-area-inset-top, 0px));
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 28px);
-  max-width: 396px;
-  padding: 12px 14px;
+  left: 14px;
+  right: 14px;
+  margin-left: auto;
+  margin-right: auto;
+  width: auto;
+  max-width: 400px;
+  padding: 13px 14px;
   background: var(--surface, var(--bg-card));
   color: var(--ink, var(--color-text));
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid var(--line, var(--border-color));
   border-radius: 16px;
-  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.22), 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.24), 0 4px 12px -2px rgba(0, 0, 0, 0.1);
   font-family: var(--font-body);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   z-index: var(--z-toast);
   pointer-events: auto;
   box-sizing: border-box;
+  animation: toastSlideDown 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .toast-icon-badge {
@@ -1026,14 +1040,16 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .toast-body {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  overflow: visible;
 }
 
 .toast-title {
@@ -1041,15 +1057,19 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   font-weight: 700;
   letter-spacing: 0.01em;
   color: var(--ink-muted, var(--color-text-muted));
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
 .toast-msg {
   font-size: 13px;
   font-weight: 600;
   color: var(--ink, var(--color-text));
-  line-height: 1.35;
-  word-break: break-word;
+  line-height: 1.4;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .toast-actions {

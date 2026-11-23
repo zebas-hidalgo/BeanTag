@@ -643,7 +643,7 @@ export default function App() {
         const meta = toastMeta[toast.type] || toastMeta.info;
         return (
           <div
-            className="toast-notification animate-entrance"
+            className="toast-notification"
             role={toast.type === 'error' ? 'alert' : 'status'}
             aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
             style={{
