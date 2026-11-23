@@ -7,6 +7,7 @@ import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { FAMOUS_RECIPES } from '../utils/famousRecipes';
 import { GRINDERS, getGrinderConfig, scaleGrinderSettingForDose, calculateDoseDeltaMicrons } from '../utils/grinders';
+import { useTimemoreScale } from '../utils/timemoreScale';
 
 import BatchHeaderCard from './batch/BatchHeaderCard';
 import StickerShareModal from './StickerShareModal';
@@ -39,6 +40,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [batch, setBatch] = useState(null);
   const [doseAlreadyConsumed, setDoseAlreadyConsumed] = useState(() => Boolean(consumedFromRack));
   const brewFormRef = useRef(null);
+  const scale = useTimemoreScale();
 
   useEffect(() => {
     if (consumedFromRack) {
@@ -1429,6 +1431,105 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       {(
         <div ref={brewFormRef} className="animate-entrance">
           <form onSubmit={handleRecipeSubmit}>
+            {/* ⚖️ Timemore Dot BLE Smart Scale Bar */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '8px',
+                padding: '9px 12px',
+                marginBottom: '12px',
+                borderRadius: 'var(--r-control)',
+                background: scale.connected ? 'rgba(16, 185, 129, 0.08)' : 'var(--surface)',
+                border: scale.connected ? '1.5px solid var(--ok, #10B981)' : '1px solid var(--border-color)',
+                fontSize: '12px'
+              }}
+            >
+              {scale.connected ? (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <Scale size={15} style={{ color: 'var(--ok, #10B981)' }} />
+                    <strong style={{ color: 'var(--ink)' }}>{scale.deviceName || 'Timemore Dot'}</strong>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '15px', fontWeight: 800, color: 'var(--ink)' }}>
+                      {scale.weightG.toFixed(1)} g
+                    </span>
+                    {scale.battery !== null && (
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--ink-muted)' }}>
+                        {scale.battery}%
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => scale.tare()}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: 'var(--r-control)',
+                        border: '1px solid var(--border-color)',
+                        background: 'var(--bg-card)',
+                        color: 'var(--ink)',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Tarar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (scale.weightG >= 1) {
+                          handleDoseChange(scale.weightG);
+                          if (showToast) showToast(`Dosis fijada en ${scale.weightG.toFixed(1)} g desde Timemore Dot`, { type: 'success' });
+                        } else if (showToast) {
+                          showToast('Coloca los granos en la balanza (> 1 g) para capturar la dosis.', { type: 'info' });
+                        }
+                      }}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: 'var(--r-control)',
+                        border: 'none',
+                        background: 'var(--color-crimson)',
+                        color: 'var(--on-accent)',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Usar peso como dosis
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--ink-muted)' }}>
+                    <Scale size={14} />
+                    <span>Balanza Bluetooth (Timemore Dot)</span>
+                  </span>
+                  <button
+                    type="button"
+                    disabled={scale.connecting}
+                    onClick={() => scale.connect().catch((err) => { if (showToast && err?.message) showToast(err.message, { type: 'error', duration: 4500 }); })}
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--r-control)',
+                      padding: '4px 10px',
+                      color: 'var(--accent)',
+                      fontWeight: 700,
+                      fontSize: '11.5px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {scale.connecting ? 'Conectando…' : 'Conectar balanza'}
+                  </button>
+                </>
+              )}
+            </div>
             {doseAlreadyConsumed && (
               <div
                 role="status"

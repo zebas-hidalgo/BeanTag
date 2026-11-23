@@ -1,11 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { Save, X, ClipboardCopy, Camera, Sparkles, Loader2, Key } from 'lucide-react';
+import { Save, X, ClipboardCopy, Camera, Sparkles, Loader2, Key, Scale } from 'lucide-react';
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 import { compressImageForOcr } from '../utils/imageCompressor';
+import { useTimemoreScale } from '../utils/timemoreScale';
 
 export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCancel, showToast }) {
   const handleCancel = onBack || onCancel;
+  const scale = useTimemoreScale();
   // Parse initial flavor tags and custom notes if editing
   const getInitialFlavorTags = () => {
     if (!batchToEdit || !batchToEdit.roaster_notes) return [];
@@ -567,7 +569,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                       inputMode="decimal"
                       style={{ minHeight: '44px', fontSize: '15px', fontWeight: 'bold' }}
                     />
-                    <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                       {[100, 250, 500, 1000].map(preset => (
                         <button
                           key={preset}
@@ -585,6 +587,29 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                           {preset >= 1000 ? `${preset / 1000} kg` : `${preset}g`}
                         </button>
                       ))}
+                      {scale.connected ? (
+                        <button
+                          type="button"
+                          className="btn-candy primary"
+                          onClick={() => {
+                            if (scale.weightG > 0) setBagWeight(Math.round(scale.weightG * 10) / 10);
+                          }}
+                          style={{ padding: '4px 10px', minHeight: '30px', fontSize: '11px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <Scale size={12} />
+                          <span>Usar Timemore Dot ({scale.weightG.toFixed(1)}g)</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="btn-candy"
+                          onClick={() => scale.connect().catch((err) => { if (showToast && err?.message) showToast(err.message, { type: 'error' }); })}
+                          style={{ padding: '4px 10px', minHeight: '30px', fontSize: '11px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <Scale size={12} />
+                          <span>{scale.connecting ? 'Conectando…' : 'Conectar Timemore Dot'}</span>
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -601,6 +626,29 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                         inputMode="decimal"
                         style={{ minHeight: '44px', fontSize: '15px', fontWeight: 'bold' }}
                       />
+                      {scale.connected && (
+                        <div style={{ marginTop: '6px', display: 'flex', gap: '6px' }}>
+                          <button
+                            type="button"
+                            className="btn-candy primary"
+                            onClick={() => {
+                              if (scale.weightG >= 0) setRemainingBagWeight(Math.round(scale.weightG * 10) / 10);
+                            }}
+                            style={{ padding: '4px 10px', minHeight: '30px', fontSize: '11px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            <Scale size={12} />
+                            <span>Capturar peso en balanza ({scale.weightG.toFixed(1)}g)</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-candy"
+                            onClick={() => scale.tare()}
+                            style={{ padding: '4px 10px', minHeight: '30px', fontSize: '11px', fontWeight: '700' }}
+                          >
+                            Tarar
+                          </button>
+                        </div>
+                      )}
                       <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
                         Ajusta este valor si pesaste la bolsa en tu balanza para calibrar el stock exacto.
                       </div>

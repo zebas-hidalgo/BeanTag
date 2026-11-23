@@ -42,6 +42,7 @@ import { computeSensoryCorrection } from '../utils/sensoryTuner.js';
 import { getGrinderConfig } from '../utils/grinders.js';
 
 import { parseTimeToSeconds, formatTime, parseStages } from '../utils/brewStages.js';
+import { useTimemoreScale } from '../utils/timemoreScale.js';
 import BrewDiagnostic from './brew/BrewDiagnostic';
 
 /**
@@ -84,6 +85,12 @@ export default function BrewGuideModal({
   // Timer State
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
+
+  // Timemore Dot BLE Smart Scale
+  const scale = useTimemoreScale();
+  const [autoStartOnPour, setAutoStartOnPour] = useState(true);
+  const autoStartedPourRef = useRef(false);
+  const taredReadyRef = useRef(false);
 
   // Sensory Feedback State (3-Tap)
   const [feedback, setFeedback] = useState({
@@ -251,6 +258,8 @@ export default function BrewGuideModal({
       setFeedback({ taste: 'balanced', flow: 'on_time', body: 'balanced' });
       setSaveSuccess(false);
       setIsSaving(false);
+      autoStartedPourRef.current = false;
+      taredReadyRef.current = false;
     } else {
       setIsActive(false);
     }
@@ -379,13 +388,30 @@ export default function BrewGuideModal({
     if (isActive) {
       setIsActive(false);
       cancelSpeech();
+      if (scale.connected) scale.stopScaleTimer();
     } else {
       setIsActive(true);
+      if (scale.connected) scale.startScaleTimer();
       if (elapsedSeconds < 1 && !isMuted && isVoiceEnabled && stages[0]) {
         speakBaristaGuidance(getStageSpeechText(0, stages[0]));
       }
     }
-  }, [isActive, elapsedSeconds, isMuted, isVoiceEnabled, stages, getStageSpeechText]);
+  }, [isActive, elapsedSeconds, isMuted, isVoiceEnabled, stages, getStageSpeechText, scale]);
+
+  // Auto-Start Timer when Timemore Dot detects water pour (>= 0.8g after being near 0g)
+  useEffect(() => {
+    if (!isOpen || viewMode !== 'timer' || !scale.connected || !autoStartOnPour || isActive || elapsedSeconds > 0) {
+      return;
+    }
+    if (Math.abs(scale.weightG) <= 0.4) {
+      taredReadyRef.current = true;
+      return;
+    }
+    if (taredReadyRef.current && !autoStartedPourRef.current && scale.weightG >= 0.8) {
+      autoStartedPourRef.current = true;
+      handleTogglePlay();
+    }
+  }, [isOpen, viewMode, scale.connected, scale.weightG, autoStartOnPour, isActive, elapsedSeconds, handleTogglePlay]);
 
   // Handler: Skip forward to next stage
   const handleNextStage = useCallback(() => {
@@ -419,6 +445,7 @@ export default function BrewGuideModal({
   const handleFinishExtraction = useCallback(() => {
     setIsActive(false);
     cancelSpeech();
+    if (scale.connected) scale.stopScaleTimer();
     if (!isMuted) {
       playSuccessChime();
       if (isVoiceEnabled) {
@@ -426,7 +453,7 @@ export default function BrewGuideModal({
       }
     }
     setViewMode('diagnostic');
-  }, [isMuted, isVoiceEnabled]);
+  }, [isMuted, isVoiceEnabled, scale]);
 
   // Handler: Reset Timer
   const handleResetTimer = useCallback(() => {
@@ -437,7 +464,10 @@ export default function BrewGuideModal({
     startTimestampRef.current = null;
     lastBeepSecRef.current = null;
     prevStageIndexRef.current = 0;
-  }, []);
+    autoStartedPourRef.current = false;
+    taredReadyRef.current = Math.abs(scale.weightG) <= 0.4;
+    if (scale.connected) scale.resetScaleTimer();
+  }, [scale]);
 
   // Handler: Safe Close
   const handleCloseModal = useCallback(async () => {
@@ -751,6 +781,145 @@ export default function BrewGuideModal({
               </div>
             </div>
 
+            {/* ⚖️ Timemore Dot BLE Live Scale Telemetry & Control Bar */}
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px',
+                padding: '10px 14px',
+                marginBottom: '12px',
+                borderRadius: 'var(--r-tile)',
+                backgroundColor: scale.connected ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-card)',
+                border: scale.connected ? '1.5px solid var(--barista-accent-mint-text)' : '1px solid var(--border-color)',
+                boxSizing: 'border-box'
+              }}
+            >
+              {scale.connected ? (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        color: 'var(--barista-accent-mint-text)'
+                      }}
+                    >
+                      <Scale size={15} />
+                      <span>{scale.deviceName || 'Timemore Dot'}</span>
+                      {scale.battery !== null && (
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', opacity: 0.85 }}>
+                          ({scale.battery}%)
+                        </span>
+                      )}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '18px',
+                        fontWeight: 800,
+                        color: 'var(--color-text)',
+                        fontVariantNumeric: 'tabular-nums'
+                      }}
+                    >
+                      {scale.weightG.toFixed(1)} g
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        color: 'var(--barista-accent-honey-text)',
+                        background: 'var(--barista-accent-honey-bg)',
+                        padding: '2px 7px',
+                        borderRadius: 'var(--r-pill)'
+                      }}
+                    >
+                      {scale.flowRate.toFixed(1)} ml/s
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    {!isActive && elapsedSeconds === 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setAutoStartOnPour((v) => !v)}
+                        title="Inicia el cronómetro automáticamente al detectar que viertes agua (> 0.8 g)"
+                        style={{
+                          padding: '5px 10px',
+                          borderRadius: 'var(--r-pill)',
+                          border: autoStartOnPour ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                          background: autoStartOnPour ? 'var(--color-crimson)' : 'var(--barista-bg-subtle)',
+                          color: autoStartOnPour ? 'var(--on-accent)' : 'var(--color-text-muted)',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        ⚡ Auto-inicio {autoStartOnPour ? 'ON' : 'OFF'}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await scale.tare();
+                        taredReadyRef.current = true;
+                        autoStartedPourRef.current = false;
+                      }}
+                      style={{
+                        padding: '5px 12px',
+                        borderRadius: 'var(--r-control)',
+                        border: '1.5px solid var(--color-text)',
+                        background: 'var(--bg-card)',
+                        color: 'var(--color-text)',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      TARAR (0.0g)
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                    <Scale size={15} />
+                    <span>Balanza Bluetooth (Timemore Dot / Basic / Nano)</span>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={scale.connecting}
+                    onClick={() => scale.connect().catch(() => {})}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: 'var(--r-control)',
+                      border: '1.5px solid var(--color-crimson)',
+                      background: 'var(--color-crimson)',
+                      color: 'var(--on-accent)',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {scale.connecting ? 'Conectando…' : 'Conectar Timemore Dot'}
+                  </button>
+                  {scale.error && (
+                    <div style={{ width: '100%', fontSize: '11px', color: 'var(--barista-accent-danger-text)', marginTop: '4px' }}>
+                      {scale.error}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
             {/* Live Voice Coach Guidance Banner (only shown when voice is active to save mobile vertical space) */}
             {isVoiceEnabled && (
               <div
@@ -960,7 +1129,9 @@ export default function BrewGuideModal({
                         transition: 'var(--transition-ui)'
                       }}
                     >
-                      En balanza ahora: ~{liveTargetWaterG} g
+                      {scale.connected
+                        ? `Balanza: ${scale.weightG.toFixed(1)} g · Meta ahora: ~${liveTargetWaterG} g`
+                        : `En balanza ahora: ~${liveTargetWaterG} g`}
                     </span>
                     <span
                       style={{
@@ -978,7 +1149,9 @@ export default function BrewGuideModal({
                       }}
                     >
                       <Droplet size={11} color="var(--barista-accent-honey)" />
-                      ~{suggestedFlowRate} ml/s
+                      {scale.connected
+                        ? `${scale.flowRate.toFixed(1)} ml/s (meta ~${suggestedFlowRate})`
+                        : `~${suggestedFlowRate} ml/s`}
                     </span>
                   </div>
                 ) : (
