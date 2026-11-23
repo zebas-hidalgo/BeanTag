@@ -1,0 +1,18 @@
+{
+  "appId": "app.beantag.barista",
+  "appName": "BeanTag",
+  "webDir": "../backend/public",
+  "server": {
+    "url": "https://5.189.152.68.nip.io/beantag/",
+    "cleartext": false,
+    "allowNavigation": [
+      "5.189.152.68.nip.io",
+      "*.googleusercontent.com",
+      "accounts.google.com"
+    ]
+  },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#120F0D"
+  }
+}

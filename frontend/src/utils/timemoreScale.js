@@ -3,6 +3,10 @@ import { useState, useEffect, useCallback } from 'react';
 /**
  * Timemore BLE Smart Scale Engine (Timemore Black Mirror Dot TES017, Basic 2 TES006, and Black Mirror Nano/Standard)
  *
+ * Supports two direct BLE transports (zero bridge):
+ *  A. Native iOS / Android App via Capacitor (@capacitor-community/bluetooth-le -> CoreBluetooth on iPhone)
+ *  B. Web Bluetooth API (navigator.bluetooth on Chrome / Edge / Bluefy)
+ *
  * Protocols supported:
  * 1. Timemore Dot / Basic 2 Protocol:
  *    - SERVICE_UUID: 0xfff0 ('0000fff0-0000-1000-8000-00805f9b34fb')
@@ -22,6 +26,15 @@ export const DOT_CMD_UUID = '0000fff2-0000-1000-8000-00805f9b34fb';
 export const LEGACY_SERVICE_UUID = '0000181d-0000-1000-8000-00805f9b34fb';
 export const LEGACY_NOTIFY_UUID = '00002a9d-0000-1000-8000-00805f9b34fb';
 export const LEGACY_CMD_UUID = '553f4e49-bf21-4468-9c6c-0e4fb5b17697';
+
+export function isCapacitorNative() {
+  return Boolean(
+    typeof window !== 'undefined' &&
+    window.Capacitor &&
+    typeof window.Capacitor.isNativePlatform === 'function' &&
+    window.Capacitor.isNativePlatform()
+  );
+}
 
 /**
  * Compute CRC-16/IBM (initial 0xFFFF, polynomial 0xA001 reflected) used by Timemore Dot & Basic 2
@@ -134,11 +147,14 @@ const scaleStore = {
   connecting: false,
   deviceName: '',
   protocol: 'dot', // 'dot' | 'legacy'
+  transport: 'web', // 'capacitor' | 'web'
   weightG: 0.0,
   flowRate: 0.0,
   battery: null,
   error: null,
   device: null,
+  nativeDeviceId: null,
+  nativeBleClient: null,
   notifyChar: null,
   cmdChar: null,
   weightHistory: [], // [{ t, w }] for rolling flow rate (g/s)
@@ -151,6 +167,7 @@ function notifyListeners() {
     connecting: scaleStore.connecting,
     deviceName: scaleStore.deviceName,
     protocol: scaleStore.protocol,
+    transport: scaleStore.transport,
     weightG: scaleStore.weightG,
     flowRate: scaleStore.flowRate,
     battery: scaleStore.battery,
@@ -180,7 +197,6 @@ function updateWeightSample(newWeightG) {
     if (dtSec >= 0.15) {
       const dw = newest.w - oldest.w;
       const rawFlow = dw / dtSec;
-      // Clamp negative noise when not taring
       const nextFlow = rawFlow > 0.15 ? Math.min(40, Math.round(rawFlow * 10) / 10) : 0.0;
       scaleStore.flowRate = nextFlow;
     }
@@ -189,8 +205,7 @@ function updateWeightSample(newWeightG) {
   }
 }
 
-function handleCharacteristicValueChanged(event) {
-  const dataView = event?.target?.value;
+function processIncomingDataView(dataView) {
   if (!dataView) return;
   const bytes = new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength);
 
@@ -211,17 +226,40 @@ function handleCharacteristicValueChanged(event) {
   notifyListeners();
 }
 
+function handleCharacteristicValueChanged(event) {
+  processIncomingDataView(event?.target?.value);
+}
+
 function handleGattDisconnected() {
   scaleStore.connected = false;
   scaleStore.connecting = false;
   scaleStore.notifyChar = null;
   scaleStore.cmdChar = null;
+  scaleStore.nativeDeviceId = null;
   scaleStore.flowRate = 0.0;
   scaleStore.weightHistory = [];
   notifyListeners();
 }
 
 async function writeScaleCommand(bytes) {
+  if (scaleStore.transport === 'capacitor' && scaleStore.nativeBleClient && scaleStore.nativeDeviceId) {
+    const serviceUuid = scaleStore.protocol === 'dot' ? DOT_SERVICE_UUID : LEGACY_SERVICE_UUID;
+    const cmdUuid = scaleStore.protocol === 'dot' ? DOT_CMD_UUID : LEGACY_CMD_UUID;
+    const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    try {
+      await scaleStore.nativeBleClient.writeWithoutResponse(scaleStore.nativeDeviceId, serviceUuid, cmdUuid, dataView);
+      return true;
+    } catch (e1) {
+      try {
+        await scaleStore.nativeBleClient.write(scaleStore.nativeDeviceId, serviceUuid, cmdUuid, dataView);
+        return true;
+      } catch (e2) {
+        console.warn('[TimemoreBLE Native] write command failed:', e2);
+        return false;
+      }
+    }
+  }
+
   if (!scaleStore.cmdChar) return false;
   try {
     if (typeof scaleStore.cmdChar.writeValueWithoutResponse === 'function') {
@@ -235,28 +273,88 @@ async function writeScaleCommand(bytes) {
       await scaleStore.cmdChar.writeValue(bytes);
       return true;
     } catch (e2) {
-      console.warn('[TimemoreBLE] write command failed:', e2);
+      console.warn('[TimemoreBLE Web] write command failed:', e2);
       return false;
     }
   }
 }
 
-export async function connectTimemoreScale() {
-  if (typeof navigator === 'undefined' || !navigator.bluetooth) {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator?.userAgent || '');
-    const msg = isIOS
-      ? 'Safari en iOS no incluye Web Bluetooth. Abre BeanTag en la app gratuita "Bluefy – Web BLE Browser" para conectar tu Timemore Dot.'
-      : 'Tu navegador no soporta Web Bluetooth. Usa Chrome, Edge o Brave (o Bluefy en iOS).';
-    scaleStore.error = msg;
-    notifyListeners();
-    throw new Error(msg);
+async function connectViaCapacitorNative() {
+  const { BleClient } = await import('@capacitor-community/bluetooth-le');
+  await BleClient.initialize({ androidNeverForLocation: true });
+
+  const device = await BleClient.requestDevice({
+    optionalServices: [DOT_SERVICE_UUID, LEGACY_SERVICE_UUID]
+  });
+
+  if (scaleStore.nativeDeviceId && scaleStore.nativeDeviceId !== device.deviceId) {
+    try { await BleClient.disconnect(scaleStore.nativeDeviceId); } catch (e) {}
   }
 
+  await BleClient.connect(device.deviceId, () => handleGattDisconnected());
+
+  let protocol = 'dot';
+  try {
+    await BleClient.startNotifications(
+      device.deviceId,
+      DOT_SERVICE_UUID,
+      DOT_NOTIFY_UUID,
+      (value) => processIncomingDataView(value)
+    );
+    protocol = 'dot';
+  } catch (dotErr) {
+    await BleClient.startNotifications(
+      device.deviceId,
+      LEGACY_SERVICE_UUID,
+      LEGACY_NOTIFY_UUID,
+      (value) => processIncomingDataView(value)
+    );
+    protocol = 'legacy';
+  }
+
+  scaleStore.transport = 'capacitor';
+  scaleStore.nativeBleClient = BleClient;
+  scaleStore.nativeDeviceId = device.deviceId;
+  scaleStore.deviceName = device.name || 'Timemore Dot';
+  scaleStore.protocol = protocol;
+  scaleStore.connected = true;
+  scaleStore.connecting = false;
+  scaleStore.error = null;
+  scaleStore.weightHistory = [];
+  notifyListeners();
+
+  if (protocol === 'dot') {
+    await sleep(350);
+    await writeScaleCommand(buildTimemoreDotCommand(0x03, 0x06, [0x00]));
+    await sleep(150);
+    await writeScaleCommand(buildTimemoreDotCommand(0x03, 0x08, [0x01, 0x00]));
+  }
+  return true;
+}
+
+export async function connectTimemoreScale() {
   scaleStore.connecting = true;
   scaleStore.error = null;
   notifyListeners();
 
   try {
+    // 1. Direct Native iOS / Android CoreBluetooth via Capacitor
+    if (isCapacitorNative()) {
+      return await connectViaCapacitorNative();
+    }
+
+    // 2. Web Bluetooth API (Desktop / Android Chrome / Bluefy)
+    if (typeof navigator === 'undefined' || !navigator.bluetooth) {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator?.userAgent || '');
+      const msg = isIOS
+        ? 'En iPhone usa la App nativa BeanTag iOS (Capacitor) para conectar directo por Bluetooth con tu Timemore Dot.'
+        : 'Tu navegador no soporta Web Bluetooth. Usa Chrome, Edge o la App nativa BeanTag iOS.';
+      scaleStore.error = msg;
+      scaleStore.connecting = false;
+      notifyListeners();
+      throw new Error(msg);
+    }
+
     let device;
     try {
       device = await navigator.bluetooth.requestDevice({
@@ -278,7 +376,6 @@ export async function connectTimemoreScale() {
       if (filterErr && filterErr.name === 'NotFoundError') {
         throw new Error('Selección de balanza cancelada.');
       }
-      // Fallback for browsers that don't support combined filters
       device = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
         optionalServices: [DOT_SERVICE_UUID, LEGACY_SERVICE_UUID, 0xfff0, 0x181d]
@@ -295,7 +392,6 @@ export async function connectTimemoreScale() {
     device.addEventListener('gattserverdisconnected', handleGattDisconnected);
     const server = await device.gatt.connect();
 
-    // Try Timemore Dot / Basic 2 Service (0xFFF0) first, fallback to 0x181D
     let service = null;
     let protocol = 'dot';
     try {
@@ -344,6 +440,7 @@ export async function connectTimemoreScale() {
     await notifyChar.startNotifications();
     notifyChar.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
 
+    scaleStore.transport = 'web';
     scaleStore.device = device;
     scaleStore.deviceName = device.name || 'Timemore Dot';
     scaleStore.protocol = protocol;
@@ -355,7 +452,6 @@ export async function connectTimemoreScale() {
     scaleStore.weightHistory = [];
     notifyListeners();
 
-    // Initialize Timemore Dot to Grams (0x06 -> 0x00) and Standard Mode (0x08 -> [0x01, 0x00])
     if (protocol === 'dot' && cmdChar) {
       await sleep(350);
       await writeScaleCommand(buildTimemoreDotCommand(0x03, 0x06, [0x00]));
@@ -375,6 +471,13 @@ export async function connectTimemoreScale() {
 
 export async function disconnectTimemoreScale() {
   try {
+    if (scaleStore.transport === 'capacitor' && scaleStore.nativeBleClient && scaleStore.nativeDeviceId) {
+      const serviceUuid = scaleStore.protocol === 'dot' ? DOT_SERVICE_UUID : LEGACY_SERVICE_UUID;
+      const notifyUuid = scaleStore.protocol === 'dot' ? DOT_NOTIFY_UUID : LEGACY_NOTIFY_UUID;
+      try { await scaleStore.nativeBleClient.stopNotifications(scaleStore.nativeDeviceId, serviceUuid, notifyUuid); } catch (e) {}
+      try { await scaleStore.nativeBleClient.disconnect(scaleStore.nativeDeviceId); } catch (e) {}
+      return;
+    }
     if (scaleStore.notifyChar) {
       scaleStore.notifyChar.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
       try { await scaleStore.notifyChar.stopNotifications(); } catch (e) {}
@@ -393,7 +496,7 @@ export async function tareTimemoreScale() {
   scaleStore.weightHistory = [];
   notifyListeners();
 
-  if (!scaleStore.connected || !scaleStore.cmdChar) return false;
+  if (!scaleStore.connected) return false;
   if (scaleStore.protocol === 'dot') {
     const cmd = buildTimemoreDotCommand(0x03, 0x0d, []);
     return writeScaleCommand(cmd);
@@ -402,7 +505,7 @@ export async function tareTimemoreScale() {
 }
 
 export async function sendTimemoreTimerCommand(action) {
-  if (!scaleStore.connected || !scaleStore.cmdChar) return false;
+  if (!scaleStore.connected) return false;
   if (scaleStore.protocol === 'dot') {
     const state = action === 'start' ? 0x01 : action === 'stop' ? 0x02 : action === 'reset' ? 0x03 : 0;
     if (!state) return false;
@@ -423,6 +526,7 @@ export function useTimemoreScale() {
     connecting: scaleStore.connecting,
     deviceName: scaleStore.deviceName,
     protocol: scaleStore.protocol,
+    transport: scaleStore.transport,
     weightG: scaleStore.weightG,
     flowRate: scaleStore.flowRate,
     battery: scaleStore.battery,
@@ -443,7 +547,7 @@ export function useTimemoreScale() {
   const stopScaleTimer = useCallback(async () => sendTimemoreTimerCommand('stop'), []);
   const resetScaleTimer = useCallback(async () => sendTimemoreTimerCommand('reset'), []);
 
-  const isSupported = typeof navigator !== 'undefined' && Boolean(navigator.bluetooth);
+  const isSupported = isCapacitorNative() || (typeof navigator !== 'undefined' && Boolean(navigator.bluetooth));
 
   return {
     ...state,
