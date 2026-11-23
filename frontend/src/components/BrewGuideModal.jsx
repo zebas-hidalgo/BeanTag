@@ -787,7 +787,7 @@ export default function BrewGuideModal({
           /* ⏱️ VIEW 1: EXTRACTION TIMER VIEW                             */
           /* ============================================================== */
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {/* Giant Monospace Timer (+ Live Scale Weight when connected) */}
+            {/* Minimalist Hero: Time & Weight */}
             <div
               style={{
                 width: '100%',
@@ -797,7 +797,7 @@ export default function BrewGuideModal({
                 gap: '16px',
                 flexWrap: 'wrap',
                 textAlign: 'center',
-                margin: '8px 0 16px'
+                margin: '16px 0 20px'
               }}
             >
               <div>
@@ -805,7 +805,7 @@ export default function BrewGuideModal({
                   className="barista-timer font-mono text-7xl md:text-8xl font-black tracking-tight"
                   style={{
                     fontFamily: 'var(--font-metric)',
-                    fontSize: scale.connected ? 'clamp(3.2rem, 12vw, 5.2rem)' : 'clamp(4.2rem, 15vw, 6.5rem)',
+                    fontSize: scale.connected ? 'clamp(3.6rem, 13vw, 5.6rem)' : 'clamp(4.4rem, 16vw, 6.8rem)',
                     fontWeight: '700',
                     letterSpacing: '-0.04em',
                     lineHeight: 1,
@@ -817,18 +817,18 @@ export default function BrewGuideModal({
                 </div>
                 <div
                   style={{
-                    fontSize: '13px',
-                    color: 'var(--text-secondary)',
-                    marginTop: '8px',
+                    fontSize: '12px',
+                    color: 'var(--text-muted)',
+                    marginTop: '6px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '6px',
-                    fontFamily: 'var(--font-display)'
+                    gap: '5px',
+                    fontFamily: 'var(--font-mono)'
                   }}
                 >
-                  <Clock size={14} />
-                  <span>Total: {formatTime(totalBrewDuration)}</span>
+                  <Clock size={12} />
+                  <span>{formatTime(totalBrewDuration)}</span>
                 </div>
               </div>
 
@@ -838,16 +838,16 @@ export default function BrewGuideModal({
                     aria-hidden="true"
                     style={{
                       width: '1px',
-                      height: '58px',
+                      height: '62px',
                       backgroundColor: 'var(--border-color)',
-                      opacity: 0.8
+                      opacity: 0.7
                     }}
                   />
                   <div>
                     <div
                       style={{
                         fontFamily: 'var(--font-metric)',
-                        fontSize: 'clamp(3.0rem, 11vw, 5.0rem)',
+                        fontSize: 'clamp(3.6rem, 13vw, 5.6rem)',
                         fontWeight: '700',
                         letterSpacing: '-0.04em',
                         lineHeight: 1,
@@ -858,13 +858,13 @@ export default function BrewGuideModal({
                       }}
                     >
                       {scale.weightG.toFixed(1)}
-                      <span style={{ fontSize: '0.42em', fontWeight: 700, marginLeft: '4px' }}>g</span>
+                      <span style={{ fontSize: '0.38em', fontWeight: 700, marginLeft: '3px' }}>g</span>
                     </div>
                     <div
                       style={{
-                        fontSize: '13px',
-                        color: 'var(--text-secondary)',
-                        marginTop: '8px',
+                        fontSize: '12px',
+                        color: 'var(--text-muted)',
+                        marginTop: '6px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -872,17 +872,16 @@ export default function BrewGuideModal({
                         fontFamily: 'var(--font-mono)'
                       }}
                     >
-                      <Scale size={14} />
-                      <span>
-                        {currentStage?.total_water_g > 0 ? `Meta: ${currentStage.total_water_g}g` : `${scale.flowRate.toFixed(1)} ml/s`}
-                      </span>
+                      <span>{currentStage?.total_water_g > 0 ? `Meta ${currentStage.total_water_g}g` : 'Libre'}</span>
+                      <span>·</span>
+                      <span>{scale.flowRate.toFixed(1)} ml/s</span>
                     </div>
                   </div>
                 </>
               )}
             </div>
 
-            {/* ⚖️ Timemore Dot BLE Live Scale Telemetry & Control Bar */}
+            {/* Slim Scale Toolbar */}
             <div
               style={{
                 width: '100%',
@@ -891,79 +890,42 @@ export default function BrewGuideModal({
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 gap: '8px',
-                padding: '10px 14px',
+                padding: '7px 12px',
                 marginBottom: '12px',
-                borderRadius: 'var(--r-tile)',
-                backgroundColor: scale.connected ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-card)',
-                border: scale.connected ? '1.5px solid var(--barista-accent-mint-text)' : '1px solid var(--border-color)',
+                borderRadius: 'var(--r-pill)',
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
                 boxSizing: 'border-box'
               }}
             >
               {scale.connected ? (
                 <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        color: 'var(--barista-accent-mint-text)'
-                      }}
-                    >
-                      <Scale size={15} />
-                      <span>{scale.deviceName || 'Timemore Dot'}</span>
-                      {scale.battery !== null && (
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', opacity: 0.85 }}>
-                          ({scale.battery}%)
-                        </span>
-                      )}
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '18px',
-                        fontWeight: 800,
-                        color: 'var(--color-text)',
-                        fontVariantNumeric: 'tabular-nums'
-                      }}
-                    >
-                      {scale.weightG.toFixed(1)} g
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        color: 'var(--barista-accent-honey-text)',
-                        background: 'var(--barista-accent-honey-bg)',
-                        padding: '2px 7px',
-                        borderRadius: 'var(--r-pill)'
-                      }}
-                    >
-                      {scale.flowRate.toFixed(1)} ml/s
-                    </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 600, color: 'var(--barista-accent-mint-text)' }}>
+                    <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'var(--barista-accent-mint)' }} />
+                    <span>{scale.deviceName || 'Timemore'}</span>
+                    {scale.battery !== null && (
+                      <span style={{ fontFamily: 'var(--font-mono)', opacity: 0.75 }}>{scale.battery}%</span>
+                    )}
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
                     {!isActive && elapsedSeconds === 0 && (
                       <button
                         type="button"
                         onClick={() => setAutoStartOnPour((v) => !v)}
                         title="Inicia el cronómetro automáticamente al detectar que viertes agua (> 0.8 g)"
                         style={{
-                          padding: '5px 10px',
+                          padding: '3px 9px',
                           borderRadius: 'var(--r-pill)',
-                          border: autoStartOnPour ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                          background: autoStartOnPour ? 'var(--color-crimson)' : 'var(--barista-bg-subtle)',
-                          color: autoStartOnPour ? 'var(--on-accent)' : 'var(--color-text-muted)',
+                          border: autoStartOnPour ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
+                          background: autoStartOnPour ? 'var(--accent-bg)' : 'transparent',
+                          color: autoStartOnPour ? 'var(--color-crimson)' : 'var(--color-text-muted)',
                           fontSize: '11px',
                           fontWeight: 700,
                           cursor: 'pointer'
                         }}
                       >
-                        ⚡ Auto-inicio {autoStartOnPour ? 'ON' : 'OFF'}
+                        ⚡ Auto {autoStartOnPour ? 'ON' : 'OFF'}
                       </button>
                     )}
                     <button
@@ -971,17 +933,17 @@ export default function BrewGuideModal({
                       onClick={() => setSyncStepsWithWeight((v) => !v)}
                       title="Sincroniza automáticamente el paso activo y el tiempo cuando el peso entra en la siguiente fase"
                       style={{
-                        padding: '5px 10px',
+                        padding: '3px 9px',
                         borderRadius: 'var(--r-pill)',
-                        border: syncStepsWithWeight ? '1.5px solid var(--barista-accent-mint-text)' : '1px solid var(--border-color)',
-                        background: syncStepsWithWeight ? 'var(--barista-accent-mint-bg)' : 'var(--barista-bg-subtle)',
+                        border: syncStepsWithWeight ? '1px solid var(--barista-accent-mint-text)' : '1px solid var(--border-color)',
+                        background: syncStepsWithWeight ? 'var(--barista-accent-mint-bg)' : 'transparent',
                         color: syncStepsWithWeight ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)',
                         fontSize: '11px',
                         fontWeight: 700,
                         cursor: 'pointer'
                       }}
                     >
-                      ⚖️ Sincro pasos {syncStepsWithWeight ? 'ON' : 'OFF'}
+                      ⚖️ Sincro {syncStepsWithWeight ? 'ON' : 'OFF'}
                     </button>
                     <button
                       type="button"
@@ -991,331 +953,172 @@ export default function BrewGuideModal({
                         autoStartedPourRef.current = false;
                       }}
                       style={{
-                        padding: '5px 12px',
-                        borderRadius: 'var(--r-control)',
-                        border: '1.5px solid var(--color-text)',
-                        background: 'var(--bg-card)',
+                        padding: '3px 10px',
+                        borderRadius: 'var(--r-pill)',
+                        border: '1px solid var(--border-strong)',
+                        background: 'var(--bg-subtle)',
                         color: 'var(--color-text)',
                         fontFamily: 'var(--font-mono)',
-                        fontSize: '12px',
+                        fontSize: '11px',
                         fontWeight: 700,
                         cursor: 'pointer'
                       }}
                     >
-                      TARAR (0.0g)
+                      Tarar
                     </button>
                   </div>
                 </>
               ) : (
                 <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                    <Scale size={15} />
-                    <span>Balanza Bluetooth (Timemore Dot / Basic / Nano)</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                    <Scale size={13} />
+                    <span>Balanza Bluetooth</span>
                   </div>
                   <button
                     type="button"
                     disabled={scale.connecting}
                     onClick={() => scale.connect().catch(() => {})}
                     style={{
-                      padding: '6px 12px',
-                      borderRadius: 'var(--r-control)',
-                      border: '1.5px solid var(--color-crimson)',
+                      padding: '4px 10px',
+                      borderRadius: 'var(--r-pill)',
+                      border: 'none',
                       background: 'var(--color-crimson)',
                       color: 'var(--on-accent)',
-                      fontSize: '12px',
+                      fontSize: '11px',
                       fontWeight: 700,
                       cursor: 'pointer'
                     }}
                   >
-                    {scale.connecting ? 'Conectando…' : 'Conectar Timemore Dot'}
+                    {scale.connecting ? 'Conectando…' : 'Conectar'}
                   </button>
                 </>
               )}
             </div>
 
-            {/* Live Voice Coach Guidance Banner (only shown when voice is active to save mobile vertical space) */}
+            {/* Live Voice Coach Guidance Banner (only shown when voice is active) */}
             {isVoiceEnabled && (
               <div
                 style={{
                   width: '100%',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px',
+                  gap: '10px',
                   backgroundColor: 'var(--barista-accent-mint-bg)',
-                  border: '1.5px solid var(--barista-accent-mint-text)',
-                  borderRadius: 'var(--r-tile)',
-                  padding: '10px 14px',
-                  marginBottom: '12px',
-                  boxSizing: 'border-box',
-                  transition: 'var(--transition-ui)',
-                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.12)'
+                  border: '1px solid var(--barista-accent-mint-text)',
+                  borderRadius: 'var(--r-control)',
+                  padding: '8px 12px',
+                  marginBottom: '10px',
+                  boxSizing: 'border-box'
                 }}
               >
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: 'var(--r-control)',
-                  backgroundColor: 'var(--barista-accent-mint-text)',
-                  color: 'var(--on-accent)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <Mic size={16} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    color: 'var(--barista-accent-mint-text)'
-                  }}>
-                    Asistente de Voz del Barista
-                  </div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text)', lineHeight: 1.35, marginTop: '2px' }}>
-                    {getStageSpeechText(currentStageIndex, currentStage)}
-                  </div>
+                <Mic size={14} color="var(--barista-accent-mint-text)" style={{ flexShrink: 0 }} />
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text)', lineHeight: 1.3 }}>
+                  {getStageSpeechText(currentStageIndex, currentStage)}
                 </div>
               </div>
             )}
 
-            {/* Active Stage Card */}
+            {/* Compact Active Step Card */}
             <div
               style={{
                 width: '100%',
                 backgroundColor: 'var(--bg-card)',
                 borderRadius: 'var(--r-tile)',
                 border: '1px solid var(--border-color)',
-                padding: '20px',
+                padding: '12px 14px',
                 boxSizing: 'border-box',
-                boxShadow: 'var(--card-shadow)',
-                marginBottom: '16px',
+                marginBottom: '10px',
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'center'
+                gap: '8px'
               }}
             >
-              {/* Stage Counter & Title */}
-              <div
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  letterSpacing: '0',
-                  color: 'var(--color-crimson)',
-                  marginBottom: '4px'
-                }}
-              >
-                Fase {currentStageIndex + 1} de {stages.length}: {currentStage.title || currentStage.label}
+              {/* Top row: Phase + Valve + Remaining Seconds */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-crimson)' }}>
+                    Paso {currentStageIndex + 1}/{stages.length} · {currentStage.title || currentStage.label}
+                  </span>
+                  {currentStage?.valve && (
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '3px',
+                        padding: '2px 7px',
+                        borderRadius: 'var(--r-pill)',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        backgroundColor: currentStage.valve === 'closed'
+                          ? 'var(--valve-closed-bg)'
+                          : (currentStage.valve === 'half' ? 'var(--valve-half-bg)' : 'var(--valve-open-bg)'),
+                        color: currentStage.valve === 'closed'
+                          ? 'var(--valve-closed)'
+                          : (currentStage.valve === 'half' ? 'var(--valve-half)' : 'var(--valve-open)')
+                      }}
+                    >
+                      {currentStage.valve === 'closed' ? <Lock size={10} /> : (currentStage.valve === 'half' ? <Zap size={10} /> : <Unlock size={10} />)}
+                      <span>{currentStage.valve === 'closed' ? 'Cerrada' : (currentStage.valve === 'half' ? '50%' : 'Abierta')}</span>
+                    </span>
+                  )}
+                </div>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: stageRemainingSec <= 3 && isActive ? 'var(--barista-accent-danger)' : 'var(--color-text-muted)'
+                  }}
+                >
+                  -{stageRemainingSec}s
+                </span>
               </div>
 
-              {/* Dynamic Valve Badge */}
-              {currentStage?.valve && (
-                <div style={{ margin: '8px 0 10px' }}>
-                  {currentStage.valve === 'closed' && (
-                    <div
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '6px 14px',
-                        borderRadius: 'var(--r-pill)',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        letterSpacing: '0',
-                        backgroundColor: 'var(--valve-closed-bg)',
-                        color: 'var(--valve-closed)',
-                        border: '1.5px solid var(--valve-closed)',
-                        boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)'
-                      }}
-                    >
-                      <Lock size={15} />
-                      <span>VÁLVULA CERRADA (Bloom / Inmersión)</span>
-                    </div>
-                  )}
-                  {currentStage.valve === 'half' && (
-                    <div
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '6px 14px',
-                        borderRadius: 'var(--r-pill)',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        letterSpacing: '0',
-                        backgroundColor: 'var(--valve-half-bg)',
-                        color: 'var(--valve-half)',
-                        border: '1.5px solid var(--valve-half)',
-                        boxShadow: '0 2px 8px rgba(217, 119, 6, 0.2)'
-                      }}
-                    >
-                      <Zap size={15} />
-                      <span>VÁLVULA 50% MEDIA (Caudal Regulado)</span>
-                    </div>
-                  )}
-                  {currentStage.valve === 'open' && (
-                    <div
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '6px 14px',
-                        borderRadius: 'var(--r-pill)',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        letterSpacing: '0',
-                        backgroundColor: 'var(--valve-open-bg)',
-                        color: 'var(--valve-open)',
-                        border: '1.5px solid var(--valve-open)',
-                        boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)'
-                      }}
-                    >
-                      <Unlock size={15} />
-                      <span>VÁLVULA 100% ABIERTA (Drawdown / Percolación)</span>
-                    </div>
-                  )}
+              {/* Middle row: Target water + Live scale delta */}
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '16px', fontWeight: 700, color: 'var(--color-text)' }}>
+                  Hasta {currentStage.total_water_g}g{' '}
+                  <span style={{ fontSize: '13px', color: 'var(--color-crimson)' }}>(+{currentStage.water_g}g)</span>
                 </div>
-              )}
-
-              {/* Stage Description */}
-              {currentStage?.description && (
-                <p
-                  style={{
-                    fontSize: '13px',
-                    color: 'var(--barista-text-secondary)',
-                    textAlign: 'center',
-                    margin: '4px 0 14px',
-                    lineHeight: '1.45',
-                    maxWidth: '480px'
-                  }}
-                >
-                  {currentStage.description}
-                </p>
-              )}
-
-              {/* Target Cumulative Water & Suggested Flow Rate */}
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '4px',
-                  margin: '6px 0 12px'
-                }}
-              >
-                <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', letterSpacing: '0', fontWeight: 600 }}>
-                  Objetivo de agua
-                </div>
-                <div
-                  style={{
-                    fontSize: '26px',
-                    fontWeight: '600',
-                    color: 'var(--color-text)',
-                    fontFamily: 'var(--font-mono)'
-                  }}
-                >
-                  Verter hasta {currentStage.total_water_g}g{' '}
-                  <span style={{ fontSize: '18px', color: 'var(--color-crimson)', fontWeight: 700 }}>
-                    (+{currentStage.water_g}g)
-                  </span>
-                </div>
-                {suggestedFlowRate ? (
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      marginTop: '4px'
-                    }}
-                  >
+                {scale.connected && currentStage?.total_water_g > 0 ? (() => {
+                  const remainingG = Math.max(0, currentStage.total_water_g - scale.weightG);
+                  const reached = remainingG <= 1.0;
+                  return (
                     <span
                       style={{
                         fontFamily: 'var(--font-mono)',
-                        fontSize: '13px',
+                        fontSize: '12px',
                         fontWeight: 700,
-                        background: isPouringActiveWindow ? 'var(--color-crimson)' : 'var(--segmented-bg)',
-                        color: isPouringActiveWindow ? 'var(--on-accent)' : 'var(--color-text)',
-                        padding: '3px 10px',
-                        borderRadius: 'var(--r-pill)',
-                        transition: 'var(--transition-ui)'
+                        color: reached ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)'
                       }}
                     >
-                      {scale.connected
-                        ? `Balanza: ${scale.weightG.toFixed(1)} g · Meta ahora: ~${liveTargetWaterG} g`
-                        : `En balanza ahora: ~${liveTargetWaterG} g`}
+                      {reached ? '✓ Listo' : `Faltan ${remainingG.toFixed(1)}g`}
                     </span>
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        background: 'var(--barista-accent-honey-bg)',
-                        border: '1px solid var(--barista-instr-border)',
-                        color: 'var(--barista-accent-honey-text)',
-                        padding: '2px 8px',
-                        borderRadius: 'var(--r-xs)',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '3px'
-                      }}
-                    >
-                      <Droplet size={11} color="var(--barista-accent-honey)" />
-                      {scale.connected
-                        ? `${scale.flowRate.toFixed(1)} ml/s (meta ~${suggestedFlowRate})`
-                        : `~${suggestedFlowRate} ml/s`}
+                  );
+                })() : (
+                  suggestedFlowRate && (
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                      ~{suggestedFlowRate} ml/s
                     </span>
-                  </div>
-                ) : (
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontStyle: 'italic', marginTop: '2px' }}>
-                    Drenaje libre hacia lecho plano ({liveTargetWaterG} g totales)
-                  </div>
+                  )
                 )}
               </div>
 
-              {/* Live Scale Water Progress Bar (when scale is connected) */}
-              {scale.connected && currentStage?.total_water_g > 0 && (() => {
-                const prevWater = currentStageIndex > 0 ? (stages[currentStageIndex - 1]?.total_water_g || 0) : 0;
-                const span = Math.max(1, currentStage.total_water_g - prevWater);
-                const waterPct = Math.min(100, Math.max(0, ((scale.weightG - prevWater) / span) * 100));
-                const remainingG = Math.max(0, currentStage.total_water_g - scale.weightG);
-                const reached = remainingG <= 1.0;
-                return (
-                  <div style={{ width: '100%', marginTop: '6px', marginBottom: '6px' }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        marginBottom: '5px'
-                      }}
-                    >
-                      <span style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
-                        Agua: {scale.weightG.toFixed(1)} / {currentStage.total_water_g} g
-                      </span>
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-mono)',
-                          color: reached ? 'var(--barista-accent-mint-text)' : 'var(--color-crimson)',
-                          fontSize: '12px',
-                          fontWeight: 700
-                        }}
-                      >
-                        {reached ? '✓ Meta alcanzada' : `Faltan ${remainingG.toFixed(1)} g`}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        width: '100%',
-                        height: '6px',
-                        borderRadius: 'var(--r-xs)',
-                        backgroundColor: 'var(--segmented-bg)',
-                        overflow: 'hidden'
-                      }}
-                    >
+              {currentStage?.description && (
+                <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', lineHeight: 1.35 }}>
+                  {currentStage.description}
+                </div>
+              )}
+
+              {/* Slim Progress Bars (Time + Water when scale connected) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {scale.connected && currentStage?.total_water_g > 0 && (() => {
+                  const prevWater = currentStageIndex > 0 ? (stages[currentStageIndex - 1]?.total_water_g || 0) : 0;
+                  const span = Math.max(1, currentStage.total_water_g - prevWater);
+                  const waterPct = Math.min(100, Math.max(0, ((scale.weightG - prevWater) / span) * 100));
+                  const reached = currentStage.total_water_g - scale.weightG <= 1.0;
+                  return (
+                    <div style={{ width: '100%', height: '4px', borderRadius: 'var(--r-xs)', backgroundColor: 'var(--segmented-bg)', overflow: 'hidden' }}>
                       <div
                         style={{
                           height: '100%',
@@ -1325,48 +1128,15 @@ export default function BrewGuideModal({
                         }}
                       />
                     </div>
-                  </div>
-                );
-              })()}
-
-              {/* Stage Countdown & Mini Progress Bar */}
-              <div style={{ width: '100%', marginTop: '8px' }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    marginBottom: '6px'
-                  }}
-                >
-                  <span style={{ color: 'var(--color-text-muted)' }}>Paso {currentStageIndex + 1}/{stages.length}</span>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      color: stageRemainingSec <= 3 && isActive ? 'var(--barista-accent-danger)' : 'var(--color-text)',
-                      fontSize: '13px',
-                      fontWeight: '600'
-                    }}
-                  >
-                    Quedan {stageRemainingSec}s
-                  </span>
-                </div>
-                <div
-                  style={{
-                    width: '100%',
-                    height: '6px',
-                    borderRadius: 'var(--r-xs)',
-                    backgroundColor: 'var(--segmented-bg)',
-                    overflow: 'hidden'
-                  }}
-                >
+                  );
+                })()}
+                <div style={{ width: '100%', height: '4px', borderRadius: 'var(--r-xs)', backgroundColor: 'var(--segmented-bg)', overflow: 'hidden' }}>
                   <div
                     style={{
                       height: '100%',
                       width: `${stageProgress}%`,
-                      backgroundColor: stageRemainingSec <= 3 && isActive ? 'var(--barista-accent-danger)' : 'var(--color-crimson)',
+                      backgroundColor: stageRemainingSec <= 3 && isActive ? 'var(--barista-accent-danger)' : 'var(--text-muted)',
+                      opacity: 0.7,
                       transition: 'width 250ms linear, background-color 200ms ease'
                     }}
                   />
@@ -1374,14 +1144,14 @@ export default function BrewGuideModal({
               </div>
             </div>
 
-            {/* Stages Stepper Timeline */}
+            {/* Compact Stages Stepper Pills */}
             <div
               style={{
                 width: '100%',
                 display: 'flex',
                 gap: '6px',
                 overflowX: 'auto',
-                paddingBottom: '12px',
+                paddingBottom: '8px',
                 scrollbarWidth: 'none',
                 WebkitOverflowScrolling: 'touch'
               }}
@@ -1393,39 +1163,23 @@ export default function BrewGuideModal({
                   <div
                     key={idx}
                     style={{
-                      flex: '1 1 0',
-                      minWidth: '95px',
-                      padding: '8px',
-                      borderRadius: 'var(--r-control)',
+                      flex: '0 0 auto',
+                      padding: '5px 10px',
+                      borderRadius: 'var(--r-pill)',
                       backgroundColor: isCurrent ? 'var(--barista-instr-bg)' : (isPast ? 'var(--barista-accent-mint-bg)' : 'var(--bg-card)'),
                       border: isCurrent ? '1.5px solid var(--color-crimson)' : (isPast ? '1px solid var(--barista-accent-mint)' : '1px solid var(--border-color)'),
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '2px',
-                      transition: 'var(--transition-ui)'
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: isCurrent ? 'var(--color-crimson)' : (isPast ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)'),
+                      whiteSpace: 'nowrap'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '600', color: isCurrent ? 'var(--color-crimson)' : (isPast ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)') }}>
-                        #{idx + 1}
-                      </span>
-                      {isPast && <CheckCircle2 size={12} color="var(--barista-accent-mint)" />}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        color: isCurrent ? 'var(--color-text)' : (isPast ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)'),
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis'
-                      }}
-                    >
-                      {stg.label}
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
-                      +{stg.water_g}g ({formatTime(stg.duration)})
-                    </div>
+                    <span>{idx + 1}. {stg.label}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', opacity: 0.85 }}>+{stg.water_g}g</span>
+                    {isPast && <CheckCircle2 size={11} color="var(--barista-accent-mint)" />}
                   </div>
                 );
               })}
