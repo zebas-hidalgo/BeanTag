@@ -29,6 +29,7 @@ import {
   MicOff
 } from 'lucide-react';
 import {
+  playBeep,
   playCountdownBeep,
   playPhaseChime,
   playSuccessChime,
@@ -109,6 +110,7 @@ export default function BrewGuideModal({
   const baseElapsedRef = useRef(0);
   const lastBeepSecRef = useRef(null);
   const prevStageIndexRef = useRef(0);
+  const targetBeepedStageRef = useRef(-1);
   const sentinelRef = useRef(null);
 
   // Parse Recipe Stages
@@ -118,12 +120,8 @@ export default function BrewGuideModal({
     return stages[stages.length - 1].endSec || stages.reduce((acc, s) => acc + s.duration, 0);
   }, [stages]);
 
-  // Current active stage
-  const currentStageIndex = useMemo(() => {
-    if (!stages.length) return 0;
-    const idx = stages.findIndex(s => elapsedSeconds < s.endSec);
-    return idx !== -1 ? idx : stages.length - 1;
-  }, [stages, elapsedSeconds]);
+  // Current active stage (time-driven, held if waiting for target weight when scale sync is active)
+  const [currentStageIndex, setCurrentStageIndex] = useState(0);
 
   const currentStage = stages[currentStageIndex] || stages[0];
 
@@ -258,6 +256,8 @@ export default function BrewGuideModal({
       startTimestampRef.current = null;
       lastBeepSecRef.current = null;
       prevStageIndexRef.current = 0;
+      targetBeepedStageRef.current = -1;
+      setCurrentStageIndex(0);
       setFeedback({ taste: 'balanced', flow: 'on_time', body: 'balanced' });
       setSaveSuccess(false);
       setIsSaving(false);
@@ -372,6 +372,7 @@ export default function BrewGuideModal({
     }
 
     if (currentStageIndex > prevStageIndexRef.current) {
+      if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
       if (!isMuted) {
         playPhaseChime();
         if (isVoiceEnabled && stages[currentStageIndex]) {
@@ -416,43 +417,49 @@ export default function BrewGuideModal({
     }
   }, [isOpen, viewMode, scale.connected, scale.weightG, autoStartOnPour, isActive, elapsedSeconds, handleTogglePlay]);
 
-  // Sync active step & timer when live weight crosses into the next pouring stage (+3g hysteresis)
+  // Soft tone + subtle haptic when reaching current stage target weight (never skips remaining stage time)
   useEffect(() => {
-    if (!isOpen || viewMode !== 'timer' || !scale.connected || !syncStepsWithWeight || !isActive) {
+    if (!isOpen || viewMode !== 'timer' || !scale.connected || !isActive || !currentStage) {
       return;
     }
-    const nextIdx = currentStageIndex + 1;
-    if (nextIdx >= stages.length) return;
-    const nextStage = stages[nextIdx];
-    if (!currentStage || currentStage.total_water_g <= 0 || !nextStage || nextStage.water_g <= 0) {
-      return;
-    }
-    if (scale.weightG >= currentStage.total_water_g + 3.0) {
-      setElapsedSeconds(nextStage.startSec);
-      baseElapsedRef.current = nextStage.startSec;
-      startTimestampRef.current = Date.now();
-      lastBeepSecRef.current = null;
-      prevStageIndexRef.current = nextIdx;
-      if (!isMuted) {
-        playPhaseChime();
-        if (isVoiceEnabled) {
-          speakBaristaGuidance(getStageSpeechText(nextIdx, nextStage));
+    if (currentStage.total_water_g > 0 && scale.weightG >= currentStage.total_water_g - 1.0) {
+      if (targetBeepedStageRef.current !== currentStageIndex) {
+        targetBeepedStageRef.current = currentStageIndex;
+        if (navigator.vibrate) navigator.vibrate(15);
+        if (!isMuted) {
+          playBeep(660, 0.09, 'sine', 0.14);
         }
       }
+    }
+  }, [isOpen, viewMode, scale.connected, scale.weightG, isActive, currentStage, currentStageIndex, isMuted]);
+
+  // Time-driven stage transition: waits for target weight if syncStepsWithWeight is enabled
+  useEffect(() => {
+    if (!isOpen || viewMode !== 'timer' || !isActive) return;
+    if (currentStageIndex >= stages.length - 1) return;
+    const stage = stages[currentStageIndex];
+    if (!stage) return;
+
+    const timeDone = elapsedSeconds >= stage.endSec;
+    const weightDone =
+      !scale.connected ||
+      !syncStepsWithWeight ||
+      stage.total_water_g <= 0 ||
+      scale.weightG >= stage.total_water_g - 1.0;
+
+    if (timeDone && weightDone) {
+      setCurrentStageIndex((idx) => (idx === currentStageIndex ? idx + 1 : idx));
     }
   }, [
     isOpen,
     viewMode,
+    isActive,
+    elapsedSeconds,
+    currentStageIndex,
+    stages,
     scale.connected,
     scale.weightG,
-    syncStepsWithWeight,
-    isActive,
-    currentStageIndex,
-    currentStage,
-    stages,
-    isMuted,
-    isVoiceEnabled,
-    getStageSpeechText
+    syncStepsWithWeight
   ]);
 
   // Handler: Skip forward to next stage
@@ -461,10 +468,12 @@ export default function BrewGuideModal({
     if (currentStageIndex < stages.length - 1) {
       const nextIdx = currentStageIndex + 1;
       const nextStage = stages[nextIdx];
+      setCurrentStageIndex(nextIdx);
       setElapsedSeconds(nextStage.startSec);
       baseElapsedRef.current = nextStage.startSec;
       startTimestampRef.current = Date.now();
       lastBeepSecRef.current = null;
+      prevStageIndexRef.current = nextIdx;
       if (!isMuted) {
         playPhaseChime();
         if (isVoiceEnabled) {
@@ -506,6 +515,8 @@ export default function BrewGuideModal({
     startTimestampRef.current = null;
     lastBeepSecRef.current = null;
     prevStageIndexRef.current = 0;
+    targetBeepedStageRef.current = -1;
+    setCurrentStageIndex(0);
     autoStartedPourRef.current = false;
     taredReadyRef.current = Math.abs(scale.weightG) <= 0.4;
     if (scale.connected) scale.resetScaleTimer();
@@ -984,6 +995,7 @@ export default function BrewGuideModal({
                     <button
                       type="button"
                       onClick={async () => {
+                        getAudioContext();
                         await scale.tare();
                         taredReadyRef.current = true;
                         autoStartedPourRef.current = false;
@@ -1019,7 +1031,10 @@ export default function BrewGuideModal({
                   <button
                     type="button"
                     disabled={scale.connecting}
-                    onClick={() => scale.connect().catch(() => {})}
+                    onClick={() => {
+                      getAudioContext();
+                      scale.connect().catch(() => {});
+                    }}
                     style={{
                       minHeight: '36px',
                       padding: '6px 14px',
@@ -1105,16 +1120,29 @@ export default function BrewGuideModal({
                     </span>
                   )}
                 </div>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    color: stageRemainingSec <= 3 && isActive ? 'var(--barista-accent-danger)' : 'var(--color-text-muted)'
-                  }}
-                >
-                  -{stageRemainingSec}s
-                </span>
+                {(() => {
+                  const isWaitingForWeight =
+                    scale.connected &&
+                    syncStepsWithWeight &&
+                    currentStageIndex < stages.length - 1 &&
+                    currentStage?.total_water_g > 0 &&
+                    elapsedSeconds >= currentStage.endSec &&
+                    scale.weightG < currentStage.total_water_g - 1.0;
+                  return (
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        color: isWaitingForWeight
+                          ? 'var(--warn-text, var(--warn))'
+                          : (stageRemainingSec <= 3 && isActive ? 'var(--barista-accent-danger)' : 'var(--color-text-muted)')
+                      }}
+                    >
+                      {isWaitingForWeight ? 'Esperando peso' : `-${stageRemainingSec}s`}
+                    </span>
+                  );
+                })()}
               </div>
 
               {/* Middle row: Target water + Live scale delta */}
