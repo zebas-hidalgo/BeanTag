@@ -7,7 +7,7 @@ import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeMenuText, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { FAMOUS_RECIPES } from '../utils/famousRecipes';
 import { GRINDERS, getGrinderConfig, scaleGrinderSettingForDose, calculateDoseDeltaMicrons } from '../utils/grinders';
-import { useTimemoreScale } from '../utils/timemoreScale';
+import { useSharedTimemoreScale } from '../context/TimemoreScaleContext';
 
 import BatchHeaderCard from './batch/BatchHeaderCard';
 import StickerShareModal from './StickerShareModal';
@@ -40,7 +40,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [batch, setBatch] = useState(null);
   const [doseAlreadyConsumed, setDoseAlreadyConsumed] = useState(() => Boolean(consumedFromRack));
   const brewFormRef = useRef(null);
-  const scale = useTimemoreScale();
+  const scale = useSharedTimemoreScale();
 
   useEffect(() => {
     if (consumedFromRack) {
@@ -1391,7 +1391,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   const brewBarMethod = String(method || '').replace(/\s*\(.*\)\s*$/, '').replace(/^NextLevel\s+/i, '');
   return (
-    <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
+    <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden', paddingBottom: '88px' }}>
       {/* Top Header - Row 1: Back Navigation + Compact iOS App handoff */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
         <button 
@@ -1745,94 +1745,70 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               getGrindString={getGrindString}
             />
 
-            {/* Paso 1: Preparar con el cronómetro */}
-            <div style={{ marginTop: '16px' }}>
-              <button
-                type="button"
-                onClick={startBrewFromForm}
-                style={{
-                  width: '100%',
-                  minHeight: '48px',
-                  height: '48px',
-                  backgroundColor: 'var(--accent-honey)',
-                  color: 'var(--on-accent)',
-                  borderRadius: 'var(--radius-md)',
-                  border: 'none',
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  fontFamily: 'var(--font-display)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  cursor: 'pointer',
-                  boxShadow: 'var(--shadow-sm)'
-                }}
-              >
-                <Play size={18} fill="currentColor" />
-                <span>Preparar con el cronómetro</span>
-              </button>
-            </div>
-
-            {/* Paso 2: ¿Cómo salió? (solo propietario) + Guardar */}
-            {isOwner && (
-              <div style={{ marginTop: '16px' }}>
-                <div className="bt-tile-k" id="bt-taste-label" style={{ marginBottom: '8px' }}>¿Cómo salió?</div>
-                <div className="bt-taste" role="radiogroup" aria-labelledby="bt-taste-label">
-                  {[
-                    { id: 'Sub', label: 'Ácido', hint: 'Muele más fino', balance: 'Ácido' },
-                    { id: 'En Punto', label: 'Bien', hint: 'Repetir así', balance: 'Dulce' },
-                    { id: 'Sobre', label: 'Amargo', hint: 'Muele más grueso', balance: 'Amargo' }
-                  ].map(t => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={sensoryExtraction === t.id}
-                      className={`bt-taste-btn${sensoryExtraction === t.id ? ' is-active' : ''}`}
-                      onClick={() => { setSensoryExtraction(t.id); setSensoryBalance(t.balance); }}
-                    >
-                      {t.label}
-                      <small>{t.hint}</small>
-                    </button>
-                  ))}
+            {/* Registro manual sin cronómetro (plegado para separar antes vs. después de preparar) */}
+            {isOwner ? (
+              <details className="bt-more" style={{ marginTop: '12px', marginBottom: '12px' }}>
+                <summary><Save size={15} aria-hidden="true" /> Registrar extracción sin cronómetro</summary>
+                <div style={{ paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div>
+                    <div className="bt-tile-k" id="bt-taste-label" style={{ marginBottom: '8px' }}>¿Cómo salió?</div>
+                    <div className="bt-taste" role="radiogroup" aria-labelledby="bt-taste-label">
+                      {[
+                        { id: 'Sub', label: 'Ácido', hint: 'Muele más fino', balance: 'Ácido' },
+                        { id: 'En Punto', label: 'Bien', hint: 'Repetir así', balance: 'Dulce' },
+                        { id: 'Sobre', label: 'Amargo', hint: 'Muele más grueso', balance: 'Amargo' }
+                      ].map(t => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={sensoryExtraction === t.id}
+                          className={`bt-taste-btn${sensoryExtraction === t.id ? ' is-active' : ''}`}
+                          onClick={() => { setSensoryExtraction(t.id); setSensoryBalance(t.balance); }}
+                        >
+                          {t.label}
+                          <small>{t.hint}</small>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    className="barista-btn-secondary"
+                    style={{ width: '100%', minHeight: '44px', fontSize: '13.5px' }}
+                  >
+                    <Save size={16} />
+                    <span>Guardar en Bitácora</span>
+                  </button>
                 </div>
-              </div>
-            )}
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
-              {isOwner ? (
-                <button
-                  type="submit"
-                  className="barista-btn-primary"
-                  style={{
-                    width: '100%',
-                    minHeight: '48px',
-                    height: '48px',
-                    fontSize: '15px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  <Save size={18} />
-                  <span>Guardar sin cronómetro</span>
-                </button>
-              ) : (
-                !currentUser && (
+              </details>
+            ) : (
+              !currentUser && (
+                <div style={{ marginTop: '12px', marginBottom: '12px' }}>
                   <button
                     type="button"
                     onClick={onRequireAuth}
                     className="barista-btn-secondary"
-                    style={{ width: '100%', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: 0.9, cursor: 'pointer' }}
+                    style={{ width: '100%', minHeight: '44px', fontSize: '13px', opacity: 0.9 }}
                   >
                     ¿Eres el propietario? Iniciar sesión para registrar
                   </button>
-                )
-              )}
-            </div>
+                </div>
+              )
+            )}
           </form>
+
+          {/* Sticky Thumb-Zone CTA: Empezar extracción */}
+          <div className="bt-sticky-cta">
+            <button
+              type="button"
+              className="bt-sticky-cta-main"
+              onClick={startBrewFromForm}
+            >
+              <Play size={17} fill="currentColor" aria-hidden="true" />
+              <span>Empezar · {brewBarMethod || 'Preparar'}</span>
+            </button>
+          </div>
 
         </div>
       )}

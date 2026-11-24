@@ -360,12 +360,12 @@ body.keyboard-open .bt-fab {
   text-align: right;
 }
 
-/* Header with Liquid Glass */
+/* Header with Liquid Glass (borderless canvas flow) */
 .app-header {
   background-color: var(--bg-header);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid transparent;
   padding: calc(10px + env(safe-area-inset-top, 0px)) 20px 10px 20px;
   display: flex;
   align-items: center;
@@ -585,7 +585,7 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   font-size: 14px;
   letter-spacing: -0.01em;
   padding: 0 var(--barista-space-20);
-  border-radius: var(--barista-radius-md);
+  border-radius: var(--r-pill, 9999px);
   border: none;
   display: inline-flex;
   align-items: center;
@@ -618,8 +618,8 @@ input[type="date"].candy-input::-webkit-calendar-picker-indicator:hover {
   font-weight: 700;
   font-size: 13.5px;
   padding: 0 var(--barista-space-16);
-  border-radius: var(--barista-radius-md);
-  border: 1px solid var(--barista-border-hairline);
+  border-radius: var(--r-pill, 9999px);
+  border: 1px solid color-mix(in oklab, var(--line, var(--barista-border-hairline)) 70%, transparent);
   display: inline-flex;
   align-items: center;
   justify-content: center;

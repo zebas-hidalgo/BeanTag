@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import ErrorBoundary from './components/ErrorBoundary'
+import { TimemoreScaleProvider } from './context/TimemoreScaleContext'
 import './index.css'
 import { installModalA11y, installThemeColorSync, registerServiceWorker } from './utils/a11yRuntime'
 import { generateRecipeCardImage, generateCoffeeMenuCardImage, generateCoffeeStickerImage } from './utils/cardGenerator'
@@ -18,7 +19,9 @@ if (typeof window !== 'undefined') {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      <TimemoreScaleProvider>
+        <App />
+      </TimemoreScaleProvider>
     </ErrorBoundary>
   </React.StrictMode>,
 )

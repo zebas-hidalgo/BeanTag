@@ -25,6 +25,7 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
   };
 
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'bags' | 'tubes' | 'finished'
+  const [showFilters, setShowFilters] = useState(false);
   const showFinished = filterMode === 'finished';
 
   // Quick Action Context Menu State
@@ -41,6 +42,12 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
   const bagBatches = availableBatches.filter(b => b.storage_type === 'bag');
   const tubeBatches = availableBatches.filter(b => b.storage_type !== 'bag');
   const finishedBatches = safeBatches.filter(b => b && !isBatchAvailable(b));
+
+  // Intent-First "Siguiente taza" recommendation (last brewed -> peak degassing -> first available)
+  const nextCupBatch = availableBatches.find(b => b.last_method)
+    || availableBatches.find(b => getDegassing(b)?.tone === 'ok')
+    || availableBatches[0]
+    || null;
 
   const currentList = filterMode === 'finished'
     ? finishedBatches
@@ -101,8 +108,61 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
         </Suspense>
       ) : (
         <>
+          {/* Intent-First "Siguiente taza" Hero (1-tap resume) */}
+          {nextCupBatch && !searchQuery && filterMode === 'all' && (
+            <div className="bt-next-cup" style={roastStyle(nextCupBatch.roast_level)}>
+              <div className="bt-next-cup-info" onClick={() => onSelectBatch(nextCupBatch)} style={{ cursor: 'pointer' }}>
+                <span className="bt-next-cup-k">
+                  {nextCupBatch.last_method ? `Retomar · ${nextCupBatch.last_method}` : 'Siguiente taza'}
+                </span>
+                <div className="bt-next-cup-name">{nextCupBatch.name}</div>
+                <div className="bt-next-cup-meta">
+                  {[nextCupBatch.roaster, nextCupBatch.origin].filter(Boolean).join(' · ') || 'Café de especialidad'}
+                </div>
+              </div>
+              <button
+                type="button"
+                className="bt-next-cup-btn"
+                onClick={() => onSelectBatch(nextCupBatch, { openBrew: true })}
+              >
+                <Play size={14} fill="currentColor" aria-hidden="true" />
+                <span>Preparar</span>
+              </button>
+            </div>
+          )}
+
+          {/* Progressive Disclosure: Compact Search & Filter Bar Toggle */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: showFilters || searchQuery || filterMode !== 'all' ? '10px' : '12px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink-muted)', letterSpacing: '0.04em', textTransform: 'uppercase', fontFamily: 'var(--font-data)' }}>
+              {filterMode === 'finished' ? `Agotados (${finishedBatches.length})` : `Tu cava (${filteredBatches.length})`}
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowFilters(v => !v)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                minHeight: '32px',
+                padding: '0 12px',
+                borderRadius: 'var(--r-pill)',
+                border: '1px solid var(--line)',
+                background: (showFilters || searchQuery || filterMode !== 'all') ? 'var(--fill-strong)' : 'var(--surface)',
+                color: 'var(--ink)',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              <SearchIcon size={13} aria-hidden="true" />
+              <span>{showFilters ? 'Ocultar filtros' : 'Buscar y filtrar'}</span>
+            </button>
+          </div>
+
+          {(showFilters || searchQuery || filterMode !== 'all') && (
+          <>
           {/* 1. Search Bar with Leading Icon & Clear Button */}
-          <div style={{ position: 'relative', marginBottom: '12px' }}>
+          <div style={{ position: 'relative', marginBottom: '10px' }}>
             <SearchIcon
               size={16}
               style={{
@@ -125,9 +185,9 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
                 boxSizing: 'border-box',
                 margin: 0,
                 padding: searchQuery ? '0 48px 0 40px' : '0 16px 0 40px',
-                minHeight: '48px',
-                fontSize: '16px',
-                borderRadius: 'var(--r-tile)',
+                minHeight: '44px',
+                fontSize: '15px',
+                borderRadius: 'var(--r-pill)',
                 background: 'var(--surface)'
               }}
             />
@@ -141,8 +201,8 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
                   right: '2px',
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  width: '44px',
-                  height: '44px',
+                  width: '40px',
+                  height: '40px',
                   borderRadius: '50%',
                   border: 'none',
                   background: 'var(--segmented-bg)',
@@ -159,7 +219,7 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
             )}
           </div>
 
-          {/* 2. Unified Counter + Compact Status Filter Bar */}
+          {/* 2. Compact Status Filter Bar */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -215,6 +275,8 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
               </button>
             </div>
           </div>
+          </>
+          )}
 
           {/* 3. Loading / Empty / Search Empty State */}
           {batches === null ? (

@@ -26,7 +26,9 @@ import {
   Droplet,
   Trophy,
   Mic,
-  MicOff
+  MicOff,
+  Moon,
+  Sun
 } from 'lucide-react';
 import {
   playBeep,
@@ -44,7 +46,7 @@ import { computeSensoryCorrection } from '../utils/sensoryTuner.js';
 import { getGrinderConfig } from '../utils/grinders.js';
 
 import { parseTimeToSeconds, formatTime, parseStages } from '../utils/brewStages.js';
-import { useTimemoreScale } from '../utils/timemoreScale.js';
+import { useSharedTimemoreScale } from '../context/TimemoreScaleContext';
 import { MethodIcon, CoffeeScaleIcon } from './icons/CoffeeIcons';
 import BrewDiagnostic from './brew/BrewDiagnostic';
 
@@ -89,8 +91,18 @@ export default function BrewGuideModal({
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
 
-  // Timemore Dot BLE Smart Scale
-  const scale = useTimemoreScale();
+  // Timemore Dot BLE Smart Scale (Global Shared Context — seamless across views)
+  const scale = useSharedTimemoreScale();
+  const [oledBarraMode, setOledBarraMode] = useState(() => {
+    try { return localStorage.getItem('beantag-oled-barra') === '1'; } catch { return false; }
+  });
+  const toggleOledBarra = () => {
+    setOledBarraMode(prev => {
+      const next = !prev;
+      try { localStorage.setItem('beantag-oled-barra', next ? '1' : '0'); } catch {}
+      return next;
+    });
+  };
   const [autoStartOnPour, setAutoStartOnPour] = useState(true);
   const [syncStepsWithWeight, setSyncStepsWithWeight] = useState(true);
   const autoStartedPourRef = useRef(false);
@@ -592,6 +604,7 @@ export default function BrewGuideModal({
 
   return (
     <div
+      className={oledBarraMode ? 'mode-barra' : undefined}
       role="dialog"
       aria-modal="true"
       aria-label="Guía de extracción"
@@ -635,7 +648,7 @@ export default function BrewGuideModal({
               alignItems: 'center',
               justifyContent: 'center',
               color: 'var(--on-accent)',
-              boxShadow: '0 2px 8px rgba(188, 84, 73, 0.35)',
+              boxShadow: '0 2px 10px var(--accent-glow)',
               flexShrink: 0
             }}
           >
@@ -670,8 +683,32 @@ export default function BrewGuideModal({
           </div>
         </div>
 
-        {/* Right Header Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Right Header Actions (≥44px wet-hand touch targets) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {/* OLED Barra Focus Toggle */}
+          <button
+            type="button"
+            onClick={toggleOledBarra}
+            aria-label={oledBarraMode ? 'Volver al tema normal' : 'Activar Modo Barra OLED oscuro'}
+            title={oledBarraMode ? 'Modo Barra OLED activo' : 'Activar Modo Barra OLED'}
+            style={{
+              background: oledBarraMode ? 'var(--accent-bg)' : 'var(--barista-bg-subtle)',
+              border: oledBarraMode ? '1px solid var(--accent-line)' : '1px solid var(--border-color)',
+              color: oledBarraMode ? 'var(--accent-text)' : 'var(--color-text-muted)',
+              borderRadius: 'var(--r-pill)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minWidth: '44px',
+              minHeight: '44px',
+              padding: 0,
+              transition: 'var(--transition-ui)'
+            }}
+          >
+            {oledBarraMode ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
+
           {/* Voice Coach Toggle */}
           <button
             type="button"
@@ -682,15 +719,15 @@ export default function BrewGuideModal({
               background: isVoiceEnabled ? 'var(--barista-accent-mint-bg)' : 'var(--barista-bg-subtle)',
               border: isVoiceEnabled ? '1px solid var(--barista-accent-mint-text)' : '1px solid var(--border-color)',
               color: isVoiceEnabled ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)',
-              borderRadius: 'var(--r-control)',
-              padding: '8px 10px',
+              borderRadius: 'var(--r-pill)',
+              padding: '0 12px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '5px',
               fontSize: '12px',
               fontWeight: 700,
-              minHeight: '36px',
+              minHeight: '44px',
               transition: 'var(--transition-ui)'
             }}
           >
@@ -708,20 +745,18 @@ export default function BrewGuideModal({
               background: isMuted ? 'var(--barista-accent-danger-bg)' : 'var(--barista-bg-subtle)',
               border: isMuted ? '1px solid var(--barista-accent-danger)' : '1px solid var(--border-color)',
               color: isMuted ? 'var(--barista-accent-danger-text)' : 'var(--color-text)',
-              borderRadius: 'var(--r-control)',
-              padding: '8px 10px',
+              borderRadius: 'var(--r-pill)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              fontSize: '12px',
-              fontWeight: 600,
-              minHeight: '36px',
+              justifyContent: 'center',
+              minWidth: '44px',
+              minHeight: '44px',
+              padding: 0,
               transition: 'var(--transition-ui)'
             }}
           >
-            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-            <span style={{ display: 'none' }}>{isMuted ? 'Mudo' : 'Audio'}</span>
+            {isMuted ? <VolumeX size={17} /> : <Volume2 size={17} />}
           </button>
 
           {/* Close Modal */}
@@ -733,14 +768,14 @@ export default function BrewGuideModal({
               background: 'var(--barista-bg-subtle)',
               border: '1px solid var(--border-color)',
               color: 'var(--color-text-muted)',
-              borderRadius: 'var(--r-control)',
-              padding: '8px',
+              borderRadius: 'var(--r-pill)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              minWidth: '36px',
-              minHeight: '36px',
+              minWidth: '44px',
+              minHeight: '44px',
+              padding: 0,
               transition: 'var(--transition-ui)'
             }}
           >
@@ -763,7 +798,7 @@ export default function BrewGuideModal({
             height: '100%',
             width: `${globalProgress}%`,
             backgroundColor: 'var(--color-crimson)',
-            boxShadow: '0 0 10px rgba(188, 84, 73, 0.5)',
+            boxShadow: '0 0 10px var(--accent-glow)',
             transition: 'width 250ms linear'
           }}
         />
@@ -948,8 +983,8 @@ export default function BrewGuideModal({
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '4px',
-                          minHeight: '34px',
-                          padding: '4px 10px',
+                          minHeight: '42px',
+                          padding: '6px 12px',
                           borderRadius: 'var(--r-pill)',
                           border: autoStartOnPour ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
                           background: autoStartOnPour ? 'var(--accent-bg)' : 'transparent',
@@ -971,8 +1006,8 @@ export default function BrewGuideModal({
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '4px',
-                        minHeight: '34px',
-                        padding: '4px 10px',
+                        minHeight: '42px',
+                        padding: '6px 12px',
                         borderRadius: 'var(--r-pill)',
                         border: syncStepsWithWeight ? '1px solid var(--barista-accent-mint-text)' : '1px solid var(--border-color)',
                         background: syncStepsWithWeight ? 'var(--barista-accent-mint-bg)' : 'transparent',
@@ -994,8 +1029,8 @@ export default function BrewGuideModal({
                         autoStartedPourRef.current = false;
                       }}
                       style={{
-                        minHeight: '34px',
-                        padding: '4px 12px',
+                        minHeight: '44px',
+                        padding: '6px 16px',
                         borderRadius: 'var(--r-pill)',
                         border: '1px solid var(--border-strong)',
                         background: 'var(--bg-subtle)',
@@ -1285,7 +1320,7 @@ export default function BrewGuideModal({
                     cursor: 'pointer',
                     minHeight: '56px',
                     height: '56px',
-                    boxShadow: isActive ? '0 4px 16px rgba(239, 68, 68, 0.35)' : '0 4px 16px rgba(188, 84, 73, 0.35)',
+                    boxShadow: isActive ? '0 4px 16px rgba(239, 68, 68, 0.35)' : '0 4px 16px var(--accent-glow)',
                     transition: 'var(--transition-ui)'
                   }}
                 >

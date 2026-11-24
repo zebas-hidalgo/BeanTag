@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { confirmDialog, alertDialog } from '../utils/confirmDialog';
 import { formatLocalDateStr } from '../utils/date';
-import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw, Filter, Zap, Droplet, Coffee, Edit3, SlidersHorizontal } from 'lucide-react';
+import { Trash2, Image as ImageIcon, Share2, ClipboardCopy, X, Search, RotateCcw, Filter, Zap, Droplet, Coffee, Edit3, SlidersHorizontal, Play } from 'lucide-react';
 import { stripEmojis, RenderScaChips } from '../utils/scaIcons';
 import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { parseGrindToMicrons } from '../utils/grinders';
 import StickerShareModal from './StickerShareModal';
+
+const BrewGuideModal = lazy(() => import('./BrewGuideModal'));
 
 const getMethodLucideIcon = (methodName, size = 18) => {
   const m = (methodName || '').toLowerCase();
@@ -23,6 +25,35 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   const [fetchError, setFetchError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [repeatBrew, setRepeatBrew] = useState(null);
+
+  const handleRepeatExtraction = (item, e) => {
+    if (e) e.stopPropagation();
+    const doseIn = parseFloat(item.dose_in_g) || 18;
+    const ratioMatch = String(item.ratio || '1:16').match(/1\s*:\s*([\d.]+)/);
+    const ratioNum = ratioMatch ? parseFloat(ratioMatch[1]) : 16;
+    const waterTotal = parseFloat(item.dose_out_g) || Math.round(doseIn * ratioNum);
+    const tempNum = parseFloat(String(item.temperature || 93).replace(/[^0-9.]/g, '')) || 93;
+    const matchedBatch = (Array.isArray(batches) ? batches : []).find(b => b.id === item.batch_id) || {
+      id: item.batch_id,
+      name: item.batch_name || 'Café de Especialidad',
+      origin: item.batch_origin || '',
+      roaster: item.batch_roaster || ''
+    };
+    setRepeatBrew({
+      batch: matchedBatch,
+      recipe: {
+        method: item.method || 'V60 (Filtrado)',
+        dose_in_g: doseIn,
+        water_total_g: waterTotal,
+        ratio: item.ratio || `1:${ratioNum}`,
+        temperature: tempNum,
+        brew_time: item.brew_time || '3:00 min',
+        grind: item.grind || '',
+        notes: item.notes || ''
+      }
+    });
+  };
   const [editingRecipe, setEditingRecipe] = useState(null);
   const [editForm, setEditForm] = useState({
     method: '',
@@ -548,10 +579,45 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
                 {item.notes && <p style={{ margin: '4px 0 2px 0', fontStyle: 'italic', color: 'var(--color-text)' }}><strong>Notas:</strong> {item.notes}</p>}
                 <RenderScaChips notesStr={item.batch_roaster_notes || item.notes} />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={(e) => handleRepeatExtraction(item, e)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      minHeight: '34px',
+                      padding: '0 12px',
+                      borderRadius: 'var(--r-pill)',
+                      border: '1px solid var(--line)',
+                      background: 'var(--fill)',
+                      color: 'var(--ink)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Play size={12} fill="currentColor" aria-hidden="true" />
+                    <span>Repetir</span>
+                  </button>
+                </div>
               </div>
             </div>
           );
         })
+      )}
+
+      {repeatBrew && (
+        <Suspense fallback={null}>
+          <BrewGuideModal
+            isOpen={Boolean(repeatBrew)}
+            onClose={() => setRepeatBrew(null)}
+            recipe={repeatBrew.recipe}
+            batch={repeatBrew.batch}
+            onSaveTunedRecipe={null}
+          />
+        </Suspense>
       )}
 
       {/* Modal / Vista de Detalle de Receta */}

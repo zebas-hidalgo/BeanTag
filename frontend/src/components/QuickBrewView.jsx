@@ -415,28 +415,16 @@ export default function QuickBrewView({
 
   return (
     <div className="soft-fade-in" style={{ paddingBottom: '88px' }}>
-      {/* Top Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-        <button
-          type="button"
-          className="btn-candy"
-          onClick={onBack}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', minHeight: '44px', margin: 0, fontSize: '12px' }}
-        >
-          <ArrowLeft size={16} strokeWidth={2.5} />
-          <span>Volver</span>
-        </button>
-        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent-text)', fontFamily: 'var(--font-mono)' }}>
+      {/* Editorial Top Header (first-level tab — no redundant Back button) */}
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
+        <h2 className="bt-page-title" style={{ margin: 0, fontSize: '24px', fontVariationSettings: '"opsz" 72' }}>Preparación Rápida</h2>
+        <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-text)', fontFamily: 'var(--font-mono)', padding: '3px 9px', borderRadius: 'var(--r-pill)', background: 'var(--accent-bg)' }}>
           {outputMode === 'cups' ? `Ref. ${CUP_ML} ml/taza` : 'Modo manual'}
         </span>
       </div>
-
-      <div style={{ marginBottom: '16px' }}>
-        <h2 className="bt-page-title" style={{ margin: '0 0 4px 0', fontSize: '20px' }}>Preparación Rápida</h2>
-        <p style={{ margin: 0, fontSize: '13px', color: 'var(--ink-muted)' }}>
-          Saca foto a la tarjeta del café, elige equipo y volumen, y obtén pasos calibrados con IA.
-        </p>
-      </div>
+      <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--ink-muted)' }}>
+        Escanea una bolsa o elige equipo y volumen para calibrar una receta con IA.
+      </p>
 
       {/* 1. Foto de Tarjeta / Datos del Café */}
       <section className="bt-section" style={{ marginBottom: '14px' }}>
@@ -734,46 +722,46 @@ export default function QuickBrewView({
         <span>{aiLoading ? 'Calculando receta con IA…' : 'Generar Receta Recomendada (IA)'}</span>
       </button>
 
-      {/* 3. Resultado IA (Grilla limpia 2x2 + Prep + Pasos detallados) */}
+      {/* 3. Resultado IA (Hoja editorial continua, elevación tonal sin ruido de bordes) */}
       {aiRecipe && syntheticRecipe && (
-        <section className="bt-section soft-fade-in">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '6px' }}>
+        <section className="bt-editorial-sheet soft-fade-in">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
             <h3 className="bt-section-title" style={{ margin: 0 }}>Receta Recomendada</h3>
             <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', padding: '3px 9px', borderRadius: 'var(--r-pill)', background: 'var(--accent-bg)', color: 'var(--accent-text)', fontWeight: 700 }}>
               {aiRecipe._model || (aiRecipe._source === 'groq' ? 'Groq IA' : 'Barista IA')}
             </span>
           </div>
 
-          {/* Grilla 2x2 limpia para móvil */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px', marginBottom: '10px' }}>
-            <div style={{ padding: '10px 12px', borderRadius: 'var(--r-control)', background: 'var(--raised)', border: '1px solid var(--line)' }}>
+          {/* Grilla 2x2 tonal sin bordes pesados */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px' }}>
+            <div style={{ padding: '10px 12px', borderRadius: 'var(--r-tile)', background: 'var(--fill)' }}>
               <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginBottom: '2px' }}>Dosis café</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 700, color: 'var(--accent-text)' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 700, color: 'var(--accent-text)', fontVariantNumeric: 'tabular-nums' }}>
                 {syntheticRecipe.dose_in_g}g
               </div>
             </div>
-            <div style={{ padding: '10px 12px', borderRadius: 'var(--r-control)', background: 'var(--raised)', border: '1px solid var(--line)' }}>
+            <div style={{ padding: '10px 12px', borderRadius: 'var(--r-tile)', background: 'var(--fill)' }}>
               <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginBottom: '2px' }}>Agua · Ratio {syntheticRecipe.ratio}</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 700, color: 'var(--ink)' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 700, color: 'var(--ink)', fontVariantNumeric: 'tabular-nums' }}>
                 {syntheticRecipe.water_total_g}g
               </div>
             </div>
-            <div style={{ padding: '10px 12px', borderRadius: 'var(--r-control)', background: 'var(--raised)', border: '1px solid var(--line)' }}>
+            <div style={{ padding: '10px 12px', borderRadius: 'var(--r-tile)', background: 'var(--fill)' }}>
               <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginBottom: '2px' }}>Temperatura</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 700, color: 'var(--ink)' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 700, color: 'var(--ink)', fontVariantNumeric: 'tabular-nums' }}>
                 {syntheticRecipe.temperature}°C
               </div>
             </div>
-            <div style={{ padding: '10px 12px', borderRadius: 'var(--r-control)', background: 'var(--raised)', border: '1px solid var(--line)' }}>
+            <div style={{ padding: '10px 12px', borderRadius: 'var(--r-tile)', background: 'var(--fill)' }}>
               <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginBottom: '2px' }}>Tiempo objetivo</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 700, color: 'var(--ink)' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 700, color: 'var(--ink)', fontVariantNumeric: 'tabular-nums' }}>
                 {syntheticRecipe.brew_time}
               </div>
             </div>
           </div>
 
           {/* Bloque de Molino */}
-          <div style={{ padding: '10px 12px', borderRadius: 'var(--r-control)', background: 'var(--fill)', marginBottom: '12px' }}>
+          <div style={{ padding: '10px 12px', borderRadius: 'var(--r-tile)', background: 'var(--fill)' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
               <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink-muted)' }}>{activeGrinderMeta.name}</span>
               {cleanMicrons && (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Nfc, CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
+import { Nfc, CheckCircle2, AlertCircle, Info, X, Scale } from 'lucide-react';
+import { useSharedTimemoreScale } from './context/TimemoreScaleContext';
 import Inventory from './components/Inventory';
 import BottomNav from './components/BottomNav';
 import { apiUrl } from './utils/api';
@@ -46,6 +47,7 @@ const getInitialRoute = () => {
 
 export default function App() {
   const initialRoute = getInitialRoute();
+  const scale = useSharedTimemoreScale();
   const [currentView, setCurrentView] = useState(initialRoute.view);
   const [batches, setBatches] = useState(null);
   const [selectedBatchId, setSelectedBatchId] = useState(initialRoute.batchId);
@@ -611,6 +613,18 @@ export default function App() {
           <span>BeanTag</span>
         </button>
         <div className="bt-appbar-actions">
+          {scale.connected && (
+            <button
+              type="button"
+              className="bt-ble-pill"
+              onClick={() => scale.tare()}
+              title="Balanza conectada — toca para tarar"
+              aria-label={`Balanza conectada: ${scale.weightG.toFixed(1)} gramos. Toca para tarar`}
+            >
+              <Scale size={13} aria-hidden="true" />
+              <span>{scale.weightG.toFixed(1)}g</span>
+            </button>
+          )}
           {currentUser && (
             <button
               type="button"
@@ -626,11 +640,9 @@ export default function App() {
             <button
               type="button"
               className="bt-appbar-btn bt-appbar-avatar"
-              onClick={async () => {
-                if (await confirmDialog(`¿Cerrar la sesión de ${currentUser.name || 'tu cuenta'}?`, { okText: 'Cerrar sesión' })) handleLogout();
-              }}
-              title="Cerrar sesión"
-              aria-label={`Cuenta de ${currentUser.name || 'usuario'}: cerrar sesión`}
+              onClick={() => handleNavigateTab('settings')}
+              title="Mi perfil y equipo"
+              aria-label={`Perfil de ${currentUser.name || 'usuario'}`}
             >
               {currentUser.picture ? (
                 <img src={currentUser.picture} alt="" />

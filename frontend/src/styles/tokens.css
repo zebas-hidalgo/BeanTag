@@ -80,10 +80,10 @@
   --r-card: 24px;
   --r-pill: 9999px;
 
-  /* Elevation */
-  --shadow-1: 0 1px 2px rgba(26, 23, 20, 0.05), 0 0 0 1px var(--line);
-  --shadow-2: 0 10px 30px -12px rgba(26, 23, 20, 0.22), 0 0 0 1px var(--line);
-  --shadow-float: 0 14px 34px -10px rgba(26, 23, 20, 0.35);
+  /* Elevation (2027/2028 Spatial Depth — no duplicate 1px ring) */
+  --shadow-1: 0 2px 8px -2px rgba(26, 23, 20, 0.06), 0 1px 2px rgba(26, 23, 20, 0.04);
+  --shadow-2: 0 12px 32px -12px rgba(26, 23, 20, 0.22);
+  --shadow-float: 0 14px 34px -10px rgba(26, 23, 20, 0.32);
 
   /* Layers */
   --z-raised: 10;
