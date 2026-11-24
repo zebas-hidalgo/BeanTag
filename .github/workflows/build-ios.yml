@@ -18,10 +18,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22'
 
@@ -57,7 +57,7 @@ jobs:
           zip -qry ../BeanTag.ipa Payload
 
       - name: Upload BeanTag.ipa Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: BeanTag-iOS-IPA
           path: frontend/ios/App/BeanTag.ipa
