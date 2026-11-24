@@ -151,7 +151,7 @@ export default function StickerShareModal({
         }}>
           <img
             src={shareImage}
-            alt="Vista previa del sticker (fondo transparente)"
+            alt="Vista previa del sticker"
             style={{
               maxWidth: '100%',
               maxHeight: 'calc(45dvh - 50px)',
@@ -162,7 +162,7 @@ export default function StickerShareModal({
               margin: '0 auto',
               background: stickerTransparent
                 ? 'repeating-conic-gradient(#26201B 0% 25%, #352D26 0% 50%) 50% / 24px 24px'
-                : 'repeating-conic-gradient(#D9D3CA 0% 25%, #F1EDE6 0% 50%) 50% / 24px 24px'
+                : 'transparent'
             }}
           />
         </div>

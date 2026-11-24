@@ -7,7 +7,6 @@ import { MethodIcon } from './icons/CoffeeIcons';
 import StickerShareModal from './StickerShareModal';
 import {
   DEFAULT_CARD_STYLE,
-  generateRecipeCardImage,
   generateCoffeeStickerImage
 } from '../utils/cardGenerator';
 
@@ -190,29 +189,32 @@ export default function QuickBrewView({ onBack, showToast }) {
     };
   }, [aiRecipe, doseOverride, method, doseInG, targetWaterMl, activeMethodObj.baseRatio]);
 
+  const renderSeqRef = useRef(0);
+
   const renderExportCard = async (
     styleId = shareTemplate,
     transparent = stickerTransparent,
     orientation = stickerOrientation,
-    mode = 'card',
     incRecipe = shareIncludeRecipe
   ) => {
     if (!syntheticRecipe) return;
+    const seq = ++renderSeqRef.current;
     setShareStatus('Generando tarjeta...');
     try {
       const mergedData = { ...syntheticBatch, ...syntheticRecipe, batch_name: syntheticBatch.name };
-      const img = mode === 'card'
-        ? await generateRecipeCardImage(mergedData, styleId, incRecipe)
-        : await generateCoffeeStickerImage(mergedData, {
-            style: styleId,
-            includeRecipe: incRecipe,
-            transparent,
-            orientation
-          });
+      const img = await generateCoffeeStickerImage(mergedData, {
+        style: styleId,
+        includeRecipe: incRecipe,
+        transparent,
+        orientation
+      });
+      if (seq !== renderSeqRef.current) return;
       setShareImage(img);
       setShareStatus('');
     } catch (err) {
-      setShareStatus('No se pudo generar la tarjeta.');
+      if (seq === renderSeqRef.current) {
+        setShareStatus('No se pudo generar la tarjeta.');
+      }
     }
   };
 
@@ -528,7 +530,7 @@ export default function QuickBrewView({ onBack, showToast }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             <button
               type="button"
-              onClick={() => renderExportCard(shareTemplate, stickerTransparent, stickerOrientation, 'card')}
+              onClick={() => renderExportCard(shareTemplate, stickerTransparent, stickerOrientation, shareIncludeRecipe)}
               className="barista-btn-secondary"
               style={{ minHeight: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', margin: 0, fontSize: '13px' }}
             >
@@ -555,22 +557,22 @@ export default function QuickBrewView({ onBack, showToast }) {
         shareTemplate={shareTemplate}
         onChangeTemplate={(id) => {
           setShareTemplate(id);
-          renderExportCard(id, stickerTransparent, stickerOrientation, 'card');
+          renderExportCard(id, stickerTransparent, stickerOrientation, shareIncludeRecipe);
         }}
         stickerOrientation={stickerOrientation}
         onChangeOrientation={(o) => {
           setStickerOrientation(o);
-          renderExportCard(shareTemplate, stickerTransparent, o, 'sticker');
+          renderExportCard(shareTemplate, stickerTransparent, o, shareIncludeRecipe);
         }}
         includeRecipe={shareIncludeRecipe}
         onChangeIncludeRecipe={(inc) => {
           setShareIncludeRecipe(inc);
-          renderExportCard(shareTemplate, stickerTransparent, stickerOrientation, 'card', inc);
+          renderExportCard(shareTemplate, stickerTransparent, stickerOrientation, inc);
         }}
         stickerTransparent={stickerTransparent}
         onChangeTransparent={(t) => {
           setStickerTransparent(t);
-          renderExportCard(shareTemplate, t, stickerOrientation, 'sticker');
+          renderExportCard(shareTemplate, t, stickerOrientation, shareIncludeRecipe);
         }}
         shareStatus={shareStatus}
         setShareStatus={setShareStatus}
