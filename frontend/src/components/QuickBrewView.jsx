@@ -77,8 +77,8 @@ export default function QuickBrewView({ onBack, showToast }) {
 
     try {
       setScanning(true);
-      const dataUrl = await compressImageForOcr(file, 1280, 0.85);
-      setPreviewUrl(dataUrl);
+      const { base64Data, mimeType } = await compressImageForOcr(file, 1280, 0.85);
+      setPreviewUrl(base64Data);
 
       const groqKey = localStorage.getItem('groq-key') || '';
       const useGroq = Boolean(groqKey && groqKey.trim());
@@ -89,7 +89,7 @@ export default function QuickBrewView({ onBack, showToast }) {
           'x-ai-provider': useGroq ? 'groq' : 'gemini',
           ...(useGroq ? { 'x-groq-key': groqKey } : { 'x-ai-model': 'gemini-2.5-flash' })
         },
-        body: JSON.stringify({ imageBase64: dataUrl, mimeType: 'image/jpeg' })
+        body: JSON.stringify({ imageBase64: base64Data, mimeType: mimeType || 'image/jpeg' })
       });
 
       const data = await res.json();
