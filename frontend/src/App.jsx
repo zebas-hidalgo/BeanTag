@@ -10,6 +10,7 @@ const BatchDetail = lazy(() => import('./components/BatchDetail'));
 const BatchCreator = lazy(() => import('./components/BatchCreator'));
 const BrewHistory = lazy(() => import('./components/BrewHistory'));
 const Settings = lazy(() => import('./components/Settings'));
+const QuickBrewView = lazy(() => import('./components/QuickBrewView'));
 const NfcToolsModal = lazy(() => import('./components/NfcToolsModal'));
 const AuthModal = lazy(() => import('./components/AuthModal'));
 
@@ -670,6 +671,7 @@ export default function App() {
                 setCurrentView('creator');
               }
             }}
+            onQuickBrew={() => setCurrentView('quick_brew')}
             onSubtractDose={handleSubtractDose}
             onRefreshBatches={fetchBatches}
             showToast={showToast}
@@ -677,6 +679,13 @@ export default function App() {
         )}
 
         <Suspense fallback={<div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="barista-spinner" /></div>}>
+          {currentView === 'quick_brew' && (
+            <QuickBrewView
+              onBack={() => handleNavigateTab('inventory')}
+              showToast={showToast}
+            />
+          )}
+
           {currentView === 'detail' && selectedBatchId && (
             <BatchDetail 
               key={selectedBatchId}

@@ -120,7 +120,7 @@ export const GRINDERS = [
       if (c <= 102) return Math.round(620 + ((c - 74) / 28) * 160);
       return Math.min(1300, Math.round(780 + ((c - 102) / 40) * 370));
     },
-    formatDial: (clicks) => `Kingrinder K6: ${clicks} clics (~${Math.floor(clicks / 60)}.${clicks % 60})`
+    formatDial: (clicks) => `Kingrinder K6: ${clicks} clics (~${Math.floor(clicks / 60)}.${String(clicks % 60).padStart(2, '0')})`
   },
   {
     id: 'timemore',

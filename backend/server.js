@@ -1782,33 +1782,38 @@ Devuelve OBLIGATORIAMENTE un JSON estructurado con estas claves:
 }`;
 
   try {
-    let bagData;
-    if (provider === 'groq' && groqKey) {
-      bagData = await callGroqWithRetry(
-        prompt,
-        groqKey,
-        'qwen/qwen3.8-27b',
-        true,
-        25000,
-        `data:${validMime};base64,${cleanBase64}`
-      );
-    } else if (geminiKey) {
+    const tryGeminiVision = async () => {
+      if (!geminiKey) return null;
       const multimodalContents = [
         {
           parts: [
             { text: prompt },
-            {
-              inlineData: {
-                mimeType: validMime,
-                data: cleanBase64
-              }
-            }
+            { inlineData: { mimeType: validMime, data: cleanBase64 } }
           ]
         }
       ];
-      bagData = await callGeminiWithRetry(multimodalContents, geminiKey, model, enableThinking);
-    } else {
-      return res.status(400).json({ error: 'Falta la clave API de IA en las cabeceras' });
+      const geminiModel = String(model || '').toLowerCase().includes('gemini') ? model : DEFAULT_GEMINI_MODEL;
+      return callGeminiWithRetry(multimodalContents, geminiKey, geminiModel, enableThinking);
+    };
+    const tryGroqVision = async () => {
+      if (!groqKey) return null;
+      return callGroqWithRetry(prompt, groqKey, 'qwen/qwen3.8-27b', true, 25000, `data:${validMime};base64,${cleanBase64}`);
+    };
+    const order = provider === 'groq' ? [tryGroqVision, tryGeminiVision] : [tryGeminiVision, tryGroqVision];
+    let bagData = null;
+    let lastErr = null;
+    for (const fn of order) {
+      try {
+        bagData = await fn();
+        if (bagData) break;
+      } catch (e) {
+        lastErr = e;
+        console.warn(`[AI Scan-Bag Cascade] Attempt failed: ${e.message}`);
+      }
+    }
+    if (!bagData) {
+      if (lastErr) throw lastErr;
+      return res.status(400).json({ error: 'Falta la clave API de IA en el servidor o en Ajustes' });
     }
     return res.json(bagData);
   } catch (err) {

@@ -235,7 +235,7 @@ function micronsToKingrinder(microns) {
   }
   const clamped = Math.max(12, Math.min(170, clicks));
   const rot = Math.floor(clamped / 60);
-  const rem = clamped % 60;
+  const rem = String(clamped % 60).padStart(2, '0');
   return `${clamped} clics (${rot} Rot. ${rem} Clics)`;
 }
 
