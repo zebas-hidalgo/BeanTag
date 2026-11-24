@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import { formatLocalDateStr } from '../utils/date';
 import { getScaIcon, stripEmojis, getScaColorForNote } from '../utils/scaIcons';
 import { Calculator, Scale, Droplet, Thermometer, Gauge, Timer, Coffee, Save, Edit2, Trash2, ArrowLeft, Settings2, X, Edit3, Nfc, Filter, Zap, BookOpen, ListOrdered, Mountain, Play, Share2, Image as ImageIcon, Award, Sparkles, ClipboardCopy, Layers, SlidersHorizontal, Cylinder, Compass, Target, Trophy, Sliders, Lightbulb, Check, Eye } from 'lucide-react';
@@ -80,6 +81,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const [autoOpenApp, setAutoOpenApp] = useState(() => {
     try { return localStorage.getItem('beantag-auto-open-app') === '1'; } catch { return false; }
   });
+  const [showManualLog, setShowManualLog] = useState(false);
+  const [showNfcPanel, setShowNfcPanel] = useState(false);
 
   const handleOpenInNativeApp = () => {
     if (!batch?.id) return;
@@ -1024,9 +1027,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   const handleRecipeSubmit = (e) => {
     e.preventDefault();
+    const safeDose = parseFloat(doseInG) || 18;
+    const safeRatio = parseFloat(ratioVal) || 16;
+    const safeOut = parseFloat(doseOutG) || 36;
     const ratioText = method === 'Espresso' 
-      ? `1:${(doseOutG / doseInG).toFixed(1)}` 
-      : `1:${ratioVal.toFixed(1)} (${(doseInG * ratioVal).toFixed(0)}g)`;
+      ? `1:${(safeOut / safeDose).toFixed(1)}` 
+      : `1:${safeRatio.toFixed(1)} (${(safeDose * safeRatio).toFixed(0)}g)`;
     const skipDeduct = Boolean(doseAlreadyConsumed);
 
     onSaveRecipe({
@@ -1040,10 +1046,10 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       sensory_balance: sensoryBalance,
       sensory_body: sensoryBody,
       sensory_extraction: sensoryExtraction,
-      dose_in_g: parseFloat(doseInG),
-      dose_out_g: method === 'Espresso' ? parseFloat(doseOutG) : null,
-      espresso_pressure: method === 'Espresso' ? parseFloat(espressoPressure) : null,
-      espresso_preinfusion: method === 'Espresso' ? parseInt(espressoPreinfusion) : null,
+      dose_in_g: safeDose,
+      dose_out_g: method === 'Espresso' ? safeOut : null,
+      espresso_pressure: method === 'Espresso' ? (parseFloat(espressoPressure) || 9) : null,
+      espresso_preinfusion: method === 'Espresso' ? (parseInt(espressoPreinfusion, 10) || 0) : null,
       skip_deduction: skipDeduct
     });
 
@@ -1391,7 +1397,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   const brewBarMethod = String(method || '').replace(/\s*\(.*\)\s*$/, '').replace(/^NextLevel\s+/i, '');
   return (
-    <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden', paddingBottom: '88px' }}>
+    <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', paddingBottom: '156px' }}>
       {/* Top Header - Row 1: Back Navigation + Compact iOS App handoff */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
         <button 
@@ -1745,43 +1751,69 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               getGrindString={getGrindString}
             />
 
-            {/* Registro manual sin cronómetro (plegado para separar antes vs. después de preparar) */}
+            {/* Registro manual sin cronómetro (toggle React determinístico, sin bugs de <details> en iOS) */}
             {isOwner ? (
-              <details className="bt-more" style={{ marginTop: '12px', marginBottom: '12px' }}>
-                <summary><Save size={15} aria-hidden="true" /> Registrar extracción sin cronómetro</summary>
-                <div style={{ paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div>
-                    <div className="bt-tile-k" id="bt-taste-label" style={{ marginBottom: '8px' }}>¿Cómo salió?</div>
-                    <div className="bt-taste" role="radiogroup" aria-labelledby="bt-taste-label">
-                      {[
-                        { id: 'Sub', label: 'Ácido', hint: 'Muele más fino', balance: 'Ácido' },
-                        { id: 'En Punto', label: 'Bien', hint: 'Repetir así', balance: 'Dulce' },
-                        { id: 'Sobre', label: 'Amargo', hint: 'Muele más grueso', balance: 'Amargo' }
-                      ].map(t => (
-                        <button
-                          key={t.id}
-                          type="button"
-                          role="radio"
-                          aria-checked={sensoryExtraction === t.id}
-                          className={`bt-taste-btn${sensoryExtraction === t.id ? ' is-active' : ''}`}
-                          onClick={() => { setSensoryExtraction(t.id); setSensoryBalance(t.balance); }}
-                        >
-                          {t.label}
-                          <small>{t.hint}</small>
-                        </button>
-                      ))}
+              <div className="bt-more" style={{ marginTop: '12px', marginBottom: '12px' }}>
+                <button
+                  type="button"
+                  aria-expanded={showManualLog}
+                  onClick={() => setShowManualLog(v => !v)}
+                  style={{
+                    width: '100%',
+                    minHeight: '44px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'transparent',
+                    border: 0,
+                    padding: 0,
+                    cursor: 'pointer',
+                    font: '500 var(--fs-14)/1 var(--font-body)',
+                    color: 'var(--accent)',
+                    textAlign: 'left'
+                  }}
+                >
+                  <Save size={15} aria-hidden="true" />
+                  <span>Registrar extracción sin cronómetro</span>
+                  <span style={{ marginLeft: 'auto', font: '500 var(--fs-20)/1 var(--font-data)', color: 'var(--ink-muted)' }}>
+                    {showManualLog ? '−' : '+'}
+                  </span>
+                </button>
+                {showManualLog && (
+                  <div style={{ paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div>
+                      <div className="bt-tile-k" id="bt-taste-label" style={{ marginBottom: '8px' }}>¿Cómo salió?</div>
+                      <div className="bt-taste" role="radiogroup" aria-labelledby="bt-taste-label">
+                        {[
+                          { id: 'Sub', label: 'Ácido', hint: 'Muele más fino', balance: 'Ácido' },
+                          { id: 'En Punto', label: 'Bien', hint: 'Repetir así', balance: 'Dulce' },
+                          { id: 'Sobre', label: 'Amargo', hint: 'Muele más grueso', balance: 'Amargo' }
+                        ].map(t => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            role="radio"
+                            aria-checked={sensoryExtraction === t.id}
+                            className={`bt-taste-btn${sensoryExtraction === t.id ? ' is-active' : ''}`}
+                            onClick={() => { setSensoryExtraction(t.id); setSensoryBalance(t.balance); }}
+                          >
+                            {t.label}
+                            <small>{t.hint}</small>
+                          </button>
+                        ))}
+                      </div>
                     </div>
+                    <button
+                      type="submit"
+                      className="barista-btn-secondary"
+                      style={{ width: '100%', minHeight: '44px', fontSize: '13.5px' }}
+                    >
+                      <Save size={16} />
+                      <span>Guardar en Bitácora</span>
+                    </button>
                   </div>
-                  <button
-                    type="submit"
-                    className="barista-btn-secondary"
-                    style={{ width: '100%', minHeight: '44px', fontSize: '13.5px' }}
-                  >
-                    <Save size={16} />
-                    <span>Guardar en Bitácora</span>
-                  </button>
-                </div>
-              </details>
+                )}
+              </div>
             ) : (
               !currentUser && (
                 <div style={{ marginTop: '12px', marginBottom: '12px' }}>
@@ -1798,91 +1830,119 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             )}
           </form>
 
-          {/* Sticky Thumb-Zone CTA: Empezar extracción */}
-          <div className="bt-sticky-cta">
-            <button
-              type="button"
-              className="bt-sticky-cta-main"
-              onClick={startBrewFromForm}
-            >
-              <Play size={17} fill="currentColor" aria-hidden="true" />
-              <span>Empezar · {brewBarMethod || 'Preparar'}</span>
-            </button>
-          </div>
-
         </div>
       )}
 
-      {/* Enlace / NFC y App iOS (plegado) */}
+      {/* Enlace / NFC y App iOS (toggle React determinístico) */}
       {(isOwner || isIosBrowser) && (
-      <details className="bt-more" style={{ marginBottom: '24px' }}>
-        <summary>
-          <Nfc size={16} aria-hidden="true" />{' '}
-          {isOwner && isIosBrowser
-            ? 'Enlace, etiqueta NFC y App iOS'
-            : isOwner
-              ? 'Enlace y etiqueta NFC'
-              : 'Abrir en App BeanTag (iOS)'}
-        </summary>
-        <div style={{ paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {isIosBrowser && batch?.id && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '10px',
-              flexWrap: 'wrap',
-              paddingBottom: isOwner ? '10px' : 0,
-              borderBottom: isOwner ? '1px solid var(--line)' : 'none'
-            }}>
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', fontSize: '12.5px', color: 'var(--color-text-main)', cursor: 'pointer', fontWeight: 500 }}>
-                <input
-                  type="checkbox"
-                  checked={autoOpenApp}
-                  onChange={(e) => toggleAutoOpenApp(e.target.checked)}
-                  style={{ accentColor: 'var(--accent)', margin: 0, width: '16px', height: '16px' }}
-                />
-                Abrir siempre automáticamente en la App iOS
-              </label>
-              <button
-                type="button"
-                className="btn-candy primary"
-                onClick={handleOpenInNativeApp}
-                style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 700, margin: 0, whiteSpace: 'nowrap' }}
-              >
-                Abrir en App
-              </button>
-            </div>
-          )}
-
-          {isOwner && (
-            <div>
-              <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 8px 0' }}>
-                URL directa de <strong>{batch.name}</strong> para Atajos de iOS o etiquetas NFC:
-              </p>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <input 
-                  type="text" 
-                  readOnly 
-                  aria-label="Enlace directo del lote"
-                  className="candy-input" 
-                  style={{ flex: 1, fontSize: '12px', margin: 0, padding: '6px' }}
-                  value={`${window.location.origin}/beantag/?batch=${encodeURIComponent(batch.id)}&action=new_brew`}
-                  onClick={(e) => e.target.select()}
-                />
-                <button 
-                  type="button" 
-                  className="btn-candy primary" 
-                  style={{ padding: '6px 12px', fontSize: '12px', whiteSpace: 'nowrap', margin: 0 }}
-                  onClick={handleWriteNfc}
+      <div className="bt-more" style={{ marginBottom: '24px' }}>
+        <button
+          type="button"
+          aria-expanded={showNfcPanel}
+          onClick={() => setShowNfcPanel(v => !v)}
+          style={{
+            width: '100%',
+            minHeight: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'transparent',
+            border: 0,
+            padding: 0,
+            cursor: 'pointer',
+            font: '500 var(--fs-14)/1 var(--font-body)',
+            color: 'var(--accent)',
+            textAlign: 'left'
+          }}
+        >
+          <Nfc size={16} aria-hidden="true" />
+          <span>
+            {isOwner && isIosBrowser
+              ? 'Enlace, etiqueta NFC y App iOS'
+              : isOwner
+                ? 'Enlace y etiqueta NFC'
+                : 'Abrir en App BeanTag (iOS)'}
+          </span>
+          <span style={{ marginLeft: 'auto', font: '500 var(--fs-20)/1 var(--font-data)', color: 'var(--ink-muted)' }}>
+            {showNfcPanel ? '−' : '+'}
+          </span>
+        </button>
+        {showNfcPanel && (
+          <div style={{ paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {isIosBrowser && batch?.id && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '10px',
+                flexWrap: 'wrap',
+                paddingBottom: isOwner ? '10px' : 0,
+                borderBottom: isOwner ? '1px solid var(--line)' : 'none'
+              }}>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', fontSize: '12.5px', color: 'var(--color-text-main)', cursor: 'pointer', fontWeight: 500 }}>
+                  <input
+                    type="checkbox"
+                    checked={autoOpenApp}
+                    onChange={(e) => toggleAutoOpenApp(e.target.checked)}
+                    style={{ accentColor: 'var(--accent)', margin: 0, width: '16px', height: '16px' }}
+                  />
+                  Abrir siempre automáticamente en la App iOS
+                </label>
+                <button
+                  type="button"
+                  className="btn-candy primary"
+                  onClick={handleOpenInNativeApp}
+                  style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 700, margin: 0, whiteSpace: 'nowrap' }}
                 >
-                  Copiar URL
+                  Abrir en App
                 </button>
               </div>
-            </div>
-          )}
-        </div>
-      </details>
+            )}
+
+            {isOwner && (
+              <div>
+                <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 8px 0' }}>
+                  URL directa de <strong>{batch.name}</strong> para Atajos de iOS o etiquetas NFC:
+                </p>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <input 
+                    type="text" 
+                    readOnly 
+                    aria-label="Enlace directo del lote"
+                    className="candy-input" 
+                    style={{ flex: 1, fontSize: '12px', margin: 0, padding: '6px' }}
+                    value={`${window.location.origin}/beantag/?batch=${encodeURIComponent(batch.id)}&action=new_brew`}
+                    onClick={(e) => e.target.select()}
+                  />
+                  <button 
+                    type="button" 
+                    className="btn-candy primary" 
+                    style={{ padding: '6px 12px', fontSize: '12px', whiteSpace: 'nowrap', margin: 0 }}
+                    onClick={handleWriteNfc}
+                  >
+                    Copiar URL
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      )}
+
+      {/* Sticky Thumb-Zone CTA rendered via Portal onto document.body (immune to ancestor transforms) */}
+      {typeof document !== 'undefined' && !isBrewGuideOpen && !shareImage && createPortal(
+        <div className="bt-sticky-cta">
+          <button
+            type="button"
+            className="bt-sticky-cta-main"
+            onClick={startBrewFromForm}
+          >
+            <Play size={17} fill="currentColor" aria-hidden="true" />
+            <span>Empezar · {brewBarMethod || 'Preparar'}</span>
+          </button>
+        </div>,
+        document.body
       )}
 
       {/* Modal de Compartir Sticker & Carta de Cafés */}
