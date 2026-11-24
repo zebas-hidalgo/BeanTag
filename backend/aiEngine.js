@@ -6,13 +6,14 @@
 
 const VALID_GEMINI_MODELS = [
   'gemini-2.5-flash',
-  'gemini-2.5-pro',
+  'gemini-3-flash-preview',
   'gemini-2.5-flash-lite',
-  'gemini-2.0-flash'
+  'gemini-3.8-flash',
+  'gemini-3.1-flash-lite'
 ];
 
 const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
-const FALLBACK_GEMINI_MODEL = 'gemini-2.5-pro';
+const FALLBACK_GEMINI_MODEL = 'gemini-3-flash-preview';
 
 /**
  * Sanitizes model name: maps deprecated/invalid model names to supported Google AI Studio models.
@@ -25,9 +26,8 @@ function sanitizeModel(requestedModel) {
   if (VALID_GEMINI_MODELS.includes(clean)) {
     return clean;
   }
-  if (clean.includes('pro')) return 'gemini-2.5-pro';
   if (clean.includes('lite')) return 'gemini-2.5-flash-lite';
-  if (clean.includes('2.0')) return 'gemini-2.0-flash';
+  if (clean.includes('3')) return 'gemini-3-flash-preview';
   return DEFAULT_GEMINI_MODEL;
 }
 
@@ -1505,10 +1505,9 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
   const cascadeOrder = [
     modelToTry,
     'gemini-2.5-flash',
-    'gemini-2.5-pro',
-    'gemini-2.0-flash',
-    DEFAULT_GEMINI_MODEL,
-    FALLBACK_GEMINI_MODEL
+    'gemini-3-flash-preview',
+    'gemini-2.5-flash-lite',
+    'gemini-3.8-flash'
   ];
   const models = [...new Set(cascadeOrder)];
 
