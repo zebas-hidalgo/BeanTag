@@ -72,6 +72,40 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       }, 250);
     }
   }, [batchId, batch?.id]);
+
+  // iOS Safari -> Sideloaded Capacitor App deep link (beantag://batch/<id>)
+  const isIosBrowser = typeof navigator !== 'undefined' &&
+    /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+    !(typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.());
+  const [autoOpenApp, setAutoOpenApp] = useState(() => {
+    try { return localStorage.getItem('beantag-auto-open-app') === '1'; } catch { return false; }
+  });
+
+  const handleOpenInNativeApp = () => {
+    if (!batch?.id) return;
+    window.location.href = `beantag://batch/${encodeURIComponent(batch.id)}`;
+  };
+
+  const toggleAutoOpenApp = (checked) => {
+    setAutoOpenApp(checked);
+    try {
+      if (checked) localStorage.setItem('beantag-auto-open-app', '1');
+      else localStorage.removeItem('beantag-auto-open-app');
+    } catch { /* ignore storage errors */ }
+  };
+
+  useEffect(() => {
+    if (!isIosBrowser || !autoOpenApp || !batch?.id) return;
+    const key = `beantag-auto-opened-${batch.id}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+    } catch { /* ignore */ }
+    const timer = setTimeout(() => {
+      window.location.href = `beantag://batch/${encodeURIComponent(batch.id)}`;
+    }, 180);
+    return () => clearTimeout(timer);
+  }, [isIosBrowser, autoOpenApp, batch?.id]);
   
   // Form fields (Default: NextLevel Pulsar Mini)
   const [method, setMethod] = useState('NextLevel Pulsar Mini');
@@ -1369,6 +1403,46 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           <span>Volver</span>
         </button>
       </div>
+
+      {/* iOS Safari -> App BeanTag (Sideloadly) Banner */}
+      {isIosBrowser && batch?.id && (
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1.5px solid var(--border-subtle)',
+          borderRadius: 'var(--r-control)',
+          padding: '10px 12px',
+          marginBottom: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '10px',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+            <Nfc size={17} strokeWidth={2.2} style={{ color: 'var(--accent)', flexShrink: 0 }} aria-hidden="true" />
+            <div style={{ fontSize: '12px', lineHeight: 1.3 }}>
+              <div style={{ fontWeight: 700, color: 'var(--color-text-main)' }}>App BeanTag (iOS)</div>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: 'var(--color-text-muted)', cursor: 'pointer', marginTop: '2px' }}>
+                <input
+                  type="checkbox"
+                  checked={autoOpenApp}
+                  onChange={(e) => toggleAutoOpenApp(e.target.checked)}
+                  style={{ accentColor: 'var(--accent)', margin: 0 }}
+                />
+                Abrir siempre automáticamente
+              </label>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn-candy primary"
+            onClick={handleOpenInNativeApp}
+            style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 700, margin: 0, whiteSpace: 'nowrap' }}
+          >
+            Abrir en App
+          </button>
+        </div>
+      )}
 
       {/* Guest Mode Banner */}
       {!isOwner && (

@@ -72,5 +72,18 @@
 	<string>BeanTag usa Bluetooth para comunicarse con tu balanza inteligente Timemore Dot.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>BeanTag usa la cámara para escanear bolsas de café y extraer sus datos con IA.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>app.beantag.barista</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>beantag</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
