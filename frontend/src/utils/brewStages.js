@@ -46,19 +46,20 @@ export function parseStages(recipe) {
   const isAeroPress = mLower.includes('aeropress') || mLower.includes('go');
   const isFrench = mLower.includes('prensa') || mLower.includes('french');
 
-  // Verify if existing recipe.pours matches the current method
+  // Verify if existing recipe.pours matches the current method (accent-insensitive + phase_type aware)
   const hasValidMethodPours = Array.isArray(recipe?.pours) && recipe.pours.length > 0 && (() => {
+    const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     if (isEspresso) {
-      return recipe.pours.length <= 3 && !recipe.pours.some(p => String(p.label || '').toLowerCase().includes('bloom'));
+      return recipe.pours.length <= 3 && !recipe.pours.some(p => norm(p.label).includes('bloom'));
     }
     if (isPulsar) {
-      return recipe.pours.some(p => p.valve || String(p.label || '').toLowerCase().includes('válvula') || String(p.description || '').toLowerCase().includes('válvula'));
+      return recipe.pours.some(p => p.valve || norm(`${p.label} ${p.description}`).includes('valvula'));
     }
     if (isAeroPress) {
-      return recipe.pours.some(p => String(p.label || p.description || '').toLowerCase().includes('prensa') || String(p.label || p.description || '').toLowerCase().includes('inmersi'));
+      return recipe.pours.some(p => ['press', 'steep', 'agitation'].includes(p.phase_type) || /prens|inmers|agit/.test(norm(`${p.label} ${p.description}`)));
     }
     if (isFrench) {
-      return recipe.pours.some(p => String(p.label || p.description || '').toLowerCase().includes('costra') || String(p.label || p.description || '').toLowerCase().includes('émbolo'));
+      return recipe.pours.some(p => ['press', 'steep', 'agitation'].includes(p.phase_type) || /costra|embolo|inmers|reposo|prens/.test(norm(`${p.label} ${p.description}`)));
     }
     return true;
   })();
@@ -72,7 +73,15 @@ export function parseStages(recipe) {
       let endSec = 0;
       let duration = 0;
 
-      if (typeof p.duration === 'number' && p.duration > 0) {
+      if (typeof p.start_sec === 'number' && typeof p.end_sec === 'number' && p.end_sec > p.start_sec) {
+        startSec = p.start_sec;
+        endSec = p.end_sec;
+        duration = endSec - startSec;
+      } else if (typeof p.duration_sec === 'number' && p.duration_sec > 0) {
+        duration = p.duration_sec;
+        startSec = runningTime;
+        endSec = startSec + duration;
+      } else if (typeof p.duration === 'number' && p.duration > 0) {
         duration = p.duration;
         startSec = runningTime;
         endSec = startSec + duration;

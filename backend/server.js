@@ -1418,6 +1418,37 @@ function getAiConfig(req) {
   };
 }
 
+/**
+ * Resilient multi-provider AI call: tries primary provider, then automatically fails over
+ * to the secondary cloud provider if configured (e.g. Gemini -> Groq or Groq -> Gemini).
+ */
+async function callAiWithCascade(promptOrContents, { provider, groqKey, geminiKey, model, enableThinking }) {
+  const tryGemini = async () => {
+    if (!geminiKey) return null;
+    const geminiModel = String(model || '').toLowerCase().includes('gemini') ? model : DEFAULT_GEMINI_MODEL;
+    return callGeminiWithRetry(promptOrContents, geminiKey, geminiModel, enableThinking);
+  };
+  const tryGroq = async () => {
+    if (!groqKey) return null;
+    const groqModel = (!model || String(model).toLowerCase().includes('gemini')) ? 'openai/gpt-oss-120b' : model;
+    return callGroqWithRetry(promptOrContents, groqKey, groqModel);
+  };
+
+  const order = provider === 'groq' ? [tryGroq, tryGemini] : [tryGemini, tryGroq];
+  let lastErr = null;
+  for (const fn of order) {
+    try {
+      const res = await fn();
+      if (res) return res;
+    } catch (err) {
+      lastErr = err;
+      console.warn(`[AI Cascade] Provider attempt failed: ${err.message}`);
+    }
+  }
+  if (lastErr) throw lastErr;
+  return null;
+}
+
 function getGeminiConfig(req) {
   const config = getAiConfig(req);
   const apiKey = config.geminiKey;
@@ -1544,7 +1575,7 @@ app.post('/api/recommend-recipe', async (req, res) => {
     recent_brews: recentBrews
   };
 
-  const hasKey = (provider === 'groq' && groqKey) || (provider === 'gemini' && geminiKey);
+  const hasKey = Boolean(groqKey || geminiKey);
   // If no API key is provided, gracefully serve the deterministic offline barista calculation
   if (!hasKey) {
     const offlineRec = computeOfflineRecipe(recipeParams);
@@ -1559,12 +1590,7 @@ app.post('/api/recommend-recipe', async (req, res) => {
   const prompt = generateAiRecipePrompt(recipeParams);
 
   try {
-    let recommendation = null;
-    if (provider === 'groq' && groqKey) {
-      recommendation = await callGroqWithRetry(prompt, groqKey, model);
-    } else if (provider === 'gemini' && geminiKey) {
-      recommendation = await callGeminiWithRetry(prompt, geminiKey, model, enableThinking);
-    }
+    const recommendation = await callAiWithCascade(prompt, { provider, groqKey, geminiKey, model, enableThinking });
     const recipeToNormalize = recommendation || computeOfflineRecipe(recipeParams);
     if (recipeToNormalize) {
       recipeToNormalize.is_frozen = isFrozen;
@@ -1612,7 +1638,7 @@ app.post('/api/ai/tune-recipe', async (req, res) => {
   const dose = parseFloat(dose_in_g) || 20.0;
   const activeGrinder = (grinder || 'jmax').toLowerCase();
 
-  const hasKey = (provider === 'groq' && groqKey) || (provider === 'gemini' && geminiKey);
+  const hasKey = Boolean(groqKey || geminiKey);
   // If no API key is provided, serve offline barista tuning calculation directly
   if (!hasKey) {
     const offlineTune = computeOfflineTuning({ ...req.body, grinder: activeGrinder });
@@ -1800,7 +1826,7 @@ app.post('/api/ai/sommelier', async (req, res) => {
     return res.status(400).json({ error: 'No hay lotes disponibles en el inventario para evaluar' });
   }
 
-  const hasKey = (provider === 'groq' && groqKey) || (provider === 'gemini' && geminiKey);
+  const hasKey = Boolean(groqKey || geminiKey);
   // If no API key is provided, serve deterministic offline sommelier directly
   if (!hasKey) {
     const fallbackResult = computeOfflineSommelier(batches, timeOfDay);
@@ -1851,12 +1877,7 @@ Selecciona el mejor lote para preparar ahora mismo y genera un JSON con esta est
 }`;
 
   try {
-    let sommelierResult = null;
-    if (provider === 'groq' && groqKey) {
-      sommelierResult = await callGroqWithRetry(prompt, groqKey, model);
-    } else if (provider === 'gemini' && geminiKey) {
-      sommelierResult = await callGeminiWithRetry(prompt, geminiKey, model, enableThinking);
-    }
+    const sommelierResult = await callAiWithCascade(prompt, { provider, groqKey, geminiKey, model, enableThinking });
     if (sommelierResult) {
       return res.json(sommelierResult);
     }

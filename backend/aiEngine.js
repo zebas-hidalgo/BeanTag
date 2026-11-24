@@ -363,22 +363,44 @@ function normalizeRecipe(rawRec, targetMethod, dose, requestedGrinder = 'femoboo
         { step: 3, label: 'Romper Costra & Desespumar', water_g: 0, time: '4:00 - 5:00', description: 'Romper la costra superficial con dos cucharas y retirar espuma flotante.' },
         { step: 4, label: 'Prensado Superficial y Servido', water_g: 0, time: '5:00 - 5:45', description: 'Bajar el émbolo solo hasta la superficie y servir decantando suavemente.' }
       ];
+    } else if (mLower.includes('chemex')) {
+      const bloom = Math.min(80, Math.round(doseNum * 3));
+      const rem = Math.max(0, waterTotalG - bloom);
+      const pulse1 = Math.round(rem * 0.55);
+      pours = [
+        { step: 1, phase_type: 'bloom', label: 'Bloom / Pre-infusión', water_g: bloom, time: '0:00 - 0:45', start_sec: 0, end_sec: 45, duration_sec: 45, description: 'Saturar uniformemente todo el lecho y dejar desgasificar.' },
+        { step: 2, phase_type: 'pour', label: '1º Vertido Principal', water_g: pulse1, time: '0:45 - 1:45', start_sec: 45, end_sec: 105, duration_sec: 60, description: 'Vertido espiral lento manteniendo nivel constante.' },
+        { step: 3, phase_type: 'pour', label: '2º Vertido Final', water_g: Math.max(0, rem - pulse1), time: '1:45 - 2:45', start_sec: 105, end_sec: 165, duration_sec: 60, description: 'Completar el agua objetivo al centro con flujo suave.' },
+        { step: 4, phase_type: 'drawdown', label: 'Caída Final / Drawdown', water_g: 0, time: '2:45 - 4:00', start_sec: 165, end_sec: 240, duration_sec: 75, description: 'Esperar drenado completo por filtro grueso hasta cama plana.' }
+      ];
     } else {
       const bloom = Math.min(65, Math.round(doseNum * 3));
       const rem = Math.max(0, waterTotalG - bloom);
       const pulse1 = Math.round(rem * 0.55);
       pours = [
-        { step: 1, label: 'Bloom / Pre-infusión', water_g: bloom, time: '0:00 - 0:45', description: 'Verter en espiral suave asegurando humectación completa.' },
-        { step: 2, label: '1º Vertido Principal', water_g: pulse1, time: '0:45 - 1:35', description: 'Vertido continuo y concéntrico sin tocar las paredes de papel.' },
-        { step: 3, label: '2º Vertido Final', water_g: Math.max(0, rem - pulse1), time: '1:35 - 2:45', description: 'Vertido de asentamiento. Ligero swirl al final para aplanar la cama.' }
+        { step: 1, phase_type: 'bloom', label: 'Bloom / Pre-infusión', water_g: bloom, time: '0:00 - 0:45', start_sec: 0, end_sec: 45, duration_sec: 45, description: 'Verter en espiral suave asegurando humectación completa.' },
+        { step: 2, phase_type: 'pour', label: '1º Vertido Principal', water_g: pulse1, time: '0:45 - 1:30', start_sec: 45, end_sec: 90, duration_sec: 45, description: 'Vertido continuo y concéntrico sin tocar las paredes de papel.' },
+        { step: 3, phase_type: 'pour', label: '2º Vertido Final', water_g: Math.max(0, rem - pulse1), time: '1:30 - 2:10', start_sec: 90, end_sec: 130, duration_sec: 40, description: 'Completar agua objetivo y realizar swirl suave para nivelar.' },
+        { step: 4, phase_type: 'drawdown', label: 'Caída Final / Drawdown', water_g: 0, time: '2:10 - 2:50', start_sec: 130, end_sec: 170, duration_sec: 40, description: 'Dejar drenar sin agitar hasta que la cama quede plana.' }
       ];
     }
   }
 
+  // Balance water ONLY across wet pouring phases (never inject water into dry drawdown/press/steep steps)
+  let lastWetIdx = -1;
+  pours.forEach((p, i) => {
+    const w = Math.round(parseFloat(p.water_g || p.water) || 0);
+    const pt = String(p.phase_type || '').toLowerCase();
+    if (w > 0 && !['drawdown', 'press', 'steep', 'agitation'].includes(pt)) {
+      lastWetIdx = i;
+    }
+  });
+  if (lastWetIdx === -1 && pours.length > 0) lastWetIdx = 0;
+
   let runningWater = 0;
   pours = pours.map((p, idx) => {
     let stepW = Math.round(parseFloat(p.water_g || p.water) || 0);
-    if (idx === pours.length - 1) {
+    if (idx === lastWetIdx) {
       stepW = Math.max(0, waterTotalG - runningWater);
     } else if (runningWater + stepW > waterTotalG) {
       stepW = Math.max(0, waterTotalG - runningWater);
@@ -835,9 +857,10 @@ function computeOfflineRecipe(batch) {
     ];
   } else if (isFrench) {
     pours = [
-      { step: 1, label: 'Infusión Total Inmersión', water_g: totalWaterG, total_water_g: totalWaterG, time: '0:00 - 0:45', description: 'Verter toda el agua de forma enérgica para asegurar humectación completa.' },
-      { step: 2, label: 'Ruptura de Costra', water_g: 0, total_water_g: totalWaterG, time: '3:30 - 4:00', description: 'Romper la costra superficial con cuchara y retirar la espuma de finos.' },
-      { step: 3, label: 'Filtrado / Prensado', water_g: 0, total_water_g: totalWaterG, time: '4:00 - 4:30', description: 'Colocar el émbolo en la superficie sin aplastar la cama y decantar.' }
+      { step: 1, phase_type: 'pour', label: 'Infusión Total Inmersión', water_g: totalWaterG, total_water_g: totalWaterG, time: '0:00 - 0:45', start_sec: 0, end_sec: 45, duration_sec: 45, description: 'Verter toda el agua de forma enérgica para asegurar humectación completa.' },
+      { step: 2, phase_type: 'steep', label: 'Inmersión y Reposo', water_g: 0, total_water_g: totalWaterG, time: '0:45 - 3:30', start_sec: 45, end_sec: 210, duration_sec: 165, description: 'Colocar la tapa sin bajar el émbolo y dejar infusionar en reposo.' },
+      { step: 3, phase_type: 'agitation', label: 'Ruptura de Costra', water_g: 0, total_water_g: totalWaterG, time: '3:30 - 4:00', start_sec: 210, end_sec: 240, duration_sec: 30, description: 'Romper la costra superficial con cuchara y retirar la espuma de finos.' },
+      { step: 4, phase_type: 'press', label: 'Filtrado / Prensado', water_g: 0, total_water_g: totalWaterG, time: '4:00 - 4:30', start_sec: 240, end_sec: 270, duration_sec: 30, description: 'Colocar el émbolo en la superficie sin aplastar la cama y decantar.' }
     ];
     steps = [
       `Moler ${dose}g de café a granulometría gruesa (${jmaxObj.display} J-Max).`,
@@ -1418,18 +1441,22 @@ Devuelve ÚNICAMENTE un objeto JSON con esta estructura exacta y sin texto adici
   "pours": [
     {
       "step": number,
+      "phase_type": "bloom" | "pour" | "agitation" | "steep" | "drawdown" | "press" | "preinfusion" | "extraction",
       "label": string,
       "title": string,
-      "water_g": number,
-      "total_water_g": number,
-      "time": string,
+      "water_g": number, // Agua PARCIAL de esta fase (0 para steep, agitation, drawdown o press)
+      "total_water_g": number, // Agua ACUMULADA hasta esta fase
+      "start_sec": number, // Continuo: pours[0].start_sec === 0 y pours[i].start_sec === pours[i-1].end_sec
+      "end_sec": number,
+      "duration_sec": number,
+      "time": string, // Formato exacto "MM:SS - MM:SS" sin huecos temporales
       "valve": "closed" | "half" | "open" | "none",
       "flow_rate": string,
-      "description": string
+      "description": string // Máximo 12 palabras
     }
   ],
   "steps": [
-    string
+    string // Preparación previa y resumen paso a paso
   ],
   "notes": string
 }`;
