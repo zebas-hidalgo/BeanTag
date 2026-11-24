@@ -775,14 +775,16 @@
 }
 .bt-action-compact {
   flex: 1 1 auto;
-  min-height: 38px !important;
+  min-height: 40px !important;
   padding: 6px 12px !important;
   font-size: 12px !important;
   margin: 0 !important;
 }
-.bt-action-danger {
+.bt-action-icon {
   flex: 0 0 auto !important;
-  min-width: 38px;
+  min-width: 40px;
   padding: 6px 10px !important;
+}
+.bt-action-danger {
   color: var(--bad) !important;
 }

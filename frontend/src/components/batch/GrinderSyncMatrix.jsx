@@ -33,22 +33,20 @@ export default function GrinderSyncMatrix({
 
   return (
     <div className="barista-card" style={{ marginBottom: '16px' }}>
-      <h3 className="bt-section-title" style={{ margin: '0 0 12px' }}>
-        {['ode2', 'baratza'].includes(activeGrinderMeta.id)
-          ? <ElectricGrinderIcon size={16} />
-          : <HandGrinderIcon size={16} />}
-        <span>Molienda</span>
-      </h3>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '12px' }}>
+        <h3 className="bt-section-title" style={{ margin: 0 }}>
+          {['ode2', 'baratza'].includes(activeGrinderMeta.id)
+            ? <ElectricGrinderIcon size={16} />
+            : <HandGrinderIcon size={16} />}
+          <span>Molienda</span>
+        </h3>
+        <span style={{ fontWeight: '600', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+          {activeGrinderMeta.name}
+        </span>
+      </div>
 
       {/* Controles Específicos para el Molino Activo */}
-      <div className="barista-card-subtle" style={{ padding: '14px', marginBottom: '12px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-          <div>
-            <div style={{ fontWeight: '600', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
-              {activeGrinderMeta.name}
-            </div>
-          </div>
-        </div>
+      <div style={{ marginBottom: '12px' }}>
 
         {/* 1. J-Max (Rot / Num / Click) */}
         {grinderType === 'jmax' && (

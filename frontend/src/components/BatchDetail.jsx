@@ -1392,8 +1392,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   const brewBarMethod = String(method || '').replace(/\s*\(.*\)\s*$/, '').replace(/^NextLevel\s+/i, '');
   return (
     <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
-      {/* Top Header - Row 1: Back Navigation + Status Badge */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+      {/* Top Header - Row 1: Back Navigation + Compact iOS App handoff */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
         <button 
           className="btn-candy" 
           onClick={onBack} 
@@ -1402,47 +1402,18 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           <ArrowLeft size={16} strokeWidth={2.5} />
           <span>Volver</span>
         </button>
-      </div>
-
-      {/* iOS Safari -> App BeanTag (Sideloadly) Banner */}
-      {isIosBrowser && batch?.id && (
-        <div style={{
-          background: 'var(--bg-card)',
-          border: '1.5px solid var(--border-subtle)',
-          borderRadius: 'var(--r-control)',
-          padding: '10px 12px',
-          marginBottom: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '10px',
-          flexWrap: 'wrap'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-            <Nfc size={17} strokeWidth={2.2} style={{ color: 'var(--accent)', flexShrink: 0 }} aria-hidden="true" />
-            <div style={{ fontSize: '12px', lineHeight: 1.3 }}>
-              <div style={{ fontWeight: 700, color: 'var(--color-text-main)' }}>App BeanTag (iOS)</div>
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: 'var(--color-text-muted)', cursor: 'pointer', marginTop: '2px' }}>
-                <input
-                  type="checkbox"
-                  checked={autoOpenApp}
-                  onChange={(e) => toggleAutoOpenApp(e.target.checked)}
-                  style={{ accentColor: 'var(--accent)', margin: 0 }}
-                />
-                Abrir siempre automáticamente
-              </label>
-            </div>
-          </div>
+        {isIosBrowser && batch?.id && (
           <button
             type="button"
             className="btn-candy primary"
             onClick={handleOpenInNativeApp}
-            style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 700, margin: 0, whiteSpace: 'nowrap' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '7px 12px', margin: 0, fontSize: '12px', fontWeight: 700 }}
           >
-            Abrir en App
+            <Nfc size={14} aria-hidden="true" />
+            <span>Abrir en App</span>
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Guest Mode Banner */}
       {!isOwner && (
@@ -1500,7 +1471,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       {(
         <div ref={brewFormRef} className="animate-entrance">
           <form onSubmit={handleRecipeSubmit}>
-            {/* ⚖️ Timemore Dot BLE Smart Scale Bar */}
+            {/* ⚖️ Timemore Dot BLE Smart Scale Bar (hidden when BLE unsupported & disconnected) */}
+            {(scale.connected || scale.isSupported) && (
             <div
               style={{
                 display: 'flex',
@@ -1508,11 +1480,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 justifyContent: 'space-between',
                 flexWrap: 'wrap',
                 gap: '8px',
-                padding: '9px 12px',
+                padding: scale.connected ? '9px 12px' : '4px 2px',
                 marginBottom: '12px',
                 borderRadius: 'var(--r-control)',
-                background: scale.connected ? 'rgba(16, 185, 129, 0.08)' : 'var(--surface)',
-                border: scale.connected ? '1.5px solid var(--ok, #10B981)' : '1px solid var(--border-color)',
+                background: scale.connected ? 'rgba(16, 185, 129, 0.08)' : 'transparent',
+                border: scale.connected ? '1.5px solid var(--ok, #10B981)' : 'none',
                 fontSize: '12px'
               }}
             >
@@ -1586,8 +1558,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     style={{
                       background: 'transparent',
                       border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--r-control)',
-                      padding: '4px 10px',
+                      borderRadius: 'var(--r-pill)',
+                      padding: '5px 11px',
                       color: 'var(--accent)',
                       fontWeight: 700,
                       fontSize: '11.5px',
@@ -1599,6 +1571,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 </>
               )}
             </div>
+            )}
             {doseAlreadyConsumed && (
               <div
                 role="status"
@@ -1650,7 +1623,27 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               doseAdjustmentFeedback={doseAdjustmentFeedback ? getDoseFeedbackForGrinder(doseAdjustmentFeedback, grinderType)?.deltaText : null}
             />
 
-            {/* Receta Recomendada por IA */}
+            {/* Receta Recomendada por IA (compact button when idle, full card only when active) */}
+            {!aiRecommendation ? (
+              <div style={{ marginBottom: '14px' }}>
+                <button
+                  type="button"
+                  className="btn-candy secondary"
+                  onClick={handleAiRecommend}
+                  disabled={aiLoading}
+                  style={{ width: '100%', padding: '10px 12px', fontSize: '12.5px', minHeight: '44px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px' }}
+                >
+                  {aiLoading ? (
+                    <span>Generando receta IA para {method}...</span>
+                  ) : (
+                    <>
+                      <Sparkles size={15} color="var(--barista-accent-honey)" />
+                      <span>Diseñar Receta IA ({method})</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            ) : (
             <div className="candy-card static" style={{ marginBottom: '16px', padding: '14px 12px', backgroundColor: 'var(--bg-card)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1662,8 +1655,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-crimson)', background: 'var(--bg-header)', padding: '2px 8px', borderRadius: 'var(--r-control)' }}>{doseInG}g</span>
               </div>
 
-              {aiRecommendation ? (
-                <div style={{ marginTop: '12px', padding: '12px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: 'var(--r-control)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ marginTop: '12px', padding: '12px', backgroundColor: 'var(--bg-canvas)', border: '1.5px solid var(--border-color)', borderRadius: 'var(--r-control)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {/* Badges de Parámetros Clave */}
                   {/* Badges de Parámetros Clave */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', textAlign: 'center' }}>
@@ -1722,19 +1714,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     </button>
                   </div>
                 </div>
-              ) : (
-                <button type="button" className="btn-candy secondary" onClick={handleAiRecommend} disabled={aiLoading} style={{ width: '100%', marginTop: '10px', padding: '8px', fontSize: '12px', minHeight: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                  {aiLoading ? (
-                    <span>Generando receta con Thinking Mode...</span>
-                  ) : (
-                    <>
-                      <Sparkles size={14} color="var(--barista-accent-honey)" />
-                      <span>Diseñar Receta IA</span>
-                    </>
-                  )}
-                </button>
-              )}
             </div>
+            )}
 
             {/* V4 Modular Grinder Sync Matrix */}
             <GrinderSyncMatrix
@@ -1856,34 +1837,75 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         </div>
       )}
 
-      {/* Enlace / NFC (plegado, solo propietario) */}
-      {isOwner && (
+      {/* Enlace / NFC y App iOS (plegado) */}
+      {(isOwner || isIosBrowser) && (
       <details className="bt-more" style={{ marginBottom: '24px' }}>
-        <summary><Nfc size={16} aria-hidden="true" /> Enlace y etiqueta NFC</summary>
-        <div style={{ paddingTop: '8px' }}>
-            <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 10px 0' }}>
-              URL directa de <strong>{batch.name}</strong> para Atajos de iOS o etiquetas NFC:
-            </p>
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
-              <input 
-                type="text" 
-                readOnly 
-                aria-label="Enlace directo del lote"
-                className="candy-input" 
-                style={{ flex: 1, fontSize: '12px', margin: 0, padding: '6px' }}
-                value={`${window.location.origin}/beantag/?batch=${encodeURIComponent(batch.id)}&action=new_brew`}
-                onClick={(e) => e.target.select()}
-              />
-              <button 
-                type="button" 
-                className="btn-candy primary" 
-                style={{ padding: '6px 12px', fontSize: '12px', whiteSpace: 'nowrap' }}
-                onClick={handleWriteNfc}
+        <summary>
+          <Nfc size={16} aria-hidden="true" />{' '}
+          {isOwner && isIosBrowser
+            ? 'Enlace, etiqueta NFC y App iOS'
+            : isOwner
+              ? 'Enlace y etiqueta NFC'
+              : 'Abrir en App BeanTag (iOS)'}
+        </summary>
+        <div style={{ paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {isIosBrowser && batch?.id && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px',
+              flexWrap: 'wrap',
+              paddingBottom: isOwner ? '10px' : 0,
+              borderBottom: isOwner ? '1px solid var(--line)' : 'none'
+            }}>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', fontSize: '12.5px', color: 'var(--color-text-main)', cursor: 'pointer', fontWeight: 500 }}>
+                <input
+                  type="checkbox"
+                  checked={autoOpenApp}
+                  onChange={(e) => toggleAutoOpenApp(e.target.checked)}
+                  style={{ accentColor: 'var(--accent)', margin: 0, width: '16px', height: '16px' }}
+                />
+                Abrir siempre automáticamente en la App iOS
+              </label>
+              <button
+                type="button"
+                className="btn-candy primary"
+                onClick={handleOpenInNativeApp}
+                style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 700, margin: 0, whiteSpace: 'nowrap' }}
               >
-                Copiar URL
+                Abrir en App
               </button>
             </div>
-                  </div>
+          )}
+
+          {isOwner && (
+            <div>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 8px 0' }}>
+                URL directa de <strong>{batch.name}</strong> para Atajos de iOS o etiquetas NFC:
+              </p>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <input 
+                  type="text" 
+                  readOnly 
+                  aria-label="Enlace directo del lote"
+                  className="candy-input" 
+                  style={{ flex: 1, fontSize: '12px', margin: 0, padding: '6px' }}
+                  value={`${window.location.origin}/beantag/?batch=${encodeURIComponent(batch.id)}&action=new_brew`}
+                  onClick={(e) => e.target.select()}
+                />
+                <button 
+                  type="button" 
+                  className="btn-candy primary" 
+                  style={{ padding: '6px 12px', fontSize: '12px', whiteSpace: 'nowrap', margin: 0 }}
+                  onClick={handleWriteNfc}
+                >
+                  Copiar URL
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </details>
       )}
 

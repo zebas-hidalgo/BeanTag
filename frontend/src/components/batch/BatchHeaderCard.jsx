@@ -127,7 +127,7 @@ export default function BatchHeaderCard({
           </div>
         )}
 
-        {/* Visual Stock Bar + Quick Deduction */}
+        {/* Visual Stock Bar (100% full width) */}
         <div className="bt-stock-row">
           <div className="bt-stock-info">
             <div className="bt-stock-head">
@@ -145,51 +145,57 @@ export default function BatchHeaderCard({
               />
             </div>
           </div>
-
-          {isOwner && (isBag ? remainingGrams > 0 : remainingDoses > 0) && (
-            <button
-              type="button"
-              className="bt-stock-btn"
-              onClick={onSubtractDose}
-            >
-              <MinusCircle size={15} aria-hidden="true" />
-              <span>{isBag ? `-${Math.round(doseWeightNum)}g` : '-1 tubo'}</span>
-            </button>
-          )}
         </div>
 
-        {/* Compact Action Footer */}
-        <div className="bt-label-actions">
-          <button
-            type="button"
-            className="barista-btn barista-btn-secondary bt-action-compact"
-            onClick={onOpenCardModal}
-          >
-            <Share2 size={15} aria-hidden="true" />
-            <span>Tarjeta</span>
-          </button>
-          {isOwner && (
-            <>
+        {/* Unified Action Footer */}
+        {(() => {
+          const canDeduct = isOwner && (isBag ? remainingGrams > 0 : remainingDoses > 0);
+          return (
+            <div className="bt-label-actions">
+              {canDeduct && (
+                <button
+                  type="button"
+                  className="barista-btn barista-btn-secondary bt-action-compact"
+                  onClick={onSubtractDose}
+                >
+                  <MinusCircle size={15} aria-hidden="true" />
+                  <span>{isBag ? `-${Math.round(doseWeightNum)}g` : '-1 tubo'}</span>
+                </button>
+              )}
               <button
                 type="button"
                 className="barista-btn barista-btn-secondary bt-action-compact"
-                onClick={onEditBatch}
+                onClick={onOpenCardModal}
               >
-                <Edit size={15} aria-hidden="true" />
-                <span>Editar</span>
+                <Share2 size={15} aria-hidden="true" />
+                <span>Tarjeta</span>
               </button>
-              <button
-                type="button"
-                className="barista-btn barista-btn-ghost bt-action-compact bt-action-danger"
-                aria-label="Eliminar lote"
-                title="Eliminar lote"
-                onClick={onDeleteBatch}
-              >
-                <Trash2 size={15} aria-hidden="true" />
-              </button>
-            </>
-          )}
-        </div>
+              {isOwner && (
+                <>
+                  <button
+                    type="button"
+                    className={`barista-btn barista-btn-secondary bt-action-compact${canDeduct ? ' bt-action-icon' : ''}`}
+                    aria-label="Editar lote"
+                    title="Editar lote"
+                    onClick={onEditBatch}
+                  >
+                    <Edit size={15} aria-hidden="true" />
+                    {!canDeduct && <span>Editar</span>}
+                  </button>
+                  <button
+                    type="button"
+                    className="barista-btn barista-btn-ghost bt-action-compact bt-action-icon bt-action-danger"
+                    aria-label="Eliminar lote"
+                    title="Eliminar lote"
+                    onClick={onDeleteBatch}
+                  >
+                    <Trash2 size={15} aria-hidden="true" />
+                  </button>
+                </>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </section>
   );
