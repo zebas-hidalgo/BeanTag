@@ -1579,6 +1579,8 @@ app.post('/api/recommend-recipe', async (req, res) => {
     optimize_min_dose: optimizeMinDose,
     target_water_g: targetWaterG,
     cups: cupsCount,
+    chamber_max_g: parseFloat(body.chamber_max_g) || null,
+    bypass_water_g: parseFloat(body.bypass_water_g) || null,
     grinder: grinderType,
     recent_brews: recentBrews
   };
