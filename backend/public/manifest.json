@@ -2,7 +2,8 @@
   "name": "BeanTag",
   "short_name": "BeanTag",
   "description": "Gestión de café specialty congelado con NFC.",
-  "start_url": "/",
+  "start_url": "/beantag/",
+  "scope": "/beantag/",
   "display": "standalone",
   "launch_handler": {
     "client_mode": "focus-existing"
@@ -11,17 +12,19 @@
   "theme_color": "#EEECE8",
   "icons": [
     {
-      "src": "/logo-192.png",
+      "src": "logo-192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
-      "src": "/logo-512.png",
+      "src": "logo-512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     },
     {
-      "src": "/logo.svg",
+      "src": "logo.svg",
       "type": "image/svg+xml",
       "sizes": "any"
     }
