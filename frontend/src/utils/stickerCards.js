@@ -16,7 +16,7 @@
  * Styles: stretch (Tipográfica), zine (Collage), lata (Lata), etiqueta (Etiqueta), origen (Origen).
  */
 
-export const STICKER_STYLES = ['stretch', 'zine', 'lata', 'etiqueta', 'origen'];
+export const STICKER_STYLES = ['stretch', 'zine', 'lata', 'etiqueta', 'origen', 'kissa', 'ceramica', 'botanico'];
 export const STICKER_SIZES = { horizontal: { w: 1280, h: 720 }, vertical: { w: 960, h: 1280 } };
 
 const SPEC = {
@@ -65,6 +65,21 @@ const THEMES = {
     card: '#EEE8DC', ink: '#1B1411', muted: '#5C554D', accent: CEREZA, rule: 'rgba(27,20,17,0.16)',
     title: { family: DISPLAY, weight: 700, lh: 1.0 },
     value: { family: SANS, weight: 600 }, notes: 'chips', chipBg: '#E2D9C8', sca: 'top', mark: [CEREZA, '#EEE8DC']
+  },
+  kissa: {
+    card: '#151210', ink: '#F6EFE7', muted: '#B5A89A', accent: '#E2A96F', rule: 'rgba(226,169,111,0.28)',
+    title: { family: SERIF, weight: 700, lh: 1.04 },
+    value: { family: MONO, weight: 600 }, notes: 'chips', chipBg: 'rgba(226,169,111,0.14)', sca: 'top', mark: ['#E2A96F', '#151210']
+  },
+  ceramica: {
+    card: '#F7F0E6', ink: '#261812', muted: '#6E5648', accent: '#B84A2E', rule: 'rgba(184,74,46,0.22)',
+    title: { family: SERIF, weight: 700, lh: 1.03 },
+    value: { family: SANS, weight: 600 }, notes: 'chips', chipBg: '#EDE1D2', sca: 'top', mark: ['#B84A2E', '#F7F0E6']
+  },
+  botanico: {
+    card: '#EEF4EE', ink: '#15241B', muted: '#4A6354', accent: '#23533C', rule: 'rgba(35,83,60,0.20)',
+    title: { family: DISPLAY, weight: 700, lh: 1.0 },
+    value: { family: MONO, weight: 600 }, notes: 'chips', chipBg: '#DDEADF', sca: 'top', mark: ['#23533C', '#EEF4EE']
   }
 };
 
@@ -375,8 +390,40 @@ function shape(ctx, style, d, sp, W, H, vertical, transparent = false) {
       : { x: x + strip + 52, y: y + p, w: w - strip - 52 - p, h: h - 2 * p };
   }
 
-  // stretch & origen: rounded card
+  // stretch, origen, kissa, ceramica, botanico: rounded card
   shadowed(ctx, () => { ctx.fillStyle = th.card; rr(ctx, x, y, w, h, 40); ctx.fill(); });
+  if (style === 'kissa') {
+    ctx.save(); rr(ctx, x, y, w, h, 40); ctx.clip();
+    const g = ctx.createRadialGradient(x + w * 0.85, y + h * 0.12, 20, x + w * 0.85, y + h * 0.12, Math.max(w, h) * 0.65);
+    g.addColorStop(0, 'rgba(226, 169, 111, 0.18)');
+    g.addColorStop(1, 'rgba(226, 169, 111, 0)');
+    ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = 'rgba(226, 169, 111, 0.34)'; ctx.lineWidth = 2.5;
+    rr(ctx, x + 22, y + 22, w - 44, h - 44, 24); ctx.stroke();
+    ctx.restore();
+    return { x: x + p + 12, y: y + p + 10, w: w - 2 * (p + 12), h: h - 2 * (p + 10) };
+  }
+  if (style === 'ceramica') {
+    ctx.save(); rr(ctx, x, y, w, h, 40); ctx.clip();
+    const g = ctx.createRadialGradient(x + w * 0.18, y + h * 0.14, 16, x + w * 0.18, y + h * 0.14, Math.max(w, h) * 0.6);
+    g.addColorStop(0, 'rgba(184, 74, 46, 0.11)');
+    g.addColorStop(1, 'rgba(184, 74, 46, 0)');
+    ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = 'rgba(184, 74, 46, 0.25)'; ctx.lineWidth = 2;
+    rr(ctx, x + 20, y + 20, w - 40, h - 40, 26); ctx.stroke();
+    ctx.restore();
+    return { x: x + p + 10, y: y + p + 8, w: w - 2 * (p + 10), h: h - 2 * (p + 8) };
+  }
+  if (style === 'botanico') {
+    ctx.save(); rr(ctx, x, y, w, h, 40); ctx.clip();
+    const g = ctx.createRadialGradient(x + w * 0.86, y + h * 0.85, 20, x + w * 0.86, y + h * 0.85, Math.max(w, h) * 0.62);
+    g.addColorStop(0, 'rgba(35, 83, 60, 0.13)');
+    g.addColorStop(1, 'rgba(35, 83, 60, 0)');
+    ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = '#23533C'; ctx.fillRect(x, y, w, 14);
+    ctx.restore();
+    return { x: x + p, y: y + p + 12, w: w - 2 * p, h: h - 2 * p - 12 };
+  }
   if (style === 'origen') {
     ctx.save(); rr(ctx, x, y, w, h, 40); ctx.clip();
     const rnd = seeded(`${d.name}${d.origin}`);

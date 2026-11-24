@@ -328,14 +328,16 @@
 }
 .bt-fab:active { transform: scale(0.94); }
 
-/* Batch card (inventory) — tonal elevation, roast accent */
+/* Batch card (inventory) — tonal elevation, subtle ambient roast sheen */
 .bt-batch {
   --roast: var(--roast-medium);
   position: relative;
   display: flex; flex-direction: column; gap: var(--space-3);
-  background: var(--surface);
+  background:
+    radial-gradient(100% 120% at 100% 0%, color-mix(in oklab, var(--roast) 8%, transparent) 0%, transparent 55%),
+    var(--surface);
   border: 1px solid color-mix(in oklab, var(--line) 50%, transparent);
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--shadow-1), inset 0 1px 0 var(--glass-edge, rgba(255, 255, 255, 0.06));
   border-radius: var(--r-card);
   padding: 14px;
   margin-bottom: var(--space-3);
@@ -627,11 +629,13 @@
 .bt-label-card {
   --roast: var(--roast-medium);
   margin: 0 0 16px;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in oklab, var(--roast) 10%, transparent) 0%, transparent 58%),
+    var(--surface);
+  border: 1px solid color-mix(in oklab, var(--line) 60%, transparent);
   border-radius: var(--r-card);
   overflow: hidden;
-  box-shadow: var(--shadow-sm, 0 2px 10px rgba(0, 0, 0, 0.04));
+  box-shadow: var(--shadow-1), inset 0 1px 0 var(--glass-edge, rgba(255, 255, 255, 0.08));
 }
 .bt-label-accent {
   height: 5px;

@@ -24,17 +24,20 @@ export const CARD_STYLES = TREND_STYLES;
 export const TREND_CARD_STYLES = TREND_STYLES;
 export const DEFAULT_CARD_STYLE = 'etiqueta';
 
-// The five card styles, in picker order (one tap, no other options)
+// Card styles, in picker order (one tap, no other options)
 export const CARD_STYLE_OPTIONS = [
+  { id: 'kissa', label: 'Kissa' },
+  { id: 'ceramica', label: 'Cerámica' },
+  { id: 'botanico', label: 'Botánico' },
+  { id: 'etiqueta', label: 'Etiqueta' },
+  { id: 'origen', label: 'Origen' },
   { id: 'stretch', label: 'Tipográfica' },
   { id: 'zine', label: 'Collage' },
-  { id: 'lata', label: 'Lata' },
-  { id: 'etiqueta', label: 'Etiqueta' },
-  { id: 'origen', label: 'Origen' }
+  { id: 'lata', label: 'Lata' }
 ];
 
 // Menus and stickers still use the trend skins: new story styles borrow the closest one
-const SKIN_FOR = { etiqueta: 'stretch', origen: 'zine' };
+const SKIN_FOR = { etiqueta: 'stretch', origen: 'zine', kissa: 'zine', ceramica: 'stretch', botanico: 'lata' };
 function skinStyle(style) { return SKIN_FOR[style] || (TREND_STYLES.includes(style) ? style : DEFAULT_CARD_STYLE); }
 
 // Old style ids (saved preferences, old links) map to their closest current style

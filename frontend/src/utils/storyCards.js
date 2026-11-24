@@ -13,7 +13,7 @@
  * Styles: stretch (Tipográfica), zine (Collage), lata (Lata), etiqueta (Etiqueta), origen (Origen).
  */
 
-export const STORY_STYLES = ['stretch', 'zine', 'lata', 'etiqueta', 'origen'];
+export const STORY_STYLES = ['stretch', 'zine', 'lata', 'etiqueta', 'origen', 'kissa', 'ceramica', 'botanico'];
 
 const W = 1080;
 const H = 1920;
@@ -713,7 +713,16 @@ function drawOrigen(ctx, d, inc, lv) {
 }
 
 // ---------------------------------------------------------------------------
-const DRAW = { stretch: drawStretch, zine: drawZine, lata: drawLata, etiqueta: drawEtiqueta, origen: drawOrigen };
+const DRAW = {
+  stretch: drawStretch,
+  zine: drawZine,
+  lata: drawLata,
+  etiqueta: drawEtiqueta,
+  origen: drawOrigen,
+  kissa: drawZine,
+  ceramica: drawEtiqueta,
+  botanico: drawOrigen
+};
 
 export function drawStoryCard(ctx, style, d, incRecipe) {
   const fn = DRAW[style] || drawStretch;
