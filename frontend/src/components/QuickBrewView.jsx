@@ -1,11 +1,13 @@
 import React, { useState, useRef, useMemo, lazy, Suspense } from 'react';
 import {
   ArrowLeft, Camera, Upload, Sparkles, Play, Share2, Loader2,
-  Minus, Plus, Coffee, CheckCircle2, AlertTriangle, Lock, Zap, Unlock, Droplet
+  Minus, Plus, Coffee, CheckCircle2, AlertTriangle, Lock, Zap, Unlock, Droplet,
+  BookmarkPlus, Sliders, Check
 } from 'lucide-react';
 import { apiUrl } from '../utils/api';
 import { compressImageForOcr } from '../utils/imageCompressor';
 import { GRINDERS, getGrinderConfig } from '../utils/grinders';
+import { computeSensoryCorrection } from '../utils/sensoryTuner';
 import { MethodIcon } from './icons/CoffeeIcons';
 import StickerShareModal from './StickerShareModal';
 import {
@@ -75,7 +77,28 @@ function formatMicronsClean(val) {
   return num ? `~${num} µm` : '';
 }
 
-export default function QuickBrewView({ onBack, showToast }) {
+const QUICK_TASTE_PRESETS = [
+  { id: 'sour', label: 'Muy ácida', feedback: { taste: 'sour', flow: 'fast', body: 'balanced' } },
+  { id: 'bitter', label: 'Muy amarga', feedback: { taste: 'bitter', flow: 'slow', body: 'balanced' } },
+  { id: 'thin', label: 'Aguada', feedback: { taste: 'balanced', flow: 'fast', body: 'thin' } },
+  { id: 'balanced', label: 'Equilibrada', feedback: { taste: 'balanced', flow: 'on_time', body: 'balanced' } }
+];
+
+function slugifyBatchId(name) {
+  const base = String(name || 'cafe')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32) || 'cafe';
+  return `${base}-${Date.now().toString(36).slice(-4)}`;
+}
+
+export default function QuickBrewView({
+  onBack,
+  showToast,
+  currentUser,
+  onRequireAuth,
+  onRefreshBatches,
+  onOpenBatch
+}) {
   const cameraInputRef = useRef(null);
   const uploadInputRef = useRef(null);
   const renderSeqRef = useRef(0);
@@ -127,6 +150,102 @@ export default function QuickBrewView({ onBack, showToast }) {
   const [aiRecipe, setAiRecipe] = useState(null);
   const [brewOpen, setBrewOpen] = useState(false);
 
+  // Save to inventory & quick post-cup sensory tuner state
+  const [savingBatch, setSavingBatch] = useState(false);
+  const [savedBatchId, setSavedBatchId] = useState(null);
+  const [quickTasteId, setQuickTasteId] = useState(null);
+  const [tunerPreview, setTunerPreview] = useState(null);
+
+  const handleSaveToInventory = async () => {
+    if (savedBatchId && onOpenBatch) {
+      onOpenBatch(savedBatchId);
+      return;
+    }
+    if (!currentUser) {
+      if (showToast) showToast('Inicia sesión para guardar este café en Mis Cafés.', { type: 'info' });
+      if (onRequireAuth) onRequireAuth();
+      return;
+    }
+    const cleanName = (bean.name || '').trim() || 'Café de Especialidad';
+    const rawNotes = (bean.roaster_notes || '').trim();
+    const formattedNotes = rawNotes && !rawNotes.includes('[Notas:')
+      ? `[Notas: ${rawNotes}]`
+      : rawNotes;
+
+    setSavingBatch(true);
+    try {
+      const payload = {
+        id: slugifyBatchId(cleanName),
+        name: cleanName,
+        roaster: (bean.roaster || '').trim() || 'Tueste de especialidad',
+        producer: (bean.producer || '').trim() || (bean.roaster || '').trim() || 'Especialidad',
+        origin: (bean.origin || '').trim(),
+        variety: (bean.variety || '').trim(),
+        process: (bean.process || '').trim(),
+        altitude: (bean.altitude || '').trim(),
+        roast_level: bean.roast_level || 'Medio',
+        roaster_notes: formattedNotes,
+        sca_score: bean.sca_score ? parseFloat(bean.sca_score) : null,
+        storage_type: 'bag',
+        total_weight_g: 250,
+        dose_weight: syntheticRecipe?.dose_in_g || doseInG
+      };
+      const res = await fetch(apiUrl('api/batches'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'No se pudo guardar el café.');
+      const newId = data.id || payload.id;
+      setSavedBatchId(newId);
+      if (onRefreshBatches) onRefreshBatches();
+      if (showToast) showToast(`"${cleanName}" guardado en Mis Cafés.`, { type: 'success' });
+    } catch (err) {
+      if (showToast) showToast(err.message || 'Error al guardar el café.', { type: 'error' });
+    } finally {
+      setSavingBatch(false);
+    }
+  };
+
+  const handleQuickTaste = (preset) => {
+    if (!aiRecipe) return;
+    setQuickTasteId(preset.id);
+    const currentDial = aiRecipe.active_grinder_dial?.dial || aiRecipe.grind || '';
+    const currentTemp = parseFloat(String(aiRecipe.temperature || 93).replace(/[^0-9.]/g, '')) || 93;
+    const correction = computeSensoryCorrection(grinder, currentDial, currentTemp, preset.feedback);
+    setTunerPreview(correction);
+  };
+
+  const applyGrindAndTemp = (newGrindText, newTemp) => {
+    setAiRecipe((prev) => {
+      if (!prev) return prev;
+      const grinderName = prev.active_grinder_dial?.grinder_name || activeGrinderMeta.name;
+      return {
+        ...prev,
+        temperature: newTemp ? `${newTemp}°C` : prev.temperature,
+        grind: newGrindText || prev.grind,
+        active_grinder_dial: prev.active_grinder_dial
+          ? { ...prev.active_grinder_dial, dial: newGrindText || prev.active_grinder_dial.dial }
+          : { grinder_name: grinderName, dial: newGrindText }
+      };
+    });
+  };
+
+  const handleApplyTuning = () => {
+    if (!tunerPreview) return;
+    applyGrindAndTemp(tunerPreview.newGrindText, tunerPreview.newTemp);
+    setTunerPreview(null);
+    setQuickTasteId(null);
+    if (showToast) showToast('Receta recalibrada con el nuevo ajuste de molienda y temperatura.', { type: 'success' });
+  };
+
+  const handleSaveTunedFromGuide = async (tunedData) => {
+    if (!tunedData) return;
+    applyGrindAndTemp(tunedData.newGrindText || tunedData.grind, tunedData.newTemp || tunedData.temperature);
+    if (showToast) showToast('Ajuste del cronómetro aplicado a tu receta rápida.', { type: 'success' });
+  };
+
   // Share card state
   const [shareImage, setShareImage] = useState(null);
   const [shareTemplate, setShareTemplate] = useState(DEFAULT_CARD_STYLE);
@@ -144,6 +263,7 @@ export default function QuickBrewView({ onBack, showToast }) {
       setScanning(true);
       const { base64Data, mimeType } = await compressImageForOcr(file, 1280, 0.85);
       setPreviewUrl(base64Data);
+      setSavedBatchId(null);
 
       const groqKey = localStorage.getItem('groq-key') || '';
       const useGroq = Boolean(groqKey && groqKey.trim());
@@ -217,6 +337,8 @@ export default function QuickBrewView({ onBack, showToast }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al generar receta.');
       setAiRecipe(data);
+      setTunerPreview(null);
+      setQuickTasteId(null);
     } catch (err) {
       if (showToast) showToast(err.message || 'Error al generar la receta.', { type: 'error', duration: 4000 });
     } finally {
@@ -745,7 +867,79 @@ export default function QuickBrewView({ onBack, showToast }) {
             </div>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          {/* Ajuste rápido post-taza (sensoryTuner) */}
+          <div style={{
+            padding: '12px',
+            borderRadius: 'var(--r-control)',
+            background: 'var(--fill)',
+            border: '1px solid var(--line)',
+            marginBottom: '12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-muted)' }}>
+              <Sliders size={13} aria-hidden="true" />
+              <span>¿Cómo quedó la taza? Ajuste rápido</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '6px' }}>
+              {QUICK_TASTE_PRESETS.map((preset) => {
+                const active = quickTasteId === preset.id;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => handleQuickTaste(preset)}
+                    style={{
+                      minHeight: '36px',
+                      padding: '6px 10px',
+                      borderRadius: 'var(--r-pill)',
+                      border: `1px solid ${active ? 'var(--accent)' : 'var(--line)'}`,
+                      background: active ? 'color-mix(in oklab, var(--accent) 14%, var(--surface))' : 'var(--surface)',
+                      color: active ? 'var(--accent-text, var(--ink))' : 'var(--ink)',
+                      fontSize: '12px',
+                      fontWeight: active ? 700 : 500,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {preset.label}
+                  </button>
+                );
+              })}
+            </div>
+            {tunerPreview && (
+              <div style={{
+                padding: '10px',
+                borderRadius: 'var(--r-control)',
+                background: 'var(--surface)',
+                border: '1px solid var(--line)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 700, color: 'var(--ink)' }}>
+                    {tunerPreview.newGrindText} · {tunerPreview.newTemp}°C
+                  </span>
+                  {tunerPreview.diagnosis !== 'balanced' && (
+                    <button
+                      type="button"
+                      className="btn-candy primary"
+                      onClick={handleApplyTuning}
+                      style={{ padding: '5px 10px', fontSize: '11px', fontWeight: 700, margin: 0 }}
+                    >
+                      Aplicar ajuste
+                    </button>
+                  )}
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--ink-2)', lineHeight: 1.4 }}>
+                  {tunerPreview.explanation}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
             <button
               type="button"
               onClick={() => renderExportCard(shareTemplate, stickerTransparent, stickerOrientation, shareIncludeRecipe)}
@@ -762,9 +956,42 @@ export default function QuickBrewView({ onBack, showToast }) {
               style={{ minHeight: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '13px' }}
             >
               <Play size={16} fill="currentColor" />
-              <span>Preparar</span>
+              <span>Cronómetro guiado</span>
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={handleSaveToInventory}
+            disabled={savingBatch}
+            className="barista-btn-secondary"
+            style={{
+              width: '100%',
+              minHeight: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '7px',
+              margin: 0,
+              fontSize: '13px',
+              fontWeight: 600
+            }}
+          >
+            {savingBatch ? (
+              <Loader2 size={15} className="spin" />
+            ) : savedBatchId ? (
+              <Check size={15} />
+            ) : (
+              <BookmarkPlus size={15} />
+            )}
+            <span>
+              {savingBatch
+                ? 'Guardando en Mis Cafés...'
+                : savedBatchId
+                  ? 'Guardado en Mis Cafés · Ver ficha'
+                  : 'Guardar café en Mis Cafés'}
+            </span>
+          </button>
         </section>
       )}
 
@@ -825,7 +1052,7 @@ export default function QuickBrewView({ onBack, showToast }) {
             onClose={() => setBrewOpen(false)}
             recipe={syntheticRecipe}
             batch={syntheticBatch}
-            onSaveTunedRecipe={null}
+            onSaveTunedRecipe={handleSaveTunedFromGuide}
           />
         </Suspense>
       )}

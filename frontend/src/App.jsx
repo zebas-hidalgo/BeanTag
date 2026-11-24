@@ -682,6 +682,10 @@ export default function App() {
             <QuickBrewView
               onBack={() => handleNavigateTab('inventory')}
               showToast={showToast}
+              currentUser={currentUser}
+              onRequireAuth={() => setShowAuthModal(true)}
+              onRefreshBatches={fetchBatches}
+              onOpenBatch={(batchId) => handleSelectBatch(batchId)}
             />
           )}
 
