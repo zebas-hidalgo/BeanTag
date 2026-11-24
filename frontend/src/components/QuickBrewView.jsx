@@ -636,26 +636,26 @@ export default function QuickBrewView({
               <Droplet size={14} />
               <span>{isEspresso ? 'Yield objetivo' : 'Agua objetivo'}</span>
             </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button
-                type="button"
-                className="barista-stepper-btn"
-                aria-label="Restar agua"
-                onClick={() => setManualWaterMl(v => Math.max(isEspresso ? 20 : 100, v - (isEspresso ? 4 : 20)))}
-              >
-                <Minus size={14} />
-              </button>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 700, minWidth: '62px', textAlign: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '15px', fontWeight: 700, textAlign: 'right' }}>
                 {targetWaterMl} {isEspresso ? 'g' : 'ml'}
               </span>
-              <button
-                type="button"
-                className="barista-stepper-btn"
-                aria-label="Sumar agua"
-                onClick={() => setManualWaterMl(v => Math.min(isEspresso ? 90 : 1200, v + (isEspresso ? 4 : 20)))}
-              >
-                <Plus size={14} />
-              </button>
+              <div className="bt-stepper-pill is-inline">
+                <button
+                  type="button"
+                  aria-label="Restar agua"
+                  onClick={() => setManualWaterMl(v => Math.max(isEspresso ? 20 : 100, v - (isEspresso ? 4 : 20)))}
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  aria-label="Sumar agua"
+                  onClick={() => setManualWaterMl(v => Math.min(isEspresso ? 90 : 1200, v + (isEspresso ? 4 : 20)))}
+                >
+                  +
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -698,26 +698,26 @@ export default function QuickBrewView({
               </button>
             )}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              type="button"
-              className="barista-stepper-btn"
-              aria-label="Restar 0.5g"
-              onClick={() => setDoseOverride(Math.max(5, Math.round((doseInG - 0.5) * 10) / 10))}
-            >
-              <Minus size={14} />
-            </button>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 700, minWidth: '56px', textAlign: 'center', color: doseOverride === null ? 'var(--accent-text)' : 'var(--ink)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '15px', fontWeight: 700, textAlign: 'right', color: doseOverride === null ? 'var(--accent-text)' : 'var(--ink)' }}>
               {doseOverride === null ? (aiRecipe?.dose_in_g ? `${aiRecipe.dose_in_g}g` : 'Auto') : `${doseInG}g`}
             </span>
-            <button
-              type="button"
-              className="barista-stepper-btn"
-              aria-label="Sumar 0.5g"
-              onClick={() => setDoseOverride(Math.round((doseInG + 0.5) * 10) / 10)}
-            >
-              <Plus size={14} />
-            </button>
+            <div className="bt-stepper-pill is-inline">
+              <button
+                type="button"
+                aria-label="Restar 0.5g"
+                onClick={() => setDoseOverride(Math.max(5, Math.round((doseInG - 0.5) * 10) / 10))}
+              >
+                −
+              </button>
+              <button
+                type="button"
+                aria-label="Sumar 0.5g"
+                onClick={() => setDoseOverride(Math.round((doseInG + 0.5) * 10) / 10)}
+              >
+                +
+              </button>
+            </div>
           </div>
         </div>
       </section>
