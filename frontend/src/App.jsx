@@ -46,7 +46,7 @@ const getInitialRoute = () => {
 export default function App() {
   const initialRoute = getInitialRoute();
   const [currentView, setCurrentView] = useState(initialRoute.view);
-  const [batches, setBatches] = useState([]);
+  const [batches, setBatches] = useState(null);
   const [selectedBatchId, setSelectedBatchId] = useState(initialRoute.batchId);
   const [prefillRecipe, setPrefillRecipe] = useState(null);
   const [autoStartBrew, setAutoStartBrew] = useState(false);
@@ -227,6 +227,7 @@ export default function App() {
       })
       .catch(err => {
         console.error('fetchBatches error:', err);
+        setBatches(prev => (prev === null ? [] : prev));
         showToast('No se pudo cargar el inventario. Verifica tu conexión.', { type: 'error', duration: 4000 });
       });
   };
@@ -347,7 +348,6 @@ export default function App() {
       setSelectedBatchId(null);
       setPrefillRecipe(null);
       setConsumedFromRack(null);
-      dismissToast();
     }
     fetchBatches();
   };
@@ -600,24 +600,27 @@ export default function App() {
           onClick={() => handleNavigateTab('inventory')}
           aria-label="Ir a mi cava"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
-            <rect x="4" y="2.5" width="16" height="19" rx="3.5" stroke="var(--color-text)" strokeWidth="1.8" />
-            <circle cx="12" cy="6" r="1.3" fill="var(--color-crimson)" />
-            <ellipse cx="12" cy="13.5" rx="4.2" ry="3.2" transform="rotate(-24 12 13.5)" stroke="var(--color-crimson)" strokeWidth="1.8" />
-            <path d="M9.6 15.2C11.1 13.4 12.9 13.6 14.4 11.8" stroke="var(--color-crimson)" strokeWidth="1.5" strokeLinecap="round" />
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="22" height="22" aria-hidden="true">
+            <g transform="rotate(-28 50 50)">
+              <ellipse cx="50" cy="52" rx="29" ry="40" fill="var(--brand, #C23B22)" />
+              <path d="M50 31 C 40 45, 60 58, 50 72 C 46 78, 47 84, 50 88" fill="none" stroke="var(--surface, #FBFAF8)" strokeWidth="6" strokeLinecap="round" />
+              <circle cx="50" cy="21" r="4.8" fill="var(--surface, #FBFAF8)" />
+            </g>
           </svg>
           <span>BeanTag</span>
         </button>
         <div className="bt-appbar-actions">
-          <button
-            type="button"
-            className="bt-appbar-btn"
-            onClick={() => setShowNfcTools(true)}
-            title="Herramientas NFC"
-            aria-label="Herramientas NFC"
-          >
-            <Nfc size={18} strokeWidth={2} />
-          </button>
+          {currentUser && (
+            <button
+              type="button"
+              className="bt-appbar-btn"
+              onClick={() => setShowNfcTools(true)}
+              title="Herramientas NFC"
+              aria-label="Herramientas NFC"
+            >
+              <Nfc size={18} strokeWidth={2} />
+            </button>
+          )}
           {currentUser ? (
             <button
               type="button"
@@ -832,7 +835,7 @@ export default function App() {
       </Suspense>
 
       {/* Genjutsu Floating Bottom Navigation Bar */}
-      <BottomNav currentView={currentView} setCurrentView={handleNavigateTab} />
+      <BottomNav currentView={currentView} setCurrentView={handleNavigateTab} canCreate={Boolean(currentUser)} />
     </div>
   );
 }

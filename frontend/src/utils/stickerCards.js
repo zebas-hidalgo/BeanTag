@@ -529,6 +529,11 @@ function altitudeHero(ctx, th, sp, d, x, y, k, vertical) {
 // ---------------------------------------------------------------------------
 function layoutVertical(ctx, style, d, inc, sp, r, lv, transparent = false) {
   const th = themeOf(style, transparent);
+  if (transparent) {
+    ctx.shadowColor = 'rgba(18, 15, 13, 0.58)';
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 2;
+  }
   let y = r.y;
   const bottomBrand = r.y + r.h;
   const brandH = Math.round(sp.foot * 1.3);
@@ -575,6 +580,11 @@ function layoutVertical(ctx, style, d, inc, sp, r, lv, transparent = false) {
 
 function layoutHorizontal(ctx, style, d, inc, sp, r, lv, transparent = false) {
   const th = themeOf(style, transparent);
+  if (transparent) {
+    ctx.shadowColor = 'rgba(18, 15, 13, 0.58)';
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 2;
+  }
   const leftW = Math.round(r.w * 0.56);
   const rightX = r.x + leftW + 48;
   const rightW = r.w - leftW - 48;

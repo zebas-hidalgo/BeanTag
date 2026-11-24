@@ -20,6 +20,8 @@ const getMethodLucideIcon = (methodName, size = 18) => {
 
 export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batches, currentUser, onRequireAuth, showToast }) {
   const [history, setHistory] = useState(null); // null = loading, [] = empty
+  const [fetchError, setFetchError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [editingRecipe, setEditingRecipe] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -58,17 +60,24 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
   useEffect(() => {
     let active = true;
+    setFetchError(false);
     const token = localStorage.getItem('beantag-token');
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     fetch(apiUrl('api/recipes'), { headers })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then(data => {
         if (active) {
           setHistory(Array.isArray(data) ? data : []);
         }
       })
       .catch(() => {
-        if (active) setHistory([]);
+        if (active) {
+          setFetchError(true);
+          setHistory([]);
+        }
       });
       
     const img = new Image();
@@ -76,7 +85,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
     img.onload = () => { textureRef.current = img; };
 
     return () => { active = false; };
-  }, [currentUser?.id]);
+  }, [currentUser?.id, reloadKey]);
 
 
   const dataURLtoBlob = (dataurl) => {
@@ -443,19 +452,21 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
         <div className="candy-card static" style={{ textAlign: 'center', padding: '30px' }}>
           <div style={{ marginBottom: '12px', color: 'var(--ink-muted)', display: 'flex', justifyContent: 'center' }}><Coffee size={32} strokeWidth={1.75} aria-hidden="true" /></div>
           <p style={{ fontWeight: 'bold', margin: '0 0 6px 0' }}>
-            {!currentUser ? 'Inicia sesión para ver tu bitácora.' : 'Aún no has registrado ninguna receta.'}
+            {!currentUser
+              ? 'Inicia sesión para ver tu bitácora.'
+              : (fetchError ? 'No se pudo cargar tu bitácora.' : 'Aún no has registrado ninguna receta.')}
           </p>
           <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 16px 0' }}>
             {!currentUser
               ? 'Tus preparaciones y notas sensoriales se guardan vinculadas a tu cuenta.'
-              : 'Selecciona un café de tu inventario y registra tu primera preparación.'}
+              : (fetchError ? 'Verifica tu conexión e inténtalo de nuevo.' : 'Selecciona un café de tu inventario y registra tu primera preparación.')}
           </p>
           <button
             className="btn-candy primary"
             style={{ margin: '0 auto' }}
-            onClick={!currentUser && onRequireAuth ? onRequireAuth : onNavigateToInventory}
+            onClick={!currentUser && onRequireAuth ? onRequireAuth : (fetchError ? () => { setHistory(null); setReloadKey(k => k + 1); } : onNavigateToInventory)}
           >
-            {!currentUser ? 'Iniciar Sesión' : 'Ir al inventario'}
+            {!currentUser ? 'Iniciar Sesión' : (fetchError ? 'Reintentar' : 'Ir al inventario')}
           </button>
         </div>
       ) : filteredHistory.length === 0 ? (

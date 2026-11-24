@@ -22,7 +22,7 @@ export { parseGrindToMicrons } from './grinders';
 // ---------------------------------------------------------------------------
 export const CARD_STYLES = TREND_STYLES;
 export const TREND_CARD_STYLES = TREND_STYLES;
-export const DEFAULT_CARD_STYLE = 'stretch';
+export const DEFAULT_CARD_STYLE = 'etiqueta';
 
 // The five card styles, in picker order (one tap, no other options)
 export const CARD_STYLE_OPTIONS = [

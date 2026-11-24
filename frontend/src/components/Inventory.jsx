@@ -216,8 +216,37 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
             </div>
           </div>
 
-          {/* 3. Empty State */}
-          {filteredBatches.length === 0 ? (
+          {/* 3. Loading / Empty / Search Empty State */}
+          {batches === null ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="candy-card static skeleton-card" style={{ padding: '16px', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--r-tile)' }}>
+                  <div className="skeleton-line" style={{ width: '55%', height: '16px', marginBottom: '10px' }} />
+                  <div className="skeleton-line" style={{ width: '35%', height: '12px' }} />
+                </div>
+              ))}
+            </div>
+          ) : filteredBatches.length === 0 && searchQuery.trim() ? (
+            <div className="candy-card static" style={{ textAlign: 'center', padding: '32px 20px', borderStyle: 'dashed', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--r-tile)' }}>
+              <div style={{ marginBottom: '10px', color: 'var(--color-text-muted)' }}>
+                <SearchIcon size={28} />
+              </div>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '15px', margin: '0 0 6px 0', color: 'var(--color-text)' }}>
+                Sin resultados para “{searchQuery}”
+              </h3>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 16px 0' }}>
+                Prueba con otro nombre, origen o tostador.
+              </p>
+              <button
+                type="button"
+                className="btn-candy secondary"
+                onClick={() => setSearchQuery('')}
+                style={{ minHeight: '44px', padding: '8px 18px', fontSize: '12px' }}
+              >
+                Limpiar búsqueda
+              </button>
+            </div>
+          ) : filteredBatches.length === 0 ? (
             <div className="candy-card static" style={{ textAlign: 'center', padding: '40px 20px', borderStyle: 'dashed', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--r-tile)' }}>
               <div style={{ fontSize: '38px', marginBottom: '10px', color: 'var(--color-text-muted)' }}>
                 {showFinished ? <Flag size={32} /> : <Snowflake size={32} />}

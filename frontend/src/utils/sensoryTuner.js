@@ -49,6 +49,8 @@ export function evaluateDiagnosis(feedback = {}) {
     diagnosis = 'sub-extracted';
   } else if (score > 0) {
     diagnosis = 'over-extracted';
+  } else if (defects >= 2) {
+    diagnosis = 'channeling';
   }
 
   let rating = 5;
@@ -97,15 +99,18 @@ export function computeSensoryCorrection(grinderId, currentDialText, currentTemp
   } else if (diagnosis === 'over-extracted') {
     tempDelta = -1;
     explanation = 'El lecho acumuló excesiva resistencia hidráulica o los microfinos restringieron el flujo, extrayendo taninos y notas amargas pesadas. Abrimos la molienda y reducimos temperatura (-1°C) para restaurar fluidez y dulzor limpio.';
+  } else if (diagnosis === 'channeling') {
+    tempDelta = 0;
+    explanation = 'Señales mixtas (acidez con flujo lento o astringencia) suelen indicar canalización. Mantén la molienda y mejora la distribución (WDT) y uniformidad del vertido.';
   } else {
     tempDelta = 0;
     explanation = '¡Extracción impecable! Esta receta ha alcanzado el equilibrio óptimo de dulzor, acidez y claridad para este lote.';
   }
 
-  // Clamp new temperature within safe specialty range [85, 96]
-  const MIN_TEMP = 85;
-  const MAX_TEMP = 96;
-  const newTemp = Math.max(MIN_TEMP, Math.min(MAX_TEMP, temp + tempDelta));
+  // Respect user's temperature when balanced; otherwise clamp within [70, 100]
+  const MIN_TEMP = 70;
+  const MAX_TEMP = 100;
+  const newTemp = tempDelta === 0 ? temp : Math.max(MIN_TEMP, Math.min(MAX_TEMP, temp + tempDelta));
   const effectiveTempDelta = newTemp - temp;
 
   // Resolve grinder config
@@ -280,7 +285,7 @@ export function computeSensoryCorrection(grinderId, currentDialText, currentTemp
 
       if (dialStr.includes('~')) {
         const rot = Math.floor(newClicks / 60);
-        const sub = newClicks % 60;
+        const sub = String(newClicks % 60).padStart(2, '0');
         newGrindText = `${prefix}${newClicks} clics (~${rot}.${sub})`;
       } else if (dialStr.includes('clic')) {
         newGrindText = `${prefix}${newClicks} clics`;

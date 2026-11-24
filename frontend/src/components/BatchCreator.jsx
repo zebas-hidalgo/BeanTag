@@ -222,10 +222,12 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!name || !name.trim()) {
       if (showToast) showToast('Ingresa el nombre del café para guardar el lote.', { type: 'error', duration: 3500 });
       return;
     }
+    setIsSubmitting(true);
     const rawSlug = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'lote';
     const id = batchToEdit ? batchToEdit.id : `${rawSlug}-${Date.now().toString(36).slice(-4)}`;
     
@@ -234,8 +236,10 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
       notes
     ].filter(Boolean).join(' | ');
 
-    const doseWeightNum = parseFloat(doseWeight) || (storageType === 'bag' ? 18.0 : 20.0);
-    const totalWeightNum = storageType === 'bag' ? (parseFloat(bagWeight) || 250.0) : (parseInt(totalDoses, 10) * doseWeightNum);
+    const parsedDose = parseFloat(String(doseWeight).replace(',', '.'));
+    const parsedBag = parseFloat(String(bagWeight).replace(',', '.'));
+    const doseWeightNum = (Number.isFinite(parsedDose) && parsedDose > 0) ? parsedDose : (storageType === 'bag' ? 18.0 : 20.0);
+    const totalWeightNum = storageType === 'bag' ? ((Number.isFinite(parsedBag) && parsedBag > 0) ? parsedBag : 250.0) : (parseInt(totalDoses, 10) * doseWeightNum);
     const calculatedDoses = storageType === 'bag' ? Math.max(1, Math.round(totalWeightNum / doseWeightNum)) : parseInt(totalDoses, 10);
 
     const payload = {
@@ -305,10 +309,12 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
     })
     .catch(err => {
       if (showToast) showToast(err.message, { type: 'error', duration: 4000 });
-    });
+    })
+    .finally(() => setIsSubmitting(false));
   };
 
   const fileInputRef = useRef(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [tempApiKey, setTempApiKey] = useState('');
@@ -893,9 +899,9 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
           </div>
         </details>
 
-        <button type="submit" className="btn-candy primary" style={{ width: '100%', minHeight: '48px', marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '15px', fontWeight: 'bold' }}>
+        <button type="submit" disabled={isSubmitting} className="btn-candy primary" style={{ width: '100%', minHeight: '48px', marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '15px', fontWeight: 'bold', opacity: isSubmitting ? 0.7 : 1 }}>
           <Save size={20} strokeWidth={2.5} />
-          {batchToEdit ? 'Guardar Cambios' : 'Crear Lote y Obtener Link'}
+          {isSubmitting ? 'Guardando...' : (batchToEdit ? 'Guardar Cambios' : 'Crear Lote y Obtener Link')}
         </button>
       </form>
 

@@ -190,8 +190,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
     .finally(() => setLoading(false));
   };
 
-  if (!isOpen) return null;
-
   useEffect(() => {
     if (!isOpen) return;
     const onKeyDown = (e) => {
@@ -200,6 +198,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess, showToast }) {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="bento-modal-overlay" onClick={onClose} style={{ zIndex: 'var(--z-modal)' }} role="dialog" aria-modal="true" aria-label="Iniciar sesión" tabIndex={-1}>

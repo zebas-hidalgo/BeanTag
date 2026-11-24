@@ -59,7 +59,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   useEffect(() => {
     if (!batch || batch.error) return;
-    const isNewBrew = window.location.search.includes('action=new_brew') || window.location.pathname.includes('/batch/');
+    const isNewBrew = window.location.search.includes('action=new_brew');
     if (isNewBrew && brewFormRef.current) {
       setTimeout(() => {
         if (brewFormRef.current) {
@@ -649,25 +649,23 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
             if (targetRecipe.grind) {
               const gStr = targetRecipe.grind;
-              if (gStr.includes('J-Max:')) {
-                const grindParts = gStr.replace('J-Max:', '').trim().split('.');
-                if (grindParts.length === 3) {
-                  loadedJmax = {
-                    rot: parseInt(grindParts[0]) || 1,
-                    num: parseInt(grindParts[1]) || 5,
-                    click: parseInt(grindParts[2]) || 0
-                  };
-                  setJmaxRot(loadedJmax.rot);
-                  setJmaxNum(loadedJmax.num);
-                  setJmaxClick(loadedJmax.click);
-                }
+              const jmaxMatch = gStr.match(/(?:J-Max:\s*)?(\d+)\.(\d+)\.(\d+)/i);
+              if (jmaxMatch) {
+                loadedJmax = {
+                  rot: parseInt(jmaxMatch[1]) || 1,
+                  num: parseInt(jmaxMatch[2]) || 5,
+                  click: parseInt(jmaxMatch[3]) || 0
+                };
+                setJmaxRot(loadedJmax.rot);
+                setJmaxNum(loadedJmax.num);
+                setJmaxClick(loadedJmax.click);
               }
               const femoMatch = gStr.match(/Femobook(?:\s*A2)?:\s*(\d+)/i);
               if (femoMatch) {
                 loadedFemobook = parseInt(femoMatch[1]) || 60;
                 setFemobookClicks(loadedFemobook);
               }
-              const comMatch = gStr.match(/Comandante:\s*(\d+)/i);
+              const comMatch = gStr.match(/Comandante(?:\s*C40)?:\s*(\d+)/i);
               if (comMatch) {
                 loadedComandante = parseInt(comMatch[1]) || 24;
                 setComandanteClicks(loadedComandante);
@@ -687,7 +685,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                 loadedKingrinder = parseInt(kinMatch[1]) || 90;
                 setKingrinderClicks(loadedKingrinder);
               }
-              const timeMatch = gStr.match(/Timemore:\s*(\d+)/i);
+              const timeMatch = gStr.match(/Timemore(?:\s*C[23])?:\s*(\d+)/i);
               if (timeMatch) {
                 loadedTimemore = parseInt(timeMatch[1]) || 18;
                 setTimemoreClicks(loadedTimemore);
@@ -1714,29 +1712,31 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
               </button>
             </div>
 
-            {/* Paso 2: ¿Cómo salió? (un toque tras probar) + Guardar */}
-            <div style={{ marginTop: '16px' }}>
-              <div className="bt-tile-k" id="bt-taste-label" style={{ marginBottom: '8px' }}>¿Cómo salió?</div>
-              <div className="bt-taste" role="radiogroup" aria-labelledby="bt-taste-label">
-                {[
-                  { id: 'Sub', label: 'Ácido', hint: 'Muele más fino', balance: 'Ácido' },
-                  { id: 'En Punto', label: 'Bien', hint: 'Repetir así', balance: 'Dulce' },
-                  { id: 'Sobre', label: 'Amargo', hint: 'Muele más grueso', balance: 'Amargo' }
-                ].map(t => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={sensoryExtraction === t.id}
-                    className={`bt-taste-btn${sensoryExtraction === t.id ? ' is-active' : ''}`}
-                    onClick={() => { setSensoryExtraction(t.id); setSensoryBalance(t.balance); }}
-                  >
-                    {t.label}
-                    <small>{t.hint}</small>
-                  </button>
-                ))}
+            {/* Paso 2: ¿Cómo salió? (solo propietario) + Guardar */}
+            {isOwner && (
+              <div style={{ marginTop: '16px' }}>
+                <div className="bt-tile-k" id="bt-taste-label" style={{ marginBottom: '8px' }}>¿Cómo salió?</div>
+                <div className="bt-taste" role="radiogroup" aria-labelledby="bt-taste-label">
+                  {[
+                    { id: 'Sub', label: 'Ácido', hint: 'Muele más fino', balance: 'Ácido' },
+                    { id: 'En Punto', label: 'Bien', hint: 'Repetir así', balance: 'Dulce' },
+                    { id: 'Sobre', label: 'Amargo', hint: 'Muele más grueso', balance: 'Amargo' }
+                  ].map(t => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={sensoryExtraction === t.id}
+                      className={`bt-taste-btn${sensoryExtraction === t.id ? ' is-active' : ''}`}
+                      onClick={() => { setSensoryExtraction(t.id); setSensoryBalance(t.balance); }}
+                    >
+                      {t.label}
+                      <small>{t.hint}</small>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
               {isOwner ? (
@@ -1758,14 +1758,16 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   <span>Guardar sin cronómetro</span>
                 </button>
               ) : (
-                <button 
-                  type="button" 
-                  onClick={onRequireAuth} 
-                  className="barista-btn-secondary" 
-                  style={{ width: '100%', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: 0.9, cursor: 'pointer' }}
-                >
-                  Solo el propietario puede registrar extracciones {currentUser ? '' : '(Iniciar Sesión)'}
-                </button>
+                !currentUser && (
+                  <button
+                    type="button"
+                    onClick={onRequireAuth}
+                    className="barista-btn-secondary"
+                    style={{ width: '100%', minHeight: '44px', height: '44px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: 0.9, cursor: 'pointer' }}
+                  >
+                    ¿Eres el propietario? Iniciar sesión para registrar
+                  </button>
+                )
               )}
             </div>
           </form>
@@ -1773,7 +1775,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         </div>
       )}
 
-      {/* Enlace / NFC (plegado) */}
+      {/* Enlace / NFC (plegado, solo propietario) */}
+      {isOwner && (
       <details className="bt-more" style={{ marginBottom: '24px' }}>
         <summary><Nfc size={16} aria-hidden="true" /> Enlace y etiqueta NFC</summary>
         <div style={{ paddingTop: '8px' }}>
@@ -1801,6 +1804,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             </div>
                   </div>
       </details>
+      )}
 
       {/* Modal de Compartir Sticker & Carta de Cafés */}
       <StickerShareModal
@@ -1841,7 +1845,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
             onClose={() => setIsBrewGuideOpen(false)}
             recipe={activeBrewRecipe}
             batch={batch}
-            onSaveTunedRecipe={handleSaveTunedRecipe}
+            onSaveTunedRecipe={isOwner ? handleSaveTunedRecipe : null}
           />
         </Suspense>
       )}

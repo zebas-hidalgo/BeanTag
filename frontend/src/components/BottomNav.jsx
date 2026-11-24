@@ -9,8 +9,8 @@ const NAV_ITEMS = [
   { id: 'settings', label: 'Perfil', icon: User },
 ];
 
-export default function BottomNav({ currentView, setCurrentView }) {
-  const showFab = currentView === 'inventory';
+export default function BottomNav({ currentView, setCurrentView, canCreate = true }) {
+  const showFab = currentView === 'inventory' && canCreate;
 
   return (
     <>

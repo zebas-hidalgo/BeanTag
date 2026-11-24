@@ -327,26 +327,11 @@ export default function BrewGuideModal({
       const now = Date.now();
       const delta = (now - startTimestampRef.current) / 1000;
       const currentElapsed = baseElapsedRef.current + delta;
-
-      if (currentElapsed >= totalBrewDuration) {
-        setElapsedSeconds(totalBrewDuration);
-        setIsActive(false);
-        if (!isMuted) {
-          playSuccessChime();
-          if (isVoiceEnabled) {
-            speakBaristaGuidance('Extracción finalizada. Buen provecho con tu café.');
-          }
-        }
-        setViewMode('diagnostic');
-        clearInterval(interval);
-        return;
-      }
-
       setElapsedSeconds(currentElapsed);
     }, 250);
 
     return () => clearInterval(interval);
-  }, [isActive, isOpen, totalBrewDuration, isMuted, isVoiceEnabled]);
+  }, [isActive, isOpen]);
 
   // 4. Audio: 3-2-1 Countdown Beeps
   useEffect(() => {
@@ -506,8 +491,12 @@ export default function BrewGuideModal({
     setViewMode('diagnostic');
   }, [isMuted, isVoiceEnabled, scale]);
 
-  // Handler: Reset Timer
-  const handleResetTimer = useCallback(() => {
+  // Handler: Reset Timer (with confirmation if brew is already underway to prevent wet-hand accidents)
+  const handleResetTimer = useCallback(async () => {
+    if (elapsedSeconds > 5) {
+      const ok = await confirmDialog('¿Reiniciar el cronómetro a 00:00?', { okText: 'Reiniciar' });
+      if (!ok) return;
+    }
     setIsActive(false);
     cancelSpeech();
     setElapsedSeconds(0);
@@ -520,7 +509,7 @@ export default function BrewGuideModal({
     autoStartedPourRef.current = false;
     taredReadyRef.current = Math.abs(scale.weightG) <= 0.4;
     if (scale.connected) scale.resetScaleTimer();
-  }, [scale]);
+  }, [elapsedSeconds, scale]);
 
   // Handler: Safe Close
   const handleCloseModal = useCallback(async () => {
@@ -828,7 +817,11 @@ export default function BrewGuideModal({
                   }}
                 >
                   <span>Tiempo</span>
-                  <span style={{ fontFamily: 'var(--font-mono)' }}>Total {formatTime(totalBrewDuration)}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', color: elapsedSeconds > totalBrewDuration ? 'var(--warn-text, var(--warn))' : 'inherit' }}>
+                    {elapsedSeconds > totalBrewDuration
+                      ? `+${Math.round(elapsedSeconds - totalBrewDuration)}s extra (Meta ${formatTime(totalBrewDuration)})`
+                      : `Total ${formatTime(totalBrewDuration)}`}
+                  </span>
                 </div>
                 <div
                   className="barista-timer font-mono text-7xl md:text-8xl font-black tracking-tight"
@@ -877,7 +870,7 @@ export default function BrewGuideModal({
                     >
                       <span>Peso en balanza</span>
                       <span style={{ fontFamily: 'var(--font-mono)' }}>
-                        {targetWater > 0 ? `Meta ${targetWater}g` : 'Libre'} · {scale.flowRate.toFixed(1)} ml/s
+                        {targetWater > 0 ? `Meta ${targetWater}g` : 'Libre'} · {scale.flowRate.toFixed(1)} g/s
                       </span>
                     </div>
                     <div
@@ -1147,9 +1140,9 @@ export default function BrewGuideModal({
 
               {/* Middle row: Target water + Live scale delta */}
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '16px', fontWeight: 700, color: 'var(--color-text)' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>
                   Hasta {currentStage.total_water_g}g{' '}
-                  <span style={{ fontSize: '13px', color: 'var(--color-crimson)' }}>(+{currentStage.water_g}g)</span>
+                  <span style={{ fontSize: '14px', color: 'var(--color-crimson)' }}>(+{currentStage.water_g}g)</span>
                 </div>
                 {scale.connected && currentStage?.total_water_g > 0 ? (() => {
                   const remainingG = Math.max(0, currentStage.total_water_g - scale.weightG);
@@ -1161,18 +1154,18 @@ export default function BrewGuideModal({
                         alignItems: 'center',
                         gap: '4px',
                         fontFamily: 'var(--font-mono)',
-                        fontSize: '12px',
+                        fontSize: '14px',
                         fontWeight: 700,
                         color: reached ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)'
                       }}
                     >
-                      {reached ? <><Check size={12} aria-hidden="true" /><span>Listo</span></> : `Faltan ${remainingG.toFixed(1)}g`}
+                      {reached ? <><Check size={14} aria-hidden="true" /><span>Listo</span></> : `Faltan ${remainingG.toFixed(1)}g`}
                     </span>
                   );
                 })() : (
                   suggestedFlowRate && (
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                      ~{suggestedFlowRate} ml/s
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                      ~{suggestedFlowRate} g/s
                     </span>
                   )
                 )}
