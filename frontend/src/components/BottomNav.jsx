@@ -1,10 +1,12 @@
 import React from 'react';
 import { Package, Plus, Coffee, User } from 'lucide-react';
+import { QuickAiIcon } from './icons/CoffeeIcons';
 
-// V5: three destinations in a floating glass bar; "Nuevo café" is a floating action
+// V5: four destinations in a floating glass bar; "Nuevo café" is a floating action
 // on the inventory, where new batches are added.
 const NAV_ITEMS = [
   { id: 'inventory', label: 'Cava', icon: Package },
+  { id: 'quick_brew', label: 'Rápida', icon: QuickAiIcon },
   { id: 'brews', label: 'Bitácoras', icon: Coffee },
   { id: 'settings', label: 'Perfil', icon: User },
 ];

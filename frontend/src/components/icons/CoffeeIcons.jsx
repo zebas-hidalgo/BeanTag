@@ -162,6 +162,16 @@ export function CoffeeBeanIcon({ size = 16, className = '', style }) {
   );
 }
 
+/** Quick Brew AI (lightning bolt + 4-point AI spark) */
+export function QuickAiIcon({ size = 20, className = '', style }) {
+  return (
+    <svg {...baseProps(size, className, style)}>
+      <path d="M13 3L5.5 13H12l-1 8 7.5-10H12l1-8z" />
+      <path d="M19 3.5v3M17.5 5h3" />
+    </svg>
+  );
+}
+
 /**
  * Dynamic Brew Method Icon resolver
  */

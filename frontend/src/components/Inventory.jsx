@@ -5,7 +5,7 @@ import { MethodIcon } from './icons/CoffeeIcons';
 
 const TubeRacksView = lazy(() => import('./TubeRacksView'));
 
-export default function Inventory({ batches, currentUser, onRequireAuth, onSelectBatch, onCreateTrigger, onQuickBrew, onSubtractDose, onRefreshBatches, showToast }) {
+export default function Inventory({ batches, currentUser, onRequireAuth, onSelectBatch, onCreateTrigger, onSubtractDose, onRefreshBatches, showToast }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [inventorySubView, setInventorySubView] = useState(() => {
     try {
@@ -87,38 +87,6 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
           <span>Portatubos</span>
         </button>
       </div>
-
-      {onQuickBrew && (
-        <button
-          type="button"
-          onClick={onQuickBrew}
-          className="bt-section"
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '10px',
-            padding: '12px 14px',
-            marginBottom: '12px',
-            cursor: 'pointer',
-            textAlign: 'left'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: 'var(--r-control)', background: 'var(--accent-bg)', color: 'var(--accent-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Zap size={18} />
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)' }}>Preparación Rápida (Foto → Receta IA)</div>
-              <div style={{ fontSize: '12px', color: 'var(--ink-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                Escanea tarjeta, elige molino, método y tazas de 200 ml
-              </div>
-            </div>
-          </div>
-          <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent-text)', flexShrink: 0 }}>Abrir</span>
-        </button>
-      )}
 
       {inventorySubView === 'racks' ? (
         <Suspense fallback={<div style={{ minHeight: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="barista-spinner" /></div>}>

@@ -376,7 +376,7 @@ export function generateCoffeeMenuText(batches) {
  * Horizontal 1280×720 (lower part of the story) or vertical 960×1280 (one side).
  */
 export async function generateCoffeeStickerImage(batchOrRecipe, options = {}) {
-  const style = normalizeCardStyle(options.template);
+  const style = normalizeCardStyle(options.template || options.style);
   const orientation = String(options.orientation || '').toLowerCase() === 'vertical' ? 'vertical' : 'horizontal';
   const includeRecipe = Boolean(options.includeRecipe);
   const transparent = Boolean(options.transparent);

@@ -671,7 +671,6 @@ export default function App() {
                 setCurrentView('creator');
               }
             }}
-            onQuickBrew={() => setCurrentView('quick_brew')}
             onSubtractDose={handleSubtractDose}
             onRefreshBatches={fetchBatches}
             showToast={showToast}

@@ -203,7 +203,7 @@ export default function QuickBrewView({ onBack, showToast }) {
     try {
       const mergedData = { ...syntheticBatch, ...syntheticRecipe, batch_name: syntheticBatch.name };
       const img = await generateCoffeeStickerImage(mergedData, {
-        style: styleId,
+        template: styleId,
         includeRecipe: incRecipe,
         transparent,
         orientation
