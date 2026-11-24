@@ -313,6 +313,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     const groqKey = localStorage.getItem('groq-key') || '';
     const rawGroqModel = localStorage.getItem('groq-model');
     const groqModel = (!rawGroqModel || rawGroqModel.includes('llama')) ? 'openai/gpt-oss-120b' : rawGroqModel;
+    const useGroq = Boolean(groqKey && groqKey.trim());
 
     setAiLoading(true);
     setAiError('');
@@ -321,9 +322,8 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     const token = localStorage.getItem('beantag-token');
     const headers = {
       'Content-Type': 'application/json',
-      'x-ai-provider': 'groq',
-      'x-groq-key': groqKey,
-      'x-ai-model': groqModel,
+      'x-ai-provider': useGroq ? 'groq' : 'gemini',
+      ...(useGroq ? { 'x-groq-key': groqKey, 'x-ai-model': groqModel } : { 'x-ai-model': 'gemini-2.5-flash' }),
       ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     };
 
@@ -331,6 +331,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       method: 'POST',
       headers,
       body: JSON.stringify({
+        batch_id: batch.id,
         batch_name: batch.name,
         origin: batch.origin,
         producer: batch.producer,
@@ -1612,6 +1613,12 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     {aiRecommendation.days_since_roast !== null && <span style={{ background: 'var(--barista-accent-honey-bg)', color: 'var(--barista-accent-honey-text)', padding: '2px 6px', borderRadius: 'var(--r-xs)', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Timer size={10} /> Reposo: Día {aiRecommendation.days_since_roast}</span>}
                     {aiRecommendation.water_profile && <span style={{ background: 'var(--barista-accent-cryo-bg)', color: 'var(--barista-accent-cryo-text)', padding: '2px 6px', borderRadius: 'var(--r-xs)', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Droplet size={10} /> {aiRecommendation.water_profile}</span>}
                     {aiRecommendation.active_grinder_dial && <span style={{ background: 'var(--bg-header)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: 'var(--r-xs)', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '3px' }}><SlidersHorizontal size={10} /> {aiRecommendation.active_grinder_dial.grinder_name}: {aiRecommendation.active_grinder_dial.dial}</span>}
+                    {(aiRecommendation._source === 'gemini' || aiRecommendation._source === 'gemini_ai') && (
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--barista-accent-mint-bg)', border: '1px solid var(--barista-accent-mint-text)', color: 'var(--barista-accent-mint-text)', padding: '4px 10px', borderRadius: 'var(--r-xs)', fontSize: '12px', fontWeight: '600' }}>
+                        <Sparkles size={13} />
+                        <span>{aiRecommendation._model || 'Gemini 2.5 Flash'} · Historial & Física</span>
+                      </div>
+                    )}
                     {aiRecommendation._source === 'barista_fallback' && (
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--barista-instr-bg)', border: '1px solid var(--barista-instr-border)', color: 'var(--barista-accent-honey)', padding: '4px 10px', borderRadius: 'var(--r-xs)', fontSize: '12px', fontWeight: '600' }}>
                         <Zap size={13} />

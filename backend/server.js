@@ -1401,7 +1401,7 @@ function getAiConfig(req) {
     }
   } else {
     if (!rawModel || String(rawModel).toLowerCase().includes('llama')) {
-      model = 'gemini-3.8-flash';
+      model = DEFAULT_GEMINI_MODEL;
     } else {
       model = sanitizeModel(rawModel);
     }
@@ -1515,6 +1515,17 @@ app.post('/api/recommend-recipe', async (req, res) => {
   const daysSinceRoast = calculateDaysSinceRoast(roast_date);
   const isFrozen = isFrozenBatch({ freeze_date });
 
+  const batchIdForHistory = body.batch_id || batchData.id || null;
+  let recentBrews = [];
+  if (batchIdForHistory) {
+    try {
+      recentBrews = await db.all(
+        'SELECT method, grind, temperature, brew_time, sensory_extraction, notes FROM recipes WHERE batch_id = ? ORDER BY created_at DESC LIMIT 3',
+        [batchIdForHistory]
+      );
+    } catch (_) {}
+  }
+
   const recipeParams = {
     batch_name,
     origin,
@@ -1529,7 +1540,8 @@ app.post('/api/recommend-recipe', async (req, res) => {
     sca_score,
     method: targetMethod,
     dose_in_g: dose,
-    grinder: grinderType
+    grinder: grinderType,
+    recent_brews: recentBrews
   };
 
   const hasKey = (provider === 'groq' && groqKey) || (provider === 'gemini' && geminiKey);

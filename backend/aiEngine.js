@@ -5,15 +5,14 @@
  */
 
 const VALID_GEMINI_MODELS = [
-  'gemini-3.8-flash',
-  'gemini-3.8-flash-lite',
-  'gemini-3.1-pro-preview',
-  'gemini-3.6-flash',
-  'gemini-3.5-flash-lite'
+  'gemini-2.5-flash',
+  'gemini-2.5-pro',
+  'gemini-2.5-flash-lite',
+  'gemini-2.0-flash'
 ];
 
-const DEFAULT_GEMINI_MODEL = 'gemini-3.8-flash';
-const FALLBACK_GEMINI_MODEL = 'gemini-3.1-pro-preview';
+const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
+const FALLBACK_GEMINI_MODEL = 'gemini-2.5-pro';
 
 /**
  * Sanitizes model name: maps deprecated/invalid model names to supported Google AI Studio models.
@@ -26,14 +25,9 @@ function sanitizeModel(requestedModel) {
   if (VALID_GEMINI_MODELS.includes(clean)) {
     return clean;
   }
-  if (clean.includes('3.1') && clean.includes('pro')) return 'gemini-3.1-pro-preview';
-  if (clean.includes('2.5') || clean.includes('pro')) return 'gemini-3.1-pro-preview';
-  if (clean.includes('3.8') && clean.includes('lite')) return 'gemini-3.8-flash-lite';
-  if (clean.includes('3.8')) return 'gemini-3.8-flash';
-  if (clean.includes('3.5')) return 'gemini-3.5-flash-lite';
-  if (clean.includes('3.6')) return 'gemini-3.6-flash';
-  if (clean.includes('lite')) return 'gemini-3.8-flash-lite';
-  if (clean.includes('flash') || clean.includes('2.0') || clean.includes('1.5')) return 'gemini-3.8-flash';
+  if (clean.includes('pro')) return 'gemini-2.5-pro';
+  if (clean.includes('lite')) return 'gemini-2.5-flash-lite';
+  if (clean.includes('2.0')) return 'gemini-2.0-flash';
   return DEFAULT_GEMINI_MODEL;
 }
 
@@ -1467,6 +1461,13 @@ function generateAiRecipePrompt(batch) {
   const daysSinceRoast = calculateDaysSinceRoast(roast_date);
   const isFrozen = isFrozenBatch(batch);
 
+  const recentBrews = Array.isArray(batch.recent_brews) ? batch.recent_brews : [];
+  const historyBlock = recentBrews.length > 0
+    ? `\nHISTORIAL RECIENTE EN ESTE LOTE (ajusta la receta según cómo salieron estas tazas):\n${recentBrews.map((r, i) =>
+        `${i + 1}. ${r.method || targetMethod} | Molienda: ${r.grind || '—'} | Temp: ${r.temperature || '—'} | Tiempo: ${r.brew_time || '—'} | Resultado: ${r.sensory_extraction || '—'}${r.notes ? ` | Notas: ${r.notes}` : ''}`
+      ).join('\n')}\n`
+    : '';
+
   return `${BARISTA_SYSTEM_PROMPT}
 
 LOTE DE CAFÉ A ANALIZAR:
@@ -1485,8 +1486,8 @@ EQUIPO SELECCIONADO:
 - Método de Extracción: "${targetMethod}"
 - Dosis de Café (In): "${dose}g"
 - Molino Principal Activo: "${activeGrinder}"
-
-Instrucción estricta: Analiza la solubilidad según el proceso (${process}), la densidad según la altitud (${altitude}), la desgasificación según los días de reposo, y COMPENSA LA RESISTENCIA HIDRÁULICA DEL LECHO según la dosis (${dose}g vs dosis base del método). Devuelve un JSON rigurosamente calibrado respetando la matriz de molinos y el protocolo de válvula de 3 fases si el método es NextLevel Pulsar.`;
+${historyBlock}
+Instrucción estricta: Analiza la solubilidad según el proceso (${process}), la densidad según la altitud (${altitude}), la desgasificación según los días de reposo, y COMPENSA LA RESISTENCIA HIDRÁULICA DEL LECHO según la dosis (${dose}g vs dosis base del método). Si hay historial reciente, corrige explícitamente cualquier subextracción (acidez punzante) o sobreextracción (amargor/astringencia) detectada. Devuelve un JSON rigurosamente calibrado respetando la matriz de molinos y el protocolo de válvula de 3 fases si el método es NextLevel Pulsar.`;
 }
 
 /**
@@ -1503,8 +1504,9 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
   // Cascading priority across active Google AI models
   const cascadeOrder = [
     modelToTry,
-    'gemini-3.8-flash',
-    'gemini-3.1-pro-preview',
+    'gemini-2.5-flash',
+    'gemini-2.5-pro',
+    'gemini-2.0-flash',
     DEFAULT_GEMINI_MODEL,
     FALLBACK_GEMINI_MODEL
   ];
