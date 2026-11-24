@@ -66,6 +66,7 @@ export default function QuickBrewView({ onBack, showToast }) {
   // Share card state
   const [shareImage, setShareImage] = useState(null);
   const [shareTemplate, setShareTemplate] = useState(DEFAULT_CARD_STYLE);
+  const [shareIncludeRecipe, setShareIncludeRecipe] = useState(true);
   const [stickerOrientation, setStickerOrientation] = useState('vertical');
   const [stickerTransparent, setStickerTransparent] = useState(false);
   const [shareStatus, setShareStatus] = useState('');
@@ -140,6 +141,9 @@ export default function QuickBrewView({ onBack, showToast }) {
           roaster_notes: bean.roaster_notes,
           sca_score: bean.sca_score || null,
           method,
+          cups,
+          target_water_g: targetWaterMl,
+          optimize_min_dose: doseOverride === null,
           dose_in_g: doseInG,
           grinder
         })
@@ -170,9 +174,10 @@ export default function QuickBrewView({ onBack, showToast }) {
 
   const syntheticRecipe = useMemo(() => {
     if (!aiRecipe) return null;
+    const effectiveDose = (doseOverride === null && aiRecipe.dose_in_g) ? aiRecipe.dose_in_g : doseInG;
     return {
       method,
-      dose_in_g: doseInG,
+      dose_in_g: effectiveDose,
       water_total_g: aiRecipe.water_total_g || targetWaterMl,
       ratio: aiRecipe.ratio || `1:${activeMethodObj.baseRatio}`,
       temperature: parseFloat(String(aiRecipe.temperature || 93).replace(/[^0-9.]/g, '')) || 93,
@@ -183,23 +188,24 @@ export default function QuickBrewView({ onBack, showToast }) {
       pours: aiRecipe.pours || [],
       notes: aiRecipe.notes || ''
     };
-  }, [aiRecipe, method, doseInG, targetWaterMl, activeMethodObj.baseRatio]);
+  }, [aiRecipe, doseOverride, method, doseInG, targetWaterMl, activeMethodObj.baseRatio]);
 
   const renderExportCard = async (
     styleId = shareTemplate,
     transparent = stickerTransparent,
     orientation = stickerOrientation,
-    mode = 'sticker'
+    mode = 'card',
+    incRecipe = shareIncludeRecipe
   ) => {
     if (!syntheticRecipe) return;
     setShareStatus('Generando tarjeta...');
     try {
       const mergedData = { ...syntheticBatch, ...syntheticRecipe, batch_name: syntheticBatch.name };
       const img = mode === 'card'
-        ? await generateRecipeCardImage(mergedData, styleId, true)
+        ? await generateRecipeCardImage(mergedData, styleId, incRecipe)
         : await generateCoffeeStickerImage(mergedData, {
             style: styleId,
-            includeRecipe: true,
+            includeRecipe: incRecipe,
             transparent,
             orientation
           });
@@ -412,12 +418,23 @@ export default function QuickBrewView({ onBack, showToast }) {
           })}
         </div>
 
-        {/* Ajuste fino de dosis */}
+        {/* Dosis: Auto (IA optimiza mínimo consumo) o ajuste manual */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 'var(--r-control)', background: 'var(--fill)' }}>
-          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-2)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <Coffee size={14} />
-            <span>Dosis de café</span>
-          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ink-2)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <Coffee size={14} />
+              <span>{doseOverride === null ? 'Dosis mínima (IA)' : 'Dosis manual'}</span>
+            </span>
+            {doseOverride !== null && (
+              <button
+                type="button"
+                onClick={() => setDoseOverride(null)}
+                style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', fontSize: '11px', color: 'var(--accent-text)', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Volver a Auto (IA)
+              </button>
+            )}
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               type="button"
@@ -427,8 +444,8 @@ export default function QuickBrewView({ onBack, showToast }) {
             >
               <Minus size={14} />
             </button>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '15px', fontWeight: 700, minWidth: '52px', textAlign: 'center' }}>
-              {doseInG}g
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 700, minWidth: '56px', textAlign: 'center', color: doseOverride === null ? 'var(--accent-text)' : 'var(--ink)' }}>
+              {doseOverride === null ? (aiRecipe?.dose_in_g ? `${aiRecipe.dose_in_g}g` : 'Auto') : `${doseInG}g`}
             </span>
             <button
               type="button"
@@ -464,7 +481,11 @@ export default function QuickBrewView({ onBack, showToast }) {
             </span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginBottom: '10px', textAlign: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '8px', marginBottom: '10px', textAlign: 'center' }}>
+            <div style={{ padding: '8px', borderRadius: 'var(--r-control)', background: 'var(--raised)', border: '1px solid var(--line)' }}>
+              <div style={{ fontSize: '11px', color: 'var(--ink-muted)' }}>Dosis IA</div>
+              <strong style={{ fontSize: '13px', color: 'var(--accent-text)' }}>{syntheticRecipe.dose_in_g}g</strong>
+            </div>
             <div style={{ padding: '8px', borderRadius: 'var(--r-control)', background: 'var(--raised)', border: '1px solid var(--line)' }}>
               <div style={{ fontSize: '11px', color: 'var(--ink-muted)' }}>Ratio / Agua</div>
               <strong style={{ fontSize: '13px', color: 'var(--accent-text)' }}>{syntheticRecipe.ratio} ({syntheticRecipe.water_total_g}g)</strong>
@@ -541,8 +562,11 @@ export default function QuickBrewView({ onBack, showToast }) {
           setStickerOrientation(o);
           renderExportCard(shareTemplate, stickerTransparent, o, 'sticker');
         }}
-        includeRecipe={true}
-        onChangeIncludeRecipe={() => {}}
+        includeRecipe={shareIncludeRecipe}
+        onChangeIncludeRecipe={(inc) => {
+          setShareIncludeRecipe(inc);
+          renderExportCard(shareTemplate, stickerTransparent, stickerOrientation, 'card', inc);
+        }}
         stickerTransparent={stickerTransparent}
         onChangeTransparent={(t) => {
           setStickerTransparent(t);

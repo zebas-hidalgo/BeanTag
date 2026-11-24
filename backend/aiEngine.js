@@ -1511,10 +1511,13 @@ LOTE DE CAFÉ A ANALIZAR:
 
 EQUIPO SELECCIONADO:
 - Método de Extracción: "${targetMethod}"
-- Dosis de Café (In): "${dose}g"
+- Dosis de Café (In): ${batch.optimize_min_dose && batch.target_water_g ? `A DETERMINAR POR IA (meta de agua: ${batch.target_water_g}g para ${batch.cups || 1} taza(s))` : `"${dose}g"`}
 - Molino Principal Activo: "${activeGrinder}"
-${historyBlock}
-Instrucción estricta: Analiza la solubilidad según el proceso (${process}), la densidad según la altitud (${altitude}), la desgasificación según los días de reposo, y COMPENSA LA RESISTENCIA HIDRÁULICA DEL LECHO según la dosis (${dose}g vs dosis base del método). Si hay historial reciente, corrige explícitamente cualquier subextracción (acidez punzante) o sobreextracción (amargor/astringencia) detectada. Devuelve un JSON rigurosamente calibrado respetando la matriz de molinos y el protocolo de válvula de 3 fases si el método es NextLevel Pulsar.`;
+${historyBlock}${batch.optimize_min_dose && batch.target_water_g ? `
+OBJETIVO DE EFICIENCIA (CONSUMO MÍNIMO):
+El usuario quiere preparar ${batch.cups || 1} taza(s) (${batch.target_water_g}g de agua total). Determina la MENOR cantidad de café ("dose_in_g", ej. ratio eficiente 1:16.5 a 1:18 en filtrado o el mínimo óptimo en ${targetMethod} sin subextraer) para optimizar el consumo de café manteniendo dulzor y claridad. Devuelve "dose_in_g" (número) y "water_total_g": ${batch.target_water_g} en el JSON.
+` : ''}
+Instrucción estricta: Analiza la solubilidad según el proceso (${process}), la densidad según la altitud (${altitude}), la desgasificación según los días de reposo, y COMPENSA LA RESISTENCIA HIDRÁULICA DEL LECHO según la dosis vs dosis base del método. Si hay historial reciente, corrige explícitamente cualquier subextracción (acidez punzante) o sobreextracción (amargor/astringencia) detectada. Devuelve un JSON rigurosamente calibrado respetando la matriz de molinos y el protocolo de válvula de 3 fases si el método es NextLevel Pulsar.`;
 }
 
 /**
@@ -1528,13 +1531,12 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
   const cleanKey = apiKey.trim();
   const modelToTry = sanitizeModel(initialModel);
   
-  // Cascading priority across active Google AI models
+  // Cascading priority across active Google AI models (fastest reliable models first)
   const cascadeOrder = [
     modelToTry,
-    'gemini-2.5-flash',
-    'gemini-3-flash-preview',
     'gemini-2.5-flash-lite',
-    'gemini-3.8-flash'
+    'gemini-2.5-flash',
+    'gemini-3-flash-preview'
   ];
   const models = [...new Set(cascadeOrder)];
 
@@ -1555,7 +1557,7 @@ async function callGeminiWithRetry(contentsOrPrompt, apiKey, initialModel, enabl
   }
 
   const isMultimodal = contents.some(c => Array.isArray(c?.parts) && c.parts.some(p => p.inlineData || p.fileData));
-  const defaultTimeout = isMultimodal ? 25000 : 12000;
+  const defaultTimeout = isMultimodal ? 18000 : 6500;
   const timeoutMs = customTimeoutMs || (process.env.GEMINI_TIMEOUT_MS ? parseInt(process.env.GEMINI_TIMEOUT_MS, 10) : defaultTimeout);
 
   let lastError = null;

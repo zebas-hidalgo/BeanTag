@@ -1540,7 +1540,12 @@ app.post('/api/recommend-recipe', async (req, res) => {
   const producer = body.producer || batchData.producer || '';
   const batch_name = body.batch_name || batchData.name || 'Café de Especialidad';
   const targetMethod = body.method || 'V60 (Filtrado)';
-  const dose = parseFloat(body.dose_in_g) || 20.0;
+  const optimizeMinDose = Boolean(body.optimize_min_dose);
+  const targetWaterG = parseFloat(body.target_water_g) || null;
+  const cupsCount = parseInt(body.cups, 10) || null;
+  const dose = optimizeMinDose && targetWaterG
+    ? Math.max(5, Math.round((targetWaterG / (targetMethod.toLowerCase().includes('espresso') ? 2.2 : 17.0)) * 2) / 2)
+    : (parseFloat(body.dose_in_g) || 20.0);
   const grinderType = (body.grinder || batchData.grinder || 'femobook').toLowerCase();
 
   const daysSinceRoast = calculateDaysSinceRoast(roast_date);
@@ -1571,6 +1576,9 @@ app.post('/api/recommend-recipe', async (req, res) => {
     sca_score,
     method: targetMethod,
     dose_in_g: dose,
+    optimize_min_dose: optimizeMinDose,
+    target_water_g: targetWaterG,
+    cups: cupsCount,
     grinder: grinderType,
     recent_brews: recentBrews
   };
@@ -1597,7 +1605,14 @@ app.post('/api/recommend-recipe', async (req, res) => {
       recipeToNormalize.days_since_roast = daysSinceRoast;
       recipeToNormalize._source = recommendation ? (recommendation._source || (provider === 'groq' ? 'groq' : 'gemini_ai')) : 'barista_fallback';
     }
-    const normalized = normalizeRecipe(recipeToNormalize, targetMethod, dose, grinderType);
+    const effectiveDose = (optimizeMinDose && recommendation && parseFloat(recommendation.dose_in_g) > 0)
+      ? Math.round(parseFloat(recommendation.dose_in_g) * 10) / 10
+      : dose;
+    if (optimizeMinDose && targetWaterG && recipeToNormalize && !recipeToNormalize.water_total_g) {
+      recipeToNormalize.water_total_g = targetWaterG;
+    }
+    const normalized = normalizeRecipe(recipeToNormalize, targetMethod, effectiveDose, grinderType);
+    if (normalized) normalized.dose_in_g = effectiveDose;
     return res.json(normalized);
   } catch (err) {
     console.warn(`[AI Recommend Fallback] Error with ${provider} (${model}): ${err.message}. Serving deterministic barista recipe.`);
