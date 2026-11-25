@@ -43,23 +43,9 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
   const tubeBatches = availableBatches.filter(b => b.storage_type !== 'bag');
   const finishedBatches = safeBatches.filter(b => b && !isBatchAvailable(b));
 
-  // Intent-First "Siguiente taza" recommendation (last brewed -> peak degassing -> first available)
-  const nextCupBatch = availableBatches.find(b => b.last_method)
-    || availableBatches.find(b => getDegassing(b)?.tone === 'ok')
-    || availableBatches[0]
-    || null;
-
-  // Cellar Intelligence: Peak today, Freeze/Past window, Low stock (<= 2 doses)
+  // Cellar Intelligence: Peak today & Freeze/Past window
   const peakBatches = availableBatches.filter(b => getDegassing(b)?.tone === 'ok');
   const pastOrFreezeBatches = availableBatches.filter(b => getDegassing(b)?.tone === 'warn');
-  const lowStockBatches = availableBatches.filter(b => {
-    if (b.storage_type === 'bag') {
-      const doseW = parseFloat(b.dose_weight) || 18;
-      const remG = parseFloat(b.remaining_weight_g);
-      return Number.isFinite(remG) ? remG > 0 && remG <= doseW * 2.1 : (b.remaining_doses || 0) <= 2;
-    }
-    return (b.remaining_doses || 0) > 0 && (b.remaining_doses || 0) <= 2;
-  });
 
   const currentList = filterMode === 'finished'
     ? finishedBatches
@@ -120,31 +106,8 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
         </Suspense>
       ) : (
         <>
-          {/* Intent-First "Siguiente taza" Hero (1-tap resume) */}
-          {nextCupBatch && !searchQuery && filterMode === 'all' && (
-            <div className="bt-next-cup" style={roastStyle(nextCupBatch.roast_level)}>
-              <div className="bt-next-cup-info" onClick={() => onSelectBatch(nextCupBatch)} style={{ cursor: 'pointer' }}>
-                <span className="bt-next-cup-k">
-                  {nextCupBatch.last_method ? `Retomar · ${nextCupBatch.last_method}` : 'Siguiente taza'}
-                </span>
-                <div className="bt-next-cup-name">{nextCupBatch.name}</div>
-                <div className="bt-next-cup-meta">
-                  {[nextCupBatch.roaster, nextCupBatch.origin].filter(Boolean).join(' · ') || 'Café de especialidad'}
-                </div>
-              </div>
-              <button
-                type="button"
-                className="bt-next-cup-btn"
-                onClick={() => onSelectBatch(nextCupBatch, { openBrew: true })}
-              >
-                <Play size={14} fill="currentColor" aria-hidden="true" />
-                <span>Preparar</span>
-              </button>
-            </div>
-          )}
-
-          {/* Cellar Intelligence Strip: En pico hoy / Congelar / Quedan ≤ 2 dosis */}
-          {!searchQuery && filterMode === 'all' && (peakBatches.length > 0 || pastOrFreezeBatches.length > 0 || lowStockBatches.length > 0) && (
+          {/* Cellar Intelligence Strip: En pico hoy / Congelar */}
+          {!searchQuery && filterMode === 'all' && (peakBatches.length > 0 || pastOrFreezeBatches.length > 0) && (
             <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px', marginBottom: '12px', scrollbarWidth: 'none' }}>
               {peakBatches.length > 0 && (
                 <button
@@ -192,30 +155,6 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
                 >
                   <Snowflake size={12} aria-hidden="true" />
                   <span>{pastOrFreezeBatches.length} para congelar / priorizar</span>
-                </button>
-              )}
-              {lowStockBatches.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => onSelectBatch(lowStockBatches[0])}
-                  style={{
-                    flex: '0 0 auto',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    minHeight: '30px',
-                    padding: '0 11px',
-                    borderRadius: 'var(--r-pill)',
-                    border: 'none',
-                    background: 'var(--accent-bg)',
-                    color: 'var(--accent-text, var(--accent))',
-                    fontSize: '11.5px',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
-                  <AlertTriangle size={12} aria-hidden="true" />
-                  <span>{lowStockBatches.length} con ≤2 dosis</span>
                 </button>
               )}
             </div>
