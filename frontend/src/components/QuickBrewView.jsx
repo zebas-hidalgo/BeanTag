@@ -150,57 +150,83 @@ export default function QuickBrewView({
   const [aiRecipe, setAiRecipe] = useState(null);
   const [brewOpen, setBrewOpen] = useState(false);
 
-  // Save to inventory & quick post-cup sensory tuner state
+  // Save to inventory / Bitácora & quick post-cup sensory tuner state
   const [savingBatch, setSavingBatch] = useState(false);
+  const [savingHistory, setSavingHistory] = useState(false);
   const [savedBatchId, setSavedBatchId] = useState(null);
+  const [savedToCava, setSavedToCava] = useState(false);
+  const [savedRecipeId, setSavedRecipeId] = useState(null);
   const [quickTasteId, setQuickTasteId] = useState(null);
   const [tunerPreview, setTunerPreview] = useState(null);
 
+  const postQuickRecipe = async ({ saveToCava = false, recipeOverride = null } = {}) => {
+    if (!currentUser) {
+      if (showToast) showToast('Inicia sesión para guardar en Bitácora o Mis Cafés.', { type: 'info' });
+      if (onRequireAuth) onRequireAuth();
+      return null;
+    }
+    const token = localStorage.getItem('beantag-token');
+    const cleanName = (bean.name || '').trim() || 'Café de Especialidad';
+    const rec = recipeOverride || syntheticRecipe;
+    const res = await fetch(apiUrl('api/quick-recipes'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({
+        batch_id: savedBatchId && (!saveToCava || savedToCava) ? savedBatchId : null,
+        save_to_cava: saveToCava,
+        bean: { ...bean, name: cleanName },
+        recipe: {
+          method: rec?.method || method,
+          ratio: rec?.ratio || `1:${activeMethodObj.baseRatio}`,
+          grind: rec?.grind || aiRecipe?.active_grinder_dial?.dial || '',
+          temperature: rec?.temperature || 93,
+          brew_time: rec?.brew_time || '3:00 min',
+          dose_in_g: rec?.dose_in_g || doseInG,
+          dose_out_g: rec?.water_total_g || targetWaterMl,
+          rating: rec?.rating || 5,
+          sensory_extraction: rec?.sensory_extraction || null,
+          notes: rec?.notes || (needsBypass ? `Receta rápida IA con bypass +${bypassWaterG} ml.` : 'Receta rápida calibrada con IA.')
+        }
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'No se pudo guardar.');
+    if (data.batch_id) setSavedBatchId(data.batch_id);
+    if (saveToCava) setSavedToCava(true);
+    if (data.recipe_id) setSavedRecipeId(data.recipe_id);
+    if (onRefreshBatches) onRefreshBatches();
+    return data;
+  };
+
+  const handleSaveToBitacora = async () => {
+    setSavingHistory(true);
+    try {
+      const data = await postQuickRecipe({ saveToCava: false });
+      if (data && showToast) {
+        showToast('Receta rápida guardada en tu Bitácora.', { type: 'success' });
+      }
+    } catch (err) {
+      if (showToast) showToast(err.message || 'Error al guardar en Bitácora.', { type: 'error' });
+    } finally {
+      setSavingHistory(false);
+    }
+  };
+
   const handleSaveToInventory = async () => {
-    if (savedBatchId && onOpenBatch) {
+    if (savedBatchId && savedToCava && onOpenBatch) {
       onOpenBatch(savedBatchId);
       return;
     }
-    if (!currentUser) {
-      if (showToast) showToast('Inicia sesión para guardar este café en Mis Cafés.', { type: 'info' });
-      if (onRequireAuth) onRequireAuth();
-      return;
-    }
-    const cleanName = (bean.name || '').trim() || 'Café de Especialidad';
-    const rawNotes = (bean.roaster_notes || '').trim();
-    const formattedNotes = rawNotes && !rawNotes.includes('[Notas:')
-      ? `[Notas: ${rawNotes}]`
-      : rawNotes;
-
     setSavingBatch(true);
     try {
-      const payload = {
-        id: slugifyBatchId(cleanName),
-        name: cleanName,
-        roaster: (bean.roaster || '').trim() || 'Tueste de especialidad',
-        producer: (bean.producer || '').trim() || (bean.roaster || '').trim() || 'Especialidad',
-        origin: (bean.origin || '').trim(),
-        variety: (bean.variety || '').trim(),
-        process: (bean.process || '').trim(),
-        altitude: (bean.altitude || '').trim(),
-        roast_level: bean.roast_level || 'Medio',
-        roaster_notes: formattedNotes,
-        sca_score: bean.sca_score ? parseFloat(bean.sca_score) : null,
-        storage_type: 'bag',
-        total_weight_g: 250,
-        dose_weight: syntheticRecipe?.dose_in_g || doseInG
-      };
-      const res = await fetch(apiUrl('api/batches'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'No se pudo guardar el café.');
-      const newId = data.id || payload.id;
-      setSavedBatchId(newId);
-      if (onRefreshBatches) onRefreshBatches();
-      if (showToast) showToast(`"${cleanName}" guardado en Mis Cafés.`, { type: 'success' });
+      const data = await postQuickRecipe({ saveToCava: true });
+      if (data && showToast) {
+        const cleanName = (bean.name || '').trim() || 'Café de Especialidad';
+        showToast(`"${cleanName}" y su receta IA guardados en Mis Cafés y Bitácora.`, { type: 'success' });
+      }
     } catch (err) {
       if (showToast) showToast(err.message || 'Error al guardar el café.', { type: 'error' });
     } finally {
@@ -243,7 +269,26 @@ export default function QuickBrewView({
   const handleSaveTunedFromGuide = async (tunedData) => {
     if (!tunedData) return;
     applyGrindAndTemp(tunedData.newGrindText || tunedData.grind, tunedData.newTemp || tunedData.temperature);
+    if (currentUser) {
+      try {
+        const res = await postQuickRecipe({
+          saveToCava: false,
+          recipeOverride: {
+            ...syntheticRecipe,
+            ...tunedData,
+            grind: tunedData.grind || syntheticRecipe?.grind,
+            temperature: tunedData.temperature || syntheticRecipe?.temperature
+          }
+        });
+        if (showToast) showToast('Extracción guardada en tu Bitácora y receta recalibrada.', { type: 'success' });
+        return res;
+      } catch (err) {
+        if (showToast) showToast(err.message || 'Ajuste aplicado (no se pudo guardar en Bitácora).', { type: 'info' });
+        return null;
+      }
+    }
     if (showToast) showToast('Ajuste del cronómetro aplicado a tu receta rápida.', { type: 'success' });
+    return { success: true };
   };
 
   // Share card state
@@ -264,6 +309,8 @@ export default function QuickBrewView({
       const { base64Data, mimeType } = await compressImageForOcr(file, 1280, 0.85);
       setPreviewUrl(base64Data);
       setSavedBatchId(null);
+      setSavedToCava(false);
+      setSavedRecipeId(null);
 
       const groqKey = localStorage.getItem('groq-key') || '';
       const useGroq = Boolean(groqKey && groqKey.trim());
@@ -337,6 +384,7 @@ export default function QuickBrewView({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al generar receta.');
       setAiRecipe(data);
+      setSavedRecipeId(null);
       setTunerPreview(null);
       setQuickTasteId(null);
     } catch (err) {
@@ -948,38 +996,71 @@ export default function QuickBrewView({
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={handleSaveToInventory}
-            disabled={savingBatch}
-            className="barista-btn-secondary"
-            style={{
-              width: '100%',
-              minHeight: '44px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '7px',
-              margin: 0,
-              fontSize: '13px',
-              fontWeight: 600
-            }}
-          >
-            {savingBatch ? (
-              <Loader2 size={15} className="spin" />
-            ) : savedBatchId ? (
-              <Check size={15} />
-            ) : (
-              <BookmarkPlus size={15} />
-            )}
-            <span>
-              {savingBatch
-                ? 'Guardando en Mis Cafés...'
-                : savedBatchId
-                  ? 'Guardado en Mis Cafés · Ver ficha'
-                  : 'Guardar café en Mis Cafés'}
-            </span>
-          </button>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <button
+              type="button"
+              onClick={handleSaveToBitacora}
+              disabled={savingHistory}
+              className="barista-btn-secondary"
+              style={{
+                minHeight: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                margin: 0,
+                fontSize: '12.5px',
+                fontWeight: 600
+              }}
+            >
+              {savingHistory ? (
+                <Loader2 size={14} className="spin" />
+              ) : savedRecipeId ? (
+                <Check size={14} />
+              ) : (
+                <CheckCircle2 size={14} />
+              )}
+              <span>
+                {savingHistory
+                  ? 'Guardando...'
+                  : savedRecipeId
+                    ? 'En Bitácora'
+                    : 'Guardar en Bitácora'}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSaveToInventory}
+              disabled={savingBatch}
+              className="barista-btn-secondary"
+              style={{
+                minHeight: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                margin: 0,
+                fontSize: '12.5px',
+                fontWeight: 600
+              }}
+            >
+              {savingBatch ? (
+                <Loader2 size={14} className="spin" />
+              ) : savedToCava ? (
+                <Check size={14} />
+              ) : (
+                <BookmarkPlus size={14} />
+              )}
+              <span>
+                {savingBatch
+                  ? 'Guardando...'
+                  : savedToCava
+                    ? 'Ver en Mis Cafés'
+                    : 'Guardar café + receta'}
+              </span>
+            </button>
+          </div>
         </section>
       )}
 

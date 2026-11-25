@@ -602,6 +602,124 @@ app.post('/api/recipes', async (req, res) => {
   }
 });
 
+// Save a QuickBrew recipe directly to Bitácora (and optionally create an active bag in Cava)
+app.post('/api/quick-recipes', async (req, res) => {
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ error: 'Debes iniciar sesión para guardar en tu bitácora.' });
+  }
+  const { batch_id, save_to_cava = false, bean = {}, recipe = {} } = req.body || {};
+  if (!recipe || !recipe.method) {
+    return res.status(400).json({ error: 'Falta el método de la receta rápida.' });
+  }
+
+  try {
+    const db = await getDb();
+    const userId = req.user.id;
+    const doseInVal = parseFloat(recipe.dose_in_g) || 15.0;
+    const waterOutVal = parseFloat(recipe.dose_out_g || recipe.water_total_g) || null;
+    const tempStr = typeof recipe.temperature === 'number'
+      ? `${recipe.temperature}°C`
+      : String(recipe.temperature || '93°C');
+
+    let targetBatchId = null;
+    if (batch_id) {
+      const existing = await db.get('SELECT * FROM batches WHERE id = ?', batch_id);
+      if (existing && isResourceOwner(req.user, existing.user_id)) {
+        targetBatchId = existing.id;
+      }
+    }
+
+    let insertedRecipeId = null;
+    await db.run('BEGIN TRANSACTION;');
+    try {
+      if (!targetBatchId) {
+        const cleanName = String(bean.name || 'Preparación Rápida').trim() || 'Preparación Rápida';
+        const slugBase = cleanName
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 28) || 'rapida';
+        targetBatchId = `${save_to_cava ? '' : 'qb-'}${slugBase}-${userId}-${Date.now().toString(36).slice(-4)}`;
+
+        const safeRoaster = String(bean.roaster || '').trim() || 'Tueste de especialidad';
+        const safeProducer = String(bean.producer || '').trim() || safeRoaster || 'Especialidad';
+        const rawNotes = String(bean.roaster_notes || '').trim();
+        const formattedNotes = rawNotes && !rawNotes.includes('[Notas:') ? `[Notas: ${rawNotes}]` : rawNotes;
+        const scaScoreNum = (bean.sca_score !== undefined && bean.sca_score !== null && bean.sca_score !== '' && !isNaN(parseFloat(bean.sca_score)))
+          ? parseFloat(bean.sca_score)
+          : null;
+
+        const totalWeight = save_to_cava ? 250.0 : doseInVal;
+        const remainingWeight = save_to_cava ? 250.0 : 0;
+        const totalDoses = save_to_cava ? Math.max(1, Math.round(totalWeight / doseInVal)) : 1;
+        const remainingDoses = save_to_cava ? totalDoses : 0;
+
+        await db.run(
+          `INSERT INTO batches (id, name, producer, altitude, variety, process, roaster, roaster_notes, dose_weight, total_doses, remaining_doses, origin, roast_level, roast_date, freeze_date, total_weight_g, remaining_weight_g, user_id, sca_score, storage_type)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            targetBatchId,
+            cleanName,
+            safeProducer,
+            String(bean.altitude || '').trim(),
+            String(bean.variety || '').trim(),
+            String(bean.process || '').trim(),
+            safeRoaster,
+            formattedNotes,
+            `${doseInVal.toFixed(1)}g`,
+            totalDoses,
+            remainingDoses,
+            String(bean.origin || '').trim(),
+            String(bean.roast_level || 'Medio').trim(),
+            null,
+            null,
+            totalWeight,
+            remainingWeight,
+            userId,
+            scaScoreNum,
+            'bag'
+          ]
+        );
+      }
+
+      const insertResult = await db.run(
+        `INSERT INTO recipes (batch_id, method, ratio, grind, temperature, brew_time, rating, notes, sensory_balance, sensory_body, sensory_extraction, dose_in_g, dose_out_g, espresso_pressure, espresso_preinfusion, user_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          targetBatchId,
+          recipe.method,
+          String(recipe.ratio || ''),
+          String(recipe.grind || ''),
+          tempStr,
+          String(recipe.brew_time || ''),
+          parseInt(recipe.rating, 10) || 5,
+          String(recipe.notes || '').trim(),
+          recipe.sensory_balance || null,
+          recipe.sensory_body || null,
+          recipe.sensory_extraction || null,
+          doseInVal,
+          waterOutVal,
+          null,
+          null,
+          userId
+        ]
+      );
+      insertedRecipeId = insertResult.lastID;
+      await db.run('COMMIT;');
+    } catch (dbErr) {
+      await db.run('ROLLBACK;');
+      throw dbErr;
+    }
+
+    res.status(201).json({
+      success: true,
+      batch_id: targetBatchId,
+      recipe_id: insertedRecipeId,
+      saved_to_cava: Boolean(save_to_cava)
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Get recipe history (Scoped strictly to the authenticated user)
 app.get('/api/recipes', async (req, res) => {
   try {

@@ -1,7 +1,13 @@
 import React from 'react';
-import { SlidersHorizontal, Coffee, Scale, Gauge, Thermometer, Clock, Sparkles } from 'lucide-react';
+import { SlidersHorizontal, Coffee, Scale, Gauge, Thermometer, Clock, Sparkles, AlertTriangle } from 'lucide-react';
 import { MethodIcon } from '../icons/CoffeeIcons';
 import { FAMOUS_RECIPES } from '../../utils/famousRecipes';
+
+const CHAMBER_MAX_ML = {
+  'AeroPress Go': 210,
+  'AeroPress': 250,
+  'NextLevel Pulsar Mini': 400
+};
 
 const METHODS = [
   { id: 'NextLevel Pulsar Mini', label: 'Pulsar Mini' },
@@ -151,6 +157,72 @@ export default function RecipeParamsGrid({
           </div>
         </div>
       )}
+
+      {/* 2.5 Quick Volume by Cups (200 ml ref) + Chamber Bypass Warning */}
+      {!isEspresso && (() => {
+        const safeRatio = parseFloat(ratioVal) || 16;
+        const totalWaterEst = Math.round((parseFloat(doseInG) || 15) * safeRatio);
+        const chamberMax = CHAMBER_MAX_ML[method] || null;
+        const bypassMl = chamberMax && totalWaterEst > chamberMax ? totalWaterEst - chamberMax : 0;
+        return (
+          <div style={{ marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'var(--font-data)' }}>
+                Por tazas (200 ml)
+              </span>
+              <div style={{ display: 'inline-flex', gap: '6px' }}>
+                {[1, 2, 3].map((cups) => {
+                  const targetMl = cups * 200;
+                  const isMatch = Math.abs(totalWaterEst - targetMl) <= 18;
+                  return (
+                    <button
+                      key={cups}
+                      type="button"
+                      onClick={() => {
+                        const nextDose = Math.max(5, Math.min(50, Math.round((targetMl / safeRatio) * 2) / 2));
+                        setDoseInG(nextDose);
+                      }}
+                      style={{
+                        minHeight: '30px',
+                        padding: '0 10px',
+                        borderRadius: 'var(--r-pill)',
+                        border: `1px solid ${isMatch ? 'var(--accent)' : 'var(--line)'}`,
+                        background: isMatch ? 'var(--accent-bg)' : 'var(--surface)',
+                        color: isMatch ? 'var(--accent-text)' : 'var(--ink-2)',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        fontFamily: 'var(--font-data)'
+                      }}
+                    >
+                      {cups} {cups === 1 ? 'taza' : 'tazas'}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {bypassMl > 0 && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '7px',
+                padding: '8px 11px',
+                borderRadius: 'var(--r-tile)',
+                background: 'var(--warn-bg)',
+                color: 'var(--warn-text)',
+                fontSize: '11.5px',
+                lineHeight: 1.35
+              }}>
+                <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: '1px' }} aria-hidden="true" />
+                <span>
+                  <strong>{method}</strong> admite ~{chamberMax} ml en cámara. Prepara concentrado y agrega <strong>+{bypassMl} ml de bypass</strong> al final.
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* 3. Bento Grid: Parámetros Clave (Dosis, Ratio/Out, Temp, Tiempo) */}
       <div style={{

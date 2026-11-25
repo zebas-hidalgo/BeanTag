@@ -83,6 +83,49 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   });
   const [showManualLog, setShowManualLog] = useState(false);
   const [showNfcPanel, setShowNfcPanel] = useState(false);
+  const [dialInBadge, setDialInBadge] = useState(() => {
+    try {
+      const raw = localStorage.getItem(`beantag-dialin-badge-${batchId}`);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  });
+
+  const applyGrindTextToActive = (gText) => {
+    if (!gText) return;
+    const str = String(gText);
+    const jmaxMatch = str.match(/(\d+)\.(\d+)\.(\d+)/);
+    if (grinderType === 'jmax' && jmaxMatch) {
+      const rot = parseInt(jmaxMatch[1], 10);
+      const num = parseInt(jmaxMatch[2], 10);
+      const click = parseInt(jmaxMatch[3], 10);
+      setJmaxRot(rot); setJmaxNum(num); setJmaxClick(click);
+      updateManualGrinder('jmax', { rot, num, click });
+      return;
+    }
+    const numMatch = str.match(/(\d+(?:\.\d+)?)/);
+    if (!numMatch) return;
+    const val = parseFloat(numMatch[1]);
+    if (grinderType === 'k_ultra') { setKUltraDial(val); updateManualGrinder('k_ultra', val); }
+    else if (grinderType === 'ode_gen2') { setOdeDial(val); updateManualGrinder('ode_gen2', val); }
+    else if (grinderType === 'comandante') { const c = Math.round(val); setComandanteClicks(c); updateManualGrinder('comandante', c); }
+    else if (grinderType === 'femobook') { const c = Math.round(val); setFemobookClicks(c); updateManualGrinder('femobook', c); }
+    else if (grinderType === 'kingrinder') { const c = Math.round(val); setKingrinderClicks(c); updateManualGrinder('kingrinder', c); }
+    else if (grinderType === 'timemore') { const c = Math.round(val); setTimemoreClicks(c); updateManualGrinder('timemore', c); }
+    else if (grinderType === 'baratza') { const c = Math.round(val); setBaratzaStep(c); updateManualGrinder('baratza', c); }
+  };
+
+  const dismissDialInBadge = () => {
+    setDialInBadge(null);
+    try { localStorage.removeItem(`beantag-dialin-badge-${batch?.id || batchId}`); } catch {}
+  };
+
+  const revertDialInBadge = () => {
+    if (!dialInBadge) return;
+    if (dialInBadge.prevTemp) setWaterTemp(parseInt(dialInBadge.prevTemp, 10) || 93);
+    if (dialInBadge.prevGrind) applyGrindTextToActive(dialInBadge.prevGrind);
+    dismissDialInBadge();
+    if (showToast) showToast('Se restauraron los parámetros anteriores.', { type: 'info' });
+  };
 
   const handleOpenInNativeApp = () => {
     if (!batch?.id) return;
@@ -1124,7 +1167,27 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
       const authToken = localStorage.getItem('beantag-token');
       const authHeaders = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+      const prevGrindSnapshot = getGrindString();
+      const prevTempSnapshot = waterTemp;
       if (tunedData.temperature) setTemperature(typeof tunedData.temperature === 'number' ? tunedData.temperature : parseInt(tunedData.temperature, 10));
+      if (tunedData.grind) applyGrindTextToActive(tunedData.grind);
+
+      // Persist "Next calibrated brew" badge when sensory correction changed grind/temp
+      const corr = tunedData.correction;
+      if (batch?.id && corr && corr.diagnosis && corr.diagnosis !== 'balanced') {
+        const badgeData = {
+          grind: corr.newGrindText || tunedData.grind,
+          temperature: corr.newTemp || tunedData.temperature,
+          prevGrind: prevGrindSnapshot,
+          prevTemp: prevTempSnapshot,
+          diagnosis: corr.diagnosis,
+          savedAt: Date.now()
+        };
+        setDialInBadge(badgeData);
+        try { localStorage.setItem(`beantag-dialin-badge-${batch.id}`, JSON.stringify(badgeData)); } catch {}
+      } else if (batch?.id && corr?.diagnosis === 'balanced') {
+        dismissDialInBadge();
+      }
       fetch(apiUrl(`api/batches/${batch?.id}`), { headers: authHeaders })
         .then(r => r.json())
         .then(fresh => { if (fresh && !fresh.error) setBatch(fresh); })
@@ -1602,6 +1665,66 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     : ''}
                   {' — '}al guardar en la bitácora no se volverá a restar otro tubo.
                 </span>
+              </div>
+            )}
+
+            {dialInBadge && (
+              <div
+                role="status"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '8px',
+                  padding: '9px 12px',
+                  marginBottom: '12px',
+                  borderRadius: 'var(--r-tile)',
+                  background: 'var(--accent-bg)',
+                  border: '1px solid var(--accent-line)',
+                  fontSize: '12px',
+                  color: 'var(--ink)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0 }}>
+                  <Sparkles size={14} style={{ color: 'var(--accent-text)', flexShrink: 0 }} aria-hidden="true" />
+                  <span style={{ lineHeight: 1.3 }}>
+                    <strong>Calibrada de tu última taza:</strong>{' '}
+                    <span style={{ fontFamily: 'var(--font-mono)' }}>{dialInBadge.grind} · {dialInBadge.temperature}°C</span>
+                  </span>
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                  <button
+                    type="button"
+                    onClick={revertDialInBadge}
+                    style={{
+                      background: 'var(--surface)',
+                      border: '1px solid var(--line)',
+                      borderRadius: 'var(--r-pill)',
+                      padding: '4px 9px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      color: 'var(--ink)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Revertir
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Cerrar aviso de calibración"
+                    onClick={dismissDialInBadge}
+                    style={{
+                      background: 'transparent',
+                      border: 0,
+                      padding: '4px',
+                      color: 'var(--ink-muted)',
+                      cursor: 'pointer',
+                      display: 'inline-flex'
+                    }}
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
               </div>
             )}
 
