@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BeanTag — Master Brand, Product & Roadmap Brief (2027/2028)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  :root {
+    --bg: #F6F3EE;
+    --surface: #FDFBF8;
+    --ink: #1B1613;
+    --ink-2: #4A4038;
+    --muted: #76695E;
+    --line: rgba(27, 22, 19, 0.10);
+    --brand: #C23B22;
+    --accent: #8E5226;
+    --accent-soft: #F2E6DA;
+    --espresso: #151210;
+    --gold: #E2A96F;
+    --sage: #23533C;
+    --sage-soft: #E5EFE8;
+    --font-display: 'Bricolage Grotesque', -apple-system, sans-serif;
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-body: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #E5E0D8;
+    font-family: var(--font-body);
+    color: var(--ink);
+  }
+
+  .page {
+    width: 210mm;
+    height: 297mm;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg);
+    page-break-after: always;
+    break-after: page;
+    display: flex;
+    flex-direction: column;
+  }
+  .page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .page-inner {
+    padding: 16mm 16mm 14mm 16mm;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Running Header & Footer */
+  .running-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 5mm;
+    margin-bottom: 6mm;
+    border-bottom: 1px solid var(--line);
+    font: 600 8.5pt/1 var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .running-head .brand-mini {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 10pt;
+    letter-spacing: -0.01em;
+    text-transform: none;
+  }
+
+  .running-foot {
+    margin-top: auto;
+    padding-top: 4mm;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font: 500 8pt/1 var(--font-mono);
+    color: var(--muted);
+  }
+
+  /* Typography */
+  .eyebrow {
+    font: 700 8.5pt/1.2 var(--font-mono);
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--brand);
+    margin: 0 0 2.5mm 0;
+  }
+
+  h1.section-h1 {
+    font: 800 24pt/1.05 var(--font-display);
+    font-variation-settings: "opsz" 72;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    margin: 0 0 3.5mm 0;
+  }
+
+  p.lead {
+    font: 400 10.5pt/1.5 var(--font-body);
+    color: var(--ink-2);
+    margin: 0 0 5.5mm 0;
+    max-width: 162mm;
+  }
+
+  h2.sub-h2 {
+    font: 700 12pt/1.2 var(--font-display);
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin: 0 0 2.5mm 0;
+  }
+
+  /* Cards & Surfaces */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 4.5mm 5mm;
+  }
+  .card-dark {
+    background: var(--espresso);
+    color: #F6EFE7;
+    border-radius: 14px;
+    padding: 5mm 5.5mm;
+    border: 1px solid rgba(226, 169, 111, 0.25);
+  }
+  .card-soft {
+    background: #EFEAE1;
+    border-radius: 14px;
+    padding: 4.5mm 5mm;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4.5mm; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3.5mm; }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font: 600 8pt/1.1 var(--font-mono);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .pill-brand { background: rgba(194, 59, 34, 0.12); color: var(--brand); }
+  .pill-sage { background: var(--sage-soft); color: var(--sage); }
+  .pill-dark { background: rgba(226, 169, 111, 0.16); color: var(--gold); }
+
+  /* ── PAGE 1: COVER ── */
+  .cover {
+    background: #1B1512;
+    color: #FAF8F4;
+  }
+  .cover-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 45%;
+    z-index: 1;
+  }
+  .cover-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background:
+      linear-gradient(180deg,
+        rgba(22, 17, 14, 0.72) 0%,
+        rgba(22, 17, 14, 0.24) 36%,
+        rgba(22, 17, 14, 0.18) 64%,
+        rgba(20, 15, 12, 0.86) 100%);
+  }
+  .cover-content {
+    position: relative;
+    z-index: 3;
+    height: 100%;
+    padding: 18mm 18mm 16mm 18mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .cover-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cover-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(250, 248, 244, 0.14);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    font: 600 8.5pt/1 var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #FAF8F4;
+  }
+  .cover-hero-text {
+    margin-top: 8mm;
+    max-width: 128mm;
+  }
+  .cover-title {
+    font: 800 54pt/0.95 var(--font-display);
+    font-variation-settings: "opsz" 96;
+    letter-spacing: -0.04em;
+    margin: 0 0 4mm 0;
+    color: #FFFFFF;
+  }
+  .cover-sub {
+    font: 400 14pt/1.4 var(--font-body);
+    color: rgba(255, 252, 247, 0.92);
+    margin: 0;
+  }
+  .cover-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 5mm;
+  }
+  .cover-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3.5mm;
+  }
+  .cover-kpi {
+    background: rgba(21, 18, 16, 0.68);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 14px;
+    padding: 4mm 4.5mm;
+  }
+  .cover-kpi-num {
+    font: 700 18pt/1 var(--font-mono);
+    color: var(--gold);
+    margin-bottom: 1.5mm;
+  }
+  .cover-kpi-lbl {
+    font: 500 8.2pt/1.25 var(--font-body);
+    color: rgba(250, 248, 244, 0.82);
+  }
+  .cover-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 3.5mm;
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    font: 500 8.5pt/1 var(--font-mono);
+    color: rgba(250, 248, 244, 0.78);
+  }
+
+  /* Flow Diagram */
+  .ritual-flow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3.5mm;
+    margin-bottom: 5.5mm;
+  }
+  .ritual-step {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 4mm;
+    position: relative;
+  }
+  .ritual-num {
+    font: 700 8pt/1 var(--font-mono);
+    color: var(--brand);
+    margin-bottom: 2mm;
+    letter-spacing: 0.06em;
+  }
+  .ritual-title {
+    font: 700 12pt/1.15 var(--font-display);
+    margin-bottom: 1.5mm;
+  }
+  .ritual-desc {
+    font: 400 8.5pt/1.38 var(--font-body);
+    color: var(--ink-2);
+    margin: 0;
+  }
+
+  /* Photo frames */
+  .photo-banner {
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--line);
+  }
+  .photo-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .photo-caption {
+    position: absolute;
+    left: 12px;
+    bottom: 10px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(21, 18, 16, 0.72);
+    color: #FAF8F4;
+    font: 500 7.5pt/1.1 var(--font-mono);
+    letter-spacing: 0.04em;
+  }
+
+  /* Swatch grid for 17 themes */
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2.8mm;
+  }
+  .theme-chip {
+    border-radius: 11px;
+    padding: 2.8mm 3mm;
+    border: 1px solid rgba(27, 22, 19, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .theme-chip-name {
+    font: 700 8.3pt/1.15 var(--font-display);
+  }
+  .theme-chip-sub {
+    font: 500 7pt/1.1 var(--font-mono);
+    opacity: 0.72;
+  }
+  .theme-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(255,255,255,0.45);
+  }
+
+  /* Exportable Card Mini-Previews */
+  .export-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3.2mm;
+  }
+  .mini-card {
+    border-radius: 12px;
+    padding: 3.5mm;
+    min-height: 31mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(27,22,19,0.12);
+  }
+  .mini-card-k {
+    font: 600 6.5pt/1 var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    opacity: 0.72;
+  }
+  .mini-card-title {
+    font-size: 11pt;
+    line-height: 1.05;
+    margin: 2mm 0 1.5mm;
+  }
+  .mini-card-meta {
+    font: 500 7pt/1.2 var(--font-mono);
+    opacity: 0.8;
+  }
+
+  /* Module list */
+  .mod-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    padding: 3.8mm 4.2mm;
+    display: flex;
+    flex-direction: column;
+    gap: 1.8mm;
+  }
+  .mod-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .mod-title {
+    font: 700 10.5pt/1.15 var(--font-display);
+    color: var(--ink);
+  }
+  .mod-body {
+    font: 400 8.3pt/1.4 var(--font-body);
+    color: var(--ink-2);
+    margin: 0;
+  }
+
+  /* Committee Cards */
+  .seat-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 3.8mm 4.2mm;
+    display: flex;
+    flex-direction: column;
+    gap: 1.6mm;
+  }
+  .seat-quote {
+    font: italic 500 8.5pt/1.32 var(--font-serif);
+    color: var(--accent);
+    margin: 0;
+  }
+  .seat-list {
+    font: 400 8pt/1.38 var(--font-body);
+    color: var(--ink-2);
+    margin: 0;
+  }
+
+  /* Roadmap */
+  .road-item {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 4.2mm 4.8mm;
+    display: grid;
+    grid-template-columns: 34mm 1fr;
+    gap: 4.5mm;
+    align-items: start;
+  }
+  .road-q {
+    font: 700 13pt/1.1 var(--font-display);
+    color: var(--ink);
+  }
+  .road-tag {
+    display: inline-block;
+    margin-top: 1.8mm;
+    padding: 2.5px 8px;
+    border-radius: 999px;
+    font: 600 7.2pt/1.1 var(--font-mono);
+    text-transform: uppercase;
+  }
+  .road-bullets {
+    margin: 0;
+    padding-left: 4mm;
+    font: 400 8.7pt/1.45 var(--font-body);
+    color: var(--ink-2);
+  }
+  .road-bullets li { margin-bottom: 1.4mm; }
+  .road-bullets li:last-child { margin-bottom: 0; }
+
+  /* Lists & Tables */
+  ul.clean {
+    margin: 0;
+    padding-left: 4.2mm;
+    font: 400 8.8pt/1.45 var(--font-body);
+    color: var(--ink-2);
+  }
+  ul.clean li { margin-bottom: 1.6mm; }
+
+  .code-box {
+    background: var(--espresso);
+    color: #EAE2D7;
+    border-radius: 12px;
+    padding: 3.6mm 4mm;
+    font: 500 7.2pt/1.62 var(--font-mono);
+    white-space: pre;
+    overflow: hidden;
+  }
+  .code-comment { color: #9A8D80; }
+  .code-accent { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PÁGINA 1 · PORTADA EDITORIAL
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="page cover">
+  <img class="cover-bg" src="assets/brief_cover_hero.jpg" alt="BeanTag Pour-Over Ritual" />
+  <div class="cover-overlay"></div>
+  <div class="cover-content">
+    <div>
+      <div class="cover-top">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40">
+            <rect width="100" height="100" rx="22" fill="#FBFAF8"/>
+            <g transform="rotate(-28 50 50)">
+              <ellipse cx="50" cy="52" rx="29" ry="40" fill="#C23B22"/>
+              <path d="M50 31 C 40 45, 60 58, 50 72 C 46 78, 47 84, 50 88" fill="none" stroke="#FBFAF8" stroke-width="5.5" stroke-linecap="round"/>
+              <circle cx="50" cy="21" r="4.6" fill="#FBFAF8"/>
+            </g>
+          </svg>
+          <span style="font:700 15pt/1 var(--font-display);letter-spacing:-0.02em;color:#FFF;">BeanTag</span>
+        </div>
+        <div class="cover-badge">Product, Brand &amp; Roadmap Brief · 2027/2028</div>
+      </div>
+
+      <div class="cover-hero-text">
+        <h1 class="cover-title">BeanTag</h1>
+        <p class="cover-sub">
+          El copiloto artesanal e instrumental para el café de especialidad: cava criogénica,
+          calibración física en micras, IA barista, balanza Bluetooth y etiquetas NFC en una sola experiencia móvil.
+        </p>
+      </div>
+    </div>
+
+    <div class="cover-bottom">
+      <div class="cover-kpis">
+        <div class="cover-kpi">
+          <div class="cover-kpi-num">17</div>
+          <div class="cover-kpi-lbl">Temas de especialidad claros, oscuros y OLED</div>
+        </div>
+        <div class="cover-kpi">
+          <div class="cover-kpi-num">8</div>
+          <div class="cover-kpi-lbl">Molinos sincronizados en micras físicas (D50)</div>
+        </div>
+        <div class="cover-kpi">
+          <div class="cover-kpi-num">8</div>
+          <div class="cover-kpi-lbl">Estilos de tarjetas y stickers PNG exportables</div>
+        </div>
+        <div class="cover-kpi">
+          <div class="cover-kpi-num">IA+BLE</div>
+          <div class="cover-kpi-lbl">Gemini/Groq, Timemore Dot BLE &amp; salto NFC iOS</div>
+        </div>
+      </div>
+      <div class="cover-meta">
+        <span>EDICIÓN V6 · WARM NEO-TACTILE EDITORIAL</span>
+        <span>WEB · PWA · CAPACITOR iOS</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PÁGINA 2 · VISIÓN DE MARCA, RITUAL Y AUDIENCIA
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="page-inner">
+    <header class="running-head">
+      <span class="brand-mini">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="16" height="16">
+          <g transform="rotate(-28 50 50)"><ellipse cx="50" cy="52" rx="29" ry="40" fill="#C23B22"/><path d="M50 31 C 40 45, 60 58, 50 72 C 46 78, 47 84, 50 88" fill="none" stroke="#FBFAF8" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="21" r="4.8" fill="#FBFAF8"/></g>
+        </svg>
+        BeanTag
+      </span>
+      <span>01 · Visión &amp; Posicionamiento</span>
+    </header>
+
+    <p class="eyebrow">01 · Propósito y Norte de Producto</p>
+    <h1 class="section-h1">Artesanía sensorial con precisión de laboratorio</h1>
+    <p class="lead">
+      BeanTag nace para unir dos mundos que suelen vivir separados: la calidez estética de las barras de especialidad de Tokio, Copenhague y Melbourne, y la exactitud científica de la extracción (micrones, caudal, ratios solubles, desgasificación y congelación criogénica).
+    </p>
+
+    <div class="ritual-flow">
+      <div class="ritual-step">
+        <div class="ritual-num">01 · ABRIR</div>
+        <div class="ritual-title">Cava limpia</div>
+        <p class="ritual-desc">Ves tus lotes, días de reposo y cafés en pico hoy sin ruido visual ni muros.</p>
+      </div>
+      <div class="ritual-step">
+        <div class="ritual-num">02 · ELEGIR</div>
+        <div class="ritual-title">NFC o Foto IA</div>
+        <p class="ritual-desc">Acercas el iPhone al frasco o sacas foto a una bolsa nueva para calibrar al vuelo.</p>
+      </div>
+      <div class="ritual-step">
+        <div class="ritual-num">03 · PREPARAR</div>
+        <div class="ritual-title">Cockpit de Barra</div>
+        <p class="ritual-desc">Cronómetro guiado con balanza Timemore Dot BLE, válvulas y alertas táctiles.</p>
+      </div>
+      <div class="ritual-step">
+        <div class="ritual-num">04 · AJUSTAR</div>
+        <div class="ritual-title">Dial-In 1-Tap</div>
+        <p class="ritual-desc">Marcas ácido, bien o amargo y la próxima taza queda recalibrada automáticamente.</p>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-bottom:5.5mm;">
+      <div class="card">
+        <span class="pill pill-brand" style="margin-bottom:2.5mm;">Home Barista</span>
+        <h2 class="sub-h2">Precisión diaria</h2>
+        <p class="mod-body">Sincroniza 8 molinos de gama alta en micrones D50, controla ratios por tazas (200 ml) o manual con alerta de bypass, y registra cada ajuste en segundos.</p>
+      </div>
+      <div class="card">
+        <span class="pill pill-sage" style="margin-bottom:2.5mm;">Coleccionista Cava</span>
+        <h2 class="sub-h2">Preservación criogénica</h2>
+        <p class="mod-body">Organiza bolsas y portatubos numerados a -18°C, monitorea curvas de desgasificación de CO₂ por nivel de tueste y sabe exactamente qué abrir o congelar hoy.</p>
+      </div>
+      <div class="card">
+        <span class="pill" style="margin-bottom:2.5mm;">Cafetería &amp; Invitados</span>
+        <h2 class="sub-h2">Etiquetas vivas NFC</h2>
+        <p class="mod-body">Cualquier cliente escanea el tag NFC de un frasco y ve la ficha técnica pública sin muro de login, lista para compartir en Instagram Stories con estética boutique.</p>
+      </div>
+    </div>
+
+    <div class="photo-banner" style="height:50mm; margin-bottom:4.5mm;">
+      <img src="assets/brief_tasting_craft.jpg" alt="Cata de café de especialidad BeanTag" />
+      <div class="photo-caption">CATA SENSORIAL · NOTAS SCA · ESTÉTICA WARM NEO-TACTILE</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card-soft">
+        <h2 class="sub-h2">Pilares Innegociables</h2>
+        <ul class="clean">
+          <li><strong>Rigor físico real:</strong> capacidades de cámara, bypass y micras verificadas antes que adornos.</li>
+          <li><strong>Resiliencia offline:</strong> si falla la red, el motor barista físico sigue operando al 100%.</li>
+          <li><strong>Filosofía KISS:</strong> la menor cantidad de código y chrome para resolver el ritual con excelencia.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2 class="sub-h2">Qué NO es BeanTag</h2>
+        <ul class="clean">
+          <li>No es una red social con feeds infinitos ni mecánicas de engagement adictivo.</li>
+          <li>No es un sistema POS corporativo de facturación masiva.</li>
+          <li>No encierra tus datos en suscripciones cerradas ni exige cuentas para invitados NFC.</li>
+        </ul>
+      </div>
+    </div>
+
+    <footer class="running-foot">
+      <span>BEANTAG MASTER BRIEF · 2027/2028</span>
+      <span>PÁGINA 02 / 08</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PÁGINA 3 · IDENTIDAD VISUAL, LOGO & DIRECCIÓN ARTÍSTICA
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="page-inner">
+    <header class="running-head">
+      <span class="brand-mini">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="16" height="16">
+          <g transform="rotate(-28 50 50)"><ellipse cx="50" cy="52" rx="29" ry="40" fill="#C23B22"/><path d="M50 31 C 40 45, 60 58, 50 72 C 46 78, 47 84, 50 88" fill="none" stroke="#FBFAF8" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="21" r="4.8" fill="#FBFAF8"/></g>
+        </svg>
+        BeanTag
+      </span>
+      <span>02 · Identidad Visual &amp; Dirección Artística</span>
+    </header>
+
+    <p class="eyebrow">02 · Brand Mark &amp; Dirección Artística 2027/2028</p>
+    <h1 class="section-h1">Warm Neo-Tactile Editorial</h1>
+    <p class="lead">
+      El isotipo <strong>BeanTag 2028</strong> fusiona un grano de especialidad inclinado a <strong>-28°</strong> con el ojal táctil de una etiqueta física y un punto de lectura NFC. Todo el lenguaje visual elimina la fatiga de bordes y cede el color al café.
+    </p>
+
+    <!-- Logo Showcase -->
+    <div class="grid-4" style="margin-bottom:5.5mm;">
+      <div class="card" style="text-align:center; padding:4.5mm 3mm;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="54" height="54">
+          <g transform="rotate(-28 50 50)"><ellipse cx="50" cy="52" rx="29" ry="40" fill="#C23B22"/><path d="M50 31 C 40 45, 60 58, 50 72 C 46 78, 47 84, 50 88" fill="none" stroke="#FBFAF8" stroke-width="5.5" stroke-linecap="round"/><circle cx="50" cy="21" r="4.6" fill="#FBFAF8"/></g>
+        </svg>
+        <div style="font:700 9pt/1.2 var(--font-display);margin-top:2.5mm;">Principal Brand</div>
+        <div style="font:500 7.5pt/1.2 var(--font-mono);color:var(--muted);">#C23B22 · #FBFAF8</div>
+      </div>
+
+      <div class="card" style="text-align:center; padding:4.5mm 3mm; background:#FBFAF8;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="54" height="54" style="border-radius:13px;box-shadow:0 4px 12px rgba(27,22,19,0.14);">
+          <rect width="100" height="100" fill="#FBFAF8"/>
+          <g transform="rotate(-28 50 50)"><ellipse cx="50" cy="52" rx="29" ry="40" fill="#C23B22"/><path d="M50 31 C 40 45, 60 58, 50 72 C 46 78, 47 84, 50 88" fill="none" stroke="#FBFAF8" stroke-width="5.5" stroke-linecap="round"/><circle cx="50" cy="21" r="4.6" fill="#FBFAF8"/></g>
+        </svg>
+        <div style="font:700 9pt/1.2 var(--font-display);margin-top:2.5mm;">AppIcon iOS</div>
+        <div style="font:500 7.5pt/1.2 var(--font-mono);color:var(--muted);">1024px RGB sin alfa</div>
+      </div>
+
+      <div class="card-dark" style="text-align:center; padding:4.5mm 3mm;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="54" height="54">
+          <g transform="rotate(-28 50 50)"><ellipse cx="50" cy="52" rx="29" ry="40" fill="#E2A96F"/><path d="M50 31 C 40 45, 60 58, 50 72 C 46 78, 47 84, 50 88" fill="none" stroke="#151210" stroke-width="5.5" stroke-linecap="round"/><circle cx="50" cy="21" r="4.6" fill="#151210"/></g>
+        </svg>
+        <div style="font:700 9pt/1.2 var(--font-display);margin-top:2.5mm;color:#FAF8F4;">Nocturno Kissa</div>
+        <div style="font:500 7.5pt/1.2 var(--font-mono);color:#B5A89A;">#E2A96F · #151210</div>
+      </div>
+
+      <div class="card-soft" style="text-align:center; padding:4.5mm 3mm;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="54" height="54">
+          <g transform="rotate(-28 50 50)"><ellipse cx="50" cy="52" rx="29" ry="40" fill="#1B1613"/><path d="M50 31 C 40 45, 60 58, 50 72 C 46 78, 47 84, 50 88" fill="none" stroke="#EFEAE1" stroke-width="5.5" stroke-linecap="round"/><circle cx="50" cy="21" r="4.6" fill="#EFEAE1"/></g>
+        </svg>
+        <div style="font:700 9pt/1.2 var(--font-display);margin-top:2.5mm;">Monocromo Sello</div>
+        <div style="font:500 7.5pt/1.2 var(--font-mono);color:var(--muted);">Stickers &amp; Print</div>
+      </div>
+    </div>
+
+    <!-- Typography System -->
+    <div class="card" style="margin-bottom:5.5mm;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3.5mm;">
+        <h2 class="sub-h2" style="margin:0;">Sistema Tipográfico (4 Voces Complementarias)</h2>
+        <span class="pill">Variable opsz + Tabular Nums</span>
+      </div>
+      <div class="grid-2" style="gap:4mm;">
+        <div style="padding:3mm 3.5mm;background:var(--bg);border-radius:10px;">
+          <div style="font:600 7.5pt/1 var(--font-mono);color:var(--muted);text-transform:uppercase;">Display · Bricolage Grotesque</div>
+          <div style="font:800 18pt/1.1 var(--font-display);letter-spacing:-0.03em;margin-top:1.5mm;">Gesha Natural Boquete</div>
+        </div>
+        <div style="padding:3mm 3.5mm;background:var(--bg);border-radius:10px;">
+          <div style="font:600 7.5pt/1 var(--font-mono);color:var(--muted);text-transform:uppercase;">Editorial Serif · Playfair Display</div>
+          <div style="font:700 17pt/1.15 var(--font-serif);margin-top:1.5mm;">Kissa &amp; Cerámica Craft</div>
+        </div>
+        <div style="padding:3mm 3.5mm;background:var(--bg);border-radius:10px;">
+          <div style="font:600 7.5pt/1 var(--font-mono);color:var(--muted);text-transform:uppercase;">Lectura &amp; UI · Inter</div>
+          <div style="font:500 10.5pt/1.35 var(--font-body);margin-top:1.5mm;">Vertido circular suave con válvula abierta al 50%.</div>
+        </div>
+        <div style="padding:3mm 3.5mm;background:var(--bg);border-radius:10px;">
+          <div style="font:600 7.5pt/1 var(--font-mono);color:var(--muted);text-transform:uppercase;">Instrumentación · JetBrains Mono</div>
+          <div style="font:700 12.2pt/1.25 var(--font-mono);font-variant-numeric:tabular-nums;margin-top:2mm;color:var(--brand);white-space:nowrap;">15.0g → 250g · 02:45 · 93°C</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 Design Rules + Icons -->
+    <div class="grid-2">
+      <div class="card">
+        <h2 class="sub-h2">5 Reglas Estéticas 2027/2028</h2>
+        <ul class="clean">
+          <li><strong>Elevación tonal:</strong> separación por capas (<code>--bg</code> → <code>--surface</code> → <code>--fill</code>) sin doble hairline.</li>
+          <li><strong>Full-Pill orgánico:</strong> botones, chips, navegación y FAB unificados en <code>9999px</code>.</li>
+          <li><strong>Liquid Glass quirúrgico:</strong> desenfoque + brillo especular solo en barras flotantes.</li>
+          <li><strong>Color por tueste y cata:</strong> auras sutiles (8–10%) según tueste + colores semánticos SCA.</li>
+          <li><strong>Cero colores hardcodeados:</strong> cada componente se adapta automáticamente a los 17 temas.</li>
+        </ul>
+      </div>
+      <div class="card-soft">
+        <h2 class="sub-h2">Iconografía Vectorial Propia</h2>
+        <p class="mod-body" style="margin-bottom:3mm;">
+          Erradicamos emojis Unicode de toda la interfaz interactiva en favor de <code>lucide-react</code> y <strong>13 iconos SVG artesanales</strong> en <code>CoffeeIcons.jsx</code>:
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;">
+          <span class="pill">V60</span>
+          <span class="pill">Pulsar Mini</span>
+          <span class="pill">AeroPress</span>
+          <span class="pill">Chemex</span>
+          <span class="pill">Espresso</span>
+          <span class="pill">Prensa</span>
+          <span class="pill">Origami</span>
+          <span class="pill">Switch</span>
+          <span class="pill pill-sage">Molino Manual</span>
+          <span class="pill pill-sage">Molino Eléctrico</span>
+          <span class="pill pill-brand">Balanza BLE</span>
+          <span class="pill pill-brand">Rápida IA ⚡</span>
+        </div>
+        <p class="mod-body" style="margin-top:3.5mm;font-size:8pt;color:var(--muted);">
+          <strong>Regla de marca:</strong> respetar 15% de margen libre alrededor del isotipo, mantener rotación exacta de -28° y nunca usar transparencia en el icono iOS.
+        </p>
+      </div>
+    </div>
+
+    <footer class="running-foot">
+      <span>BEANTAG MASTER BRIEF · 2027/2028</span>
+      <span>PÁGINA 03 / 08</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PÁGINA 4 · 17 TEMAS OFICIALES & 8 TARJETAS EXPORTABLES
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="page-inner">
+    <header class="running-head">
+      <span class="brand-mini">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="16" height="16">
+          <g transform="rotate(-28 50 50)"><ellipse cx="50" cy="52" rx="29" ry="40" fill="#C23B22"/><path d="M50 31 C 40 45, 60 58, 50 72 C 46 78, 47 84, 50 88" fill="none" stroke="#FBFAF8" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="21" r="4.8" fill="#FBFAF8"/></g>
+        </svg>
+        BeanTag
+      </span>
+      <span>03 · Temas &amp; Tarjetas Exportables</span>
+    </header>
+
+    <p class="eyebrow">03 · Colección Cromática &amp; Editorial</p>
+    <h1 class="section-h1">17 Temas de Especialidad &amp; 8 Tarjetas</h1>
+    <p class="lead">
+      Cada usuario personaliza su barra con paletas inspiradas en cerámica, botánica japonesa y cafés nocturnos — todas con contraste WCAG AA y toggle instantáneo a <strong>Modo Barra OLED</strong> durante la extracción.
+    </p>
+
+    <h2 class="sub-h2" style="margin-bottom:2.8mm;">Muestrario Completo de Temas (Claros, Japoneses &amp; Nocturnos)</h2>
+    <div class="theme-grid" style="margin-bottom:6mm;">
+      <!-- Light & System -->
+      <div class="theme-chip" style="background:linear-gradient(135deg,#FAF9F7 52%,#1C1815 52%);color:#1B1613;">
+        <div><div class="theme-chip-name" style="background:rgba(255,255,255,0.85);padding:1px 4px;border-radius:4px;">Automático</div><div class="theme-chip-sub" style="background:rgba(255,255,255,0.8);padding:0 4px;border-radius:4px;margin-top:2px;">Sistema</div></div>
+        <div class="theme-dot" style="background:#8E5226;"></div>
+      </div>
+      <div class="theme-chip" style="background:#FAF9F7;color:#1A1714;">
+        <div><div class="theme-chip-name">Crema</div><div class="theme-chip-sub">Claro cálido</div></div>
+        <div class="theme-dot" style="background:#8E5226;"></div>
+      </div>
+      <div class="theme-chip" style="background:#FAF4EE;color:#2A1810;">
+        <div><div class="theme-chip-name">Terracota</div><div class="theme-chip-sub">Arcilla craft</div></div>
+        <div class="theme-dot" style="background:#B84A2E;"></div>
+      </div>
+      <div class="theme-chip" style="background:#F7FAF6;color:#162419;">
+        <div><div class="theme-chip-name">Matcha Uji</div><div class="theme-chip-sub">Ceremonial</div></div>
+        <div class="theme-dot" style="background:#2D6A4F;"></div>
+      </div>
+      <div class="theme-chip" style="background:#FDF6F8;color:#2C161E;">
+        <div><div class="theme-chip-name">Sakura</div><div class="theme-chip-sub">Papel rosado</div></div>
+        <div class="theme-dot" style="background:#C95476;"></div>
+      </div>
+      <div class="theme-chip" style="background:#FCFBF2;color:#262010;">
+        <div><div class="theme-chip-name">Yuzu Crema</div><div class="theme-chip-sub">Cítrico suave</div></div>
+        <div class="theme-dot" style="background:#A97810;"></div>
+      </div>
+      <div class="theme-chip" style="background:#F7F4FC;color:#1E162E;">
+        <div><div class="theme-chip-name">Lavanda</div><div class="theme-chip-sub">Editorial floral</div></div>
+        <div class="theme-dot" style="background:#6D4C9E;"></div>
+      </div>
+      <div class="theme-chip" style="background:#F4F8FC;color:#121F2E;">
+        <div><div class="theme-chip-name">Porcelana</div><div class="theme-chip-sub">Cerámica azul</div></div>
+        <div class="theme-dot" style="background:#285C84;"></div>
+      </div>
+      <div class="theme-chip" style="background:#FCF9FA;color:#24171C;">
+        <div><div class="theme-chip-name">Gesha Floral</div><div class="theme-chip-sub">Botánico</div></div>
+        <div class="theme-dot" style="background:#B23A58;"></div>
+      </div>
+      <div class="theme-chip" style="background:#F6F9FC;color:#111B27;">
+        <div><div class="theme-chip-name">Nórdico</div><div class="theme-chip-sub">Pizarra clara</div></div>
+        <div class="theme-dot" style="background:#1D5B8C;"></div>
+      </div>
+      <!-- Dark -->
+      <div class="theme-chip" style="background:#1C1815;color:#F2EDE6;">
+        <div><div class="theme-chip-name">Tueste</div><div class="theme-chip-sub">Oscuro cálido</div></div>
+        <div class="theme-dot" style="background:#E0A46A;"></div>
+      </div>
+      <div class="theme-chip" style="background:#101915;color:#E8F3ED;">
+        <div><div class="theme-chip-name">Bosque</div><div class="theme-chip-sub">Pino nocturno</div></div>
+        <div class="theme-dot" style="background:#62BA90;"></div>
+      </div>
+      <div class="theme-chip" style="background:#151517;color:#F4F2F0;">
+        <div><div class="theme-chip-name">Cobre</div><div class="theme-chip-sub">Grafito lujo</div></div>
+        <div class="theme-dot" style="background:#D88557;"></div>
+      </div>
+      <div class="theme-chip" style="background:#1B1115;color:#F7ECF0;">
+        <div><div class="theme-chip-name">Borgoña</div><div class="theme-chip-sub">Vino oscuro</div></div>
+        <div class="theme-dot" style="background:#DE6D88;"></div>
+      </div>
+      <div class="theme-chip" style="background:#101423;color:#EBF0FF;">
+        <div><div class="theme-chip-name">Medianoche</div><div class="theme-chip-sub">Índigo night</div></div>
+        <div class="theme-dot" style="background:#7E9CF8;"></div>
+      </div>
+      <div class="theme-chip" style="background:#161E29;color:#EAF0F7;">
+        <div><div class="theme-chip-name">Kissaten</div><div class="theme-chip-sub">Noche &amp; ámbar</div></div>
+        <div class="theme-dot" style="background:#F2A65A;"></div>
+      </div>
+    </div>
+
+    <!-- OLED bar callout -->
+    <div class="card-dark" style="display:flex;justify-content:space-between;align-items:center;padding:3.2mm 4.5mm;margin-bottom:6mm;background:#000000;">
+      <div>
+        <span style="font:700 9.5pt/1 var(--font-display);color:#FFFFFF;">#17 · Espresso OLED</span>
+        <span style="font:400 8.5pt/1 var(--font-body);color:#A8A098;margin-left:8px;">Negro puro <code>#000000</code> con acento cobre <code>#E68A45</code> · ideal para pantallas OLED y barra nocturna.</span>
+      </div>
+      <div class="theme-dot" style="background:#E68A45;"></div>
+    </div>
+
+    <!-- 8 Exportable Cards -->
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3mm;">
+      <h2 class="sub-h2" style="margin:0;">8 Estilos de Tarjetas &amp; Stickers Exportables (PNG)</h2>
+      <span style="font:600 7.5pt/1 var(--font-mono);color:var(--muted);">VERTICAL 960×1280 · HORIZONTAL 1280×720 · CON / SIN RECETA · TRANSPARENTE</span>
+    </div>
+
+    <div class="export-grid">
+      <div class="mini-card" style="background:#151210;color:#F6EFE7;border:1px solid rgba(226,169,111,0.45);">
+        <div class="mini-card-k" style="color:#E2A96F;">01 · Kissa</div>
+        <div class="mini-card-title" style="font-family:var(--font-serif);font-weight:700;">Tokyo Night</div>
+        <div class="mini-card-meta">Marco dorado fino · Playfair + Mono</div>
+      </div>
+      <div class="mini-card" style="background:#F7F0E6;color:#261812;border:1px solid rgba(184,74,46,0.35);">
+        <div class="mini-card-k" style="color:#B84A2E;">02 · Cerámica</div>
+        <div class="mini-card-title" style="font-family:var(--font-serif);font-weight:700;">Lino &amp; Arcilla</div>
+        <div class="mini-card-meta">Aura cálida · Doble marco editorial</div>
+      </div>
+      <div class="mini-card" style="background:#EEF4EE;color:#15241B;border-top:4px solid #23533C;">
+        <div class="mini-card-k" style="color:#23533C;">03 · Botánico</div>
+        <div class="mini-card-title" style="font-family:var(--font-display);font-weight:700;">Kyoto Matcha</div>
+        <div class="mini-card-meta">Salvia limpia · Franja superior verde</div>
+      </div>
+      <div class="mini-card" style="background:#FBFAF8;color:#1B1411;border-left:6px solid #8E5226;">
+        <div class="mini-card-k" style="color:#C23B22;">04 · Etiqueta</div>
+        <div class="mini-card-title" style="font-family:var(--font-display);font-weight:700;">Hang-Tag</div>
+        <div class="mini-card-meta">Ojal físico · Franja color tueste</div>
+      </div>
+      <div class="mini-card" style="background:#EEE8DC;color:#1B1411;">
+        <div class="mini-card-k" style="color:#C23B22;">05 · Origen</div>
+        <div class="mini-card-title" style="font-family:var(--font-display);font-weight:700;">1,950 msnm</div>
+        <div class="mini-card-meta">Mapa topográfico generativo único</div>
+      </div>
+      <div class="mini-card" style="background:#F0EEE9;color:#111111;">
+        <div class="mini-card-k" style="color:#2440E6;">06 · Tipográfica</div>
+        <div class="mini-card-title" style="font-family:var(--font-body);font-weight:800;text-transform:uppercase;">BOLD TYPE</div>
+        <div class="mini-card-meta">Editorial suiza · Acento azul eléctrico</div>
+      </div>
+      <div class="mini-card" style="background:#FBF8F1;color:#1E1B16;border-style:dashed;">
+        <div class="mini-card-k" style="color:#B3261E;">07 · Collage</div>
+        <div class="mini-card-title" style="font-family:var(--font-serif);font-weight:700;">Zine Craft</div>
+        <div class="mini-card-meta">Sello SCA · Notas manuscritas</div>
+      </div>
+      <div class="mini-card" style="background:#2F6B3F;color:#FFF6E6;">
+        <div class="mini-card-k" style="color:#FF6A1A;">08 · Lata</div>
+        <div class="mini-card-title" style="font-family:var(--font-body);font-weight:800;text-transform:uppercase;">CRAFT CAN</div>
+        <div class="mini-card-meta">Verde bosque · Banda vibrante</div>
+      </div>
+    </div>
+
+    <footer class="running-foot">
+      <span>BEANTAG MASTER BRIEF · 2027/2028</span>
+      <span>PÁGINA 04 / 08</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PÁGINA 5 · MAPA COMPLETO DE FUNCIONES ACTUALES
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="page-inner">
+    <header class="running-head">
+      <span class="brand-mini">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="16" height="16">
+          <g transform="rotate(-28 50 50)"><ellipse cx="50" cy="52" rx="29" ry="40" fill="#C23B22"/><path d="M50 31 C 40 45, 60 58, 50 72 C 46 78, 47 84, 50 88" fill="none" stroke="#FBFAF8" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="21" r="4.8" fill="#FBFAF8"/></g>
+        </svg>
+        BeanTag
+      </span>
+      <span>04 · Producto &amp; Funciones en Producción</span>
+    </header>
+
+    <p class="eyebrow">04 · Ecosistema Funcional Completo</p>
+    <h1 class="section-h1">6 Módulos Integrados para el Barista Moderno</h1>
+
+    <div class="photo-banner" style="height:58mm; margin-bottom:5mm;">
+      <img src="assets/brief_hardware_nfc.jpg" alt="Hardware BLE, molino manual y tubos NFC BeanTag" />
+      <div class="photo-caption">ECOSISTEMA FÍSICO · MOLINOS D50 · BALANZA TIMEMORE DOT BLE · TUBOS NFC</div>
+    </div>
+
+    <div class="grid-2" style="gap:3.8mm;">
+      <div class="mod-card">
+        <div class="mod-head">
+          <div class="mod-title">1. Cava &amp; Portatubos Criogénicos</div>
+          <span class="pill pill-sage">Stock + CO₂</span>
+        </div>
+        <p class="mod-body">Control dual de <strong>bolsas en gramos</strong> y <strong>portatubos numerados (-18°C)</strong>. Calcula curvas de desgasificación por nivel de tueste y resalta en 1 toque qué lotes están <em>en pico hoy</em> o conviene congelar. Buscador y filtros plegados para priorizar tus cafés.</p>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-head">
+          <div class="mod-title">2. Ficha Editorial &amp; 8 Molinos D50</div>
+          <span class="pill">Micras + Bypass</span>
+        </div>
+        <p class="mod-body">Tarjeta con aura de tueste, grilla técnica limpia, notas SCA a color real y barra visual de stock. Sincroniza <strong>8 molinos</strong> (J-Max, K-Ultra, Ode Gen 2, C40, Femobook A2, Kingrinder K6, Timemore, Baratza), selector rápido <strong>1–3 tazas (200 ml)</strong> y alerta automática de <strong>Bypass</strong>.</p>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-head">
+          <div class="mod-title">3. Preparación Rápida con IA</div>
+          <span class="pill pill-brand">OCR + Gemini/Groq</span>
+        </div>
+        <p class="mod-body">Escanea cualquier bolsa con la cámara (OCR), optimiza la dosis al mínimo consumo y entrega preparación <em>Antes de 0:00</em> + pasos detallados por método (émbolo, válvula, costra). Incluye ajuste rápido post-taza, <strong>Cronómetro guiado</strong>, guardado directo a <strong>Bitácora</strong> y <strong>Guardar café + receta</strong> en 1 toque.</p>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-head">
+          <div class="mod-title">4. Cockpit de Barra &amp; Balanza BLE</div>
+          <span class="pill">Timemore Dot</span>
+        </div>
+        <p class="mod-body">Conexión <strong>Bluetooth CoreBluetooth</strong> elevada a Context global (cero reconexiones entre vistas, pill de peso en vivo en el header). Auto-start al verter, sincronización de pasos por peso, caudal en <code>g/s</code>, alertas audio/hápticas, voz opcional, controles <code>≥44px</code> y toggle <strong>Modo Barra OLED</strong>.</p>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-head">
+          <div class="mod-title">5. Dial-In Automático &amp; Bitácora</div>
+          <span class="pill pill-sage">Sensory Tuner</span>
+        </div>
+        <p class="mod-body">Al cerrar el cronómetro con 1 tap (<em>Ácido / Bien / Amargo</em>), el motor detecta sub/sobre-extracción y <strong>canalización</strong>, guarda la nueva molienda y temperatura y las deja precargadas para tu próxima taza (con botón <em>Revertir</em>). Cada entrada de Bitácora incluye botón <strong>Repetir</strong>.</p>
+      </div>
+
+      <div class="mod-card">
+        <div class="mod-head">
+          <div class="mod-title">6. Etiquetas NFC &amp; App iOS Sideloadly</div>
+          <span class="pill pill-brand">beantag://</span>
+        </div>
+        <p class="mod-body">Acceso público inmediato a <code>/batch/:id</code> sin login para invitados de cafetería. Esquema nativo <code>beantag://batch/&lt;id&gt;</code> en <code>Info.plist</code> y <code>SceneDelegate.swift</code> con preferencia opcional <em>Abrir siempre automáticamente</em> en la app instalada por Sideloadly.</p>
+      </div>
+    </div>
+
+    <footer class="running-foot">
+      <span>BEANTAG MASTER BRIEF · 2027/2028</span>
+      <span>PÁGINA 05 / 08</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PÁGINA 6 · ARQUITECTURA & COMITÉ MULTIDISCIPLINARIO
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="page-inner">
+    <header class="running-head">
+      <span class="brand-mini">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="16" height="16">
+          <g transform="rotate(-28 50 50)"><ellipse cx="50" cy="52" rx="29" ry="40" fill="#C23B22"/><path d="M50 31 C 40 45, 60 58, 50 72 C 46 78, 47 84, 50 88" fill="none" stroke="#FBFAF8" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="21" r="4.8" fill="#FBFAF8"/></g>
+        </svg>
+        BeanTag
+      </span>
+      <span>05 · Arquitectura &amp; Comité de Subagentes</span>
+    </header>
+
+    <p class="eyebrow">05 · Base Técnica &amp; Gobierno del Proyecto</p>
+    <h1 class="section-h1">Arquitectura Ligera &amp; Comité de 6 Sillas</h1>
+    <p class="lead">
+      Un stack rápido, auditable y sin bloqueos propietarios, respaldado por un <strong>Comité Multidisciplinario de 6 subagentes permanentes</strong> consolidado tras 12 auditorías especializadas.
+    </p>
+
+    <!-- Tech Stack Strip -->
+    <div class="card-dark" style="margin-bottom:5.5mm;padding:4mm 5mm;">
+      <div class="grid-4" style="gap:3mm;">
+        <div>
+          <div style="font:700 7.5pt/1 var(--font-mono);color:var(--gold);text-transform:uppercase;">Frontend &amp; iOS</div>
+          <div style="font:600 9.2pt/1.35 var(--font-body);margin-top:1.5mm;">React 18 + Vite<br/>Capacitor 8 iOS<br/>CoreBluetooth BLE</div>
+        </div>
+        <div>
+          <div style="font:700 7.5pt/1 var(--font-mono);color:var(--gold);text-transform:uppercase;">Backend &amp; Datos</div>
+          <div style="font:600 9.2pt/1.35 var(--font-body);margin-top:1.5mm;">Node.js + Express<br/>SQLite transaccional<br/>VPS + PM2 online</div>
+        </div>
+        <div>
+          <div style="font:700 7.5pt/1 var(--font-mono);color:var(--gold);text-transform:uppercase;">Inteligencia IA</div>
+          <div style="font:600 9.2pt/1.35 var(--font-body);margin-top:1.5mm;">Gemini 2.5/3 Flash<br/>Groq GPT-OSS-120B<br/>Motor físico offline</div>
+        </div>
+        <div>
+          <div style="font:700 7.5pt/1 var(--font-mono);color:var(--gold);text-transform:uppercase;">CI / QA / Deploy</div>
+          <div style="font:600 9.2pt/1.35 var(--font-body);margin-top:1.5mm;">GitHub Actions (.ipa)<br/>verify_grinders (8/8)<br/>verify_cards (45/45)</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="sub-h2" style="margin-bottom:3mm;">Comité Multidisciplinario Permanente de BeanTag</h2>
+    <div class="grid-2" style="gap:3.6mm;">
+      <div class="seat-card">
+        <div class="mod-head">
+          <div class="mod-title">1. Barista Profesional</div>
+          <span class="pill pill-brand">Ciencia Física</span>
+        </div>
+        <p class="seat-quote">“La física manda: ninguna receta bonita sirve si desborda la cámara o sugiere una molienda imposible.”</p>
+        <p class="seat-list"><strong>Aportes:</strong> límites físicos de cámara + Bypass automático, bloque <em>Antes de 0:00</em>, técnica por paso, calibración en micras de 8 molinos y detección de canalización.</p>
+      </div>
+
+      <div class="seat-card">
+        <div class="mod-head">
+          <div class="mod-title">2. Director de Arte &amp; Marca</div>
+          <span class="pill">Estética</span>
+        </div>
+        <p class="seat-quote">“Cada píxel debe oler a bolsa de especialidad de Tokio o Copenhague, nunca a software corporativo.”</p>
+        <p class="seat-list"><strong>Aportes:</strong> isotipo 2028 (-28°), 13 iconos SVG propios, 17 temas de especialidad, tarjetas <em>Kissa / Cerámica / Botánico</em>, notas SCA a color real y auras de tueste.</p>
+      </div>
+
+      <div class="seat-card">
+        <div class="mod-head">
+          <div class="mod-title">3. Agente UI 2027/2028</div>
+          <span class="pill pill-sage">Sistema Visual</span>
+        </div>
+        <p class="seat-quote">“Elevación tonal antes que bordes; tipografía variable y cifras tabulares antes que cajas anidadas.”</p>
+        <p class="seat-list"><strong>Aportes:</strong> unificación Full-Pill, limpieza de colisiones CSS, eje óptico <code>opsz</code>, eliminación de glows hardcodeados y steppers compactos <code>[ − | + ]</code>.</p>
+      </div>
+
+      <div class="seat-card">
+        <div class="mod-head">
+          <div class="mod-title">4. Agente UX Ritual &amp; Densidad</div>
+          <span class="pill">Ergonomía</span>
+        </div>
+        <p class="seat-quote">“A las 7:30 AM con manos mojadas, cada toque y cada píxel de scroll innecesario es fricción.”</p>
+        <p class="seat-list"><strong>Aportes:</strong> -230 px antes del CTA en Ficha, CTA sticky al pulgar, BLE global sin reconexiones, botones ≥44 px en barra, <em>Repetir</em> en Bitácora y filtros colapsados.</p>
+      </div>
+
+      <div class="seat-card">
+        <div class="mod-head">
+          <div class="mod-title">5. Cliente Cafetería / Invitado NFC</div>
+          <span class="pill pill-brand">Zero-Friction</span>
+        </div>
+        <p class="seat-quote">“Escanear un frasco ajeno debe abrir una carta impecable, jamás un muro de inicio de sesión.”</p>
+        <p class="seat-list"><strong>Aportes:</strong> acceso público directo a <code>/batch/:id</code>, vista de solo lectura limpia y puente <code>beantag://</code> en Safari iOS sin afectar a invitados ni a otros tags NFC.</p>
+      </div>
+
+      <div class="seat-card">
+        <div class="mod-head">
+          <div class="mod-title">6. Arquitectura, iOS &amp; QA</div>
+          <span class="pill pill-sage">Confiabilidad</span>
+        </div>
+        <p class="seat-quote">“El código mínimo que resuelve el problema real, verificado por scripts y blindado en iOS WebKit.”</p>
+        <p class="seat-list"><strong>Aportes:</strong> cascada Gemini + Groq, <code>createPortal</code> para sticky bars en Safari iOS, toggles React determinísticos, CI Node 24 para <code>.ipa</code> y endpoint atómico <code>/api/quick-recipes</code>.</p>
+      </div>
+    </div>
+
+    <footer class="running-foot">
+      <span>BEANTAG MASTER BRIEF · 2027/2028</span>
+      <span>PÁGINA 06 / 08</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PÁGINA 7 · HOJA DE RUTA & PRÓXIMAS MEJORAS (2027/2028)
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="page-inner">
+    <header class="running-head">
+      <span class="brand-mini">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="16" height="16">
+          <g transform="rotate(-28 50 50)"><ellipse cx="50" cy="52" rx="29" ry="40" fill="#C23B22"/><path d="M50 31 C 40 45, 60 58, 50 72 C 46 78, 47 84, 50 88" fill="none" stroke="#FBFAF8" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="21" r="4.8" fill="#FBFAF8"/></g>
+        </svg>
+        BeanTag
+      </span>
+      <span>06 · Hoja de Ruta &amp; Próximas Mejoras</span>
+    </header>
+
+    <p class="eyebrow">06 · Evolución Estratégica 2027 / 2028</p>
+    <h1 class="section-h1">Hoja de Ruta de Próximas Mejoras</h1>
+    <p class="lead">
+      Cuatro horizontes progresivos diseñados para escalar BeanTag desde un compañero personal de precisión hacia el estándar de barra para baristas, tostadores y cafeterías de especialidad.
+    </p>
+
+    <div style="display:flex;flex-direction:column;gap:4.2mm;">
+      <div class="road-item">
+        <div>
+          <div class="road-q">Horizonte 1</div>
+          <div style="font:600 8.5pt/1.2 var(--font-body);color:var(--muted);margin-top:1mm;">Corto Plazo · Pulido</div>
+          <span class="road-tag pill-brand">Inmediato</span>
+        </div>
+        <ul class="road-bullets">
+          <li><strong>Perfiles de agua configurables:</strong> guardar recetas de mineralización (TDS, GH/KH, Third Wave Water, filtrada) y pasar el perfil al motor IA para afinar temperatura y extracción.</li>
+          <li><strong>Notas de cata personalizadas y evolución por día:</strong> añadir notas propias más allá de la etiqueta del tostador y ver cómo cambian en los días 7, 14 y 28 de reposo.</li>
+          <li><strong>Importar/Exportar respaldo personal:</strong> respaldo en 1 clic (JSON/CSV) de toda tu Cava y Bitácora para portabilidad total de datos.</li>
+        </ul>
+      </div>
+
+      <div class="road-item">
+        <div>
+          <div class="road-q">Horizonte 2</div>
+          <div style="font:600 8.5pt/1.2 var(--font-body);color:var(--muted);margin-top:1mm;">Hardware &amp; Telemetría</div>
+          <span class="road-tag pill-sage">Barista Pro</span>
+        </div>
+        <ul class="road-bullets">
+          <li><strong>Soporte multi-balanza BLE:</strong> sumar protocolos nativos para <strong>Acaia Lunar/Pearl, Felicita Arc y Bookoo Themis</strong> junto a Timemore Dot sobre el mismo Context global.</li>
+          <li><strong>Curva gráfica de extracción en vivo:</strong> graficar peso acumulado (<code>g</code>) y caudal (<code>g/s</code>) durante el vertido y guardar la curva en cada registro de la Bitácora.</li>
+          <li><strong>Comparador A/B de extracciones:</strong> comparar lado a lado dos recetas del mismo café (ej. V60 vs. Pulsar Mini o 2 moliendas distintas) para acelerar el dial-in.</li>
+        </ul>
+      </div>
+
+      <div class="road-item">
+        <div>
+          <div class="road-q">Horizonte 3</div>
+          <div style="font:600 8.5pt/1.2 var(--font-body);color:var(--muted);margin-top:1mm;">Cafeterías &amp; Tostadores</div>
+          <span class="road-tag pill">Ecosistema Craft</span>
+        </div>
+        <ul class="road-bullets">
+          <li><strong>Carta Viva de Cafetería (NFC/QR):</strong> vista pública estilo menú editorial sincronizada en tiempo real con los lotes disponibles en barra y sus notas SCA.</li>
+          <li><strong>Modo Cupping / Cata a Ciegas:</strong> sesión multi-taza para evaluar 2 a 6 cafés en paralelo con planilla sensorial simplificada (aroma, acidez, dulzor, cuerpo, posgusto).</li>
+          <li><strong>Fichas firmadas por tostador:</strong> permitir que un tostador comparta la receta oficial precargada directamente en el tag NFC de la bolsa.</li>
+        </ul>
+      </div>
+
+      <div class="road-item" style="background:var(--espresso);color:#F6EFE7;border-color:rgba(226,169,111,0.3);">
+        <div>
+          <div class="road-q" style="color:#FFFFFF;">Horizonte 4</div>
+          <div style="font:600 8.5pt/1.2 var(--font-body);color:#B5A89A;margin-top:1mm;">Nativo &amp; Escala</div>
+          <span class="road-tag pill-dark">App Store 2028</span>
+        </div>
+        <ul class="road-bullets" style="color:#DDD3C7;">
+          <li><strong>Distribución App Store / TestFlight + Universal Links reales:</strong> eliminar Sideloadly para que cualquier tag NFC <code>https://</code> abra BeanTag directo en 0.2s sin pasar por Safari.</li>
+          <li><strong>Live Activities &amp; Dynamic Island (iOS):</strong> mostrar el paso activo, tiempo y peso en tiempo real en la pantalla bloqueada mientras viertes.</li>
+          <li><strong>Sincronización Offline-First (IndexedDB):</strong> registrar extracciones y editar la cava sin señal (viajes, fincas, eventos) con sincronización automática al reconectar.</li>
+        </ul>
+      </div>
+    </div>
+
+    <footer class="running-foot">
+      <span>BEANTAG MASTER BRIEF · 2027/2028</span>
+      <span>PÁGINA 07 / 08</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PÁGINA 8 · PROCESO ESTÁNDAR DE TRABAJO (SOP) & CIERRE
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="page">
+  <div class="page-inner">
+    <header class="running-head">
+      <span class="brand-mini">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="16" height="16">
+          <g transform="rotate(-28 50 50)"><ellipse cx="50" cy="52" rx="29" ry="40" fill="#C23B22"/><path d="M50 31 C 40 45, 60 58, 50 72 C 46 78, 47 84, 50 88" fill="none" stroke="#FBFAF8" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="21" r="4.8" fill="#FBFAF8"/></g>
+        </svg>
+        BeanTag
+      </span>
+      <span>07 · Proceso Operativo Estándar (SOP)</span>
+    </header>
+
+    <p class="eyebrow">07 · Estándar de Ejecución Continua</p>
+    <h1 class="section-h1">Cómo Evoluciona BeanTag en Cada Sprint</h1>
+    <p class="lead">
+      Toda nueva mejora o corrección sigue un ciclo disciplinado de 5 fases para garantizar velocidad sin romper la experiencia en iPhone ni la consistencia de marca.
+    </p>
+
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:2.6mm;margin-bottom:5.5mm;">
+      <div class="card" style="padding:3.2mm;">
+        <div class="ritual-num">FASE 1</div>
+        <div style="font:700 9.5pt/1.15 var(--font-display);margin-bottom:1.2mm;">Brief &amp; /grill-me</div>
+        <div style="font:400 7.6pt/1.35 var(--font-body);color:var(--ink-2);">Objetivo en 1 frase y decisiones 1 a 1 antes de codificar.</div>
+      </div>
+      <div class="card" style="padding:3.2mm;">
+        <div class="ritual-num">FASE 2</div>
+        <div style="font:700 9.5pt/1.15 var(--font-display);margin-bottom:1.2mm;">Comité</div>
+        <div style="font:400 7.6pt/1.35 var(--font-body);color:var(--ink-2);">Convocar solo las sillas necesarias (Barista, Arte, UI, UX, NFC, QA).</div>
+      </div>
+      <div class="card" style="padding:3.2mm;">
+        <div class="ritual-num">FASE 3</div>
+        <div style="font:700 9.5pt/1.15 var(--font-display);margin-bottom:1.2mm;">Código KISS</div>
+        <div style="font:400 7.6pt/1.35 var(--font-body);color:var(--ink-2);">Cambio mínimo, tokens reales y reglas anti-bugs iOS WebKit.</div>
+      </div>
+      <div class="card" style="padding:3.2mm;">
+        <div class="ritual-num">FASE 4</div>
+        <div style="font:700 9.5pt/1.15 var(--font-display);margin-bottom:1.2mm;">QA &amp; Deploy</div>
+        <div style="font:400 7.6pt/1.35 var(--font-body);color:var(--ink-2);">Build, scripts de verificación, push a main y <code>./deploy.sh</code>.</div>
+      </div>
+      <div class="card" style="padding:3.2mm;">
+        <div class="ritual-num">FASE 5</div>
+        <div style="font:700 9.5pt/1.15 var(--font-display);margin-bottom:1.2mm;">Smoke 60s</div>
+        <div style="font:400 7.6pt/1.35 var(--font-body);color:var(--ink-2);">Prueba real en iPhone: Cava, Ficha, Rápida, BLE, NFC y 2 temas.</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:5.5mm;">
+      <div class="card">
+        <h2 class="sub-h2">Reglas Anti-Bugs iOS / WebKit</h2>
+        <ul class="clean">
+          <li><strong>Portales para fixed:</strong> usar <code>createPortal(..., document.body)</code> si hay ancestros con <code>transform</code>.</li>
+          <li><strong>Toggles React en formularios:</strong> nunca usar <code>&lt;details&gt;</code> nativo dentro de <code>&lt;form&gt;</code> en Safari iOS.</li>
+          <li><strong>Ergonomía de barra:</strong> controles críticos ≥44 px y steppers compactos <code>.bt-stepper-pill</code>.</li>
+          <li><strong>Sideloadly inteligente:</strong> cambios web/API se ven al recargar; reinstalar <code>.ipa</code> solo si cambia <code>frontend/ios/</code>.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2 class="sub-h2">Checklist de Verificación Pre-Push</h2>
+        <div class="code-box"><span class="code-accent">node --check</span> backend/server.js
+<span class="code-accent">npm run</span> build-frontend
+<span class="code-accent">node</span> scripts/verify_grinders.mjs     <span class="code-comment"># 8/8</span>
+<span class="code-accent">node</span> scripts/verify_cards_render.mjs <span class="code-comment"># 45/45</span>
+<span class="code-accent">plutil -lint</span> frontend/ios/.../Info.plist
+<span class="code-accent">git push</span> origin main &amp;&amp; <span class="code-accent">./deploy.sh</span></div>
+      </div>
+    </div>
+
+    <!-- Closing Brand Statement -->
+    <div class="card-dark" style="margin-top:auto;margin-bottom:4mm;padding:7mm 7.5mm;display:flex;align-items:center;justify-content:space-between;gap:8mm;">
+      <div style="max-width:128mm;">
+        <div style="font:700 8pt/1 var(--font-mono);letter-spacing:0.1em;color:var(--gold);text-transform:uppercase;margin-bottom:2mm;">BeanTag · Filosofía de Producto</div>
+        <div style="font:700 17pt/1.15 var(--font-display);color:#FFFFFF;letter-spacing:-0.02em;margin-bottom:2mm;">
+          Tecnología invisible al servicio de una mejor taza cada mañana.
+        </div>
+        <div style="font:400 8.8pt/1.45 var(--font-body);color:#C5B9AC;">
+          Repositorio: <code>github.com/zebas-hidalgo/BeanTag</code> · Documentación viva en <code>docs/BEANTAG_MASTER_BRIEF.md</code>, <code>DESIGN.md</code> y <code>PRODUCT.md</code>.
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="64" height="64" style="flex-shrink:0;">
+        <rect width="100" height="100" rx="22" fill="#231D19"/>
+        <g transform="rotate(-28 50 50)">
+          <ellipse cx="50" cy="52" rx="29" ry="40" fill="#E2A96F"/>
+          <path d="M50 31 C 40 45, 60 58, 50 72 C 46 78, 47 84, 50 88" fill="none" stroke="#151210" stroke-width="5.5" stroke-linecap="round"/>
+          <circle cx="50" cy="21" r="4.6" fill="#151210"/>
+        </g>
+      </svg>
+    </div>
+
+    <footer class="running-foot">
+      <span>BEANTAG MASTER BRIEF · 2027/2028</span>
+      <span>PÁGINA 08 / 08</span>
+    </footer>
+  </div>
+</section>
+
+</body>
+</html>
