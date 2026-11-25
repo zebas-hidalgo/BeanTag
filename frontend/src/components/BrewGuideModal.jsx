@@ -96,6 +96,7 @@ export default function BrewGuideModal({
   const [oledBarraMode, setOledBarraMode] = useState(() => {
     try { return localStorage.getItem('beantag-oled-barra') === '1'; } catch { return false; }
   });
+  const [showTimerOpts, setShowTimerOpts] = useState(false);
   const toggleOledBarra = () => {
     setOledBarraMode(prev => {
       const next = !prev;
@@ -683,86 +684,52 @@ export default function BrewGuideModal({
           </div>
         </div>
 
-        {/* Right Header Actions (≥44px wet-hand touch targets) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          {/* OLED Barra Focus Toggle */}
+        {/* Right Header Actions: Ultra-clean 2 buttons (Opciones + Cerrar) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, position: 'relative' }}>
+          {/* Options Popover Trigger */}
           <button
             type="button"
-            onClick={toggleOledBarra}
-            aria-label={oledBarraMode ? 'Volver al tema normal' : 'Activar Modo Barra OLED oscuro'}
-            title={oledBarraMode ? 'Modo Barra OLED activo' : 'Activar Modo Barra OLED'}
+            onClick={() => setShowTimerOpts(v => !v)}
+            aria-expanded={showTimerOpts}
+            aria-label="Opciones del cronómetro"
+            title="Opciones (OLED, sonido, voz, balanza)"
             style={{
-              background: oledBarraMode ? 'var(--accent-bg)' : 'var(--barista-bg-subtle)',
-              border: oledBarraMode ? '1px solid var(--accent-line)' : '1px solid var(--border-color)',
-              color: oledBarraMode ? 'var(--accent-text)' : 'var(--color-text-muted)',
+              background: showTimerOpts ? 'var(--accent-bg)' : 'var(--barista-bg-subtle)',
+              border: showTimerOpts ? '1px solid var(--accent-line)' : '1px solid var(--border-color)',
+              color: showTimerOpts ? 'var(--accent-text)' : 'var(--color-text)',
               borderRadius: 'var(--r-pill)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              minWidth: '44px',
-              minHeight: '44px',
+              width: '42px',
+              height: '42px',
               padding: 0,
+              position: 'relative',
               transition: 'var(--transition-ui)'
             }}
           >
-            {oledBarraMode ? <Sun size={17} /> : <Moon size={17} />}
-          </button>
-
-          {/* Voice Coach Toggle */}
-          <button
-            type="button"
-            onClick={handleToggleVoice}
-            aria-label={isVoiceEnabled ? 'Desactivar voz del barista' : 'Activar voz del barista'}
-            title={isVoiceEnabled ? 'Guía de voz en tiempo real: Activada' : 'Guía de voz en tiempo real: Silenciada'}
-            style={{
-              background: isVoiceEnabled ? 'var(--barista-accent-mint-bg)' : 'var(--barista-bg-subtle)',
-              border: isVoiceEnabled ? '1px solid var(--barista-accent-mint-text)' : '1px solid var(--border-color)',
-              color: isVoiceEnabled ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)',
-              borderRadius: 'var(--r-pill)',
-              padding: '0 12px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-              fontSize: '12px',
-              fontWeight: 700,
-              minHeight: '44px',
-              transition: 'var(--transition-ui)'
-            }}
-          >
-            {isVoiceEnabled ? <Mic size={16} /> : <MicOff size={16} />}
-            <span>{isVoiceEnabled ? 'Voz' : 'Mudo'}</span>
-          </button>
-
-          {/* Mute Toggle */}
-          <button
-            type="button"
-            onClick={() => setIsMuted(prev => !prev)}
-            aria-label={isMuted ? 'Activar sonido' : 'Silenciar'}
-            title={isMuted ? 'Activar alertas sonoras' : 'Silenciar alertas'}
-            style={{
-              background: isMuted ? 'var(--barista-accent-danger-bg)' : 'var(--barista-bg-subtle)',
-              border: isMuted ? '1px solid var(--barista-accent-danger)' : '1px solid var(--border-color)',
-              color: isMuted ? 'var(--barista-accent-danger-text)' : 'var(--color-text)',
-              borderRadius: 'var(--r-pill)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minWidth: '44px',
-              minHeight: '44px',
-              padding: 0,
-              transition: 'var(--transition-ui)'
-            }}
-          >
-            {isMuted ? <VolumeX size={17} /> : <Volume2 size={17} />}
+            <Sliders size={17} />
+            {(oledBarraMode || isVoiceEnabled || isMuted) && (
+              <span
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  top: '7px',
+                  right: '7px',
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  background: isMuted ? 'var(--bad, #EF4444)' : 'var(--accent)'
+                }}
+              />
+            )}
           </button>
 
           {/* Close Modal */}
           <button
             type="button"
-            onClick={handleCloseModal}
+            onClick={() => { setShowTimerOpts(false); handleCloseModal(); }}
             aria-label="Cerrar Asistente"
             style={{
               background: 'var(--barista-bg-subtle)',
@@ -773,14 +740,171 @@ export default function BrewGuideModal({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              minWidth: '44px',
-              minHeight: '44px',
+              width: '42px',
+              height: '42px',
               padding: 0,
               transition: 'var(--transition-ui)'
             }}
           >
             <X size={18} />
           </button>
+
+          {/* Floating Options Popover */}
+          {showTimerOpts && (
+            <>
+              <div
+                onClick={() => setShowTimerOpts(false)}
+                style={{ position: 'fixed', inset: 0, zIndex: 35 }}
+              />
+              <div
+                role="menu"
+                aria-label="Opciones del cronómetro"
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 8px)',
+                  right: 0,
+                  width: '264px',
+                  padding: '8px',
+                  borderRadius: 'var(--r-card)',
+                  background: 'var(--surface, var(--bg-card))',
+                  border: '1px solid var(--line, var(--border-color))',
+                  boxShadow: 'var(--shadow-float, 0 14px 34px rgba(0,0,0,0.28))',
+                  zIndex: 40,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}
+              >
+                {[
+                  {
+                    key: 'oled',
+                    label: 'Modo Barra OLED',
+                    active: oledBarraMode,
+                    icon: oledBarraMode ? <Sun size={16} /> : <Moon size={16} />,
+                    onClick: toggleOledBarra
+                  },
+                  {
+                    key: 'sound',
+                    label: 'Alertas sonoras',
+                    active: !isMuted,
+                    icon: isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />,
+                    onClick: () => setIsMuted(prev => !prev)
+                  },
+                  {
+                    key: 'voice',
+                    label: 'Voz del barista',
+                    active: isVoiceEnabled,
+                    icon: isVoiceEnabled ? <Mic size={16} /> : <MicOff size={16} />,
+                    onClick: handleToggleVoice
+                  }
+                ].map(item => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    role="menuitemcheckbox"
+                    aria-checked={item.active}
+                    onClick={item.onClick}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '10px',
+                      width: '100%',
+                      minHeight: '44px',
+                      padding: '8px 12px',
+                      borderRadius: 'var(--r-tile)',
+                      border: 'none',
+                      background: item.active ? 'var(--fill)' : 'transparent',
+                      color: 'var(--ink, var(--color-text))',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '9px' }}>
+                      <span style={{ color: item.active ? 'var(--accent-text, var(--accent))' : 'var(--ink-muted)' }}>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </span>
+                    <span style={{
+                      fontSize: '11px',
+                      fontFamily: 'var(--font-mono)',
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: 'var(--r-pill)',
+                      background: item.active ? 'var(--accent-bg)' : 'var(--fill)',
+                      color: item.active ? 'var(--accent-text)' : 'var(--ink-muted)'
+                    }}>
+                      {item.active ? 'ON' : 'OFF'}
+                    </span>
+                  </button>
+                ))}
+
+                {scale.connected && (
+                  <>
+                    <div style={{ height: '1px', background: 'var(--line, var(--border-color))', margin: '4px 6px' }} />
+                    {[
+                      {
+                        key: 'auto',
+                        label: 'Auto-inicio al verter',
+                        active: autoStartOnPour,
+                        icon: <Zap size={16} />,
+                        onClick: () => setAutoStartOnPour(v => !v)
+                      },
+                      {
+                        key: 'sync',
+                        label: 'Sincro pasos por peso',
+                        active: syncStepsWithWeight,
+                        icon: <CoffeeScaleIcon size={16} />,
+                        onClick: () => setSyncStepsWithWeight(v => !v)
+                      }
+                    ].map(item => (
+                      <button
+                        key={item.key}
+                        type="button"
+                        role="menuitemcheckbox"
+                        aria-checked={item.active}
+                        onClick={item.onClick}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '10px',
+                          width: '100%',
+                          minHeight: '44px',
+                          padding: '8px 12px',
+                          borderRadius: 'var(--r-tile)',
+                          border: 'none',
+                          background: item.active ? 'var(--fill)' : 'transparent',
+                          color: 'var(--ink, var(--color-text))',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          textAlign: 'left'
+                        }}
+                      >
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '9px' }}>
+                          <span style={{ color: item.active ? 'var(--barista-accent-mint-text, var(--ok))' : 'var(--ink-muted)' }}>{item.icon}</span>
+                          <span>{item.label}</span>
+                        </span>
+                        <span style={{
+                          fontSize: '11px',
+                          fontFamily: 'var(--font-mono)',
+                          fontWeight: 700,
+                          padding: '2px 8px',
+                          borderRadius: 'var(--r-pill)',
+                          background: item.active ? 'var(--ok-bg)' : 'var(--fill)',
+                          color: item.active ? 'var(--ok-text, var(--ok))' : 'var(--ink-muted)'
+                        }}>
+                          {item.active ? 'ON' : 'OFF'}
+                        </span>
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -973,53 +1097,7 @@ export default function BrewGuideModal({
                     )}
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
-                    {!isActive && elapsedSeconds === 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setAutoStartOnPour((v) => !v)}
-                        title="Inicia el cronómetro automáticamente al detectar que viertes agua (> 0.8 g)"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          minHeight: '42px',
-                          padding: '6px 12px',
-                          borderRadius: 'var(--r-pill)',
-                          border: autoStartOnPour ? '1px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                          background: autoStartOnPour ? 'var(--accent-bg)' : 'transparent',
-                          color: autoStartOnPour ? 'var(--color-crimson)' : 'var(--color-text-muted)',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        <Zap size={12} aria-hidden="true" />
-                        <span>Auto {autoStartOnPour ? 'ON' : 'OFF'}</span>
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setSyncStepsWithWeight((v) => !v)}
-                      title="Sincroniza automáticamente el paso activo y el tiempo cuando el peso entra en la siguiente fase"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        minHeight: '42px',
-                        padding: '6px 12px',
-                        borderRadius: 'var(--r-pill)',
-                        border: syncStepsWithWeight ? '1px solid var(--barista-accent-mint-text)' : '1px solid var(--border-color)',
-                        background: syncStepsWithWeight ? 'var(--barista-accent-mint-bg)' : 'transparent',
-                        color: syncStepsWithWeight ? 'var(--barista-accent-mint-text)' : 'var(--color-text-muted)',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <CoffeeScaleIcon size={12} />
-                      <span>Sincro {syncStepsWithWeight ? 'ON' : 'OFF'}</span>
-                    </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <button
                       type="button"
                       onClick={async () => {
@@ -1029,14 +1107,14 @@ export default function BrewGuideModal({
                         autoStartedPourRef.current = false;
                       }}
                       style={{
-                        minHeight: '44px',
-                        padding: '6px 16px',
+                        minHeight: '42px',
+                        padding: '6px 18px',
                         borderRadius: 'var(--r-pill)',
                         border: '1px solid var(--border-strong)',
                         background: 'var(--bg-subtle)',
                         color: 'var(--color-text)',
                         fontFamily: 'var(--font-mono)',
-                        fontSize: '12px',
+                        fontSize: '12.5px',
                         fontWeight: 700,
                         cursor: 'pointer'
                       }}
