@@ -1,6 +1,8 @@
 # BeanTag — Brief y Proceso Estándar de Trabajo (SOP)
 
-Documento vivo para estandarizar diseño, desarrollo, pruebas y despliegue de **BeanTag** (Web + API + App iOS Capacitor/Sideloadly).
+> **Documento Maestro Completo (Marca, Logo, Dirección Artística y Comité de Subagentes):** ver [BEANTAG_MASTER_BRIEF.md](./BEANTAG_MASTER_BRIEF.md).
+
+Documento vivo de referencia rápida operativa para diseño, desarrollo, pruebas y despliegue de **BeanTag** (Web + API + App iOS Capacitor/Sideloadly).
 
 ---
 
