@@ -53,7 +53,11 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
       ? bagBatches
       : filterMode === 'tubes'
         ? tubeBatches
-        : availableBatches;
+        : filterMode === 'peak'
+          ? peakBatches
+          : filterMode === 'freeze'
+            ? pastOrFreezeBatches
+            : availableBatches;
 
   // Search filter
   const filteredBatches = (Array.isArray(currentList) ? currentList : []).filter(batch => {
@@ -106,22 +110,23 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
         </Suspense>
       ) : (
         <>
-          {/* Cellar Intelligence Strip: En pico hoy / Congelar */}
-          {!searchQuery && filterMode === 'all' && (peakBatches.length > 0 || pastOrFreezeBatches.length > 0) && (
+          {/* Cellar Intelligence Strip: En pico hoy / Congelar (filters list in-place) */}
+          {!searchQuery && (peakBatches.length > 0 || pastOrFreezeBatches.length > 0) && (
             <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px', marginBottom: '12px', scrollbarWidth: 'none' }}>
               {peakBatches.length > 0 && (
                 <button
                   type="button"
-                  onClick={() => onSelectBatch(peakBatches[0])}
+                  aria-pressed={filterMode === 'peak'}
+                  onClick={() => setFilterMode(m => m === 'peak' ? 'all' : 'peak')}
                   style={{
                     flex: '0 0 auto',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '5px',
-                    minHeight: '30px',
-                    padding: '0 11px',
+                    minHeight: '32px',
+                    padding: '0 12px',
                     borderRadius: 'var(--r-pill)',
-                    border: 'none',
+                    border: filterMode === 'peak' ? '1.5px solid var(--ok)' : '1px solid transparent',
                     background: 'var(--ok-bg)',
                     color: 'var(--ok-text, var(--ok))',
                     fontSize: '11.5px',
@@ -130,22 +135,23 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
                   }}
                 >
                   <CheckCircle2 size={12} aria-hidden="true" />
-                  <span>{peakBatches.length} en pico hoy</span>
+                  <span>{peakBatches.length} en pico hoy{filterMode === 'peak' ? ' ×' : ''}</span>
                 </button>
               )}
               {pastOrFreezeBatches.length > 0 && (
                 <button
                   type="button"
-                  onClick={() => onSelectBatch(pastOrFreezeBatches[0])}
+                  aria-pressed={filterMode === 'freeze'}
+                  onClick={() => setFilterMode(m => m === 'freeze' ? 'all' : 'freeze')}
                   style={{
                     flex: '0 0 auto',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '5px',
-                    minHeight: '30px',
-                    padding: '0 11px',
+                    minHeight: '32px',
+                    padding: '0 12px',
                     borderRadius: 'var(--r-pill)',
-                    border: 'none',
+                    border: filterMode === 'freeze' ? '1.5px solid var(--warn)' : '1px solid transparent',
                     background: 'var(--warn-bg)',
                     color: 'var(--warn-text, var(--warn))',
                     fontSize: '11.5px',
@@ -154,7 +160,7 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
                   }}
                 >
                   <Snowflake size={12} aria-hidden="true" />
-                  <span>{pastOrFreezeBatches.length} para congelar / priorizar</span>
+                  <span>{pastOrFreezeBatches.length} para congelar{filterMode === 'freeze' ? ' ×' : ''}</span>
                 </button>
               )}
             </div>
@@ -424,7 +430,7 @@ export default function Inventory({ batches, currentUser, onRequireAuth, onSelec
                           }}
                         >
                           <MethodIcon method={firstRecipe.method} size={14} />
-                          <span>Preparar {(firstRecipe.method || 'V60').replace(' (Filtrado)', '')}</span>
+                          <span>Preparar {(firstRecipe.method || 'V60').replace(/\s*\(.*\)\s*$/, '').replace(/^NextLevel\s+/i, '')}</span>
                         </button>
                       )}
                       <button

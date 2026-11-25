@@ -7,20 +7,25 @@ import { apiUrl } from '../utils/api';
 import { generateRecipeCardImage, generateCoffeeStickerImage, getPreferredCardFormat, setPreferredCardFormat, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { parseGrindToMicrons } from '../utils/grinders';
 import StickerShareModal from './StickerShareModal';
+import { MethodIcon } from './icons/CoffeeIcons';
 
 const BrewGuideModal = lazy(() => import('./BrewGuideModal'));
 
-const getMethodLucideIcon = (methodName, size = 18) => {
-  const m = (methodName || '').toLowerCase();
-  if (m.includes('pulsar')) return <SlidersHorizontal size={size} color="var(--color-crimson)" />;
-  if (m.includes('v60') || m.includes('filtrado')) return <Filter size={size} color="var(--color-crimson)" />;
-  if (m.includes('espresso') || m.includes('expresso')) return <Zap size={size} color="var(--color-crimson)" />;
-  if (m.includes('aero') || m.includes('press')) return <Droplet size={size} color="var(--color-crimson)" />;
-  if (m.includes('prensa') || m.includes('francesa')) return <Coffee size={size} color="var(--color-crimson)" />;
-  return <Coffee size={size} color="var(--color-crimson)" />;
-};
+const getMethodLucideIcon = (methodName, size = 18) => (
+  <MethodIcon method={methodName} size={size} style={{ color: 'var(--accent-text, var(--accent))' }} />
+);
 
-export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batches, currentUser, onRequireAuth, showToast }) {
+export default function BrewHistory({
+  onNavigateToInventory,
+  onSelectBatch,
+  onSaveRecipe,
+  onUndoRecipe,
+  onRefreshBatches,
+  batches,
+  currentUser,
+  onRequireAuth,
+  showToast
+}) {
   const [history, setHistory] = useState(null); // null = loading, [] = empty
   const [fetchError, setFetchError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -88,6 +93,51 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   const textureRef = useRef(null);
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [methodFilter, setMethodFilter] = useState('Todos');
+
+  const handleSaveRepeatedBrew = async (tunedData) => {
+    if (!repeatBrew?.batch?.id || !tunedData) return null;
+    const batchObj = repeatBrew.batch;
+    const payload = {
+      batch_id: batchObj.id,
+      method: tunedData.method || repeatBrew.recipe.method,
+      ratio: tunedData.ratio || repeatBrew.recipe.ratio,
+      grind: tunedData.grind || repeatBrew.recipe.grind,
+      temperature: typeof tunedData.temperature === 'number' ? `${tunedData.temperature}°C` : tunedData.temperature,
+      brew_time: tunedData.brew_time || repeatBrew.recipe.brew_time,
+      notes: tunedData.notes || '',
+      sensory_extraction: tunedData.sensory_extraction || 'En Punto',
+      rating: tunedData.rating || 5,
+      dose_in_g: tunedData.dose_in_g || repeatBrew.recipe.dose_in_g,
+      dose_out_g: tunedData.water_total_g || repeatBrew.recipe.water_total_g
+    };
+    let result = null;
+    if (typeof onSaveRecipe === 'function') {
+      result = await onSaveRecipe(payload, { stay: true });
+    } else {
+      const token = localStorage.getItem('beantag-token');
+      const res = await fetch(apiUrl('api/recipes'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify(payload)
+      });
+      result = await res.json();
+    }
+    if (!result || !result.success) throw new Error((result && result.error) || 'No se pudo guardar');
+    setReloadKey(k => k + 1);
+    if (onRefreshBatches) onRefreshBatches();
+    return {
+      ...result,
+      payload,
+      undo: typeof onUndoRecipe === 'function'
+        ? async () => {
+            await onUndoRecipe({ recipeId: result.recipe_id, batchId: batchObj.id, doseG: payload.dose_in_g, isBag: batchObj.storage_type === 'bag' });
+            setReloadKey(k => k + 1);
+            if (onRefreshBatches) onRefreshBatches();
+          }
+        : null
+    };
+  };
 
   useEffect(() => {
     let active = true;
@@ -374,18 +424,25 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
   const safeHistory = Array.isArray(history) ? history : [];
 
   const filteredHistory = safeHistory.filter(recipe => {
+    const method = (recipe.method || '').toLowerCase();
+    if (methodFilter && methodFilter !== 'Todos') {
+      const mf = methodFilter.toLowerCase();
+      if (mf === 'pulsar mini') {
+        if (!method.includes('pulsar')) return false;
+      } else if (mf === 'aeropress go') {
+        if (!method.includes('aeropress go')) return false;
+      } else if (mf === 'aeropress') {
+        if (!method.includes('aeropress') || method.includes('go')) return false;
+      } else if (!method.includes(mf)) {
+        return false;
+      }
+    }
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       const batchName = (recipe.batch_name || '').toLowerCase();
       const roaster = (recipe.batch_roaster || recipe.roaster || '').toLowerCase();
       const origin = (recipe.batch_origin || recipe.origin || '').toLowerCase();
       const notes = (recipe.notes || '').toLowerCase();
-      const method = (recipe.method || '').toLowerCase();
-      
-      if (term === 'pulsar' || term === 'pulsar mini') {
-        if (method.includes('pulsar')) return true;
-      }
-      
       return batchName.includes(term) || roaster.includes(term) || origin.includes(term) || notes.includes(term) || method.includes(term);
     }
     return true;
@@ -422,50 +479,73 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
 
       {safeHistory.length > 0 && (
         <div style={{ marginBottom: '16px' }}>
-          <div style={{ position: 'relative', marginBottom: '12px' }}>
-            <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}>
-              <Search size={16} strokeWidth={2.5} />
+          <div style={{ position: 'relative', marginBottom: '10px' }}>
+            <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }}>
+              <Search size={16} strokeWidth={2.2} />
             </div>
             <input aria-label="Buscar por nombre, tostador, método u origen..."
               type="text"
-              placeholder="Buscar por nombre, tostador, método u origen..."
+              placeholder="Buscar café, tostador u origen..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="candy-input"
-              style={{ width: '100%', padding: '12px 14px 12px 38px', fontSize: '13.5px', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: searchTerm ? '11px 40px 11px 40px' : '11px 14px 11px 40px', fontSize: '14px', boxSizing: 'border-box', borderRadius: 'var(--r-pill)' }}
             />
+            {searchTerm && (
+              <button
+                type="button"
+                aria-label="Limpiar búsqueda"
+                onClick={() => setSearchTerm('')}
+                style={{
+                  position: 'absolute',
+                  right: '4px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: 'var(--fill)',
+                  color: 'var(--ink-muted)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
 
-          {/* Quick Method Filters */}
+          {/* Independent Quick Method Filters (Full-Pill 2028) */}
           <div style={{ 
             display: 'flex', 
-            gap: '8px', 
+            gap: '6px', 
             overflowX: 'auto', 
             overscrollBehaviorX: 'contain',
             WebkitOverflowScrolling: 'touch',
             width: '100%',
             boxSizing: 'border-box',
-            paddingBottom: '6px' 
+            paddingBottom: '4px' 
           }} className="hide-scrollbar">
             {['Todos', 'V60', 'Espresso', 'AeroPress', 'AeroPress Go', 'Pulsar Mini', 'Prensa'].map((m) => {
-              const isSelected = (m === 'Todos' && !searchTerm) || 
-                (m === 'Pulsar Mini' && (searchTerm.toLowerCase() === 'pulsar mini' || searchTerm.toLowerCase() === 'pulsar')) ||
-                (m === 'AeroPress Go' && (searchTerm.toLowerCase() === 'aeropress go' || searchTerm.toLowerCase() === 'go')) ||
-                (searchTerm.toLowerCase() === m.toLowerCase());
+              const isSelected = methodFilter === m;
               return (
                 <button
                   key={m}
                   type="button"
                   aria-pressed={isSelected}
-                  onClick={() => setSearchTerm(m === 'Todos' ? '' : m)}
+                  onClick={() => setMethodFilter(m)}
                   style={{
-                    padding: '4px 10px',
-                    borderRadius: 'var(--r-control)',
-                    border: isSelected ? '1.5px solid var(--color-crimson)' : '1px solid var(--border-color)',
-                    background: isSelected ? 'var(--bg-header)' : 'var(--bg-card)',
-                    color: 'var(--color-text)',
+                    minHeight: '34px',
+                    padding: '0 13px',
+                    borderRadius: 'var(--r-pill)',
+                    border: isSelected ? '1.5px solid var(--accent)' : '1px solid var(--line)',
+                    background: isSelected ? 'var(--accent-bg)' : 'var(--surface)',
+                    color: isSelected ? 'var(--accent-text)' : 'var(--ink-2)',
                     fontSize: '12px',
-                    fontWeight: '600',
+                    fontWeight: isSelected ? '700' : '500',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap'
                   }}
@@ -503,9 +583,17 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
       ) : filteredHistory.length === 0 ? (
         <div className="candy-card static soft-fade-in" style={{ textAlign: 'center', padding: '30px' }}>
           <p style={{ fontWeight: 'bold', margin: '0 0 6px 0' }}>No hay resultados</p>
-          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: 0 }}>
-            Intenta ajustar los filtros de búsqueda.
+          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 14px 0' }}>
+            Prueba quitando alguno de los filtros activos.
           </p>
+          <button
+            type="button"
+            className="barista-btn-secondary"
+            style={{ margin: '0 auto', minHeight: '38px', fontSize: '12.5px' }}
+            onClick={() => { setSearchTerm(''); setMethodFilter('Todos'); }}
+          >
+            Limpiar filtros
+          </button>
         </div>
       ) : (
         filteredHistory.map(item => {
@@ -514,13 +602,12 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             <div 
               key={item.id} 
               className="candy-card soft-fade-in" 
-              style={{ borderLeft: '6px solid var(--color-crimson)' }}
               onClick={() => setSelectedRecipe(item)}
             >
               <div className="card-header-flex">
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: 'var(--r-xs)', border: '1.5px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-canvas)' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--fill)' }}>
                       {getMethodLucideIcon(item.method, 16)}
                     </div>
                     <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '14px', margin: 0 }}>{item.method}</h3>
@@ -615,7 +702,7 @@ export default function BrewHistory({ onNavigateToInventory, onSelectBatch, batc
             onClose={() => setRepeatBrew(null)}
             recipe={repeatBrew.recipe}
             batch={repeatBrew.batch}
-            onSaveTunedRecipe={null}
+            onSaveTunedRecipe={currentUser ? handleSaveRepeatedBrew : null}
           />
         </Suspense>
       )}

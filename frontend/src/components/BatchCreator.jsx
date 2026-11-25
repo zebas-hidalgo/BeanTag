@@ -747,33 +747,33 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                 
                 {/* Selection Summary */}
                 {selectedFlavorTags.length > 0 && (
-                  <div style={{ marginBottom: '14px', padding: '12px', backgroundColor: 'var(--barista-bg-surface)', border: '1.5px solid var(--barista-border-hairline)', borderRadius: 'var(--r-control)', boxShadow: 'var(--barista-shadow-card)' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 'bold', textTransform: 'uppercase', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>
+                  <div style={{ marginBottom: '14px', padding: '12px', backgroundColor: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--r-control)' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--ink-muted)', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>
                       Seleccionados ({selectedFlavorTags.length}):
                     </span>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                       {(Array.isArray(selectedFlavorTags) ? selectedFlavorTags : []).map((tag, i) => {
                         const colors = getScaColorForNote(tag);
                         return (
-                          <span key={i} style={{
+                          <span key={i} className="bt-note bt-note-sca" style={{
+                            '--note-icon': colors.border,
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '6px',
-                            padding: '6px 10px',
-                            backgroundColor: colors.bg,
-                            color: colors.text,
-                            border: `1.5px solid ${colors.border}`,
-                            borderRadius: 'var(--r-control)',
+                            padding: '5px 10px',
+                            borderRadius: 'var(--r-pill)',
                             fontSize: '12px',
                             fontWeight: '600'
                           }}>
-                            {getScaIcon(tag, 13, 2.5)}
+                            <span style={{ color: colors.border, display: 'inline-flex', alignItems: 'center' }}>
+                              {getScaIcon(tag, 13, 2.3)}
+                            </span>
                             {stripEmojis(tag)}
                             <button 
                               type="button" 
                               aria-label={`Quitar nota ${stripEmojis(tag)}`}
                               onClick={() => toggleFlavorTag(tag)}
-                              style={{ background: 'none', border: 'none', color: colors.text, cursor: 'pointer', padding: '0 0 0 4px', fontWeight: '700', fontSize: '14px', display: 'flex', alignItems: 'center', minWidth: '24px', minHeight: '24px', justifyContent: 'center' }}
+                              style={{ background: 'none', border: 'none', color: 'var(--ink-muted)', cursor: 'pointer', padding: '0 0 0 2px', fontWeight: '700', fontSize: '15px', display: 'flex', alignItems: 'center', minWidth: '22px', minHeight: '22px', justifyContent: 'center' }}
                             >
                               ×
                             </button>
@@ -806,16 +806,16 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                         type="button"
                         onClick={() => setActiveTab(catGroup.category)}
                         style={{
-                          padding: '10px 16px',
-                          minHeight: '44px',
-                          fontFamily: 'var(--font-heading)',
+                          padding: '8px 14px',
+                          minHeight: '40px',
+                          fontFamily: 'var(--font-body)',
                           fontSize: '12px',
-                          fontWeight: 'bold',
-                          border: isActive ? '2px solid var(--color-crimson)' : '1.5px solid var(--border-color)',
-                          borderRadius: 'var(--r-control)',
+                          fontWeight: isActive ? 700 : 600,
+                          border: isActive ? '1.5px solid var(--accent)' : '1px solid var(--line)',
+                          borderRadius: 'var(--r-pill)',
                           whiteSpace: 'nowrap',
-                          backgroundColor: isActive ? 'var(--bg-header)' : 'var(--bg-card)',
-                          color: 'var(--color-text)',
+                          backgroundColor: isActive ? 'var(--accent-bg)' : 'var(--surface)',
+                          color: isActive ? 'var(--accent-text)' : 'var(--ink)',
                           cursor: 'pointer',
                           transition: 'var(--transition-ui)',
                           display: 'flex',
@@ -823,7 +823,7 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                           gap: '6px'
                         }}
                       >
-                        {getScaIcon(catGroup.category, 14, 2.5)}
+                        {getScaIcon(catGroup.category, 14, 2.3)}
                         {catGroup.category}
                       </button>
                     );
@@ -837,8 +837,8 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                   return (
                     <div style={{
                       padding: '14px',
-                      backgroundColor: 'var(--barista-bg-surface)',
-                      border: '1.5px solid var(--barista-border-hairline)',
+                      backgroundColor: 'var(--surface)',
+                      border: '1px solid var(--line)',
                       borderRadius: 'var(--r-control)'
                     }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -848,9 +848,9 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                             flexDirection: 'column', 
                             gap: '8px', 
                             paddingTop: sIdx > 0 ? '10px' : '0', 
-                            borderTop: sIdx > 0 ? '1px dashed var(--border-color)' : 'none' 
+                            borderTop: sIdx > 0 ? '1px dashed var(--line)' : 'none' 
                           }}>
-                            <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
+                            <span style={{ fontSize: '12px', color: 'var(--ink-muted)', fontWeight: '700' }}>
                               {sub.name}
                             </span>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -861,25 +861,33 @@ export default function BatchCreator({ batchToEdit, onBatchCreated, onBack, onCa
                                   <button
                                     key={tIdx}
                                     type="button"
+                                    className={isSelected ? 'bt-note-sca' : undefined}
                                     style={{
+                                      '--note-icon': colors.border,
                                       padding: '8px 12px',
-                                      minHeight: '40px',
-                                      fontFamily: 'var(--font-heading)',
+                                      minHeight: '38px',
+                                      fontFamily: 'var(--font-body)',
                                       fontSize: '12px',
-                                      border: isSelected ? `2px solid ${colors.border}` : '1.5px solid var(--border-color)',
-                                      borderRadius: 'var(--r-control)',
+                                      border: isSelected
+                                        ? `1.5px solid color-mix(in oklab, ${colors.border} 55%, transparent)`
+                                        : '1px solid var(--line)',
+                                      borderRadius: 'var(--r-pill)',
                                       cursor: 'pointer',
-                                      backgroundColor: isSelected ? colors.bg : 'var(--bg-card)',
-                                      color: isSelected ? colors.text : 'var(--color-text)',
+                                      backgroundColor: isSelected
+                                        ? `color-mix(in oklab, ${colors.border} 14%, var(--surface))`
+                                        : 'var(--fill)',
+                                      color: 'var(--ink)',
                                       transition: 'var(--transition-ui)',
-                                      fontWeight: '600',
+                                      fontWeight: isSelected ? '700' : '500',
                                       display: 'flex',
                                       alignItems: 'center',
                                       gap: '6px'
                                     }}
                                     onClick={() => toggleFlavorTag(tag)}
                                   >
-                                    {getScaIcon(tag, 13, 2.5)}
+                                    <span style={{ color: colors.border, display: 'inline-flex', alignItems: 'center' }}>
+                                      {getScaIcon(tag, 13, 2.3)}
+                                    </span>
                                     {tag}
                                   </button>
                                 );

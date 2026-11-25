@@ -488,7 +488,7 @@
 /* ── cycle 2 ── */
 /* iOS zooms the page when a focused field is under 16px: keep form text at 16px on touch screens */
 @media (pointer: coarse) {
-  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea { font-size: 16px !important; }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.barista-metric-val), select, textarea { font-size: 16px !important; }
 }
 
 /* ── KISS (2026-11-01): words instead of scales ── */
@@ -931,7 +931,7 @@
 .bt-sticky-cta {
   position: fixed;
   left: 50%;
-  bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   width: calc(100% - 32px);
   max-width: 430px;
@@ -945,6 +945,14 @@
   -webkit-backdrop-filter: blur(22px) saturate(180%);
   backdrop-filter: blur(22px) saturate(180%);
   box-shadow: var(--shadow-float), inset 0 1px 0 var(--glass-edge);
+}
+
+@keyframes bt-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.spin, .animate-spin {
+  animation: bt-spin 0.9s linear infinite;
 }
 .bt-sticky-cta-main {
   flex: 1 1 auto;

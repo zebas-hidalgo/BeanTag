@@ -83,6 +83,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   });
   const [showManualLog, setShowManualLog] = useState(false);
   const [showNfcPanel, setShowNfcPanel] = useState(false);
+  const [appliedAiPours, setAppliedAiPours] = useState(null);
   const [dialInBadge, setDialInBadge] = useState(() => {
     try {
       const raw = localStorage.getItem(`beantag-dialin-badge-${batchId}`);
@@ -582,7 +583,11 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     };
     setDoseAdjustmentFeedback(null);
 
+    if (Array.isArray(aiRecommendation.pours) && aiRecommendation.pours.length > 0) {
+      setAppliedAiPours({ method: aiRecommendation.method || method, pours: aiRecommendation.pours });
+    }
     setAiRecommendation(null);
+    if (showToast) showToast('Receta IA aplicada al formulario (pasos guardados para el cronómetro).', { type: 'success', duration: 2800 });
   };
 
   const [selectedFamousRecipe, setSelectedFamousRecipe] = useState(null);
@@ -1226,7 +1231,9 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
       temperature: `${waterTemp}°C`,
       brew_time: brewTime,
       grind: getGrindString(),
-      pours: (aiRecommendation?.method === method && Array.isArray(aiRecommendation?.pours)) ? aiRecommendation.pours : [],
+      pours: (aiRecommendation?.method === method && Array.isArray(aiRecommendation?.pours))
+        ? aiRecommendation.pours
+        : (appliedAiPours?.method === method && Array.isArray(appliedAiPours?.pours) ? appliedAiPours.pours : []),
       active_grinder_dial: {
         grinder_id: grinderType,
         dial: getGrindString()
@@ -1460,7 +1467,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
 
   const brewBarMethod = String(method || '').replace(/\s*\(.*\)\s*$/, '').replace(/^NextLevel\s+/i, '');
   return (
-    <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', paddingBottom: '156px' }}>
+    <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', paddingBottom: '96px' }}>
       {/* Top Header - Row 1: Back Navigation + Compact iOS App handoff */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
         <button 

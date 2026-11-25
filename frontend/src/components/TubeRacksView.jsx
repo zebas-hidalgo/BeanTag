@@ -270,9 +270,42 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
       setActionTarget(null);
 
       if (showToast) {
+        const consumedBatchId = slot.batch_id;
+        const rackId = rack.id;
+        const slotPos = slot.position;
         showToast(
           `Dosis consumida de "${data.consumed_batch.name}". Quedan ${data.consumed_batch.remaining_doses} tubos.`,
-          { type: 'success', duration: 4000 }
+          {
+            type: 'success',
+            duration: 5500,
+            showUndo: true,
+            onUndo: async () => {
+              try {
+                await fetch(apiUrl(`api/batches/${consumedBatchId}/doses`), {
+                  method: 'PATCH',
+                  headers: getAuthHeaders(),
+                  body: JSON.stringify({ change: 1 })
+                });
+                const slotRes = await fetch(apiUrl(`api/racks/${rackId}/slots/${slotPos}`), {
+                  method: 'PUT',
+                  headers: getAuthHeaders(),
+                  body: JSON.stringify({ batch_id: consumedBatchId })
+                });
+                if (slotRes.ok) {
+                  const slotData = await slotRes.json();
+                  setRacks(prev => prev.map(r => (
+                    r.id === rackId
+                      ? { ...r, slots: r.slots.map(s => (s.position === slotPos ? slotData.slot : s)) }
+                      : r
+                  )));
+                }
+                if (onRefreshBatches) onRefreshBatches();
+                showToast(`Tubo #${slotPos} y dosis restaurados.`, { type: 'info', duration: 2500 });
+              } catch (_) {
+                showToast('No se pudo deshacer el consumo del tubo.', { type: 'error', duration: 3000 });
+              }
+            }
+          }
         );
       }
 
@@ -650,12 +683,12 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
                       padding: '2px 7px',
                       borderRadius: 'var(--r-pill)',
                       backgroundColor: isSelected
-                        ? 'rgba(255, 255, 255, 0.25)'
-                        : 'var(--barista-bg-surface)',
-                      color: isSelected ? '#FFFFFF' : 'var(--barista-text-secondary)',
+                        ? 'color-mix(in oklab, var(--on-accent) 16%, transparent)'
+                        : 'var(--surface)',
+                      color: isSelected ? 'var(--on-accent)' : 'var(--ink-muted)',
                       border: isSelected
-                        ? '1px solid rgba(255, 255, 255, 0.4)'
-                        : '1px solid var(--barista-border-hairline)'
+                        ? '1px solid color-mix(in oklab, var(--on-accent) 30%, transparent)'
+                        : '1px solid var(--line)'
                     }}
                   >
                     {occupiedInThisRack}/6
@@ -681,10 +714,10 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
             <div
               key={rack.id}
               style={{
-                backgroundColor: 'var(--barista-bg-surface)',
-                borderRadius: 'var(--barista-radius-lg)',
-                border: '2px solid var(--barista-border-hairline)',
-                boxShadow: 'var(--barista-shadow-elevated)',
+                backgroundColor: 'var(--surface)',
+                borderRadius: 'var(--r-card)',
+                border: '1px solid var(--line)',
+                boxShadow: 'var(--shadow-1)',
                 overflow: 'hidden',
                 width: '100%',
                 maxWidth: '100%',
@@ -698,8 +731,8 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '12px 14px',
-                  backgroundColor: 'var(--barista-bg-elevated)',
-                  borderBottom: '2px solid var(--barista-border-hairline)',
+                  backgroundColor: 'var(--surface)',
+                  borderBottom: '1px solid var(--line)',
                   position: 'relative',
                   width: '100%',
                   boxSizing: 'border-box'
@@ -878,65 +911,50 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
                 </div>
               </div>
 
-              {/* Physical Neo-Brutalist Rack Base Body (2x3 Grid) */}
+              {/* Editorial V6 Rack Grid Body (2x3) */}
               <div
                 style={{
-                  padding: '8px 6px',
-                  backgroundColor: 'var(--barista-bg-surface)',
-                  backgroundImage: 'radial-gradient(var(--barista-border-hairline) 1px, transparent 1px)',
-                  backgroundSize: '16px 16px',
+                  padding: '10px',
+                  backgroundColor: 'var(--fill)',
                   width: '100%',
                   maxWidth: '100%',
                   boxSizing: 'border-box'
                 }}
               >
-                {/* Visual Stand Frame */}
+                {/* Stand Orientation Header: Back Row (#04-#06) above, Front Row (#01-#03) below */}
                 <div
                   style={{
-                    backgroundColor: 'var(--barista-bg-elevated)',
-                    border: '1.5px solid var(--barista-border-hairline)',
-                    borderRadius: 'var(--barista-radius-lg)',
-                    padding: '8px 6px',
-                    boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.04)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px',
+                    padding: '0 2px',
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    fontWeight: '600',
+                    letterSpacing: '0.3px'
+                  }}
+                >
+                  <span style={{ color: 'var(--ink-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <ChevronUp size={13} aria-hidden="true" />
+                    <span>Atrás (#04–#06)</span>
+                  </span>
+                  <span style={{ color: 'var(--accent-text)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <ChevronDown size={13} aria-hidden="true" />
+                    <span>Frente (#01–#03)</span>
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                    gap: '7px',
                     width: '100%',
                     maxWidth: '100%',
                     boxSizing: 'border-box'
                   }}
                 >
-                  {/* Stand Orientation Header: Back Row (#04-#06) above, Front Row (#01-#03) below */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '8px',
-                      padding: '0 4px',
-                      fontSize: '12px',
-                      fontFamily: 'var(--font-mono)',
-                      fontWeight: '600',
-                      letterSpacing: '0.3px'
-                    }}
-                  >
-                    <span style={{ color: 'var(--barista-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <ChevronUp size={13} aria-hidden="true" />
-                      <span>Fila de atrás (#04–#06)</span>
-                    </span>
-                    <span style={{ color: 'var(--barista-accent-honey)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <ChevronDown size={13} aria-hidden="true" />
-                      <span>Fila de delante (#01–#03)</span>
-                    </span>
-                  </div>
-
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                      gap: '6px',
-                      width: '100%',
-                      maxWidth: '100%',
-                      boxSizing: 'border-box'
-                    }}
-                  >
                     {/* Frontal visual ordering: Row 1 (top) = [4, 5, 6] (posterior), Row 2 (bottom) = [1, 2, 3] (frontal) */}
                     {[4, 5, 6, 1, 2, 3].map((position) => {
                       const slot = rack.slots ? rack.slots.find(s => s.position === position) : null;
@@ -984,23 +1002,21 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
                           tabIndex={0}
                           aria-label={`Tubo ${position}: ${isFilled ? `${batchName}, ${doseWeight}${isFrozen ? ', congelado' : ''}` : 'Vacío'}`}
                           style={{
-                            minHeight: '128px',
+                            minHeight: '124px',
                             minWidth: 0,
                             width: '100%',
                             maxWidth: '100%',
                             backgroundColor: isFilled
-                              ? 'var(--barista-bg-surface)'
-                              : 'var(--barista-bg-subtle)',
+                              ? 'var(--surface)'
+                              : 'color-mix(in oklab, var(--surface) 55%, transparent)',
                             borderRadius: 'var(--r-control)',
                             border: isFilled
-                              ? (isFrozen ? '2px solid #38BDF8' : '2px solid var(--barista-accent-honey)')
-                              : '2px dashed var(--barista-border-hairline)',
-                            boxShadow: isFilled
                               ? (isFrozen
-                                  ? '0 3px 10px rgba(56, 189, 248, 0.18), inset 0 1px 0 var(--glass-edge)'
-                                  : '0 3px 10px rgba(217, 119, 6, 0.12), inset 0 1px 0 var(--glass-edge)')
-                              : 'none',
-                            padding: '8px 2px',
+                                  ? '1.5px solid color-mix(in oklab, var(--cryo) 65%, transparent)'
+                                  : '1.5px solid color-mix(in oklab, var(--accent) 45%, var(--line))')
+                              : '1.5px dashed var(--line-strong)',
+                            boxShadow: isFilled ? 'var(--shadow-1)' : 'none',
+                            padding: '8px 3px',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
@@ -1182,7 +1198,6 @@ export default function TubeRacksView({ batches, currentUser, onRequireAuth, onS
                         </div>
                       );
                     })}
-                  </div>
                 </div>
               </div>
             </div>

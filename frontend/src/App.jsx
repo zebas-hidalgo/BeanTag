@@ -51,6 +51,7 @@ export default function App() {
   const [currentView, setCurrentView] = useState(initialRoute.view);
   const [batches, setBatches] = useState(null);
   const [selectedBatchId, setSelectedBatchId] = useState(initialRoute.batchId);
+  const [returnView, setReturnView] = useState('inventory');
   const [prefillRecipe, setPrefillRecipe] = useState(null);
   const [autoStartBrew, setAutoStartBrew] = useState(false);
   const [consumedFromRack, setConsumedFromRack] = useState(null);
@@ -155,6 +156,7 @@ export default function App() {
     message: '',
     type: 'info',
     showUndo: false,
+    onUndo: null,
     duration: 3000
   });
 
@@ -167,6 +169,7 @@ export default function App() {
       message,
       type: options.type || 'info',
       showUndo: options.showUndo || false,
+      onUndo: typeof options.onUndo === 'function' ? options.onUndo : null,
       duration: options.duration || 3000
     });
     toastTimerRef.current = setTimeout(() => {
@@ -310,9 +313,12 @@ export default function App() {
 
   const handleSelectBatch = (batchOrId, options = {}) => {
     const id = typeof batchOrId === 'object' && batchOrId !== null ? batchOrId.id : batchOrId;
+    if (['inventory', 'brews', 'settings', 'quick_brew'].includes(currentView)) {
+      setReturnView(currentView);
+    }
     setSelectedBatchId(id);
     setPrefillRecipe(options && options.prefillRecipe ? options.prefillRecipe : null);
-    setAutoStartBrew(Boolean(options && options.autoStart));
+    setAutoStartBrew(Boolean(options && (options.autoStart || options.openBrew)));
     setConsumedFromRack(options && options.doseAlreadyConsumed ? (options.consumedSlotInfo || true) : null);
     setCurrentView('detail');
   };
@@ -346,8 +352,9 @@ export default function App() {
       setSelectedBatchId(batchToEdit.id);
       setBatchToEdit(null);
     } else {
+      const targetTab = ['inventory', 'brews', 'settings', 'quick_brew'].includes(returnView) ? returnView : 'inventory';
       window.history.pushState({}, '', '/beantag/');
-      setCurrentView('inventory');
+      setCurrentView(targetTab);
       setSelectedBatchId(null);
       setPrefillRecipe(null);
       setConsumedFromRack(null);
@@ -748,6 +755,9 @@ export default function App() {
               currentUser={currentUser}
               onRequireAuth={() => setShowAuthModal(true)}
               onSelectBatch={handleSelectBatch}
+              onSaveRecipe={handleSaveRecipe}
+              onUndoRecipe={handleUndoRecipe}
+              onRefreshBatches={fetchBatches}
               onNavigateToInventory={() => setCurrentView('inventory')}
               showToast={showToast}
             />
@@ -760,6 +770,8 @@ export default function App() {
               currentUser={currentUser}
               batches={batches}
               onLogout={handleLogout}
+              onRequireAuth={() => setShowAuthModal(true)}
+              onSelectBatch={handleSelectBatch}
               showToast={showToast}
             />
           )}
@@ -795,7 +807,15 @@ export default function App() {
               {toast.showUndo && (
                 <button
                   type="button"
-                  onClick={handleUndo}
+                  onClick={() => {
+                    if (typeof toast.onUndo === 'function') {
+                      const undoFn = toast.onUndo;
+                      dismissToast();
+                      undoFn();
+                    } else {
+                      handleUndo();
+                    }
+                  }}
                   className="toast-undo-btn"
                 >
                   Deshacer
@@ -858,8 +878,10 @@ export default function App() {
         )}
       </Suspense>
 
-      {/* Genjutsu Floating Bottom Navigation Bar */}
-      <BottomNav currentView={currentView} setCurrentView={handleNavigateTab} canCreate={Boolean(currentUser)} />
+      {/* Genjutsu Floating Bottom Navigation Bar (hidden on detail child view so sticky CTA owns the bottom dock) */}
+      {currentView !== 'detail' && (
+        <BottomNav currentView={currentView} setCurrentView={handleNavigateTab} canCreate={Boolean(currentUser)} />
+      )}
     </div>
   );
 }

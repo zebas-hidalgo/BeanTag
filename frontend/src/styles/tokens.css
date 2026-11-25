@@ -143,8 +143,8 @@
   --valve-closed-bg: rgba(239, 68, 68, 0.18); --valve-closed-text: #FCA5A5;
   --valve-half-bg: rgba(245, 158, 11, 0.18);  --valve-half-text: #FDE68A;
   --valve-open-bg: rgba(16, 185, 129, 0.18);  --valve-open-text: #A7F3D0;
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--line);
-  --shadow-2: 0 12px 32px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--line);
+  --shadow-1: 0 2px 8px rgba(0, 0, 0, 0.48);
+  --shadow-2: 0 12px 32px -10px rgba(0, 0, 0, 0.78);
   --shadow-float: 0 14px 34px -10px rgba(0, 0, 0, 0.8);
 }
 
@@ -205,8 +205,8 @@
   --valve-closed-bg: rgba(239, 68, 68, 0.18); --valve-closed-text: #FCA5A5;
   --valve-half-bg: rgba(245, 158, 11, 0.18);  --valve-half-text: #FDE68A;
   --valve-open-bg: rgba(16, 185, 129, 0.18);  --valve-open-text: #A7F3D0;
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--line);
-  --shadow-2: 0 12px 32px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--line);
+  --shadow-1: 0 2px 8px rgba(0, 0, 0, 0.48);
+  --shadow-2: 0 12px 32px -10px rgba(0, 0, 0, 0.78);
   --shadow-float: 0 14px 34px -10px rgba(0, 0, 0, 0.8);
 }
 
@@ -228,8 +228,8 @@
   --valve-closed-bg: rgba(239, 68, 68, 0.2); --valve-closed-text: #FCA5A5;
   --valve-half-bg: rgba(245, 158, 11, 0.2);  --valve-half-text: #FDE68A;
   --valve-open-bg: rgba(16, 185, 129, 0.2);  --valve-open-text: #A7F3D0;
-  --shadow-1: 0 0 0 1px var(--line);
-  --shadow-2: 0 10px 28px -8px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--line-strong);
+  --shadow-1: 0 2px 8px rgba(0, 0, 0, 0.65);
+  --shadow-2: 0 10px 28px -8px rgba(0, 0, 0, 0.9);
   --shadow-float: 0 14px 34px -10px rgba(0, 0, 0, 0.9);
 }
 
@@ -259,39 +259,39 @@
   --accent-line: rgba(109, 76, 158, 0.35); --accent-glow: rgba(109, 76, 158, 0.22); --on-accent: #FFFFFF; --focus: #6D4C9E;
 }
 
-/* ── Sakura (Japanese blush paper) ── */
+/* ── Sakura (Japanese blush paper, WCAG AA 4.5:1+) ── */
 :root[data-theme="sakura"] {
   color-scheme: light;
   --bg: #F6E9ED; --surface: #FDF6F8; --raised: #FFFFFF;
   --fill: rgba(44, 22, 30, 0.055); --fill-strong: rgba(44, 22, 30, 0.10); --fill-solid: #F8EDF0;
   --glass: rgba(253, 246, 248, 0.78); --glass-strong: rgba(253, 246, 248, 0.96); --glass-edge: rgba(255, 255, 255, 0.84);
-  --ink: #2C161E; --ink-2: #5E3F4A; --ink-muted: #7F5E69; --ink-disabled: #BBA4AC;
+  --ink: #2C161E; --ink-2: #573843; --ink-muted: #6F4F5A; --ink-disabled: #BBA4AC;
   --line: rgba(44, 22, 30, 0.09); --line-strong: rgba(44, 22, 30, 0.19);
   --action: #2C161E; --on-action: #FDF6F8;
-  --accent: #C95476; --accent-strong: #A13B5A; --accent-bg: #FBE4EB; --accent-text: #A13B5A;
-  --accent-line: rgba(201, 84, 118, 0.35); --accent-glow: rgba(201, 84, 118, 0.22); --on-accent: #FFFFFF; --focus: #C95476;
+  --accent: #B33D60; --accent-strong: #8F2948; --accent-bg: #FBE4EB; --accent-text: #8F2948;
+  --accent-line: rgba(179, 61, 96, 0.35); --accent-glow: rgba(179, 61, 96, 0.22); --on-accent: #FFFFFF; --focus: #B33D60;
 }
 
-/* ── Yuzu Crema (Japanese citrus cream) ── */
+/* ── Yuzu Crema (Japanese citrus cream, WCAG AA 4.5:1+) ── */
 :root[data-theme="yuzu"] {
   color-scheme: light;
   --bg: #F3EFE0; --surface: #FCFBF2; --raised: #FFFFFF;
   --fill: rgba(38, 32, 16, 0.06); --fill-strong: rgba(38, 32, 16, 0.10); --fill-solid: #F6F3E4;
   --glass: rgba(252, 251, 242, 0.78); --glass-strong: rgba(252, 251, 242, 0.96); --glass-edge: rgba(255, 255, 255, 0.84);
-  --ink: #262010; --ink-2: #544B31; --ink-muted: #73684A; --ink-disabled: #B3AB93;
+  --ink: #262010; --ink-2: #4E452C; --ink-muted: #665B3F; --ink-disabled: #B3AB93;
   --line: rgba(38, 32, 16, 0.10); --line-strong: rgba(38, 32, 16, 0.20);
   --action: #262010; --on-action: #FCFBF2;
-  --accent: #A97810; --accent-strong: #825A06; --accent-bg: #F6ECCE; --accent-text: #825A06;
-  --accent-line: rgba(169, 120, 16, 0.38); --accent-glow: rgba(169, 120, 16, 0.22); --on-accent: #FFFFFF; --focus: #A97810;
+  --accent: #8A5F06; --accent-strong: #6B4903; --accent-bg: #F6ECCE; --accent-text: #6B4903;
+  --accent-line: rgba(138, 95, 6, 0.38); --accent-glow: rgba(138, 95, 6, 0.22); --on-accent: #FFFFFF; --focus: #8A5F06;
 }
 
-/* ── Porcelana (Japanese ceramic blue) ── */
+/* ── Porcelana (Japanese ceramic blue, WCAG AA 4.5:1+) ── */
 :root[data-theme="porcelana"] {
   color-scheme: light;
   --bg: #E7EFF6; --surface: #F4F8FC; --raised: #FFFFFF;
   --fill: rgba(18, 31, 46, 0.055); --fill-strong: rgba(18, 31, 46, 0.10); --fill-solid: #ECF3F9;
   --glass: rgba(244, 248, 252, 0.78); --glass-strong: rgba(244, 248, 252, 0.96); --glass-edge: rgba(255, 255, 255, 0.84);
-  --ink: #121F2E; --ink-2: #3A4E64; --ink-muted: #586F87; --ink-disabled: #9BAEC2;
+  --ink: #121F2E; --ink-2: #35495E; --ink-muted: #4B6075; --ink-disabled: #9BAEC2;
   --line: rgba(18, 31, 46, 0.10); --line-strong: rgba(18, 31, 46, 0.20);
   --action: #121F2E; --on-action: #F4F8FC;
   --accent: #285C84; --accent-strong: #1B4261; --accent-bg: #DCEBF6; --accent-text: #1B4261;

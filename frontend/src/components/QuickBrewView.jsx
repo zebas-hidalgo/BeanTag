@@ -148,7 +148,11 @@ export default function QuickBrewView({
 
   const [aiLoading, setAiLoading] = useState(false);
   const [aiRecipe, setAiRecipe] = useState(null);
+  const [recipeSpecKey, setRecipeSpecKey] = useState('');
   const [brewOpen, setBrewOpen] = useState(false);
+
+  const currentSpecKey = `${method}|${grinder}|${targetWaterMl}|${doseOverride === null ? 'auto' : doseInG}`;
+  const isRecipeStale = Boolean(aiRecipe && recipeSpecKey && recipeSpecKey !== currentSpecKey);
 
   // Save to inventory / Bitácora & quick post-cup sensory tuner state
   const [savingBatch, setSavingBatch] = useState(false);
@@ -384,6 +388,7 @@ export default function QuickBrewView({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al generar receta.');
       setAiRecipe(data);
+      setRecipeSpecKey(currentSpecKey);
       setSavedRecipeId(null);
       setTunerPreview(null);
       setQuickTasteId(null);
@@ -462,7 +467,7 @@ export default function QuickBrewView({
   const cleanMicrons = formatMicronsClean(aiRecipe?.grind_microns);
 
   return (
-    <div className="soft-fade-in" style={{ paddingBottom: '88px' }}>
+    <div className="soft-fade-in" style={{ paddingBottom: '24px' }}>
       {/* Editorial Top Header (first-level tab — no redundant Back button) */}
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
         <h2 className="bt-page-title" style={{ margin: 0, fontSize: '24px', fontVariationSettings: '"opsz" 72' }}>Preparación Rápida</h2>
@@ -547,6 +552,38 @@ export default function QuickBrewView({
             onChange={(e) => setBean(b => ({ ...b, process: e.target.value }))}
             style={{ margin: 0, minHeight: '44px', fontSize: '16px' }}
           />
+        </div>
+
+        {/* Nivel de tueste manual */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink-muted)' }}>Tueste</span>
+          <div style={{ display: 'flex', gap: '6px' }} role="radiogroup" aria-label="Nivel de tueste">
+            {['Claro', 'Medio', 'Oscuro'].map((lvl) => {
+              const active = (bean.roast_level || 'Medio').toLowerCase().includes(lvl.toLowerCase());
+              return (
+                <button
+                  key={lvl}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => setBean(b => ({ ...b, roast_level: lvl }))}
+                  style={{
+                    minHeight: '34px',
+                    padding: '4px 12px',
+                    borderRadius: 'var(--r-pill)',
+                    border: active ? '1.5px solid var(--accent)' : '1px solid var(--line)',
+                    background: active ? 'var(--accent-bg)' : 'var(--fill)',
+                    color: active ? 'var(--accent-text)' : 'var(--ink-2)',
+                    fontSize: '12px',
+                    fontWeight: active ? 700 : 500,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {lvl}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </section>
 
@@ -780,6 +817,45 @@ export default function QuickBrewView({
             </span>
           </div>
 
+          {isRecipeStale && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px',
+              flexWrap: 'wrap',
+              padding: '9px 11px',
+              borderRadius: 'var(--r-control)',
+              background: 'var(--warn-bg)',
+              color: 'var(--warn-text)',
+              fontSize: '12px',
+              lineHeight: 1.35
+            }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flex: '1 1 180px' }}>
+                <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                <span>Cambiaste equipo o volumen. Recalcula para actualizar dial y vertidos.</span>
+              </span>
+              <button
+                type="button"
+                disabled={aiLoading}
+                onClick={handleGenerateRecipe}
+                style={{
+                  minHeight: '32px',
+                  padding: '4px 12px',
+                  borderRadius: 'var(--r-pill)',
+                  border: '1px solid currentColor',
+                  background: 'var(--surface)',
+                  color: 'var(--warn-text)',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                {aiLoading ? 'Calculando…' : 'Recalcular'}
+              </button>
+            </div>
+          )}
+
           {/* Grilla 2x2 tonal sin bordes pesados */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px' }}>
             <div style={{ padding: '10px 12px', borderRadius: 'var(--r-tile)', background: 'var(--fill)' }}>
@@ -808,10 +884,12 @@ export default function QuickBrewView({
             </div>
           </div>
 
-          {/* Bloque de Molino */}
+          {/* Bloque de Molino (muestra el molino real con que se calculó el dial) */}
           <div style={{ padding: '10px 12px', borderRadius: 'var(--r-tile)', background: 'var(--fill)' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink-muted)' }}>{activeGrinderMeta.name}</span>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--ink-muted)' }}>
+                {aiRecipe.active_grinder_dial?.grinder_name || activeGrinderMeta.name}
+              </span>
               {cleanMicrons && (
                 <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--ink-muted)' }}>{cleanMicrons}</span>
               )}
@@ -822,7 +900,7 @@ export default function QuickBrewView({
           </div>
 
           {/* Preparación previa (antes de 0:00) */}
-          <div style={{ padding: '10px 12px', borderRadius: 'var(--r-control)', background: 'var(--raised)', border: '1px dashed var(--line-strong)', marginBottom: '12px' }}>
+          <div style={{ padding: '10px 12px', borderRadius: 'var(--r-control)', background: 'var(--raised)', border: '1px dashed var(--line-strong)' }}>
             <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-muted)', marginBottom: '3px' }}>
               Antes de 0:00 · Preparación ({activeMethodObj.label})
             </div>
@@ -833,7 +911,7 @@ export default function QuickBrewView({
 
           {/* Pasos cronometrados detallados */}
           {Array.isArray(syntheticRecipe.pours) && syntheticRecipe.pours.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {syntheticRecipe.pours.map((p, idx) => {
                 const isDry = !p.water_g || Number(p.water_g) <= 0;
                 return (
@@ -903,79 +981,8 @@ export default function QuickBrewView({
             </div>
           )}
 
-          {/* Ajuste rápido post-taza (sensoryTuner) */}
-          <div style={{
-            padding: '12px',
-            borderRadius: 'var(--r-control)',
-            background: 'var(--fill)',
-            border: '1px solid var(--line)',
-            marginBottom: '12px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-muted)' }}>
-              <Sliders size={13} aria-hidden="true" />
-              <span>¿Cómo quedó la taza? Ajuste rápido</span>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '6px' }}>
-              {QUICK_TASTE_PRESETS.map((preset) => {
-                const active = quickTasteId === preset.id;
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => handleQuickTaste(preset)}
-                    style={{
-                      minHeight: '36px',
-                      padding: '6px 10px',
-                      borderRadius: 'var(--r-pill)',
-                      border: `1px solid ${active ? 'var(--accent)' : 'var(--line)'}`,
-                      background: active ? 'color-mix(in oklab, var(--accent) 14%, var(--surface))' : 'var(--surface)',
-                      color: active ? 'var(--accent-text, var(--ink))' : 'var(--ink)',
-                      fontSize: '12px',
-                      fontWeight: active ? 700 : 500,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {preset.label}
-                  </button>
-                );
-              })}
-            </div>
-            {tunerPreview && (
-              <div style={{
-                padding: '10px',
-                borderRadius: 'var(--r-control)',
-                background: 'var(--surface)',
-                border: '1px solid var(--line)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 700, color: 'var(--ink)' }}>
-                    {tunerPreview.newGrindText} · {tunerPreview.newTemp}°C
-                  </span>
-                  {tunerPreview.diagnosis !== 'balanced' && (
-                    <button
-                      type="button"
-                      className="btn-candy primary"
-                      onClick={handleApplyTuning}
-                      style={{ padding: '5px 10px', fontSize: '11px', fontWeight: 700, margin: 0 }}
-                    >
-                      Aplicar ajuste
-                    </button>
-                  )}
-                </div>
-                <div style={{ fontSize: '12px', color: 'var(--ink-2)', lineHeight: 1.4 }}>
-                  {tunerPreview.explanation}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+          {/* Acciones principales ANTES del ajuste post-taza */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             <button
               type="button"
               onClick={() => renderExportCard(shareTemplate, stickerTransparent, stickerOrientation, shareIncludeRecipe)}
@@ -1060,6 +1067,77 @@ export default function QuickBrewView({
                     : 'Guardar café + receta'}
               </span>
             </button>
+          </div>
+
+          {/* Ajuste rápido post-taza (sensoryTuner — después de probar) */}
+          <div style={{
+            padding: '12px',
+            borderRadius: 'var(--r-control)',
+            background: 'var(--fill)',
+            border: '1px solid var(--line)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ink-muted)' }}>
+              <Sliders size={13} aria-hidden="true" />
+              <span>¿Cómo quedó la taza? Ajuste rápido</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '6px' }}>
+              {QUICK_TASTE_PRESETS.map((preset) => {
+                const active = quickTasteId === preset.id;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => handleQuickTaste(preset)}
+                    style={{
+                      minHeight: '36px',
+                      padding: '6px 10px',
+                      borderRadius: 'var(--r-pill)',
+                      border: `1px solid ${active ? 'var(--accent)' : 'var(--line)'}`,
+                      background: active ? 'color-mix(in oklab, var(--accent) 14%, var(--surface))' : 'var(--surface)',
+                      color: active ? 'var(--accent-text, var(--ink))' : 'var(--ink)',
+                      fontSize: '12px',
+                      fontWeight: active ? 700 : 500,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {preset.label}
+                  </button>
+                );
+              })}
+            </div>
+            {tunerPreview && (
+              <div style={{
+                padding: '10px',
+                borderRadius: 'var(--r-control)',
+                background: 'var(--surface)',
+                border: '1px solid var(--line)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 700, color: 'var(--ink)' }}>
+                    {tunerPreview.newGrindText} · {tunerPreview.newTemp}°C
+                  </span>
+                  {tunerPreview.diagnosis !== 'balanced' && (
+                    <button
+                      type="button"
+                      className="btn-candy primary"
+                      onClick={handleApplyTuning}
+                      style={{ padding: '5px 10px', fontSize: '11px', fontWeight: 700, margin: 0 }}
+                    >
+                      Aplicar ajuste
+                    </button>
+                  )}
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--ink-2)', lineHeight: 1.4 }}>
+                  {tunerPreview.explanation}
+                </div>
+              </div>
+            )}
           </div>
         </section>
       )}

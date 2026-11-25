@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircle2, AlertTriangle, Loader2, Sparkles, Compass, Share2, ClipboardList, X, Eye, EyeOff, Coffee, Zap, Cpu, Palette, SlidersHorizontal, SunMoon } from 'lucide-react';
+import { Moon, Sun, Download, Upload, Nfc, FileSpreadsheet, Activity, CheckCircle2, AlertTriangle, Loader2, Sparkles, Compass, Share2, ClipboardList, X, Eye, EyeOff, Coffee, Zap, Cpu, Palette, SlidersHorizontal, SunMoon, LogOut, User, ArrowRight } from 'lucide-react';
 import { normalizeTheme, THEME_OPTIONS } from '../utils/theme';
 import NfcToolsModal from './NfcToolsModal';
 import { apiUrl } from '../utils/api';
 import { GRINDERS } from '../utils/grinders';
-import { generateCoffeeMenuCardImage, generateCoffeeMenuText, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
+import { CARD_STYLE_OPTIONS, generateCoffeeMenuCardImage, generateCoffeeMenuText, normalizeCardStyle, DEFAULT_CARD_STYLE } from '../utils/cardGenerator';
 import { copyToClipboard } from '../utils/clipboard';
+import { confirmDialog } from '../utils/confirmDialog';
 
-export default function Settings({ theme, setTheme, batches = [], showToast }) {
+export default function Settings({ theme, setTheme, currentUser, batches = [], onLogout, onRequireAuth, onSelectBatch, showToast }) {
   const [showNfcModal, setShowNfcModal] = useState(false);
   const [pendingImportData, setPendingImportData] = useState(null);
   const [importMode, setImportMode] = useState('merge');
-  // App Theme State
+  // App Theme State & compact family filter ('light' | 'dark' | 'auto')
   const [appTheme, setAppTheme] = useState(() => normalizeTheme(localStorage.getItem('beantag-theme')));
+  const [themeTab, setThemeTab] = useState(() => {
+    const initial = normalizeTheme(localStorage.getItem('beantag-theme'));
+    const meta = THEME_OPTIONS.find(t => t.id === initial);
+    return meta?.mode === 'dark' ? 'dark' : 'light';
+  });
 
   useEffect(() => {
     if (theme && theme !== appTheme) {
@@ -20,18 +26,19 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
     }
   }, [theme]);
 
-  const handleThemeChange = (theme) => {
-    setAppTheme(theme);
-    localStorage.setItem('beantag-theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
+  const handleThemeChange = (nextTheme) => {
+    setAppTheme(nextTheme);
+    localStorage.setItem('beantag-theme', nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
     if (typeof setTheme === 'function') {
-      setTheme(theme);
+      setTheme(nextTheme);
     }
     try {
       window.dispatchEvent(new Event('beantag-theme-changed'));
     } catch (e) {}
     if (showToast) {
-      const names = { auto: 'Automático', light: 'Crema', dark: 'Tueste' };
+      const meta = THEME_OPTIONS.find(t => t.id === nextTheme);
+      showToast(`Tema aplicado: ${meta ? meta.label : nextTheme}`, { type: 'success', duration: 2200 });
     }
   };
 
@@ -370,18 +377,119 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
   return (
     <div style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       <h2 className="bt-page-title">
-        Ajustes
+        Perfil y Equipo
       </h2>
 
-      {/* Tema de la Aplicación */}
-      <section className="bt-section" aria-labelledby="bt-theme-title">
-        <div className="bt-section-head">
-          <h4 id="bt-theme-title" className="bt-section-title">
-            <Palette size={16} aria-hidden="true" />
-            <span>Apariencia</span>
-          </h4>
-          <p className="bt-section-desc">Elige una paleta inspirada en café de especialidad. Se aplica a toda la app, incluido el cronómetro de extracción.</p>
+      {/* Cuenta & Sesión */}
+      <section className="bt-section" aria-label="Tu cuenta" style={{ marginBottom: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+            {currentUser?.picture ? (
+              <img
+                src={currentUser.picture}
+                alt=""
+                style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '1px solid var(--line)' }}
+              />
+            ) : (
+              <div style={{
+                width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
+                background: 'var(--accent-bg)', color: 'var(--accent-text)',
+                display: 'grid', placeItems: 'center', fontWeight: 700, fontSize: '16px'
+              }}>
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : <User size={20} />}
+              </div>
+            )}
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {currentUser ? (currentUser.name || 'Barista BeanTag') : 'Modo Invitado'}
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--ink-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {currentUser ? (currentUser.email || 'Sesión activa') : 'Inicia sesión para guardar tu cava y bitácora'}
+              </div>
+            </div>
+          </div>
+
+          {currentUser && onLogout ? (
+            <button
+              type="button"
+              className="barista-btn-secondary"
+              style={{ minHeight: '38px', padding: '6px 14px', fontSize: '12.5px', color: 'var(--bad)' }}
+              onClick={async () => {
+                if (await confirmDialog(`¿Cerrar la sesión de ${currentUser.name || 'tu cuenta'}?`, { okText: 'Cerrar sesión' })) {
+                  onLogout();
+                }
+              }}
+            >
+              <LogOut size={14} aria-hidden="true" />
+              <span>Cerrar sesión</span>
+            </button>
+          ) : (
+            onRequireAuth && (
+              <button
+                type="button"
+                className="barista-btn-primary"
+                style={{ minHeight: '38px', padding: '6px 16px', fontSize: '12.5px' }}
+                onClick={onRequireAuth}
+              >
+                <span>Iniciar sesión</span>
+              </button>
+            )
+          )}
         </div>
+      </section>
+
+      {/* Tema de la Aplicación (compacto por familias: Claros / Oscuros / Auto) */}
+      <section className="bt-section" aria-labelledby="bt-theme-title" style={{ marginBottom: '14px' }}>
+        <div className="bt-section-head">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+            <h4 id="bt-theme-title" className="bt-section-title" style={{ margin: 0 }}>
+              <Palette size={16} aria-hidden="true" />
+              <span>Apariencia ({THEME_OPTIONS.length} temas)</span>
+            </h4>
+            <button
+              type="button"
+              onClick={() => handleThemeChange('auto')}
+              style={{
+                minHeight: '30px',
+                padding: '0 11px',
+                borderRadius: 'var(--r-pill)',
+                border: appTheme === 'auto' ? '1.5px solid var(--accent)' : '1px solid var(--line)',
+                background: appTheme === 'auto' ? 'var(--accent-bg)' : 'var(--fill)',
+                color: appTheme === 'auto' ? 'var(--accent-text)' : 'var(--ink-2)',
+                fontSize: '11.5px',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              Automático {appTheme === 'auto' ? '✓' : ''}
+            </button>
+          </div>
+          <p className="bt-section-desc">Paletas artesanales para toda la app. Durante la extracción puedes activar el Modo Barra OLED.</p>
+        </div>
+
+        <div className="bt-seg" role="tablist" aria-label="Familia de temas" style={{ marginBottom: '10px' }}>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={themeTab === 'light'}
+            className={`bt-seg-btn${themeTab === 'light' ? ' is-active' : ''}`}
+            onClick={() => setThemeTab('light')}
+          >
+            <Sun size={14} aria-hidden="true" />
+            <span>Claros ({THEME_OPTIONS.filter(t => t.mode === 'light').length})</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={themeTab === 'dark'}
+            className={`bt-seg-btn${themeTab === 'dark' ? ' is-active' : ''}`}
+            onClick={() => setThemeTab('dark')}
+          >
+            <Moon size={14} aria-hidden="true" />
+            <span>Oscuros ({THEME_OPTIONS.filter(t => t.mode === 'dark').length})</span>
+          </button>
+        </div>
+
         <div
           role="radiogroup"
           aria-label="Tema de la aplicación"
@@ -391,7 +499,7 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
             gap: '8px',
           }}
         >
-          {THEME_OPTIONS.map((t) => {
+          {THEME_OPTIONS.filter(t => t.mode === themeTab).map((t) => {
             const isActive = appTheme === t.id;
             return (
               <button
@@ -405,10 +513,8 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                   alignItems: 'center',
                   gap: '10px',
                   padding: '10px 12px',
-                  borderRadius: 'var(--r-control)',
-                  border: isActive
-                    ? '1.5px solid var(--accent)'
-                    : '1px solid var(--line)',
+                  borderRadius: 'var(--r-tile)',
+                  border: isActive ? '1.5px solid var(--accent)' : '1px solid var(--line)',
                   background: isActive ? 'var(--accent-bg)' : 'var(--raised)',
                   color: 'var(--ink)',
                   textAlign: 'left',
@@ -419,52 +525,34 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 <span
                   aria-hidden="true"
                   style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: 'var(--r-xs)',
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '10px',
                     flexShrink: 0,
                     background: t.swatch,
-                    border: '1px solid rgba(128, 128, 128, 0.25)',
+                    border: '1px solid rgba(128, 128, 128, 0.28)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     position: 'relative',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18)'
                   }}
                 >
                   <span
                     style={{
-                      width: '10px',
-                      height: '10px',
+                      width: '12px',
+                      height: '12px',
                       borderRadius: '50%',
                       background: t.accent,
-                      boxShadow: '0 0 0 1.5px rgba(255,255,255,0.65)',
+                      border: `2px solid ${t.mode === 'dark' ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.12)'}`
                     }}
                   />
                 </span>
                 <span style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                  <span
-                    style={{
-                      fontSize: '0.88rem',
-                      fontWeight: isActive ? 700 : 600,
-                      color: 'var(--ink)',
-                      lineHeight: 1.2,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
+                  <span style={{ fontSize: '0.86rem', fontWeight: isActive ? 700 : 600, color: 'var(--ink)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {t.label}
                   </span>
-                  <span
-                    style={{
-                      fontSize: '0.72rem',
-                      color: 'var(--ink-muted)',
-                      lineHeight: 1.2,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
+                  <span style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {t.desc}
                   </span>
                 </span>
@@ -625,15 +713,15 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
         {/* Sommelier Recommendation Card */}
         {sommelierResult && (
           <div className="candy-card animate-entrance" style={{ 
-            background: 'var(--bg-card)', 
-            border: '1px solid var(--color-crimson)', 
+            background: 'var(--surface)', 
+            border: '1px solid var(--accent-line)', 
             padding: '14px', 
             marginTop: '12px',
             borderRadius: 'var(--r-tile)',
-            boxShadow: '0 4px 16px rgba(188, 84, 73, 0.08)'
+            boxShadow: 'var(--shadow-1)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--accent-text)', textTransform: 'uppercase' }}>
                 <Compass size={14} />
                 <span>Recomendación Sommelier {sommelierResult._source === 'barista_fallback' ? '(Local)' : '(IA)'}</span>
               </div>
@@ -645,18 +733,18 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                     border: '1px solid var(--barista-instr-border)', 
                     color: 'var(--barista-accent-honey)', 
                     padding: '3px 8px', 
-                    borderRadius: 'var(--r-control)', 
+                    borderRadius: 'var(--r-pill)', 
                     fontWeight: '600',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '4px'
                   }}>
                     <Zap size={11} />
-                    <span>Sommelier Local (Modo Cero Desconexión)</span>
+                    <span>Sommelier Local</span>
                   </span>
                 )}
                 {sommelierResult.badge && (
-                  <span style={{ fontSize: '12px', background: 'rgba(188, 84, 73, 0.08)', border: '1px solid rgba(188, 84, 73, 0.2)', color: 'var(--color-crimson)', padding: '2px 6px', borderRadius: 'var(--r-xs)', fontWeight: 'bold' }}>
+                  <span style={{ fontSize: '11.5px', background: 'var(--accent-bg)', border: '1px solid var(--accent-line)', color: 'var(--accent-text)', padding: '2px 8px', borderRadius: 'var(--r-pill)', fontWeight: 700 }}>
                     {sommelierResult.badge}
                   </span>
                 )}
@@ -671,26 +759,38 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 8px 0', lineHeight: 1.4 }}>
                   {sommelierResult.reason || 'Todos los lotes en tu cava tienen 0 dosis restantes. Repón tu stock o registra nuevas dosis para recibir recomendaciones del sommelier.'}
                 </p>
-                <div style={{ fontSize: '12px', color: 'var(--color-crimson)', fontWeight: '600' }}>
+                <div style={{ fontSize: '12px', color: 'var(--accent-text)', fontWeight: '600' }}>
                   Sugerencia: Repón dosis de café en tus lotes para activar la selección experta de cata.
                 </div>
               </div>
             ) : (
               <>
                 <h4 style={{ margin: '4px 0 6px 0', fontSize: '15px', fontFamily: 'var(--font-heading)', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Coffee size={15} color="var(--color-crimson)" />
+                  <Coffee size={15} color="var(--accent-text)" />
                   <span>{sommelierResult.recommended_batch_name}</span>
                 </h4>
 
-                <p className="bt-section-desc" style={{ marginBottom: '12px' }}>
+                <p className="bt-section-desc" style={{ marginBottom: '10px' }}>
                   {sommelierResult.reason}
                 </p>
 
                 {sommelierResult.flavor_focus && (
-                  <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '10px' }}>
                     <span>Perfil:</span>
-                    <span style={{ color: 'var(--color-crimson)' }}>{sommelierResult.flavor_focus}</span>
+                    <span style={{ color: 'var(--accent-text)' }}>{sommelierResult.flavor_focus}</span>
                   </div>
+                )}
+
+                {onSelectBatch && sommelierResult.recommended_batch_id && (
+                  <button
+                    type="button"
+                    className="barista-btn-primary"
+                    style={{ width: '100%', minHeight: '42px', fontSize: '13px', marginTop: '4px' }}
+                    onClick={() => onSelectBatch(sommelierResult.recommended_batch_id)}
+                  >
+                    <span>Abrir y preparar este café</span>
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </button>
                 )}
               </>
             )}
@@ -960,34 +1060,19 @@ export default function Settings({ theme, setTheme, batches = [], showToast }) {
                 </button>
               </div>
 
-              {/* Template Selector */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', background: 'var(--bg-canvas)', padding: '5px', borderRadius: 'var(--r-control)', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', padding: '0 4px', letterSpacing: '0.04em' }}>COLECCIÓN:</span>
-                {[
-                  { id: 'stretch', label: 'Stretch' },
-                  { id: 'squishy', label: 'Squishy' },
-                  { id: 'zine', label: 'Zine' },
-                  { id: 'vhs', label: 'VHS' },
-                  { id: 'lata', label: 'Lata' }
-                ].map(t => (
+              {/* Template Selector (synced with all 8 official styles) */}
+              <div className="bt-style-picker" role="radiogroup" aria-label="Estilo de carta">
+                {CARD_STYLE_OPTIONS.map(t => (
                   <button
                     key={t.id}
                     type="button"
+                    role="radio"
+                    aria-checked={menuShareTemplate === t.id}
+                    className={`bt-style-btn${menuShareTemplate === t.id ? ' is-active' : ''}`}
+                    style={{ minHeight: '36px', padding: '0 13px', fontSize: '12px' }}
                     onClick={() => {
                       try { localStorage.setItem('beantag-share-style', t.id); } catch (e) {}
                       handleOpenMenuShare(t.id);
-                    }}
-                    style={{
-                      flex: '1 1 auto',
-                      padding: '5px 8px',
-                      fontSize: '12px',
-                      fontWeight: menuShareTemplate === t.id ? '800' : '600',
-                      border: menuShareTemplate === t.id ? '1px solid var(--color-crimson)' : '1px solid transparent',
-                      borderRadius: 'var(--r-control)',
-                      background: menuShareTemplate === t.id ? 'var(--bg-card)' : 'transparent',
-                      color: menuShareTemplate === t.id ? 'var(--color-crimson)' : 'var(--color-text)',
-                      boxShadow: menuShareTemplate === t.id ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
-                      cursor: 'pointer'
                     }}
                   >
                     {t.label}

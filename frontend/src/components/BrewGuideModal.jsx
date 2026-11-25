@@ -1217,8 +1217,8 @@ export default function BrewGuideModal({
                           ? 'var(--valve-closed-bg)'
                           : (currentStage.valve === 'half' ? 'var(--valve-half-bg)' : 'var(--valve-open-bg)'),
                         color: currentStage.valve === 'closed'
-                          ? 'var(--valve-closed)'
-                          : (currentStage.valve === 'half' ? 'var(--valve-half)' : 'var(--valve-open)')
+                          ? 'var(--valve-closed-text)'
+                          : (currentStage.valve === 'half' ? 'var(--valve-half-text)' : 'var(--valve-open-text)')
                       }}
                     >
                       {currentStage.valve === 'closed' ? <Lock size={10} /> : (currentStage.valve === 'half' ? <Zap size={10} /> : <Unlock size={10} />)}
@@ -1387,9 +1387,9 @@ export default function BrewGuideModal({
                     justifyContent: 'center',
                     gap: '10px',
                     padding: '14px 20px',
-                    borderRadius: 'var(--radius-lg)',
-                    backgroundColor: isActive ? 'var(--valve-closed)' : 'var(--accent-terracotta)',
-                    color: 'var(--on-accent)',
+                    borderRadius: 'var(--r-pill)',
+                    backgroundColor: isActive ? 'var(--valve-closed)' : 'var(--accent)',
+                    color: isActive ? '#FFFFFF' : 'var(--on-accent)',
                     fontSize: '16px',
                     fontWeight: '600',
                     fontFamily: 'var(--font-display)',
@@ -1398,7 +1398,7 @@ export default function BrewGuideModal({
                     cursor: 'pointer',
                     minHeight: '56px',
                     height: '56px',
-                    boxShadow: isActive ? '0 4px 16px rgba(239, 68, 68, 0.35)' : '0 4px 16px var(--accent-glow)',
+                    boxShadow: isActive ? 'var(--shadow-float)' : '0 6px 18px var(--accent-glow)',
                     transition: 'var(--transition-ui)'
                   }}
                 >
@@ -1426,9 +1426,9 @@ export default function BrewGuideModal({
                     justifyContent: 'center',
                     gap: '8px',
                     padding: '14px 16px',
-                    borderRadius: 'var(--radius-lg)',
+                    borderRadius: 'var(--r-pill)',
                     backgroundColor: 'var(--bg-surface)',
-                    border: '1.5px solid var(--border-subtle)',
+                    border: '1px solid var(--border-subtle)',
                     color: 'var(--text-primary)',
                     fontSize: '14px',
                     fontWeight: '600',
@@ -1458,7 +1458,7 @@ export default function BrewGuideModal({
                     justifyContent: 'center',
                     gap: '6px',
                     padding: '12px 14px',
-                    borderRadius: 'var(--radius-md)',
+                    borderRadius: 'var(--r-pill)',
                     backgroundColor: 'var(--bg-elevated)',
                     border: '1px solid var(--border-subtle)',
                     color: elapsedSeconds === 0 ? 'var(--text-muted)' : 'var(--text-primary)',
@@ -1484,7 +1484,7 @@ export default function BrewGuideModal({
                     justifyContent: 'center',
                     gap: '6px',
                     padding: '12px 16px',
-                    borderRadius: 'var(--radius-md)',
+                    borderRadius: 'var(--r-pill)',
                     backgroundColor: 'var(--barista-accent-mint-bg)',
                     border: '1.5px solid var(--ok-text)',
                     color: 'var(--ok-text)',
