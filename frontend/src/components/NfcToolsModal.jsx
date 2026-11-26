@@ -47,6 +47,30 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
     return id ? `${origin}/beantag/?batch=${encodeURIComponent(id)}&action=new_brew` : `${origin}/beantag/`;
   };
 
+  const getAppDeepLinkUrl = (batchId) => {
+    const id = batchId || selectedBatchId || (batches.length > 0 ? batches[0].id : '');
+    return id ? `beantag://batch/${encodeURIComponent(id)}` : 'beantag://';
+  };
+
+  const handleCopyAppDeepLink = async (batchId) => {
+    const url = getAppDeepLinkUrl(batchId);
+    const targetId = batchId || selectedBatchId || (batches.length > 0 ? batches[0].id : '');
+    if (!targetId) {
+      if (showToast) showToast('Selecciona un lote para generar su enlace directo.', { type: 'error' });
+      return;
+    }
+    const success = await copyToClipboard(url);
+    setStatusMessage(success ? `Enlace directo iOS copiado: ${url}` : `Enlace directo iOS: ${url}`);
+    if (showToast) {
+      showToast(
+        success
+          ? 'Enlace beantag:// copiado para Apple Atajos (abre la App sin pasar por Safari).'
+          : `Enlace: ${url}`,
+        { type: success ? 'success' : 'info', duration: 4000 }
+      );
+    }
+  };
+
   const handleCopyUrl = async (batchId) => {
     const url = getTargetUrl(batchId);
     const targetId = batchId || selectedBatchId || (batches.length > 0 ? batches[0].id : '');
@@ -244,13 +268,14 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
         {/* Tab 1: iOS iPhone Native Mode */}
         {activeTab === 'ios' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: 'var(--bg-canvas)', padding: '12px', borderRadius: 'var(--r-control)', border: '2px solid var(--border-color)', fontSize: '12px', lineHeight: '1.4' }}>
-              <strong style={{ color: 'var(--color-crimson)', display: 'block', marginBottom: '4px' }}>
-                <HelpCircle size={14} style={{marginRight:'4px',verticalAlign:'middle'}} /> ¿Cómo funciona el NFC en iPhone?
+            <div style={{ background: 'var(--bg-canvas)', padding: '12px', borderRadius: 'var(--r-control)', border: '1px solid var(--line)', fontSize: '12px', lineHeight: '1.45' }}>
+              <strong style={{ color: 'var(--accent-text)', display: 'block', marginBottom: '4px' }}>
+                <HelpCircle size={14} style={{marginRight:'4px',verticalAlign:'middle'}} /> Abrir directo en la App BeanTag (sin pasar por Safari)
               </strong>
-              1. En iPhone no necesitas presionar nada para leer.
-              2. Acerca la parte superior trasera de tu iPhone al tag NFC.<br/>
-              3. Recibirás la notificación emergente nativa de iOS para abrir la bitácora de tu café al instante.
+              Con Sideloadly gratuito, iOS abre las etiquetas <code>https://</code> en Safari por política de Apple. Para saltar directo a la App en &lt;1 s:<br/>
+              1. Copia el enlace <strong><code>beantag://</code></strong> de abajo.<br/>
+              2. Abre <strong>Atajos</strong> (iPhone) → <strong>Automatización</strong> → <strong>+</strong> → <strong>NFC</strong> → escanea tu etiqueta → elige <strong>Ejecutar de inmediato</strong>.<br/>
+              3. Agrega la acción <strong>Abrir URL</strong> y pega el enlace <code>beantag://</code>.
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -270,8 +295,39 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
                 ))}
               </select>
 
-              <label htmlFor="bt-nfctoolsmodal-2" style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-                URL Directa para NFC / QR (Haz clic para seleccionar todo):
+              <label htmlFor="bt-nfctoolsmodal-app" style={{ fontSize: '11.5px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--accent-text)', marginTop: '4px' }}>
+                1. Enlace directo App iOS (para Apple Atajos · sin Safari):
+              </label>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <input id="bt-nfctoolsmodal-app" aria-label="Enlace directo App iOS para Apple Atajos"
+                  type="text"
+                  readOnly
+                  className="candy-input"
+                  value={getAppDeepLinkUrl(selectedBatchId)}
+                  onClick={e => e.target.select()}
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    margin: 0,
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '12px',
+                    backgroundColor: 'var(--bg-canvas)',
+                    cursor: 'pointer'
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn-candy primary"
+                  onClick={() => handleCopyAppDeepLink(selectedBatchId)}
+                  style={{ padding: '8px 12px', margin: 0, whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px' }}
+                >
+                  <Copy size={13} />
+                  <span>Copiar</span>
+                </button>
+              </div>
+
+              <label htmlFor="bt-nfctoolsmodal-2" style={{ fontSize: '11.5px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                2. URL Web universal (para NFC Tools / QR / Android / invitados):
               </label>
               <input id="bt-nfctoolsmodal-2" aria-label="URL Directa para NFC / QR (Haz clic para seleccionar todo):"
                 type="text"
@@ -292,12 +348,12 @@ export default function NfcToolsModal({ onClose, batches: propBatches, showToast
               <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                 <button
                   type="button"
-                  className="btn-candy primary"
+                  className="barista-btn-secondary"
                   onClick={() => handleCopyUrl(selectedBatchId)}
                   style={{ padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: 1, margin: 0 }}
                 >
                   <Copy size={14} />
-                  Copiar URL del Lote
+                  Copiar URL Web
                 </button>
 
                 {typeof navigator !== 'undefined' && navigator.share && (

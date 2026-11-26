@@ -128,9 +128,22 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
     if (showToast) showToast('Se restauraron los parámetros anteriores.', { type: 'info' });
   };
 
-  const handleOpenInNativeApp = () => {
-    if (!batch?.id) return;
-    window.location.href = `beantag://batch/${encodeURIComponent(batch.id)}`;
+  const activeBatchIdForDeepLink = batch?.id || batchId;
+  const appDeepLinkUrl = activeBatchIdForDeepLink
+    ? `beantag://batch/${encodeURIComponent(activeBatchIdForDeepLink)}`
+    : '';
+
+  const handleCopyDeepLink = async () => {
+    if (!appDeepLinkUrl) return;
+    const ok = await copyToClipboard(appDeepLinkUrl);
+    if (showToast) {
+      showToast(
+        ok
+          ? 'Enlace directo beantag:// copiado. Pégalo en Apple Atajos → Automatización → NFC.'
+          : appDeepLinkUrl,
+        { type: ok ? 'success' : 'info', duration: 4000 }
+      );
+    }
   };
 
   const toggleAutoOpenApp = (checked) => {
@@ -142,17 +155,14 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
   };
 
   useEffect(() => {
-    if (!isIosBrowser || !autoOpenApp || !batch?.id) return;
-    const key = `beantag-auto-opened-${batch.id}`;
+    if (!isIosBrowser || !autoOpenApp || !activeBatchIdForDeepLink) return;
+    const key = `beantag-auto-opened-${activeBatchIdForDeepLink}`;
     try {
       if (sessionStorage.getItem(key)) return;
       sessionStorage.setItem(key, '1');
     } catch { /* ignore */ }
-    const timer = setTimeout(() => {
-      window.location.href = `beantag://batch/${encodeURIComponent(batch.id)}`;
-    }, 180);
-    return () => clearTimeout(timer);
-  }, [isIosBrowser, autoOpenApp, batch?.id]);
+    window.location.href = `beantag://batch/${encodeURIComponent(activeBatchIdForDeepLink)}`;
+  }, [isIosBrowser, autoOpenApp, activeBatchIdForDeepLink]);
   
   // Form fields (Default: NextLevel Pulsar Mini)
   const [method, setMethod] = useState('NextLevel Pulsar Mini');
@@ -1478,16 +1488,47 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
           <ArrowLeft size={16} strokeWidth={2.5} />
           <span>Volver</span>
         </button>
-        {isIosBrowser && batch?.id && (
-          <button
-            type="button"
-            className="btn-candy primary"
-            onClick={handleOpenInNativeApp}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '7px 12px', margin: 0, fontSize: '12px', fontWeight: 700 }}
-          >
-            <Nfc size={14} aria-hidden="true" />
-            <span>Abrir en App</span>
-          </button>
+        {isIosBrowser && appDeepLinkUrl && (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <label
+              title="Intentar abrir automáticamente en la app BeanTag al escanear desde Safari"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '11.5px',
+                fontWeight: 600,
+                color: 'var(--ink-muted)',
+                cursor: 'pointer',
+                userSelect: 'none'
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={autoOpenApp}
+                onChange={(e) => toggleAutoOpenApp(e.target.checked)}
+                style={{ accentColor: 'var(--accent)', margin: 0, width: '15px', height: '15px' }}
+              />
+              <span>Auto</span>
+            </label>
+            <a
+              href={appDeepLinkUrl}
+              className="btn-candy primary"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '7px 13px',
+                margin: 0,
+                fontSize: '12px',
+                fontWeight: 700,
+                textDecoration: 'none'
+              }}
+            >
+              <Nfc size={14} aria-hidden="true" />
+              <span>Abrir en App</span>
+            </a>
+          </div>
         )}
       </div>
 
@@ -1999,7 +2040,7 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
         </button>
         {showNfcPanel && (
           <div style={{ paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {isIosBrowser && batch?.id && (
+            {isIosBrowser && appDeepLinkUrl && (
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -2018,21 +2059,47 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                   />
                   Abrir siempre automáticamente en la App iOS
                 </label>
-                <button
-                  type="button"
+                <a
+                  href={appDeepLinkUrl}
                   className="btn-candy primary"
-                  onClick={handleOpenInNativeApp}
-                  style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 700, margin: 0, whiteSpace: 'nowrap' }}
+                  style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 700, margin: 0, whiteSpace: 'nowrap', textDecoration: 'none' }}
                 >
                   Abrir en App
-                </button>
+                </a>
+              </div>
+            )}
+
+            {isOwner && appDeepLinkUrl && (
+              <div>
+                <p style={{ fontSize: '12px', color: 'var(--ink-muted)', margin: '0 0 6px 0', lineHeight: 1.4 }}>
+                  <strong style={{ color: 'var(--accent-text)' }}>Enlace directo App iOS (sin Safari):</strong> úsalo en <strong>Apple Atajos → Automatización → NFC → Ejecutar de inmediato → Abrir URL</strong>.
+                </p>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <input
+                    type="text"
+                    readOnly
+                    aria-label="Enlace directo App iOS"
+                    className="candy-input"
+                    style={{ flex: 1, minWidth: 0, fontSize: '12px', fontFamily: 'var(--font-mono)', margin: 0, padding: '6px' }}
+                    value={appDeepLinkUrl}
+                    onClick={(e) => e.target.select()}
+                  />
+                  <button
+                    type="button"
+                    className="btn-candy primary"
+                    style={{ padding: '6px 12px', fontSize: '12px', whiteSpace: 'nowrap', margin: 0 }}
+                    onClick={handleCopyDeepLink}
+                  >
+                    Copiar App
+                  </button>
+                </div>
               </div>
             )}
 
             {isOwner && (
               <div>
-                <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 8px 0' }}>
-                  URL directa de <strong>{batch.name}</strong> para Atajos de iOS o etiquetas NFC:
+                <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 6px 0' }}>
+                  URL Web universal de <strong>{batch.name}</strong> (NFC Tools / QR / Android / invitados):
                 </p>
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <input 
@@ -2040,17 +2107,17 @@ export default function BatchDetail({ batchId, batches = [], currentUser, onRequ
                     readOnly 
                     aria-label="Enlace directo del lote"
                     className="candy-input" 
-                    style={{ flex: 1, fontSize: '12px', margin: 0, padding: '6px' }}
+                    style={{ flex: 1, minWidth: 0, fontSize: '12px', margin: 0, padding: '6px' }}
                     value={`${window.location.origin}/beantag/?batch=${encodeURIComponent(batch.id)}&action=new_brew`}
                     onClick={(e) => e.target.select()}
                   />
                   <button 
                     type="button" 
-                    className="btn-candy primary" 
+                    className="barista-btn-secondary" 
                     style={{ padding: '6px 12px', fontSize: '12px', whiteSpace: 'nowrap', margin: 0 }}
                     onClick={handleWriteNfc}
                   >
-                    Copiar URL
+                    Copiar Web
                   </button>
                 </div>
               </div>
